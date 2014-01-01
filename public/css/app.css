@@ -1,0 +1,42 @@
+/* app css stylesheet */
+
+html,body{
+    background:rgb(255, 255, 255);
+    font-family: 'Calibri', sans-serif;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+}
+
+div.container-fluid{ margin:15px; }
+
+h1, h2, h3, h4, h5{
+    margin:0;
+    padding:0;
+}
+
+div.page-header{padding:0;margin:0;border:0;}
+
+/* Styling index page (choosing genes or datasets) */
+div#input-chooser{margin-left:25%;margin-right:25%;}
+
+div#gene-chooser{width:25%;float:left}
+div#db-chooser{width:20%;float:right}
+
+ul.groupedClass{
+	display:none;
+}
+
+ul.ungroupedClass{
+	margin-left:3px;
+	padding:0px;
+}
+
+ul.db-group{
+	list-style-type: none;
+}
+
+/* Styling for visualizations */
+div.half-page-view{ width:50%;padding:5px; }
+
+div.half-page-view.leftside{border-right:1px solid #eee;float:left;}
+div.half-page-view.rightside{float:right;}

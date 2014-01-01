@@ -1,0 +1,22 @@
+{
+  "name": "gd3",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+      "node": "0.10.x",
+      "npm": "1.2.x"
+  },
+  "scripts": {
+    "postinstall": "bower install"
+  },
+  "dependencies": {
+    "express": "latest",
+    "jade": "latest",
+    "mongoose": "latest",
+    "bower": "latest",
+    "q": "latest"
+  },
+  "repository": {
+      "type": "git"
+  }
+}

@@ -1,0 +1,85 @@
+!!!
+html
+	head
+		meta(charset='utf8')
+		link(rel="icon", type="image/png", href="img/favicon.png")
+		meta(name="fragment", content="!")
+		base(href='/')
+		title gd3
+		link(rel='stylesheet', href='components/bootstrap/dist/css/bootstrap.min.css')
+		link(rel='stylesheet', href='css/app.css')
+		link(rel='stylesheet', href='css/elusive-webfont.css')
+		script.
+			function toggleGroup(el, group){
+				$('ul#group-' + group).slideToggle();
+				var caret = $(el).children("span");
+				if (caret.hasClass("glyphicon-chevron-down")){
+					var oldClass = "glyphicon-chevron-down"
+					, newClass   = "glyphicon-chevron-up";
+				}
+				else{
+					var oldClass = "glyphicon-chevron-up"
+					, newClass   = "glyphicon-chevron-down";
+				}
+				caret.removeClass(oldClass);
+				caret.addClass(newClass);
+			}
+			function toggleCheckboxes(group, checked){
+				var checkboxes = $("input.group-" + group + "-checkbox");
+				checkboxes.prop("checked", checked);
+			}
+
+	body()
+		div(ng-controller="AppCtrl", class="container-fluid", id="header", role="navigation")
+			div(class="page-header")
+				h1
+					a(href="/") gd3
+		hr
+		div(class="container-fluid", id="input-chooser")
+			form(method="post", action="/", role="form")
+				div(id="gene-chooser")
+					h4 Enter gene set.
+					br
+					textarea(name="genes", class="form-control", rows="10")
+						| STAG1
+						| STAG2
+						| SMC1A
+						| SMC3
+						| RAD21
+					br
+					button(type="submit", id="submit", class="btn btn-default") Submit
+
+
+				div(id="db-chooser")
+					h4 Choose dataset.
+					br
+					-for (var i in groups)
+						-var group = groups[i];
+						- if (group.name != "")
+							- groupClass = "groupedClass"
+							
+							input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{group.id}', this.checked );")
+							h5(onclick="toggleGroup(this, '#{group.id}')", style="cursor:pointer") #{group.name} &nbsp;
+								span(class="glyphicon glyphicon-chevron-down", style="font-size:80%")
+						
+						- else groupClass = "ungroupedClass"
+						
+
+						ul(class="#{groupClass} db-group", id="group-#{group.id}")
+							-for (var j in groups[i].dbs)
+								-var db = groups[i].dbs[j];
+								li
+									label
+										//- Dataset checkboxes are prepended with db- to ensure no starts their
+										// -dataset name with a non-letter (which would break HTML rules)
+										input(type="checkbox", name="db-#{db}", class="group-#{group.id}-checkbox")
+									| &nbsp; #{db} &nbsp;
+						br
+
+				br(style="clear:both")
+
+		hr()
+		div(id="footer", class="text-left")
+			p(style="text-align:center") Updated: December 11th, 2013
+
+		script(src='components/jquery/jquery.min.js')

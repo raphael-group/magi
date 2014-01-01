@@ -1,0 +1,83 @@
+div(ng-controller="ViewCtrl")
+	div(class="panel panel-default")
+		div(class="panel-heading")
+			h4(class="panel-title", data-toggle="collapse", data-parent="#accordion", href="#collapseOne", style="cursor:pointer")
+				| INSTRUCTIONS
+				span(style="float:right") [+]
+
+		div(id="collapseOne", class="panel-collapse collapse")
+			div(class="panel-body")
+				ul
+					li
+						i
+							b Network.&nbsp;
+						| Shows the interactions among genes on the HINT+HI2012 interaction networks.
+						| You can <b>toggle the interaction networks</b> shown by clicking on them in the legend,
+						| and you can <b>reposition the nodes </b>in the subnetwork for a better view by <b>dragging/dropping</b> them.
+					li
+						i
+							b Mutation matrix.&nbsp;
+						| Shows the mutations of genes (rows) across samples (columns). Samples are colored by cancer type.
+						| Full ticks represent SNVs, downticks represent deletions, upticks represent amplifications,
+						| and triangles represent fusions, rearragements or splice variants.
+						| Only samples with a mutation in the given subnetwork are shown.
+						| You can <b>zoom in on and drag the oncoprint</b> by scrolling and/or clicking the figure with your mouse.
+					li
+						i
+							b Transcript annotation.&nbsp;
+						| Shows the mutations in each REFSEQ transcript of each gene in the subnetwork.
+						| Mutations are colored by cancer type. Each symbol represents a distinct mutation type.
+						| Putatively inactivating mutations are shown below the transcript, and the remaining mutations are shown above the transcript.
+						| Select one of the three protein domain databases, including Pfam, SMART, and NCBI Conserve Domain, to show annotated protein domains for each transcript -- scroll over a domain to reveal its name.
+						| You can <b>zoom in on and drag the transcript annotation</b> by scrolling and/or clicking the figure with your mouse.
+					li
+						i
+							b Copy number browser.&nbsp;
+						| Shows the copy number aberrations surrounding the selected gene (highlighted as red) on the chromosome.
+						| The topest panel shows genes (shown as blocks) distributed in the region.
+						| You can click and drag a window in this panel to zoom in and see the details in the middle and bottom panels.
+						| The middle and bottom panels show genes and copy number aberration inside the zoom in window you just dragged, respectively.
+						| Copy number aberrations are colored by cancer type.
+						| Each row represents one sample.
+						| You can mouseover copy number aberration to get more detail information.
+
+	h3 Oncoprint
+	div(id="oncoprint-holder")
+		oncoprint(data="oncoprint_data")
+
+	hr(style="clear:both;margin:0px;")
+
+	div(id="subnetwork-holder", class="half-page-view leftside")
+		h3 Subnetwork
+		subnetwork(data="subnetwork_data")
+
+	div(id="transcript-holder" class="half-page-view rightside")
+		h3 Transcript annotation
+		select(class="form-control", ng-model="transcripts", ng-options="g for (g, _) in gene_transcripts")
+			option(value="") -- choose gene --
+
+		br
+		lolliplotLegend(data="gene_transcripts")
+		b(ng-if="transcripts", ng-hide="numTranscripts(transcripts)", style="text-align:center")
+			| No transcript information available.
+		div(ng-repeat="(transcript_name, transcript) in transcripts")
+			span(class="transcript-name") {{ transcript_name }}
+			//- Selecting protein domain db
+			div(style="float:right")
+				input(type="radio", ng-model="domain", value="PFAM")
+				b &nbsp; PFAM &nbsp;
+				input(type="radio", ng-model="domain", value="SMART")
+				b &nbsp; SMART &nbsp;
+				input(type="radio", ng-model="domain", value="CD")
+				b &nbsp; Conserved Domain &nbsp;
+			transcript(data='transcript', db='domain')
+
+	hr(style="clear:both;margin:0px;")
+
+	//- Copy number browser
+	div(id="cna-holder")
+		h3 Copy number browser
+		select(class="form-control", ng-model="cna_gene", ng-options="g for (g, _) in cna_genes")
+			option(value="") -- choose gene --
+		br
+		cnabrowser(data="cna_gene" sty="s2ty")
