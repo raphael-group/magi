@@ -1,7 +1,7 @@
 extends header
 block body
 	div(class="container-fluid", id="input-chooser")
-		form(method="post", action="/", role="form")
+		form(method="post", action="/", role="form", id="query-form")
 			div(id="gene-chooser")
 				h4 Enter or upload gene set.
 				br
@@ -47,7 +47,7 @@ block body
 								label
 									//- Dataset checkboxes are prepended with db- to ensure no starts their
 									// -dataset name with a non-letter (which would break HTML rules)
-									input(type="checkbox", name="db-#{db}", class="group-#{group.id}-checkbox")
+									input(type="checkbox", name="db-#{db}", class="group-#{group.id}-checkbox group-checkbox")
 								| &nbsp; #{db} &nbsp;
 					br
 
@@ -59,5 +59,4 @@ block body
 
 	script(src='components/jquery/jquery.min.js')
 	script(src='components/jquery-form/jquery.form.js')
-	script(src="js/gene-upload.js")
-	script(src="js/ui.js")
+	script(src="js/query-control.js")
