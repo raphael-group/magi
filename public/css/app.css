@@ -19,7 +19,7 @@ div.page-header{padding:0;margin:0;border:0;}
 /* Styling index page (choosing genes or datasets) */
 div#input-chooser{margin-left:25%;margin-right:25%;}
 
-div#gene-chooser{width:25%;float:left}
+div#gene-chooser{width:40%;float:left}
 div#db-chooser{width:20%;float:right}
 
 ul.groupedClass{

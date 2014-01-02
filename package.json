@@ -14,7 +14,8 @@
     "jade": "latest",
     "mongoose": "latest",
     "bower": "latest",
-    "q": "latest"
+    "q": "latest",
+    "formidable": "latest"
   },
   "repository": {
       "type": "git"

@@ -1,37 +1,22 @@
-!!!
-html(ng-app="gd3")
-  head
-    meta(charset='utf8')
-    link(rel="icon", type="image/png", href="img/favicon.png")
-    meta(name="fragment", content="!")
-    base(href='/view')
-    title gd3
-    link(rel='stylesheet', href='components/bootstrap/dist/css/bootstrap.min.css')
-    link(rel='stylesheet', href='css/app.css')
-    link(rel='stylesheet', href='css/elusive-webfont.css')
-    body()
-        div(class="container-fluid", id="header", role="navigation")
-            div(class="page-header")
-                h1
-                    a(href="/") gd3
-        hr
-        div(class="container-fluid", ng-view)
+extends header
+block body
+    div(class="container-fluid", ng-view)
 
-        hr
-        div(id="footer", class="text-left")
-            p(style="text-align:center") Updated: December 11th, 2013
-            
-        script(src='components/angular/angular.min.js').
-        script(src='components/angular-route/angular-route.min.js').
-        script(src='components/jquery/jquery.min.js').
-        script(src='components/d3/d3.min.js').
-        script(src='components/showdown/compressed/showdown.js').
-        script(src='components/bootstrap/dist/js/bootstrap.min.js').
-        script(src='js/app.js').
-        script(src='js/controllers.js').
-        script(src='js/directives.js').
-        script(src='js/services.js').
-        script(src='js/gd3/cna-browser.js').
-        script(src='js/gd3/lolliplots.js').
-        script(src='js/gd3/oncoprinter.js').
-        script(src='js/gd3/subnetwork.js').
+    hr
+    div(id="footer", class="text-left")
+        p(style="text-align:center") Updated: December 11th, 2013
+        
+    script(src='components/angular/angular.min.js').
+    script(src='components/angular-route/angular-route.min.js').
+    script(src='components/jquery/jquery.min.js').
+    script(src='components/d3/d3.min.js').
+    script(src='components/showdown/compressed/showdown.js').
+    script(src='components/bootstrap/dist/js/bootstrap.min.js').
+    script(src='js/app.js').
+    script(src='js/controllers.js').
+    script(src='js/directives.js').
+    script(src='js/services.js').
+    script(src='js/gd3/cna-browser.js').
+    script(src='js/gd3/lolliplots.js').
+    script(src='js/gd3/oncoprinter.js').
+    script(src='js/gd3/subnetwork.js').

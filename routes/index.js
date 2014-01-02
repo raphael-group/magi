@@ -1,5 +1,8 @@
 // Main routes
-var dataset = require( "../model/datasets" );
+var dataset  = require( "../model/datasets" )
+, formidable = require('formidable')
+, fs = require('fs')
+, path = require('path');
 
 exports.index = function index(req, res){
 	dataset.datasetGroups(function(err, groups){
@@ -12,8 +15,32 @@ exports.index = function index(req, res){
 	});
 }
 
+exports.uploadGeneset = function uploadGeneset(req, res){
+	// parse a file upload
+	var form = new formidable.IncomingForm({
+		uploadDir: path.normalize(__dirname + '/../tmp'),
+		keepExtensions: true
+    });
+
+    form.parse(req, function(err, fields, files) {
+		// The next function call, and the require of 'fs' above, are the only
+		// changes I made from the sample code on the formidable github
+		// 
+		// This simply reads the file from the tempfile path and echoes back
+		// the contents to the response.
+		fs.readFile(files.geneSet.path, 'utf-8', function (err, genes) {
+			if (err) console.log(err)
+			fs.unlink(files.geneSet.path, function (err) {
+				if (err) throw err;
+				res.send({ genes: genes });
+			});
+		});
+	});
+}
+
 exports.queryhandler = function queryhandler(req, res){
 	// Parse params
+	console.log(req)
 	var genes = req.body.genes || "";
 
 	/* Extract datasets */

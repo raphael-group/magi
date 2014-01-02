@@ -47,6 +47,7 @@ if (app.get('env') === 'production') {
 
 app.get('/', routes.index);
 app.post('/', routes.queryhandler)
+app.post('/upload/geneset', routes.uploadGeneset)
 app.get('/view', routes.view)
 app.get('/data/bundle', routes.bundler.viewData)
 app.get('/partials/:name', routes.partials);
