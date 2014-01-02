@@ -16,7 +16,7 @@ The site consists of two pages:
 
         npm install
 
-3. Install MongoDB, following the instructions at http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/
+3. Install MongoDB, following the instructions [provided on MongoDB's website](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/)
 
 4. Start MongoDB:
 
