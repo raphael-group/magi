@@ -15,12 +15,17 @@ The site consists of two pages:
 2. Install required dependencies:
 
         npm install
+
+3. Install MongoDB, following the instructions at http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/
+
+4. Start MongoDB:
+        mongod
         
-3. Start the server (default port 8000):
+5. Start the server (default port 8000):
 
         node server.js
         
-4. View the website at `http://localhost:8000/`.
+6. View the website at `http://localhost:8000/`.
 
 ## Organization
 * `data/parsers`: Node.js scripts for loading TSV files into Mongo. To add data to the database, put TSV files containing mutation data, protein-protein interactions, and transcript domain locations in `data/` and load them using the parsers. 
