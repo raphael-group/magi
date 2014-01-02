@@ -11,7 +11,7 @@ The site consists of two pages:
 1. Clone the repository:
 
         git clone https://<user>@bitbucket.org/raphaellab/gd3-server.git
-        
+
 2. Install required dependencies:
 
         npm install
@@ -19,12 +19,13 @@ The site consists of two pages:
 3. Install MongoDB, following the instructions at http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/
 
 4. Start MongoDB:
+
         mongod
-        
+
 5. Start the server (default port 8000):
 
         node server.js
-        
+
 6. View the website at `http://localhost:8000/`.
 
 ## Organization
