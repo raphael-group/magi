@@ -57,7 +57,6 @@ div(ng-controller="ViewCtrl")
 			option(value="") -- choose gene --
 
 		br
-		lolliplotLegend(data="gene_transcripts")
 		b(ng-if="transcripts", ng-hide="numTranscripts(transcripts)", style="text-align:center")
 			| No transcript information available.
 		div(ng-repeat="(transcript_name, transcript) in transcripts")

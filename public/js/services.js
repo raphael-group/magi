@@ -6,7 +6,7 @@ angular.module('gd3.services', [])
 	.service('styling', function($http) {
 		var styles = null;
 
-		var promise = $http.get('js/gd3/style.json').success(function(json) {
+		var promise = $http.get('components/gd3/styles/pancancer-style.json').success(function(json) {
 			styles = json;
 		});
 
