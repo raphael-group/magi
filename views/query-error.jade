@@ -1,0 +1,10 @@
+extends header
+block body
+
+	div(class="container-fluid")
+		div(class="alert alert-danger")
+			| Your query was not formatted correctly.
+			| You did not include genes, datasets, or both.
+			| Please &nbsp;
+			a(href="/") return to the home page
+			| &nbsp; create a new query. 
