@@ -1,26 +1,41 @@
 /* app css stylesheet */
 
 html,body{
-    background:rgb(255, 255, 255);
-    font-family: 'Calibri', sans-serif;
-        -webkit-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
+  background:rgb(255, 255, 255);
+  font-family: 'Calibri', sans-serif;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
 }
 
 div.container-fluid{ margin:15px; }
 
 h1, h2, h3, h4, h5{
-    margin:0;
-    padding:0;
+  margin:0;
+  padding:0;
 }
 
 div.page-header{padding:0;margin:0;border:0;}
 
 /* Styling index page (choosing genes or datasets) */
-div#input-chooser{margin-left:25%;margin-right:25%;}
-
-div#gene-chooser{width:40%;float:left}
 div#db-chooser{width:20%;float:right}
+div#gene-chooser{width:40%;float:left}
+div#input-chooser{margin-left:25%;margin-right:25%;}
+div#splash-img{
+  background: #333;
+  height: 400px;
+  margin-bottom: 60px;
+  width: 1170px;
+}
+div#splash-txt{
+  margin: 0 auto;
+  padding: 0 0 60px 0;
+  width: 650px;
+}
+
+h1#splash-logo{
+  padding: 50px 0 60px 0;
+  text-align: center;
+}
 
 ul.groupedClass{
 	display:none;
