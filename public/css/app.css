@@ -32,9 +32,15 @@ div#splash-txt{
   width: 650px;
 }
 
-h1#splash-logo{
+h1#splash-header{
   padding: 50px 0 60px 0;
   text-align: center;
+}
+
+img#splash-logo{
+  display: block;
+  margin: 0 auto;
+  padding-top: 50px;
 }
 
 ul.groupedClass{
