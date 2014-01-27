@@ -1,6 +1,6 @@
 {
-    "name": "gd3",
-    "version": "0.1.0",
+    "name": "cgat",
+    "version": "0.0.1",
     "dependencies": {
         "d3": "3",
         "bootstrap": "3.x",
