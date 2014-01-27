@@ -37,7 +37,7 @@ angular.module('gd3.directives', []).
         var styles = styling.data();
         styles.subnetwork.width = $(elm[0]).parent().width()
         draw_subnetwork( vis, data.nodes, data.edges, styles);
-        
+
       })
       }
     }
@@ -51,10 +51,10 @@ angular.module('gd3.directives', []).
       var vis = d3.select(elm[0])
         .append("div")
         .attr("class", "transcript-svg");
-      
+
       // Domain selection
-      scope.db = 'PFAM';                
-      
+      scope.db = 'PFAM';
+
       scope.$watch('data', function(data){
         // Do nothing if the object is the same or hasn't updated
         if (!data) return;
@@ -75,14 +75,14 @@ angular.module('gd3.directives', []).
 
         // Draw transcript
         annotate_transcript( vis, gene, mutations, domains, L, styles );
-        
+
       });
-      
+
       // Hsin-Ta added for domain selection
       scope.$watch('db', function(db){
         // Do nothing if the object is the same or hasn't updated
         if (!db) return;
-        
+
         // Clear the elements inside of the directive
         vis.selectAll('*').remove();
 
@@ -90,7 +90,7 @@ angular.module('gd3.directives', []).
         // are hidden by default
         var styles = styling.data();
         styles.lolliplot.width = $(elm[0]).parent().parent().width();
-        
+
         // Parse data into shorter var handles
         var gene = scope.data.gene
         , mutations = scope.data.mutations
@@ -101,7 +101,7 @@ angular.module('gd3.directives', []).
         annotate_transcript( vis, gene, mutations, domains, L, styles );
 
       });
-      
+
       }
     }
   }).
@@ -109,13 +109,13 @@ angular.module('gd3.directives', []).
   directive("cnabrowser", function(styling){
     return {
       restrict: 'E',
-      scope: { data: '=', sty: '='},      
+      scope: { data: '=', sty: '='},
       link: function(scope, elm, attrs){
       // set up initial svg object
       var vis = d3.select(elm[0])
         .append("div")
         .attr("id", "cnas-svg")
-      
+
       scope.$watch('data', function(data){
         // Do nothing if the object is the same or hasn't updated
         if (!data) return;
@@ -130,16 +130,16 @@ angular.module('gd3.directives', []).
         , geneinfo = data.geneinfo
         , cliq = data.cliq
         , seg = data.seq
-        , region = data.region;              
+        , region = data.region;
 
         // Use our D3 cancer genomics library to draw the subnetwork
         cna_browser( vis, scope.sty, gene, geneinfo, cliq, seg, region, styles );
-        
+
       })
       }
     }
   }).
-  
+
   directive("lolliplotlegend", function(styling){
     return {
       restrict: 'E',
@@ -164,7 +164,7 @@ angular.module('gd3.directives', []).
 
         // Draw legend
         lolliplot_legend( vis, data, styles );
-        
+
       })
       }
     }
@@ -190,7 +190,7 @@ angular.module('gd3.directives', []).
           var styles = styling.data();
           styles.oncoprint.width = $(elm[0]).parent().width();
           oncoprinter( vis, data.M, data.sample2ty, data.coverage, styles, data.sampleTypes );
-          
+
       })
       }
     }

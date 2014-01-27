@@ -32,13 +32,13 @@ block body
 					-var group = groups[i];
 					- if (group.name != "")
 						- groupClass = "groupedClass"
-						
+
 						input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{group.id}', this.checked );")
 						h5(onclick="toggleGroup(this, '#{group.id}')", style="cursor:pointer") #{group.name} &nbsp;
 							span(class="glyphicon glyphicon-chevron-down", style="font-size:80%")
-					
+
 					- else groupClass = "ungroupedClass"
-					
+
 
 					ul(class="#{groupClass} db-group", id="group-#{group.id}")
 						-for (var j in groups[i].dbs)
