@@ -40,7 +40,6 @@ exports.uploadGeneset = function uploadGeneset(req, res){
 
 exports.queryhandler = function queryhandler(req, res){
 	// Parse params
-	console.log(req)
 	var genes = req.body.genes || "";
 
 	/* Extract datasets */
@@ -58,15 +57,18 @@ exports.queryhandler = function queryhandler(req, res){
 
 	// Make query string
 	var querystring = require( 'querystring' )
-	, query = querystring.stringify( {genes: genes, datasets: datasets.join("-") } )
+	, query = querystring.stringify( {genes: genes, datasets: datasets.join("-") } );
 
-	// Redirect to view
-    res.redirect('/view#!/?' + query);
+	res.redirect('/view#!/?' + query)
 
 }
 
 exports.view  = function view(req, res){
 	res.render('view');
+}
+
+exports.queryError  = function queryError(req, res){
+	res.render('query-error');
 }
 
 exports.partials =  function partials(req, res){

@@ -51,6 +51,7 @@ app.post('/upload/geneset', routes.uploadGeneset)
 app.get('/view', routes.view)
 app.get('/data/bundle', routes.bundler.viewData)
 app.get('/partials/:name', routes.partials);
+app.get('/query-error', routes.queryError)
 
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);

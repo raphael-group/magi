@@ -33,11 +33,23 @@ angular.module('gd3.directives', []).
         // Clear the elements inside of the directive
         vis.selectAll('*').remove();
 
-        // Use our D3 cancer genomics library to draw the subnetwork
+        // Load the style service
         var styles = styling.data();
-        styles.subnetwork.width = $(elm[0]).parent().width()
-        draw_subnetwork( vis, data.nodes, data.edges, styles);
 
+        styles.subnetwork.width = $(elm[0]).parent().width();
+
+        // Merge the global and subnetwork styles into one
+        var style = styles.subnetwork;
+        for (var attrname in styles.global)
+            style[attrname] = styles.global[attrname];
+
+        // Add the subnetwork SVG
+        vis.datum(data)
+          .call(
+            subnetwork({style: style})
+                .addNetworkLegend()
+                .addGradientLegend()
+          );
       })
       }
     }
@@ -65,20 +77,21 @@ angular.module('gd3.directives', []).
         // We extract the width of the parent's parent, because the lolliplot's
         // are hidden by default
         var styles = styling.data();
-        styles.lolliplot.width = $(elm[0]).parent().width();
+        styles.lolliplot.width = $(elm[0]).parent().parent().width();
 
-        // Parse data into shorter var handles
-        var gene = data.gene
-        , mutations = data.mutations
-        , domains = data.domains[scope.db] || []
-        , L = data.length
+        // Merge the global and oncoprint styles into one
+        var style = styles.lolliplot;
+        for (var attrname in styles.global)
+            style[attrname] = styles.global[attrname];
 
-        // Draw transcript
-        annotate_transcript( vis, gene, mutations, domains, L, styles );
-
+        // Draw the transcript with a legend
+        vis.datum(data)
+          .call(
+            lolliplots({ style: style })
+              .addLegend()
+          );
       });
-
-      // Hsin-Ta added for domain selection
+      // Domain db selection
       scope.$watch('db', function(db){
         // Do nothing if the object is the same or hasn't updated
         if (!db) return;
@@ -91,14 +104,17 @@ angular.module('gd3.directives', []).
         var styles = styling.data();
         styles.lolliplot.width = $(elm[0]).parent().parent().width();
 
-        // Parse data into shorter var handles
-        var gene = scope.data.gene
-        , mutations = scope.data.mutations
-        , domains = scope.data.domains[db] || []
-        , L = scope.data.length
+        // Merge the global and oncoprint styles into one
+        var style = styles.lolliplot;
+        for (var attrname in styles.global)
+            style[attrname] = styles.global[attrname];
 
-        // Draw transcript
-        annotate_transcript( vis, gene, mutations, domains, L, styles );
+        // Draw the transcript with a legend
+        vis.datum(scope.data)
+          .call(
+            lolliplots({ style: style, domainDB: db })
+              .addLegend()
+          );
 
       });
 
@@ -140,35 +156,6 @@ angular.module('gd3.directives', []).
     }
   }).
 
-  directive("lolliplotlegend", function(styling){
-    return {
-      restrict: 'E',
-      scope: { data: '=' },
-      link: function(scope, elm, attrs){
-      // set up initial svg object
-      var vis = d3.select(elm[0])
-        .append("div")
-        .attr("id", "transcript-legend");
-
-      scope.$watch('data', function(data){
-        // Do nothing if the object is the same or hasn't updated
-        if (!data) return;
-
-        // Clear the elements inside of the directive
-        vis.selectAll('*').remove();
-
-        // We extract the width of the parent's parent, because the lolliplot's
-        // are hidden by default
-        var styles = styling.data();
-        styles.lolliplot.width = $(elm[0]).parent().width();
-
-        // Draw legend
-        lolliplot_legend( vis, data, styles );
-
-      })
-      }
-    }
-  }).
   directive("oncoprint", function(styling){
     return {
       restrict: 'E',
@@ -189,7 +176,20 @@ angular.module('gd3.directives', []).
           // Use our D3 cancer genomics library to draw the subnetwork
           var styles = styling.data();
           styles.oncoprint.width = $(elm[0]).parent().width();
-          oncoprinter( vis, data.M, data.sample2ty, data.coverage, styles, data.sampleTypes );
+
+          // Merge the global and oncoprint styles into one
+          var style = styles.oncoprint;
+          for (var attrname in styles.global)
+              style[attrname] = styles.global[attrname];
+
+          // Create the oncoprint
+          vis.datum(data)
+            .call(
+              window.oncoprint({style: style})
+              .addCoverage()
+              .addLegend()
+              .addSortingMenu()
+            );
 
       })
       }

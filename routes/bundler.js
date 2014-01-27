@@ -79,7 +79,7 @@ exports.viewData = function getViewData(req, res){
 			, coverage_str   = coverage + "% (" + num_mutated_samples + '/' + num_samples + ")"
 
 			// Assemble data into single Object
-			var oncoprint_data = {M : M, sample2ty: sample2ty, coverage: coverage_str};
+			var oncoprint_data = {M : M, sample2ty: sample2ty, coverage_str: coverage_str};
 
 			// Create nodes using the number of mutations in each gene
 			var nodes = genes.map(function(g){
