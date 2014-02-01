@@ -37,6 +37,8 @@ block body
 
       div(id="db-chooser")
         h4 Choose dataset.
+        a(href="/upload") Upload your own.
+        br
         br
         -for (var i in groups)
           -var group = groups[i];
@@ -55,10 +57,10 @@ block body
               -var db = groups[i].dbs[j];
               li
                 label
-                  //- Dataset checkboxes are prepended with db- to ensure no starts their
-                  // -dataset name with a non-letter (which would break HTML rules)
-                  input(type="checkbox", name="db-#{db}", class="group-#{group.id}-checkbox group-checkbox")
-                | &nbsp; #{db} &nbsp;
+                  //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
+                  //- dataset name with a non-letter (which would break HTML rules)
+                  input(type="checkbox", name="db-#{db._id}", class="group-#{group.id}-checkbox group-checkbox")
+                | &nbsp; #{db.title} &nbsp;
           br
 
       br(style="clear:both")

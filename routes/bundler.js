@@ -18,16 +18,18 @@ function includes_inactivating(mut_tys){
 
 exports.viewData = function getViewData(req, res){
 	// Parse query params
-	var genes   = req.query.genes.split("-")
-	, dataset_names = req.query.datasets.split("-");
+	var genes = req.query.genes.split("-"),
+		dataset_ids = req.query.datasets.split("-");
 
 	// Load and format SNVs then PPIs
 	// Then return JSON object.
-	Dataset.datasetlist(dataset_names, function(err, datasets){
+	Dataset.datasetlist(dataset_ids, function(err, datasets){
 		// compute the number of samples across each dataset
 		var num_samples = datasets.reduce(function(total, dataset){
 			return total + dataset.samples.length;
 		}, 0);
+
+		var dataset_names = datasets.map(function(d){ return d.title; });
 
 		Dataset.mutGenesList(genes, dataset_names, function(err, mutGenes){
 			// Create empty OBjects to store transcript/oncoprint data

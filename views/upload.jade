@@ -1,0 +1,37 @@
+extends header
+block body
+    div(class="container")
+        h3 Upload your mutation data.
+        div(class="caption") [ Instructions for uploading data ]
+        br
+        form(method="post", action="/", role="form", id="data-upload-form")
+            label
+              | Dataset name.
+            input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
+            br
+            label
+              | Group name (optional).
+            input(type="text", id="groupName", name="groupName", class="form-control", placeholder="Enter group name (optional).")
+            br
+            label
+              | Single nucleotide variants. &nbsp;
+            input(type="file", id="SNVs", name="SNVs")
+            br
+            label
+              | Tested samples. &nbsp;
+
+            input(type="file", id="testedSamples", name="testedSamples")
+            br
+            br
+            button(type="submit", id="submit", class="btn btn-default") Submit
+            br
+            br
+            div(id="status")
+
+    hr
+    div(id="footer", class="text-left")
+        p(style="text-align:center") Updated: January 31st, 2014
+
+    script(src='components/jquery/jquery.min.js').
+    script(src='components/jquery-form/jquery.form.js')
+    script(src="js/dataset-upload-control.js")

@@ -52,6 +52,8 @@ app.get('/view', routes.view)
 app.get('/data/bundle', routes.bundler.viewData)
 app.get('/partials/:name', routes.partials);
 app.get('/query-error', routes.queryError)
+app.get('/upload', routes.upload)
+app.post('/upload/dataset', routes.uploadDataset)
 
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);
