@@ -19,14 +19,8 @@ var path   = require( 'path' )
 // 
 var domain = require( "../../model/domains" )
 , mongoose = require( 'mongoose' );
-snvs.addSNVsFromFile( argv.db_name, argv.group_name || "", argv.sample_list, filepath )
+snvs.addSNVsFromFile( argv.db_name, argv.group_name || "", argv.sample_list, filepath, true )
 	.then(function(){
-		domain.upsertSNVDomains( [ argv.db_name ], function(err){
-			if (err) console.log(err)
-			
-			// Close up
-			mongoose.disconnect();
-
-		});
+		mongoose.disconnect();
 	});
 

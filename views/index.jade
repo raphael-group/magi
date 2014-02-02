@@ -40,34 +40,46 @@ block body
         a(href="/upload") Upload your own.
         br
         br
+        -var seenStandard = false;
+        -var seenUser = false;
         -for (var i in groups)
           -var group = groups[i];
+          //- Create a horizontal break if this is the first standard/user dataset
+          -if (group.groupClass == "standard" && !seenStandard)
+            - seenStandard = true;
+            hr
+            h4 Provided datasets
+          -if (group.groupClass == "user" && !seenUser)
+            - seenUser = true;
+            hr
+            h4 Your datasets
+
+          // Determine whether the datasets are part of a group
           - if (group.name != "")
             - groupClass = "groupedClass"
-
-            input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{group.id}', this.checked );")
-            h5(onclick="toggleGroup(this, '#{group.id}')", style="cursor:pointer") #{group.name} &nbsp;
+            input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{i}', this.checked );")
+            h5(onclick="toggleGroup(this, '#{i}')", style="cursor:pointer") #{group.name} &nbsp;
               span(class="glyphicon glyphicon-chevron-down", style="font-size:80%")
 
           - else groupClass = "ungroupedClass"
 
-
-          ul(class="#{groupClass} db-group", id="group-#{group.id}")
-            -for (var j in groups[i].dbs)
-              -var db = groups[i].dbs[j];
+          //- Output each dataset group as a list of checkboxes
+          ul(class="#{groupClass} db-group", id="group-#{i}")
+            -for (var j in group.dbs)
+              -var db = group.dbs[j];
               li
                 label
                   //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
                   //- dataset name with a non-letter (which would break HTML rules)
-                  input(type="checkbox", name="db-#{db._id}", class="group-#{group.id}-checkbox group-checkbox")
-                | &nbsp; #{db.title} &nbsp;
+                  input(type="checkbox", name="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
+                | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
           br
 
       br(style="clear:both")
 
   hr()
   div(id="footer", class="text-left")
-    p(style="text-align:center") Updated: January 4th, 2014
+    p(style="text-align:center") Updated: February 2nd, 2014
 
   script(src='components/jquery/jquery.min.js')
   script(src='components/jquery-form/jquery.form.js')

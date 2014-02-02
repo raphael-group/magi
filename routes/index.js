@@ -5,17 +5,35 @@ var Dataset  = require( "../model/datasets" )
 , path = require('path');
 
 exports.index = function index(req, res){
-	Dataset.datasetGroups(function(err, groups){
+	console.log('/index')
+	Dataset.datasetGroups({is_standard: true}, function(err, standardGroups){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
 
-		// Render index page
-		res.render('index', { groups: groups });
+		// Append the groupClass standard to each group
+		standardGroups.forEach(function(g){ g.groupClass = "standard"; })
 
+		// Load the user's datasets (if necessary)
+		if (req.user){
+			Dataset.datasetGroups({user_id: req.user._id}, function(err, userGroups){
+				// Throw error (if necessary)
+				if (err) throw new Error(err);
+				
+				// Append the groupClass standard to each group
+				userGroups.forEach(function(g){ g.groupClass = "user"; });
+				
+				res.render('index', { user: req.user, groups: standardGroups.concat(userGroups) });
+			});
+		}
+		else{
+			res.render('index', { user: req.user, groups: standardGroups });
+		}
 	});
 }
 
 exports.uploadGeneset = function uploadGeneset(req, res){
+	console.log('/upload/geneset')
+
 	// parse a file upload
 	var form = new formidable.IncomingForm({
 		uploadDir: path.normalize(__dirname + '/../tmp'),
@@ -66,12 +84,14 @@ exports.queryhandler = function queryhandler(req, res){
 }
 
 exports.view  = function view(req, res){
-	res.render('view');
+	console.log('view')
+	res.render('view', {user: req.user});
 }
 
 
 exports.queryError  = function queryError(req, res){
-	res.render('query-error');
+	console.log('query-error')
+	res.render('query-error', {user: req.user});
 }
 
 exports.partials =  function partials(req, res){
@@ -81,13 +101,33 @@ exports.partials =  function partials(req, res){
 }
 
 // Uploading datasets
-exports.upload  = function view(req, res){
-	res.render('upload');
+exports.upload  = function upload(req, res){
+	console.log('upload')
+	res.render('upload', {user: req.user});
 }
 
 
-exports.uploadDataset = function view(req, res){
-	console.log("UPLOADING DATASET...")
+exports.deleteDataset = function deleteDataset(req, res){
+	console.log('/delete/dataset')
+
+	// Parse params
+	console.log(req.query)
+	var dataset_id = req.query.did || "";
+
+	// Construct the query
+	var query = {user_id: req.user._id, _id: dataset_id };
+
+	Dataset.removeDataset(query, function(err){
+		if (err){
+			throw new Error(err);
+		}
+		res.redirect('/account')
+	})
+
+
+}
+
+exports.uploadDataset = function uploadDataset(req, res){
 	// parse a file upload
 	var form = new formidable.IncomingForm({
 		uploadDir: path.normalize(__dirname + '/../tmp'),
@@ -102,9 +142,8 @@ exports.uploadDataset = function view(req, res){
     		group_name = fields.groupName;
 
     	// Pass the files to the parsers
-		Dataset.addSNVsFromFile(dataset, group_name, samples_file, snv_file)
+		Dataset.addSNVsFromFile(dataset, group_name, samples_file, snv_file, false, req.user._id)
 			.then(function(){
-				console.log("\t- REMOVING TMP FILES.")
 		    	// Once the parsers have finished, destroy the tmp files
 				fs.unlink(snv_file, function (err) {
 					if (err) throw err;
@@ -115,7 +154,6 @@ exports.uploadDataset = function view(req, res){
 				});
 			})
 			.fail(function(){
-				console.log("\t- :-( UPLOAD FAILED )-:")
 				res.send({ status: "Data could not be parsed." });
 			});
 	});

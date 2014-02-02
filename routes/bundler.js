@@ -1,7 +1,8 @@
 // Load models
-var Dataset = require( "../model/datasets" )
-,   PPIs    = require( "../model/ppis" )
-, Domains   = require( "../model/domains" );
+var mongoose = require( 'mongoose' ),
+	Dataset  = require( "../model/datasets" ),
+	PPIs     = require( "../model/ppis" ),
+	Domains  = require( "../model/domains" );
 
 // List of inactivating mutation types
 var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
@@ -29,13 +30,15 @@ exports.viewData = function getViewData(req, res){
 			return total + dataset.samples.length;
 		}, 0);
 
-		var dataset_names = datasets.map(function(d){ return d.title; });
+		// Create a map of dataset names to IDs
+		var datasetNames = {};
+		datasets.forEach(function(d){ datasetNames[d._id] = d.title; });
 
-		Dataset.mutGenesList(genes, dataset_names, function(err, mutGenes){
+		Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
 			// Create empty OBjects to store transcript/oncoprint data
-			var M              = {}
-			, transcript_data  = {}
-			, sample2ty        = {};
+			var M = {},
+				transcript_data = {}
+				sample2ty = {};
 
 			// Initialize with genes as keys (in case genes aren't in the data)
 			for (var i in genes){
@@ -57,15 +60,15 @@ exports.viewData = function getViewData(req, res){
 						M[G.gene][s.sample] = ['snv'];
 
 					// Record the sample's dataset
-					sample2ty[s.sample] = G.dataset;
+					sample2ty[s.sample] = datasetNames[G.dataset_id];
 				});
 
 				for (t in G.snvs){
 					// Add transcript if it's not present
 					if (!(t in transcript_data[G.gene])){
-						transcript_data[G.gene][t]        = { mutations: [] };
+						transcript_data[G.gene][t] = { mutations: [] };
 						transcript_data[G.gene][t].length = G.snvs[t].length;
-						transcript_data[G.gene][t].domains = G.snvs[t].domains;	
+						transcript_data[G.gene][t].domains = G.snvs[t].domains || {};	
 					}
 					var trsData = transcript_data[G.gene][t]; // transcript data
 					

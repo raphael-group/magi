@@ -35,7 +35,7 @@ $(document).ready(function() {
             status('Please choose an SNV file.', warningClasses);
             return false;
         }
-        else if (snvFile.size > 1000000){
+        else if (snvFile.size > 10000000){
             status('SNV file is too large. Please upload a smaller SNV file.', warningClasses);
             return false;
         }

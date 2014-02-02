@@ -1,13 +1,13 @@
 {
-    "name": "cgat",
-    "version": "0.0.1",
-    "dependencies": {
-        "d3": "3",
-        "bootstrap": "3.x",
-        "angular": "1.2.x",
-        "angular-route": "1.2.x",
-        "showdown": "0.3.x",
-        "jquery-form": "3.x",
-        "gd3": "latest"
-    }
+  "name": "cgat",
+  "version": "0.0.1",
+  "dependencies": {
+    "d3": "3",
+    "bootstrap": "3.x",
+    "angular": "1.2.x",
+    "angular-route": "1.2.x",
+    "showdown": "0.3.x",
+    "jquery-form": "3.x",
+    "gd3": "latest"
+  }
 }

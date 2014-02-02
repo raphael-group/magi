@@ -7,6 +7,7 @@
     "npm": "1.2.x"
   },
   "scripts": {
+    "start": "node server",
     "postinstall": "bower install"
   },
   "dependencies": {
@@ -15,7 +16,10 @@
     "mongoose": "latest",
     "bower": "latest",
     "q": "latest",
-    "formidable": "latest"
+    "formidable": "latest",
+    "passport": "latest",
+    "passport-google-oauth": "latest",
+    "moment": "latest"
   },
   "repository": {
     "type": "git"

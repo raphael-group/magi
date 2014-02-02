@@ -1,11 +1,11 @@
 // Import required modules
 var mongoose = require( 'mongoose' );
+var Domain  = require( "./domains" );
 
 // Create schemas to hold the SNVs
 var MutGeneSchema = new mongoose.Schema({
 	gene: {type: String, required: true},
-	dataset: { type: String, required: true},
-	group: { type: String, required: true},
+	dataset_id: { type: mongoose.Schema.Types.ObjectId, required: true},
 	mutated_samples: { type: {}, required: true},
 	snvs: { type: {}, required: false},
 	cnas: { type: {}, required: false},
@@ -18,29 +18,21 @@ var DatasetSchema = new mongoose.Schema({
 	samples: { type: [String], required: true },
 	group: { type: String, required: false},
 	updated_at: { type: Date, default: Date.now, required: true },
-});
-
-var UserDatasetSchema = new mongoose.Schema({
-	title: { type: String, required: true },
-	samples: { type: [String], required: true },
-	group: { type: String, required: false},
-	updated_at: { type: Date, default: Date.now, required: true },
+	created_at: { type: Date, default: Date.now, required: true },
+	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
+	is_standard: { type: Boolean, default: false, required: true }
 });
 
 mongoose.model( 'Dataset', DatasetSchema );
-mongoose.model( 'UserDataset', DatasetSchema );
 mongoose.model( 'MutGene', MutGeneSchema );
 
-// List all the titles and names of the datasets
-exports.datasetTitles = function datasetlist(callback){
+// List the datasets by group
+exports.datasetGroups = function datasetgroups(query, callback){
 	var Dataset = mongoose.model( 'Dataset' );
-	Dataset.find({}, 'title', {sort: {title: 1} }, callback);
-}
 
-exports.datasetGroups = function datasetlist(callback){
-	var Dataset = mongoose.model( 'Dataset' );
 	Dataset.aggregate(
-		{$group: {_id: '$group', titles: { $push: {title: '$title', _id: '$_id'} } }},
+		{ $match: query },
+		{$group: {_id: '$group', dbs: { $push: {title: '$title', _id: '$_id', samples: '$samples', updated_at: '$updated_at'} } }},
 		{$sort: {_id: -1}}, // sort descending by group name
 		function(err, res){
 			// Handle error (if necessary)
@@ -49,8 +41,9 @@ exports.datasetGroups = function datasetlist(callback){
 			// Parse result into groups
 			var groups = [];
 			for (var i = 0; i < res.length; i++){
-				var dbs = res[i].titles.sort(function(db){ return db.title; });
-				groups.push( {name: res[i]._id, dbs: dbs, id: i } );
+				var dbs = res[i].dbs.sort(function(db1, db2){ return db1.title > db2.title; });
+				dbs.forEach(function(db){ db.num_samples = db.samples.length; db.samples = null; })
+				groups.push( {name: res[i]._id, dbs: dbs } );
 			}
 
 			// Execute callback
@@ -64,18 +57,18 @@ exports.datasetlist = function datasetlist(dataset_ids, callback){
 	Dataset.find({_id: {$in: dataset_ids}}, callback);
 }
 
-exports.removeDataset = function removeDataset(dataset, group_name, callback){
+exports.removeDataset = function removeDataset(query, callback){
 	// Load the modules
 	var Dataset = mongoose.model( 'Dataset' ),
 		MutGene = mongoose.model( 'MutGene' );
 
 	// Remove the dataset, then remove all mutgenes from that dataset
-	Dataset.remove({title: dataset, group: group_name}, function(err){
+	Dataset.remove(query, function(err){
 		// Throw an error if it occurred
 		if (err) throw new Error(err);
 
 		// Otherwise, remove all mutgenes with 
-		MutGene.remove({dataset: dataset, group: group_name}, function(err){
+		MutGene.remove({dataset_id: query.dataset_id}, function(err){
 			// Throw an error if it occurred
 			if (err) throw new Error(err);
 
@@ -85,10 +78,10 @@ exports.removeDataset = function removeDataset(dataset, group_name, callback){
 	});
 }
 
-// A function for listing all the interactions for a particular gene
-exports.mutGenesList = function snvlist(genes, datasets, callback){
-	var MutGene = mongoose.model( 'MutGene' )
-	, query     = { gene: {$in: genes}, dataset: {$in: datasets} };
+// A function for listing all the SNVs for a set of genes
+exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
+	var MutGene = mongoose.model( 'MutGene' ),
+		query = { gene: {$in: genes}, dataset_id: {$in: dataset_ids} };
 
 	MutGene.find(query, function(err, mutGenes){
  		if(err) console.log(err);
@@ -98,13 +91,13 @@ exports.mutGenesList = function snvlist(genes, datasets, callback){
 }// end exports.mutGenesList
 
 // Loads a SNVs into the database
-exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file){
+exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file, is_standard, user_id){
 	// Load required modules
-	var fs    = require( 'fs' )
-	, Dataset = mongoose.model( 'Dataset' )
-	, MutGene = mongoose.model( 'MutGene' )
-	, domain  = require( "./domains" )
-	, Q       = require( 'q' );
+	var fs    = require( 'fs' ),
+		Dataset = mongoose.model( 'Dataset' ),
+		MutGene = mongoose.model( 'MutGene' ),
+		domain  = require( "./domains" ),
+		Q       = require( 'q' );
 
 	// Read in the sample file asynchronously
 	var samples;
@@ -205,8 +198,7 @@ exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file)
 
 				// Crate the object we want to insert
 				var Gene = { gene: g, mutated_samples: mutated_samples,
-					         snvs: {}, cnas: {}, dataset: dataset,
-					         group: group_name };
+					         snvs: {}, cnas: {} };
 				
 				for (var t in gene2mutations[g])
 					Gene.snvs[t] = gene2mutations[g][t];
@@ -216,9 +208,12 @@ exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file)
 
 
 			// Formulate queries and updates for the datbase
-			var query = { title: dataset, group: group_name },
+			var query = { title: dataset, group: group_name, is_standard: is_standard },
 				newDataset  = { title: dataset, samples: samples, // samples from input sample list
-						  		group: group_name, updated_at: Date.now() };
+						  		group: group_name, updated_at: Date.now(),
+						  		is_standard: is_standard, user_id: user_id };
+
+			if (user_id) query.user_id = user_id;
 
 			// Find the dataset 
 			Dataset.remove(query, function(err){
@@ -227,14 +222,25 @@ exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file)
 				Dataset.create( newDataset, function(err, newDataset){
 					if (err) throw new Error(err);
 
+					// Update the MutGene data to include the dataset ID
+					mutGenes.forEach(function(g){ g.dataset_id = newDataset._id; })
+
 					// Remove any previous MutGenes associated with the dataset
-					MutGene.remove({dataset: dataset, group: group_name}, function(err){
+					MutGene.remove({dataset_id: newDataset._id}, function(err){
 						if (err) throw new Error(err);
 		
 						// Finally, create mutated genes
 						MutGene.create(mutGenes, function(err, res){
 							if (err) throw new Error(err);
 							d.resolve();
+		
+							/*************************************/
+							// Uncomment below to add back protein domains
+							// Add SNV domains to all the new SNVs
+							// Domain.upsertSNVDomains([newDataset._id], function(err){
+							// 	if (err) throw new Error(err);
+							// 	d.resolve();
+							// });
 						});
 					});
 				});

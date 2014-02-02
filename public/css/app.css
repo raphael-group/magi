@@ -17,9 +17,9 @@ h1, h2, h3, h4, h5{
 div.page-header{padding:0;margin:0;border:0;}
 
 /* Styling index page (choosing genes or datasets) */
-div#db-chooser{width:20%;float:right}
+div#db-chooser{width:30%;float:right}
 div#gene-chooser{width:40%;float:left}
-div#input-chooser{margin-left:25%;margin-right:25%;}
+div#input-chooser{margin-left:15%;margin-right:15%;}
 div#splash-img{
   background: #333;
   height: 400px;
@@ -55,6 +55,11 @@ ul.ungroupedClass{
 ul.db-group{
 	list-style-type: none;
 }
+
+
+/* Account page */
+table tr.even td{ background:#fff;}
+table tr.odd td, table tr.odd th{ background:rgb(249, 249, 249);}
 
 /* Styling for visualizations */
 div.half-page-view{ width:50%;padding:5px; }

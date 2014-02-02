@@ -39,14 +39,15 @@ function domainDBList(callback){
 exports.domainDBList = domainDBList;
 
 
-exports.upsertSNVDomains = function upsertSNVDomains(datasets, callback){
+exports.upsertSNVDomains = function upsertSNVDomains(dataset_ids, callback){
 	// Load required models and modules
 	var MutGene = mongoose.model( 'MutGene' )
 	, Domain    = mongoose.model( 'Domain' )
 	, Q         = require( 'q' );
 
 	// Find all relevant datasets and update their transcripts
-	MutGene.find({dataset: { $in: datasets }}, function (err, mut_genes) {
+	
+	MutGene.find({dataset_id: { $in: dataset_ids }}, function (err, mut_genes) {
   		if(err) throw new Error(err);
 
   		function updateSNVs(G){
