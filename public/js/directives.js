@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('gd3.directives', []).
+angular.module('cgat.directives', []).
   // Render markdown in the HTML page
   directive("markdown", function ($compile, $http) {
     return {

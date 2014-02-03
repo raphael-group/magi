@@ -1,36 +1,123 @@
-extends header
+extends layout
 block body
-    div(class="container")
+    div(class="container", id="upload")
         h3 Upload your mutation data.
-        div(class="caption") [ Instructions for uploading data ]
-        br
+        p(class="caption")
+            | Query your own mutation data by uploading it to our servers.
+            | Provide a name, an optional group, and files containing the SNVs and samples in your dataset.
+            | After uploading your data, you will be able to query it from the&nbsp;
+            a(href="/") home page
+            | . You can manage all your uploaded datasets from your&nbsp;
+            a(href="/account") account page.
         form(method="post", action="/", role="form", id="data-upload-form")
             label
-              | Dataset name.
+                | Dataset name.
             input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
             br
             label
-              | Group name (optional).
+                | Group name (optional).
             input(type="text", id="groupName", name="groupName", class="form-control", placeholder="Enter group name (optional).")
             br
-            label
-              | Single nucleotide variants. &nbsp;
+            label(onclick="")
+                | Single nucleotide variants (
+                a(href="/upload#snvs-format") format
+                | ).
             input(type="file", id="SNVs", name="SNVs")
             br
             label
-              | Tested samples. &nbsp;
+                | Tested samples (
+                a(href="/upload#samples-format") format
+                | ).
+
 
             input(type="file", id="testedSamples", name="testedSamples")
             br
             br
-            button(type="submit", id="submit", class="btn btn-default") Submit
+            button(type="submit", id="submit", class="btn btn-default") Upload
             br
             br
             div(id="status")
+        hr
+        h3 File formats
+        | The input files for CGAT are all text (.txt) or tab-separated (.tsv) files.
+        br
+        br
+        a(name="snvs-format")
+        div(id="snvs-format")
+            h4 Single nucleotide variant (SNV) file format.
+            p(class="caption")
+                | The SNV file is a tab-separated file (*.tsv) that includes all SNVs for a dataset.
+                | Each row contains the data for a single SNV that occurs in one gene in one particular sample.
+                | The table below shows an example row.
+                | The columns whose names are starred are required.
+                | Missing data should be replaced with '--'.
+                | Rows beginning with '#' will be ignored.
+            table(class="table table-bordered table-striped")
+                tr
+                    th Index
+                    th Name (*=required)
+                    th Example
+                    th Description
+                tr
+                    td 1
+                    td Gene*
+                    td PIK3CA
+                    td Gene name.
+                tr
+                    td 2
+                    td Sample*
+                    td TCGA-FD-A3B6
+                    td Sample ID.
+                tr
+                    td 3
+                    td Transcript
+                    td ENST00000263967
+                    td Transcript ID (RefSeq/ENSEMBL).
+                tr
+                    td 4
+                    td Transcript Length
+                    td 1068
+                    td Length of transcript.
+                tr
+                    td 5
+                    td Locus
+                    td 545
+                    td Position in transcript at which SNV occurred.
+                tr
+                    td 6
+                    td Mutation Type
+                    td Missense_Mutation
+                    td
+                        | Type of mutation that occurred. CGAT understands the following mutation types:
+                        ul
+                            li Nonsense_Mutation
+                            li Frame_Shift_Del
+                            li Frame_Shift_Ins
+                            li Missense_Mutation
+                            li Splice_Site
+                            li In_Frame_Del
+                            li In_Frame_Ins
+                tr
+                    td 7
+                    td Original &nbsp;
+                        abbr(title="Amino Acid") AA
+                    td E
+                    td The amino acid at the locus before the variant occurred.
+                tr
+                    td 8
+                    td New &nbsp;
+                        abbr(title="Amino Acid") AA
+                    td Q
+                    td The amino acid at the locus after the variant occurred.
 
-    hr
-    div(id="footer", class="text-left")
-        p(style="text-align:center") Updated: February 2nd, 2014
+        a(name="samples-format")
+        div(id="samples-format")
+            h4 Sample file format.
+            p(class="caption")
+                | The sample file is a text file (*.txt) that lists all the tested samples for a given dataset.
+                | These samples may or may not have SNVs or CNAs.
+                | Each row lists a single sample ID.
+                | All rows in the data file are included.
 
     script(src='components/jquery/jquery.min.js').
     script(src='components/jquery-form/jquery.form.js')

@@ -14,7 +14,10 @@ h1, h2, h3, h4, h5{
   padding:0;
 }
 
+/* Layout styling */
 div.page-header{padding:0;margin:0;border:0;}
+ul#more-info{list-style-type: none;}
+ul#more-info li{display:inline;padding-left:5px;padding-right:5px;}
 
 /* Styling index page (choosing genes or datasets) */
 div#db-chooser{width:30%;float:right}
@@ -61,11 +64,15 @@ ul.db-group{
 table tr.even td{ background:#fff;}
 table tr.odd td, table tr.odd th{ background:rgb(249, 249, 249);}
 
+/* Upload page */
+div#upload form{ width:40%;}
+
 /* Styling for visualizations */
 div.half-page-view{ width:50%;padding:5px; }
 
 div.half-page-view.leftside{border-right:1px solid #eee;float:left;}
 div.half-page-view.rightside{float:right;}
+
 
 /* Styling for d3 tooltips */
 /* Taken from bootstrap: https://github.com/twitter/bootstrap/blob/master/less/tooltip.less */

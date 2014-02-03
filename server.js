@@ -115,6 +115,10 @@ app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
 // set up the authentication routes
 app.get('/account', ensureAuthenticated, routes.account);
 
+// more information
+app.get('/terms', routes.terms)
+app.get('/contact', routes.contact)
+
 app.get('/auth/google',
 	passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile',
                                             'https://www.googleapis.com/auth/userinfo.email'] }),

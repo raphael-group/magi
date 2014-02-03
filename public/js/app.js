@@ -2,11 +2,11 @@
 
 // Declare app level module which depends on controllers, services, and directives
 
-angular.module('gd3', [
+angular.module('cgat', [
 	'ngRoute',
-	'gd3.controllers',
-	'gd3.services',
-	'gd3.directives', 
+	'cgat.controllers',
+	'cgat.services',
+	'cgat.directives', 
 	'HashBangURLs'
 ]).
 config(function ($routeProvider) {

@@ -1,7 +1,7 @@
 'use strict';
 
 /* Services */
-angular.module('gd3.services', [])
+angular.module('cgat.services', [])
 	.value('version', '1.0')
 	.service('styling', function($http) {
 		var styles = null;

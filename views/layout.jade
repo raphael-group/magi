@@ -1,19 +1,17 @@
 doctype html
-html(ng-app="gd3")
+html(ng-app="cgat")
 	head
 		meta(charset='utf8')
 		link(rel="icon", type="image/png", href="img/favicon.png")
 		meta(name="fragment", content="!")
 		base(href='/view')
-		title gd3
+		title CGAT
 		link(rel='stylesheet', href='components/bootstrap/dist/css/bootstrap.min.css')
 		link(rel='stylesheet', href='css/app.css')
 		link(rel='stylesheet', href='css/elusive-webfont.css')
 	body()
 		div(class="container-fluid", id="header", role="navigation")
 			div(class="page-header")
-				h1
-					a(href="/") gd3
 				div(style="float:right", id="login")
 					//- Ask the user to login or show his/her name
 					- if (user)
@@ -23,5 +21,20 @@ html(ng-app="gd3")
 						a(href="/logout") Logout
 					- else 
 						a(href="/auth/Google") Login via Google
+				h1
+					a(href="/") CGAT
 		hr
-	block body
+
+		block body
+		
+		hr
+		div(id="footer", class="container")
+			p(class="col-lg-4 text-left") Updated: February 3rd, 2014
+			p(class="col-lg-4 text-center") Copyright 2014.
+			ul(id="more-info", class="col-lg-4 text-right")
+				li
+					a(href="/terms", target="_new") Terms
+				li
+					a(href="/contact") Contact
+				li
+					a(href="/support") Support

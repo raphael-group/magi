@@ -1,7 +1,7 @@
 'use strict';
 
 /* Controllers */
-angular.module('gd3.controllers', []).
+angular.module('cgat.controllers', []).
   controller('AppCtrl', function($scope, $location, styling){
         $scope.getClass = function(path) {
             var loc  = $location.path();

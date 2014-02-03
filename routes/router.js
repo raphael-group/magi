@@ -1,11 +1,16 @@
 // Load the individual routes
-var auth = require( './auth' ),
+var about = require( './about' ),
+	auth = require( './auth' ),
 	bundler = require( './bundler' ),
 	index = require( './index' ),
 	upload = require( './upload' ),
 	view = require( './view' );
 
 //*  Export the routes in each subrouter *//
+
+// About
+exports.terms = about.terms;
+exports.contact = about.contact;
 
 // Authentication routes
 exports.account = auth.account;

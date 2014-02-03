@@ -1,10 +1,6 @@
-extends header
+extends layout
 block body
     div(class="container-fluid", ng-view)
-
-    hr
-    div(id="footer", class="text-left")
-        p(style="text-align:center") Updated: February 2nd, 2014
 
     script(src='components/angular/angular.min.js').
     script(src='components/angular-route/angular-route.min.js').
@@ -21,3 +17,4 @@ block body
     script(src='components/gd3/js/oncoprinter.js').
     script(src='components/gd3/js/subnetwork.js').
     script(src='js/d3-tooltip.js').
+
