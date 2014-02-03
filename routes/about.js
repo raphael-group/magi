@@ -9,3 +9,9 @@ exports.contact  = function contact(req, res){
 	console.log('/contact')
 	res.render('contact', {user: req.user});
 }
+
+// Route for the support page
+exports.support  = function support(req, res){
+	console.log('/support')
+	res.render('support', {user: req.user});
+}

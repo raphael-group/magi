@@ -9,8 +9,9 @@ var about = require( './about' ),
 //*  Export the routes in each subrouter *//
 
 // About
-exports.terms = about.terms;
+exports.terms   = about.terms;
 exports.contact = about.contact;
+exports.support = about.support;
 
 // Authentication routes
 exports.account = auth.account;
@@ -31,6 +32,6 @@ exports.uploadDataset = upload.uploadDataset;
 exports.deleteDataset = upload.deleteDataset;
 
 // Routes for the main view
-exports.view = view.view;
-exports.partials = view.partials;
+exports.view       = view.view;
+exports.partials   = view.partials;
 exports.queryError = view.queryError;

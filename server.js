@@ -112,12 +112,16 @@ app.get('/upload', ensureAuthenticated, routes.upload)
 app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset)
 app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
 
-// set up the authentication routes
-app.get('/account', ensureAuthenticated, routes.account);
 
 // more information
 app.get('/terms', routes.terms)
 app.get('/contact', routes.contact)
+app.get('/support', routes.support)
+
+// set up the authentication routes
+app.get('/login', routes.login);
+app.get('/logout', routes.logout);
+app.get('/account', ensureAuthenticated, routes.account);
 
 app.get('/auth/google',
 	passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile',
@@ -129,10 +133,6 @@ app.get('/auth/google/callback',
 		res.redirect('/account');
 	}
 );
-
-app.get('/login', routes.login);
-
-app.get('/logout', routes.logout);
 
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);
