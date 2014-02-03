@@ -1,3 +1,4 @@
+// Load mongoose and all models to register their schemas
 var mongoose = require( 'mongoose' );
 
 // Create dbURI

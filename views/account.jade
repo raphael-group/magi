@@ -1,0 +1,45 @@
+extends header
+block body
+	div(class="container")
+		h3
+			| Your account. &nbsp;
+			small Manage your settings and uploaded datasets here.
+		hr
+		h4 Account information
+		b Name: &nbsp;
+		| #{user.name}
+		br
+		b Email: &nbsp;
+		| #{user.email}
+		br
+		br
+		- if (groups.length != 0)
+			b Datasets
+			a(href="/upload", style="float:right") Upload a new dataset.
+			table(class="table table-bordered table-condensed")
+				tr(class="odd")
+					th Group
+					th Name
+					th Number of samples
+					th Created on
+					th Last updated
+					th Remove
+				-for(var i = 0; i < groups.length; i++)
+					-var group = groups[i];
+					-var rowClass = i % 2 == 0 ? 'even' : 'odd';
+					-for (var j in group.dbs)
+						-var db = group.dbs[j];
+						tr(class="#{ rowClass }")
+							td
+								- if (j == 0)
+									| #{group.name}
+							td #{db.title}
+							td #{db.num_samples}
+							td #{ moment(db.created_at).format("MM/DD/YYYY") }
+							td #{ moment(db.updated_at).fromNow() }
+							td
+								a(href="/delete/dataset?did=#{db._id}", title="Remove dataset")
+									span(class="glyphicon glyphicon-trash")
+		- else
+			| You have not uploaded any datasets. &nbsp;
+			a(href="/upload") Upload your first dataset.

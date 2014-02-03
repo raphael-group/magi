@@ -1,9 +1,10 @@
-// Main routes
-var Dataset  = require( "../model/datasets" )
-, formidable = require('formidable')
-, fs = require('fs')
-, path = require('path');
+// Load required modules
+var formidable = require('formidable'),
+	fs = require('fs'),
+	path = require('path'),
+	Dataset  = require( "../model/datasets" );
 
+// Render's home page
 exports.index = function index(req, res){
 	console.log('/index')
 	Dataset.datasetGroups({is_standard: true}, function(err, standardGroups){
@@ -31,31 +32,7 @@ exports.index = function index(req, res){
 	});
 }
 
-exports.uploadGeneset = function uploadGeneset(req, res){
-	console.log('/upload/geneset')
-
-	// parse a file upload
-	var form = new formidable.IncomingForm({
-		uploadDir: path.normalize(__dirname + '/../tmp'),
-		keepExtensions: true
-    });
-
-    form.parse(req, function(err, fields, files) {
-		// The next function call, and the require of 'fs' above, are the only
-		// changes I made from the sample code on the formidable github
-		// 
-		// This simply reads the file from the tempfile path and echoes back
-		// the contents to the response.
-		fs.readFile(files.geneSet.path, 'utf-8', function (err, genes) {
-			if (err) console.log(err)
-			fs.unlink(files.geneSet.path, function (err) {
-				if (err) throw err;
-				res.send({ genes: genes });
-			});
-		});
-	});
-}
-
+// Parse a user's POST to properly format the view
 exports.queryhandler = function queryhandler(req, res){
 	// Parse params
 	var genes = req.body.genes || "";
@@ -83,51 +60,11 @@ exports.queryhandler = function queryhandler(req, res){
 
 }
 
-exports.view  = function view(req, res){
-	console.log('view')
-	res.render('view', {user: req.user});
-}
+// Performs client-side file upload so users can upload a list of genes
+// (instead of entering them manually)
+exports.uploadGeneset = function uploadGeneset(req, res){
+	console.log('/upload/geneset')
 
-
-exports.queryError  = function queryError(req, res){
-	console.log('query-error')
-	res.render('query-error', {user: req.user});
-}
-
-exports.partials =  function partials(req, res){
-	console.log( req.params.name );
-	var name = req.params.name;
-	res.render('partials/' + name);
-}
-
-// Uploading datasets
-exports.upload  = function upload(req, res){
-	console.log('upload')
-	res.render('upload', {user: req.user});
-}
-
-
-exports.deleteDataset = function deleteDataset(req, res){
-	console.log('/delete/dataset')
-
-	// Parse params
-	console.log(req.query)
-	var dataset_id = req.query.did || "";
-
-	// Construct the query
-	var query = {user_id: req.user._id, _id: dataset_id };
-
-	Dataset.removeDataset(query, function(err){
-		if (err){
-			throw new Error(err);
-		}
-		res.redirect('/account')
-	})
-
-
-}
-
-exports.uploadDataset = function uploadDataset(req, res){
 	// parse a file upload
 	var form = new formidable.IncomingForm({
 		uploadDir: path.normalize(__dirname + '/../tmp'),
@@ -135,30 +72,17 @@ exports.uploadDataset = function uploadDataset(req, res){
     });
 
     form.parse(req, function(err, fields, files) {
-    	// Parse the form variables into shorter handles
-    	var snv_file = files.SNVs.path,
-    		samples_file = files.testedSamples.path,
-    		dataset = fields.dataset,
-    		group_name = fields.groupName;
-
-    	// Pass the files to the parsers
-		Dataset.addSNVsFromFile(dataset, group_name, samples_file, snv_file, false, req.user._id)
-			.then(function(){
-		    	// Once the parsers have finished, destroy the tmp files
-				fs.unlink(snv_file, function (err) {
-					if (err) throw err;
-					fs.unlink(samples_file, function (err) {
-						if (err) throw err;
-						res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to query your dataset." });
-					});
-				});
-			})
-			.fail(function(){
-				res.send({ status: "Data could not be parsed." });
+		// The next function call, and the require of 'fs' above, are the only
+		// changes I made from the sample code on the formidable github
+		// 
+		// This simply reads the file from the tempfile path and echoes back
+		// the contents to the response.
+		fs.readFile(files.geneSet.path, 'utf-8', function (err, genes) {
+			if (err) console.log(err)
+			fs.unlink(files.geneSet.path, function (err) {
+				if (err) throw err;
+				res.send({ genes: genes });
 			});
+		});
 	});
 }
-
-// Subroutes
-exports.bundler = require('./bundler');
-

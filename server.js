@@ -17,11 +17,18 @@ var app = module.exports = express();
 // Use moment for keeping track of times
 app.locals.moment = require('moment');
 
+// Load models to register their schemas
+var user = require( './model/user' ),
+	database = require( './model/datasets' ),
+	domains = require( './model/domains' ),
+	ppis = require( './model/ppis' );
+
 /**
  * Configuration
  */
 // passport
-// serialize and deserialize
+// Serialize/Deserialize the user
+var User = mongoose.model( 'User' );
 passport.serializeUser(function(user, done) {
  	done(null, user.googleId);
 });
@@ -33,14 +40,7 @@ passport.deserializeUser(function(id, done) {
  })
 });
 
-// create a user model
-var User = mongoose.model('User', {
-  googleId: Number,
-  name: String,
-  email: String
-});
-
-// config
+// config passport to use Google OAuth2
 passport.use(new GoogleStrategy({
     clientID: config.google.clientID,
     clientSecret: config.google.clientSecret,
@@ -91,12 +91,10 @@ if (app.get('env') === 'production') {
   // TODO
 };
 
-
-
 /**
  * Routes
  */
- var routes = require( './routes/index' );
+ var routes = require( './routes/router' );
 
 // Index page and query handler
 app.get('/', routes.index);
@@ -105,7 +103,7 @@ app.post('/', routes.queryhandler)
 // gd3 view
 app.get('/view', routes.view)
 app.get('/partials/:name', routes.partials);
-app.get('/data/bundle', routes.bundler.viewData)
+app.get('/data/bundle', routes.viewData)
 app.get('/query-error', routes.queryError)
 
 // Data-/gene set uploads
@@ -115,22 +113,7 @@ app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset)
 app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
 
 // set up the authentication routes
-var Dataset  = require( "./model/datasets" );
-app.get('/account', ensureAuthenticated, function(req, res){
-	User.findOne({ googleId: req.session.passport.user}, function(err, user) {
-		if(err) console.log(err);
-		else {
-			Dataset.datasetGroups({user_id: user._id}, function(err, groups){
-				// Throw error (if necessary)
-				if (err) throw new Error(err);
-
-				// Render index page
-				res.render('account', { user: user, groups: groups });
-
-			});
-		};
-	});
-});
+app.get('/account', ensureAuthenticated, routes.account);
 
 app.get('/auth/google',
 	passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile',
@@ -143,19 +126,18 @@ app.get('/auth/google/callback',
 	}
 );
 
-app.get('/login', function(req, res){
-	if (req.isAuthenticated()) res.redirect('/');
-	else res.render('login')
-});
+app.get('/login', routes.login);
 
-app.get('/logout', function(req, res){
-	req.logout();
-	res.redirect('/');
-});
+app.get('/logout', routes.logout);
 
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);
 
+// Function that tests authentications
+function ensureAuthenticated(req, res, next) {
+	if (req.isAuthenticated()) { return next(); }
+	res.redirect('/login')
+}
 
 /**
  * Start Server
@@ -164,9 +146,3 @@ app.get('*', routes.index);
 http.createServer(app).listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });
-
-// test authentication
-function ensureAuthenticated(req, res, next) {
-	if (req.isAuthenticated()) { return next(); }
-	res.redirect('/login')
-}

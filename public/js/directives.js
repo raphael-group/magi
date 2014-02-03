@@ -83,7 +83,7 @@ angular.module('gd3.directives', []).
         var style = styles.lolliplot;
         for (var attrname in styles.global)
             style[attrname] = styles.global[attrname];
-
+          
         // Draw the transcript with a legend
         vis.datum(data)
           .call(
