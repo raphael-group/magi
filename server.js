@@ -136,7 +136,7 @@ app.get('/auth/google/callback',
 );
 
 // redirect all others to the index (HTML5 history)
-app.get('*', routes.index);
+//app.get('*', routes.index);
 
 // Function that tests authentications
 function ensureAuthenticated(req, res, next) {

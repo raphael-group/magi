@@ -70,7 +70,7 @@ div(ng-controller="ViewCtrl")
 			div(ng-repeat="(transcript_name, transcript) in transcripts")
 				span(class="transcript-name") {{ transcript_name }}
 				//- Selecting protein domain db
-				div(style="float:right;visibility:hidden")
+				div(style="float:right;")
 					input(type="radio", ng-model="domain", value="PFAM")
 					b &nbsp; PFAM &nbsp;
 					input(type="radio", ng-model="domain", value="SMART")
