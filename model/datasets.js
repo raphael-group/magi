@@ -232,15 +232,7 @@ exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file,
 						// Finally, create mutated genes
 						MutGene.create(mutGenes, function(err, res){
 							if (err) throw new Error(err);
-							d.resolve();
-		
-							/*************************************/
-							// Uncomment below to add back protein domains
-							// Add SNV domains to all the new SNVs
-							// Domain.upsertSNVDomains([newDataset._id], function(err){
-							// 	if (err) throw new Error(err);
-							// 	d.resolve();
-							// });
+							d.resolve();		
 						});
 					});
 				});

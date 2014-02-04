@@ -43,10 +43,15 @@ exports.viewData = function getViewData(req, res){
 
 			// Load all the transcripts' domains
 			Domains.domainlist(transcripts, function(err, domains){
-				// Create a map of transcripts to domains
-				var transcript2domains = {};
+				// Create a map of transcripts to domains, and record
+				// all the domain DBs included for these gene sets
+				var transcript2domains = {},
+					domainDBs = {};
 				domains.forEach(function(d){
 					transcript2domains[d.transcript] = d.domains;
+					Object.keys(d.domains).forEach(function(n){
+						domainDBs[n] = true;
+					})
 				});
 
 				// Create empty Objects to store transcript/oncoprint data
@@ -114,7 +119,8 @@ exports.viewData = function getViewData(req, res){
 						var pkg = 	{
 										subnetwork_data: subnetwork_data,
 										oncoprint_data: oncoprint_data,
-										transcript_data: transcript_data
+										transcript_data: transcript_data,
+										domainDBs: Object.keys(domainDBs)
 									};
 						
 						// Send JSON response

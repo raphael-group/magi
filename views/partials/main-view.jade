@@ -71,12 +71,10 @@ div(ng-controller="ViewCtrl")
 				span(class="transcript-name") {{ transcript_name }}
 				//- Selecting protein domain db
 				div(style="float:right;")
-					input(type="radio", ng-model="domain", value="PFAM")
-					b &nbsp; PFAM &nbsp;
-					input(type="radio", ng-model="domain", value="SMART")
-					b &nbsp; SMART &nbsp;
-					input(type="radio", ng-model="domain", value="CD")
-					b &nbsp; Conserved Domain &nbsp;
+					span(ng-repeat="db in domainDBs")
+						input(type="radio", ng-model="$parent.domain", value="{{ db }}")
+						b &nbsp; {{ db }} &nbsp;
+
 				transcript(data='transcript', db='domain')
 
 		hr(style="clear:both;margin:0px;")

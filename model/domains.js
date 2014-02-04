@@ -38,79 +38,6 @@ function domainDBList(callback){
 
 exports.domainDBList = domainDBList;
 
-
-exports.upsertSNVDomains = function upsertSNVDomains(dataset_ids, callback){
-	// Load required models and modules
-	var MutGene = mongoose.model( 'MutGene' )
-	, Domain    = mongoose.model( 'Domain' )
-	, Q         = require( 'q' );
-
-	// Find all relevant datasets and update their transcripts
-	
-	MutGene.find({dataset_id: { $in: dataset_ids }}, function (err, mut_genes) {
-  		if(err) throw new Error(err);
-
-  		function updateSNVs(G){
-  			var d = Q.defer();
-  			var transcripts = Object.keys( G.snvs );
-
-			Domain.find({ transcript: { $in: transcripts } }, function (err, transcriptDomains) {
-				if(err) throw new Error(err);
-				
-				if (transcriptDomains.length > 0){
-					// Map each transcript to its corresponding domains
-					transcriptDomains.forEach(function(td){
-						G.snvs[td.transcript].domains = td.domains;
-					});
-
-					// Mark the SNV's mutations as modified					
-					G.updated_at = Date.now();
-	  				G.markModified('snvs');
-
-	  				G.save(function(err){
-	  					if (err) console.log(err);
-		
-						// We're done here, so resolve the promise
-	  					d.resolve();
-	  				});
-				}
-				// If there are no domains, we can just resolve
-				else{
-					d.resolve();
-				}
-
-			});
-
-			return d.promise;
-
-		}
-
-		// Return an array of promises for all the MutGenes that need updating
-		function updateMutGenes(){
-			var genesWithSNVs = mut_genes.filter(function(G){ return G.snvs; });
-
-			// Update genes if any need updating
-			if (genesWithSNVs.length != 0)
-				return genesWithSNVs.map( updateSNVs);
-
-			// Otherwise we should just return a resolved promise
-			else{
-				var d = Q.defer();
-				d.resolve();
-				return [d.promise];
-			}
-		}
-
-  		// Update the datasets asynchronously one-at-a-time, then execute the callback
-  		return Q.allSettled( updateMutGenes() )
-  				.then(function(){
-  					callback("");
-  				});
-
-	});// end MutGene.find
-
-}
-
 // Loads a set of domains into the database
 exports.addDomainsFromFile = function(filename, callback){
 	// Load required modules
@@ -182,8 +109,8 @@ exports.addDomainsFromFile = function(filename, callback){
 		var DomainDB = mongoose.model( 'DomainDataset' );
 		function saveDomainDBs(){
 			return Q.allSettled(domainDBs.map(function(db){
-					var d = Q.defer()
-					, update = {name: db, updated_at: Date.now()};
+					var d = Q.defer(),
+						update = {name: db, updated_at: Date.now()};
 					DomainDB.findOneAndUpdate({name: db}, update, {upsert: true}, function(err, res){
 						if (err) throw new Error(err);
 						d.resolve();

@@ -21,6 +21,31 @@ $(document).ready(function() {
             return false;
         }
 
+        // Make sure no more than 25 genes are entered
+        var genes = geneList.split("\n").filter(function(g){ return g != ""; });
+        console.log(genes)
+        if (genes.length > 25){
+            status('Please enter <b>at most 25 genes</b> (one per line).', warningClasses);
+            return false;
+        }
+
+        // Make sure there are no duplicated genes
+        var seen = [],
+            duplicates = false;
+        for (var i in genes){
+            if (seen.indexOf(genes[i]) != -1){
+                console.log(seen)
+                duplicates = true;
+                break
+            }
+            seen.push( genes[i] );
+        }
+
+        if (duplicates){
+            status('Please do not enter duplicate genes.', warningClasses);
+            return false;
+        }
+
         // Make sure at least one dataset is checked
         if (numDatasets == 0){
             status('Please check at least one dataset.', warningClasses);
@@ -92,7 +117,7 @@ $(document).ready(function() {
 
     function status(msg, classes) {
         $("#status").attr('class', classes);
-        $('#status').text(msg);
+        $('#status').html(msg);
     }
 });
 

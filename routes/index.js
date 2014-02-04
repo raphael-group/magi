@@ -49,12 +49,13 @@ exports.queryhandler = function queryhandler(req, res){
 		return n.split("db-")[1];
 	});
 
-	// Split genes up
-	genes = genes.replace(/(\r\n|\n|\r)/gm, "-");
+	// Split genes while ignoring blank lines
+	genes = genes.replace(/(\r\n|\n|\r)/gm, "\n");
+	genes = genes.split("\n").filter(function(g){ return g != ""; }).join("-");
 
 	// Make query string
-	var querystring = require( 'querystring' )
-	, query = querystring.stringify( {genes: genes, datasets: datasets.join("-") } );
+	var querystring = require( 'querystring' ),
+		query = querystring.stringify( {genes: genes, datasets: datasets.join("-") } );
 
 	res.redirect('/view#!/?' + query)
 

@@ -34,14 +34,17 @@ angular.module('cgat.controllers', []).
       $scope.subnetwork_data = json.subnetwork_data;
       
       // Lolliplot data
+      $scope.domainDBs = json.domainDBs;
       $scope.gene_transcripts = json.transcript_data;
       $scope.numTranscripts = function(transcripts){ return Object.keys(transcripts).length; };
 
       // Check if there is any data
       var noMutations = Object.keys(json.oncoprint_data.sample2ty).length == 0,
           noEdges = json.subnetwork_data.edges.length == 0;
+      
       $scope.noData = noMutations && noEdges;
       $scope.genes = genes.split("-").join(", ");
       $scope.datasets = dbs.split("-").join(", ");
+    
     });
   });
