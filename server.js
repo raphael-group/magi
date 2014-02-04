@@ -117,6 +117,7 @@ app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
 app.get('/terms', routes.terms)
 app.get('/contact', routes.contact)
 app.get('/support', routes.support)
+app.get('/privacy', routes.privacy)
 
 // set up the authentication routes
 app.get('/login', routes.login);

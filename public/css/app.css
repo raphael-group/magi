@@ -73,6 +73,9 @@ div.half-page-view{ width:50%;padding:5px; }
 div.half-page-view.leftside{border-right:1px solid #eee;float:left;}
 div.half-page-view.rightside{float:right;}
 
+/* Contact page */
+address{ margin-left:15px;width:350px }
+address img{ float:right; }
 
 /* Styling for d3 tooltips */
 /* Taken from bootstrap: https://github.com/twitter/bootstrap/blob/master/less/tooltip.less */

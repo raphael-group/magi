@@ -15,3 +15,9 @@ exports.support  = function support(req, res){
 	console.log('/support')
 	res.render('support', {user: req.user});
 }
+
+// Route for the privacy page
+exports.privacy  = function privacy(req, res){
+	console.log('/privacy')
+	res.render('privacy', {user: req.user});
+}

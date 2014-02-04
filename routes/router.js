@@ -12,6 +12,7 @@ var about = require( './about' ),
 exports.terms   = about.terms;
 exports.contact = about.contact;
 exports.support = about.support;
+exports.privacy = about.privacy;
 
 // Authentication routes
 exports.account = auth.account;
