@@ -19,24 +19,24 @@ html(ng-app="cgat")
 						a(href="/account") #{user.name}
 						| &nbsp; | &nbsp;
 						a(href="/logout") Logout
-					- else 
+					- else
 						a(href="/auth/Google") Login via Google
 				h1
-					a(href="/") CGAT
-		hr
+					a(href="/")
+						img(src="img/cgatTop.svg", id="small-logo")
 
 		block body
-		
+
 		hr
 		div(id="footer", class="container")
 			p(class="col-lg-4 text-left") Updated: February 4th, 2014
 			p(class="col-lg-4 text-center") Copyright 2014.
 			ul(id="more-info", class="col-lg-4 text-right")
 				li
-					a(href="/terms", target="_new") Terms					
+					a(href="/terms", target="_new") Terms
 				li
 					a(href="/privacy", target="_new") Privacy
-					
+
 				li
 					a(href="/contact") Contact
 				li
