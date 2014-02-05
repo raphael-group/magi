@@ -25,6 +25,9 @@ div#header{
   margin:0;
   padding:0 15px;
 }
+div#login{
+  margin-top:6px;
+}
 div.page-header{
   height: 25px;
   padding:0;margin:0;border:0;
@@ -41,11 +44,13 @@ img#small-logo {
   padding:0;
 }
 div#splash-img{
-  background: #333;
+  background-image: url('../img/banner.png');
+  background-position: center;
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
+  height: 250px;
   margin-bottom: 60px;
-  width: 1170px;
+  max-width: 1170px;
 }
 div#splash-txt{
   margin: 0 auto;
