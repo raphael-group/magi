@@ -3,12 +3,13 @@ block body
   div(class="container")
     img(src="img/cgat.svg", id="splash-logo")
     h1(id="splash-header") Cancer Genomics Analysis Tool
+    div(id="splash-img")
+      img(src="img/banner.png")
     div(id="splash-txt")
       p CGAT is a tool for exploring and analyzing gene sets that may be
         | associated with cancer.
       p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
         | <a href="http://vrl.cs.brown.edu/">Visualization Research Lab</a> at Brown University.
-    div(id="splash-img")
 
   div(class="container-fluid", id="input-chooser")
     form(method="post", action="/", role="form", id="query-form")
