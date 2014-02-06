@@ -84,10 +84,13 @@ app.set('view engine', 'jade');
 app.use(express.compress());
 app.use(express.logger('dev'));
 app.use(express.cookieParser());
+app.use(express.cookieSession({
+	secret: 'gd3_for_president!',
+	cookie: { maxAge: 60 * 60 * 1000 * 24 } // store for three days
+}));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
-app.use(express.session({ secret: 'gd3_for_president' }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
