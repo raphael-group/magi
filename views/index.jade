@@ -76,8 +76,110 @@ block body
                 | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
           br
 
-      br(style="clear:both")
-
+      hr(style="clear:both")
+      div(id="component-descriptions", style="width:700px")
+        h3 Components
+        br
+        a(name="oncoprint")
+        h4
+          a(href="/#oncoprint") #
+          | &nbsp; Oncoprint
+        br
+        div(class="text-center")
+          img(src="img/oncoprint-multi-cancer.gif")
+          br
+          i Oncoprint of multiple cancer types.
+        br
+        div(class="text-center")
+          img(src="img/oncoprint-single-cancer.gif")
+          br
+          i Oncoprint of a single cancer type.
+        br
+        | Oncoprints show the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns).
+        | Each cell in the oncoprint contains shape, which represents whether or not a gene is mutated in the given sample.
+        | Oncoprints are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
+        | For a cohort with multiple cancer types each cell is colored by the cancer type of the sample,
+        | while for a cohort with one cancer type each cell is colored by whether or not the gene is the only
+        | gene to harbor a mutation in that sample.
+        br
+        br
+        | Mutation datasets are provided, or you can&nbsp;
+        a(href="/upload") upload your own
+        | .
+        br
+        br
+        a(name="subnetwork")
+        h4
+          a(href="/#oncoprint") #
+          | &nbsp; Subnetwork
+        br
+        div(class="text-center")
+          img(src="img/subnetwork.gif")
+          br
+          i Subnetwork of five genes with edges from three interaction networks.
+        br
+        | The subnetwork visualization shows the interactions among a set of nodes (proteins)
+        | in one or multiple protein interaction networks. Edges that appear in multiple subnetworks
+        | will appear together in the visualization. Nodes are colored by the number of samples in which
+        | they are mutated.
+        br
+        br
+        | We provide the&nbsp;
+        a(href="http://hint.yulab.org/", target="_new") HINT
+        | ,&nbsp;
+        a(href="http://www.hprd.org/", target="_new") HPRD
+        | ,&nbsp;and&nbsp;
+        a(href="http://irefindex.org/wiki/index.php?title=iRefIndex", target="_new") iRefIndex
+        | &nbsp; protein-protein interaction (PPI) networks.
+        | To request additional PPI networks, please&nbsp;
+        a(href="/contact") contact us
+        | .
+        br
+        br
+        h4
+          a(href="/#oncoprint") #
+          | &nbsp; Transcript plot
+        br
+        div(class="text-center")
+          img(src="img/transcript-plot.gif")
+          br
+          i Transcript plot for STAG1's transcript ENST00000383202 in multiple cancer types.
+        br
+        | The transcript plot shows locations at which mutations occur in a gene's transcript.
+        | Mutations are color-coded by cancer type, and different mutation types (e.g. missense, nonsense)
+        | are represented by different symbols. In addition, protein domains from different databases
+        | are shown along the length of the transcript.
+        br
+        br
+        | The mutation data for the transcript plot is the same as for the&nbsp;
+        a(href="#oncoprint") oncoprint
+        | . Protein domains are provided for the&nbsp;
+        a(href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml") Conserved Domain
+        | ,&nbsp;
+        a(href="http://pfam.sanger.ac.uk/") PFAM
+        | , and&nbsp;
+        a(href="http://smart.embl-heidelberg.de/") SMART
+        | &nbsp; databases.
+        br
+        br
+        h4
+          a(href="/#oncoprint") #
+          | &nbsp; Copy Number Aberration (CNA) Browser
+        br
+        div(class="text-center")
+          img(src="img/cna-browser.gif")
+          br
+          i CNA browser for the CD44 gene.
+        br
+        | The copy number aberration browser shows the amplified/deleted segments
+        | that have been mapped to a particular gene. Since many segments span more than
+        | the length of the gene, the segments are shown in the context of a 
+        | chromosome arm. Segments are colored by cancer type.
+        br
+        br
+        | The mutation data for the CNA browser is the same as for the&nbsp;
+        a(href="#oncoprint") oncoprint
+        | .
   script(src='components/jquery/jquery.min.js')
   script(src='components/jquery-form/jquery.form.js')
   script(src="js/query-control.js")
