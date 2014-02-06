@@ -40,11 +40,23 @@ passport.deserializeUser(function(id, done) {
  })
 });
 
+// development only
+if (app.get('env') === 'development') {
+  app.use(express.errorHandler());
+  app.set('site url', 'http://localhost:8000/')
+}
+
+// production only
+if (app.get('env') === 'production') {
+  // TODO
+  app.set('site url', 'http://128.148.36.90/')
+};
+
 // config passport to use Google OAuth2
 passport.use(new GoogleStrategy({
     clientID: config.google.clientID,
     clientSecret: config.google.clientSecret,
-    callbackURL: config.google.callbackURL
+    callbackURL: app.get('site url') + config.google.callbackURLSuffix
   },
   function(token, tokenSecret, profile, done) {
     User.findOne({ googleId: profile.id }, function (err, user) {
@@ -80,16 +92,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(app.router);
-
-// development only
-if (app.get('env') === 'development') {
-  app.use(express.errorHandler());
-}
-
-// production only
-if (app.get('env') === 'production') {
-  // TODO
-};
 
 /**
  * Routes
