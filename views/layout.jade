@@ -1,10 +1,11 @@
 doctype html
 html(ng-app="cgat")
 	head
+		-if (production)
+			base(href='/view')
 		meta(charset='utf8')
 		link(rel="icon", type="image/png", href="img/favicon.png")
 		meta(name="fragment", content="!")
-		base(href='/view')
 		title CGAT
 		link(rel='stylesheet', href='components/bootstrap/dist/css/bootstrap.min.css')
 		link(rel='stylesheet', href='css/app.css')

@@ -16,6 +16,7 @@ var app = module.exports = express();
 
 // Use moment for keeping track of times
 app.locals.moment = require('moment');
+app.locals.production = app.get('env') === 'production';
 
 // Load models to register their schemas
 var user = require( './model/user' ),
