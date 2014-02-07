@@ -27,7 +27,10 @@ div#header{
 }
 div#login{
   margin-top:6px;
+  float:right;
+  color:#428bca;
 }
+
 div.page-header{
   height: 25px;
   padding:0;margin:0;border:0;
