@@ -49,7 +49,7 @@ if (app.get('env') === 'development') {
 // production only
 if (app.get('env') === 'production') {
   // TODO
-  app.set('site url', 'http://128.148.36.90/')
+  app.set('site url', 'http://biotools.cs.brown.edu/')
 };
 
 // config passport to use Google OAuth2
