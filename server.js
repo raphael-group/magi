@@ -141,6 +141,18 @@ app.get('/auth/google/callback',
 	}
 );
 
+// Set up SEO routes
+app.get('/google6c3c5c73e7e145cc.html', function(req, res) {
+    res.sendfile('seo/google6c3c5c73e7e145cc.html');
+});
+app.get('/BingSiteAuth.xml', function(req, res) {
+    res.sendfile('seo/BingSiteAuth.xml');
+});
+app.get('/sitemap.xml', function(req, res) {
+    res.sendfile('seo/sitemap.xml');
+});
+
+
 // redirect all others to the index (HTML5 history)
 //app.get('*', routes.index);
 
