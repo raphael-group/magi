@@ -18,6 +18,10 @@ h1, h2, h3, h4, h5{
 }
 
 /* Layout styling */
+div.container-index {
+  margin: 0 auto;
+  width: 650px;
+}
 div#header{
   background: #333;
   border-bottom: 1px solid #ccc;
@@ -38,7 +42,7 @@ ul#more-info li{display:inline;padding-left:5px;padding-right:5px;}
 /* Styling index page (choosing genes or datasets) */
 div#db-chooser{width:30%;float:right}
 div#gene-chooser{width:40%;float:left}
-div#input-chooser{margin-left:15%;margin-right:15%;}
+/*div#input-chooser{margin-left:15%;margin-right:15%;}*/
 img#small-logo {
   margin: -15px 0 0 0;
   padding:0;
@@ -46,6 +50,7 @@ img#small-logo {
 div#splash-img{
   background-image: url('../img/banner.png');
   background-position: center;
+  background: #333;
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
   height: 250px;
@@ -67,6 +72,22 @@ img#splash-logo{
   display: block;
   margin: 0 auto;
   padding-top: 50px;
+}
+
+img#cnaSlice{
+  margin-left: -245px;
+}
+img#oncoSlice:hover{
+  opacity: .0;
+}
+img#subnetSlice{
+  clip: rect(0,0,200,200)/*polygon(0px 0px, 248px 250px, 0px 250px)*/;
+  margin-left: -245px;
+  overflow: hidden;
+  position: absolute;
+}
+img#transcriptSlice{
+  margin-left: -248px;
 }
 
 ul.groupedClass{

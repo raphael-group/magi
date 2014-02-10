@@ -16,6 +16,15 @@ angular.module('cgat.directives', []).
     return converter.makeHtml(value || '');
    };
    }).
+  directive("banner", function () {
+    return {
+      restrict: 'A',
+      link: function(scope, elm, attrs) {
+        console.log('Recognized the function.');
+        alert('recognized banner directory');
+      }
+    }
+  }).
   directive("subnetwork", function(styling){
     return {
       restrict: 'E',
@@ -83,7 +92,7 @@ angular.module('cgat.directives', []).
         var style = styles.lolliplot;
         for (var attrname in styles.global)
             style[attrname] = styles.global[attrname];
-          
+
         // Draw the transcript with a legend
         vis.datum(data)
           .call(

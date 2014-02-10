@@ -19,10 +19,10 @@ exports.index = function index(req, res){
 			Dataset.datasetGroups({user_id: req.user._id}, function(err, userGroups){
 				// Throw error (if necessary)
 				if (err) throw new Error(err);
-				
+
 				// Append the groupClass standard to each group
 				userGroups.forEach(function(g){ g.groupClass = "user"; });
-				
+
 				res.render('index', { user: req.user, groups: standardGroups.concat(userGroups) });
 			});
 		}
@@ -75,7 +75,7 @@ exports.uploadGeneset = function uploadGeneset(req, res){
     form.parse(req, function(err, fields, files) {
 		// The next function call, and the require of 'fs' above, are the only
 		// changes I made from the sample code on the formidable github
-		// 
+		//
 		// This simply reads the file from the tempfile path and echoes back
 		// the contents to the response.
 		fs.readFile(files.geneSet.path, 'utf-8', function (err, genes) {
