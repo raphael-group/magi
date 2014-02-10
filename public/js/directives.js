@@ -18,7 +18,7 @@ angular.module('cgat.directives', []).
    }).
   directive("banner", function () {
     return {
-      restrict: 'A',
+      restrict: 'AE',
       link: function(scope, elm, attrs) {
         console.log('Recognized the function.');
         alert('recognized banner directory');
