@@ -31,7 +31,10 @@ div#header{
 }
 div#login{
   margin-top:6px;
+  float:right;
+  color:#428bca;
 }
+
 div.page-header{
   height: 25px;
   padding:0;margin:0;border:0;
@@ -71,7 +74,7 @@ h1#splash-header{
 img#splash-logo{
   display: block;
   margin: 0 auto;
-  padding-top: 50px;
+  padding-top: 30px;
 }
 
 img#cnaSlice{
@@ -103,6 +106,10 @@ ul.db-group{
 	list-style-type: none;
 }
 
+div#component-descriptions{ width:700px; }
+div#component-descriptions h4{ background:#666; color:#fff; padding-left:6px;padding-bottom:3px;padding-top:3px; }
+div#component-descriptions h4 a{ color:#F80000; }
+div#component-descriptions img{ border:1px solid #d3d3d3;padding-top:5px;padding-bottom:5px; }
 
 /* Account page */
 table tr.even td{ background:#fff;}

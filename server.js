@@ -16,6 +16,7 @@ var app = module.exports = express();
 
 // Use moment for keeping track of times
 app.locals.moment = require('moment');
+app.locals.production = app.get('env') === 'production';
 
 // Load models to register their schemas
 var user = require( './model/user' ),
@@ -40,11 +41,23 @@ passport.deserializeUser(function(id, done) {
  })
 });
 
+// development only
+if (app.get('env') === 'development') {
+  app.use(express.errorHandler());
+  app.set('site url', 'http://localhost:8000/')
+}
+
+// production only
+if (app.get('env') === 'production') {
+  // TODO
+  app.set('site url', 'http://biotools.cs.brown.edu/')
+};
+
 // config passport to use Google OAuth2
 passport.use(new GoogleStrategy({
     clientID: config.google.clientID,
     clientSecret: config.google.clientSecret,
-    callbackURL: config.google.callbackURL
+    callbackURL: app.get('site url') + config.google.callbackURLSuffix
   },
   function(token, tokenSecret, profile, done) {
     User.findOne({ googleId: profile.id }, function (err, user) {
@@ -72,24 +85,17 @@ app.set('view engine', 'jade');
 app.use(express.compress());
 app.use(express.logger('dev'));
 app.use(express.cookieParser());
+app.use(express.cookieSession({
+	secret: 'gd3_for_president!',
+	cookie: { maxAge: 60 * 60 * 1000 * 24 } // store for three days
+}));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
-app.use(express.session({ secret: 'gd3_for_president' }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(app.router);
-
-// development only
-if (app.get('env') === 'development') {
-  app.use(express.errorHandler());
-}
-
-// production only
-if (app.get('env') === 'production') {
-  // TODO
-};
 
 /**
  * Routes

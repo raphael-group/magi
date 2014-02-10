@@ -4,7 +4,6 @@ html(ng-app="cgat")
 		meta(charset='utf8')
 		link(rel="icon", type="image/png", href="img/favicon.png")
 		meta(name="fragment", content="!")
-		base(href='/view')
 		title CGAT
 		link(rel='stylesheet', href='components/bootstrap/dist/css/bootstrap.min.css')
 		link(rel='stylesheet', href='css/app.css')
@@ -12,7 +11,7 @@ html(ng-app="cgat")
 	body()
 		div(class="container-fluid", id="header", role="navigation")
 			div(class="page-header")
-				div(style="float:right", id="login")
+				div(id="login")
 					//- Ask the user to login or show his/her name
 					- if (user)
 						| Welcome, &nbsp;
@@ -24,12 +23,12 @@ html(ng-app="cgat")
 				h1
 					a(href="/")
 						img(src="img/cgatTop.svg", id="small-logo")
-
+		br
 		block body
 
 		hr
 		div(id="footer", class="container")
-			p(class="col-lg-4 text-left") Updated: February 4th, 2014
+			p(class="col-lg-4 text-left") Updated: February 6th, 2014
 			p(class="col-lg-4 text-center") Copyright 2014.
 			ul(id="more-info", class="col-lg-4 text-right")
 				li
