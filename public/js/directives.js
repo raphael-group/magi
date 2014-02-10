@@ -16,15 +16,6 @@ angular.module('cgat.directives', []).
     return converter.makeHtml(value || '');
    };
    }).
-  directive("banner", function () {
-    return {
-      restrict: 'AE',
-      link: function(scope, elm, attrs) {
-        console.log('Recognized the function.');
-        alert('recognized banner directory');
-      }
-    }
-  }).
   directive("subnetwork", function(styling){
     return {
       restrict: 'E',

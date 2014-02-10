@@ -53,7 +53,7 @@ img#small-logo {
 div#splash-img{
   background-image: url('../img/banner.png');
   background-position: center;
-  background: #333;
+/*  background: #333;*/
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
   height: 250px;
@@ -91,6 +91,9 @@ img#subnetSlice{
 }
 img#transcriptSlice{
   margin-left: -248px;
+}
+.bannerSlice:hover{
+  opacity: 1;
 }
 
 ul.groupedClass{

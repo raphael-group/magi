@@ -3,8 +3,7 @@ block body
   div(class="container")
     img(src="img/cgat.svg", id="splash-logo")
     h1(id="splash-header") Cancer Genomics Analysis Tool
-    div(id="splash-img" banner="")
-      banner()
+    div(id="splash-img")
       //img(src="/img/oncoSlice.png", id="oncoSlice")
       //img(src="/img/subnetSlice.png", id="subnetSlice")
       //img(src="/img/transcriptSlice.png", id="transcriptSlice")
@@ -187,6 +186,8 @@ block body
         | The mutation data for the CNA browser is the same as for the&nbsp;
         a(href="#oncoprint") oncoprint
         | .
+  script(src='components/d3/d3.min.js')
   script(src='components/jquery/jquery.min.js')
   script(src='components/jquery-form/jquery.form.js')
-  script(src="js/query-control.js")
+  script(src='js/banner.js')
+  script(src='js/query-control.js')
