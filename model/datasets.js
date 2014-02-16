@@ -1,12 +1,13 @@
 // Import required modules
 var mongoose = require( 'mongoose' );
 var Domain  = require( "./domains" );
+var Genome  = require( "./genome" );
 
 // Create schemas to hold the SNVs
 var MutGeneSchema = new mongoose.Schema({
 	gene: {type: String, required: true},
 	dataset_id: { type: mongoose.Schema.Types.ObjectId, required: true},
-	mutated_samples: { type: {}, required: true},
+	mutated_samples: { type: {}, required: true, default: []},
 	snvs: { type: {}, required: false},
 	cnas: { type: {}, required: false},
 	updated_at: { type: Date, default: Date.now, required: true },
@@ -90,10 +91,14 @@ exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
 
 }// end exports.mutGenesList
 
+// List of inactivating mutation types
+var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
+				   "splice_site", "frame_shift_del"];
+
 // Loads a SNVs into the database
-exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file, is_standard, user_id){
+exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file, is_standard, user_id){
 	// Load required modules
-	var fs    = require( 'fs' ),
+	var fs      = require( 'fs' ),
 		Dataset = mongoose.model( 'Dataset' ),
 		MutGene = mongoose.model( 'MutGene' ),
 		domain  = require( "./domains" ),
@@ -120,6 +125,106 @@ exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file,
 		return d.promise;
 	}
 
+	// Read in the CNAs file asynchronously
+	var snvs = {},
+		cnas = {},
+		mutSamples = {};
+
+	function loadCNAFile(){
+		// Set up promise
+		var d = Q.defer();
+
+		fs.readFile(cnas_file, 'utf-8', function (err, data) {
+			// Exit if there's an error, else callback
+			if (err) throw new Error(err);
+
+			// Load the lines, but skip the header (the first line)
+			var lines = data.trim().split('\n');
+
+			// Make sure there're some lines in the file
+			if (lines.length < 2){
+				console.log("Empty CNA file (or just header). Exiting.")
+				process.exit(1);
+			}
+
+			// Parse the mutations into a hash from gene to transcripts' mutations
+			for (var i = 1; i < lines.length; i++){
+				// Parse the line
+				var fields = lines[i].split('\t'),
+					gene   = fields[0],
+					sample = fields[1],
+					cnaTy  = fields[2] == "AMP" ? "amp" : "del",
+					start  = fields[3] * 1,
+					end    = fields[4] * 1;
+
+				// Ignore samples not in the whitelist
+				if (samples.indexOf(sample) == -1) continue;
+
+				// Create the mutation
+				var mut = { dataset: dataset, ty: cnaTy, sample: sample,
+				            start: start, end: end };
+
+				// Append the mutation to the list of mutations in the
+				// current gene
+				if (!(gene in cnas)) cnas[gene] = {segments: {}};
+				if (!(sample in cnas[gene])) cnas[gene].segments[sample] = [];
+				cnas[gene].segments[sample].push( mut );
+
+				if (!(gene in mutSamples)) mutSamples[gene] = {};
+				//if (!(gene in mutTys)) mutTys[gene] = [];
+
+				// Record the mutated sample
+				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(cnaTy) == -1){
+					mutSamples[gene][sample].push(cnaTy);
+				}
+				else{
+					mutSamples[gene][sample] = [ cnaTy ];
+				}
+
+			}
+
+			// Load locations of each gene and find their neighbors 
+			var Gene = mongoose.model( 'Gene' );
+			Gene.find({name: {$in: Object.keys(cnas)}}, function (err, genes){
+				if (err) throw new Error(err);
+	
+				Q.allSettled( genes.map(function(g){
+					var d2 = Q.defer();
+
+					// Find the min/max segment locations for the current gene
+					var minSegX = Number.MAX_VALUE,
+						maxSegX = 0,
+						cnaSamples = cnas[g.name].segments,
+						segments = [];
+
+					for (var s in cnaSamples){
+						var segs = cnaSamples[s];
+						segments.push( {sample: s, segments: segs} );
+
+						for (var i = 0; i < segs.length; i++){
+							if (segs[i].start < minSegX) minSegX = segs[i].start;
+							if (segs[i].end > maxSegX) maxSegX = segs[i].end;
+						}
+					}
+
+					// Add the gene's region information
+					cnas[g.name].region = { chr: g.chr, minSegX: minSegX, maxSegX: maxSegX };
+					cnas[g.name].segments = segments;
+
+					Genome.getGenesinRange(g.chr, g.start - 25000000, g.end + 25000000, function (err, neighbors){
+						if(err) console.log(err);
+						cnas[g.name].neighbors = neighbors;
+						d2.resolve();
+					});
+					return d2.promise;
+				})).then(function(){ d.resolve(); });
+			});
+		});
+
+		return d.promise;
+	}
+
+
 	// Read in the SNVs file asynchronously
 	function loadSNVFile(){	
 		// Set up promise
@@ -134,25 +239,21 @@ exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file,
 
 			// Make sure there're some lines in the file
 			if (lines.length < 2){
-				console.log("Empty file (or just header). Exiting.")
+				console.log("Empty SNV file (or just header). Exiting.")
 				process.exit(1);
 			}
 
-			// Parse the mutations into a hash from gene to transcripts' mutations
-			var gene2mutations = {}
-			, mutTys           = {}
-			, mutSamples       = {};
 			for (var i = 1; i < lines.length; i++){
 				// Parse the line
-				var fields   = lines[i].split('\t')
-				, gene       = fields[0]
-				, sample     = fields[1]
-				, transcript = fields[2]
-				, length     = fields[3]
-				, locus      = fields[4]
-				, mutTy      = fields[5]
-				, aao        = fields[6]
-				, aan        = fields[7];
+				var fields     = lines[i].split('\t'),
+					gene       = fields[0],
+					sample     = fields[1],
+					transcript = fields[2],
+					length     = fields[3],
+					locus      = fields[4],
+					mutTy      = fields[5],
+					aao        = fields[6],
+					aan        = fields[7];
 
 				// Create the mutation
 				var mut = { sample: sample, dataset: dataset, locus: locus,
@@ -160,89 +261,95 @@ exports.addSNVsFromFile = function(dataset, group_name, samples_file, snvs_file,
 
 				// Append the mutation to the list of mutations in the
 				// current gene
-				if (!(gene in gene2mutations)) gene2mutations[gene] = {};
-				if (!(gene in mutSamples)) mutSamples[gene] = [];
-				if (!(gene in mutTys)) mutTys[gene] = [];
+				if (!(gene in snvs)) snvs[gene] = {};
+				if (!(gene in mutSamples)) mutSamples[gene] = {};
 
 				// Only add the transcript mutations if the transcript is defined
 				if (transcript != '--'){
-					if (!(transcript in gene2mutations[gene])){
+					if (!(transcript in snvs[gene])){
 						// Create a new null transcript, including the relevant domains
 						var transcript_info = { mutations: [], length: length * 1 };
-						gene2mutations[gene][transcript] = transcript_info;				
+						snvs[gene][transcript] = transcript_info;				
 					}
 			
-					gene2mutations[gene][transcript].mutations.push( mut );
+					snvs[gene][transcript].mutations.push( mut );
 				}
 
 				// Record the mutated sample
-				var j = mutSamples[gene].indexOf( sample );
-				if (j == -1){
-					mutSamples[gene].push( sample );
-					mutTys[gene].push( [mutTy] );
+				var mutClass = inactiveTys.indexOf(  mutTy ) != -1 ? "inactive_snv" : "snv";
+				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(mutClass) == -1){
+					mutSamples[gene][sample].push( mutClass );
 				}
 				else{
-					if (mutTys[gene][j].indexOf(mutTy) == -1)
-						mutTys[gene][j].push( mutTy );
+					mutSamples[gene][sample] = [ mutClass ];
 				}
-
 			}
 
-			// Transform mutation data into SNV schema format
-			var mutGenes = [];
-			for (var g in gene2mutations){
-				// Create a list of sample with mutation types objects
-				var mutated_samples = [];
-				for (var i = 0; i < mutSamples[g].length; i++)
-					mutated_samples.push( {sample: mutSamples[g][i], mut_tys: mutTys[g][i]});
+			d.resolve();
 
-				// Crate the object we want to insert
-				var Gene = { gene: g, mutated_samples: mutated_samples,
-					         snvs: {}, cnas: {} };
-				
-				for (var t in gene2mutations[g])
-					Gene.snvs[t] = gene2mutations[g][t];
-				
-				mutGenes.push( Gene );
-			}
-
-
-			// Formulate queries and updates for the datbase
-			var query = { title: dataset, group: group_name, is_standard: is_standard },
-				newDataset  = { title: dataset, samples: samples, // samples from input sample list
-						  		group: group_name, updated_at: Date.now(),
-						  		is_standard: is_standard, user_id: user_id };
-
-			if (user_id) query.user_id = user_id;
-
-			// Find the dataset 
-			Dataset.remove(query, function(err){
-				if (err) throw new Error(err);
-
-				Dataset.create( newDataset, function(err, newDataset){
-					if (err) throw new Error(err);
-
-					// Update the MutGene data to include the dataset ID
-					mutGenes.forEach(function(g){ g.dataset_id = newDataset._id; })
-
-					// Remove any previous MutGenes associated with the dataset
-					MutGene.remove({dataset_id: newDataset._id}, function(err){
-						if (err) throw new Error(err);
-		
-						// Finally, create mutated genes
-						MutGene.create(mutGenes, function(err, res){
-							if (err) throw new Error(err);
-							d.resolve();		
-						});
-					});
-				});
-			});
 		});
 
 		return d.promise; 
 
 	}
+
+	// Save the dataset
+	function createDataset(){
+		// Set up promise
+		var d = Q.defer();
+
+		// Transform mutation data into SNV schema format
+		var mutGenes = [];
+		for (var g in mutSamples){
+			// Create the object we want to insert
+			var Gene = { gene: g, mutated_samples: mutSamples[g],
+				         snvs: {}, cnas: {} };
+
+			if (g in snvs) Gene.snvs = snvs[g];
+			if (g in cnas) Gene.cnas = cnas[g];
+			
+			mutGenes.push( Gene );
+		}
+
+
+		// Formulate queries and updates for the datbase
+		var query = { title: dataset, group: group_name, is_standard: is_standard },
+			newDataset  = { title: dataset, samples: samples, // samples from input sample list
+					  		group: group_name, updated_at: Date.now(),
+					  		is_standard: is_standard, user_id: user_id };
+
+		if (user_id) query.user_id = user_id;
+
+		// Find the dataset 
+		Dataset.remove(query, function(err){
+			if (err) throw new Error(err);
+
+			Dataset.create( newDataset, function(err, newDataset){
+				if (err) throw new Error(err);
+
+				// Update the MutGene data to include the dataset ID
+				mutGenes.forEach(function(g){ g.dataset_id = newDataset._id; })
+
+				// Remove any previous MutGenes associated with the dataset
+				MutGene.remove({dataset_id: newDataset._id}, function(err){
+					if (err) throw new Error(err);
 	
-	return loadSampleFile().then( function(){ return loadSNVFile(); } );
+					// Finally, create mutated genes
+					MutGene.create(mutGenes, function(err, res){
+						if (err) throw new Error(err);
+						d.resolve();		
+					});
+				});
+			});
+		});
+
+
+		return d.promise;
+	}
+	
+	return loadSampleFile()
+			.then( loadCNAFile )
+			.then( loadSNVFile )
+			.then( createDataset );
 
 }

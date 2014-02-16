@@ -18,11 +18,17 @@ block body
                 | Group name (optional).
             input(type="text", id="groupName", name="groupName", class="form-control", placeholder="Enter group name (optional).")
             br
-            label(onclick="")
+            label
                 | Single nucleotide variants (
                 a(href="/upload#snvs-format") format
                 | ).
             input(type="file", id="SNVs", name="SNVs")
+            br
+            label
+                | Copy number variants (
+                a(href="/upload#cnas-format") format
+                | ).
+            input(type="file", id="CNAs", name="CNAs")
             br
             label
                 | Tested samples (
@@ -51,7 +57,6 @@ block body
                 | The table below shows an example row.
                 | The columns whose names are starred are required.
                 | Missing data should be replaced with '--'.
-                | Rows beginning with '#' will be ignored.
             table(class="table table-bordered table-striped")
                 tr
                     th Index
@@ -109,6 +114,50 @@ block body
                         abbr(title="Amino Acid") AA
                     td Q
                     td The amino acid at the locus after the variant occurred.
+        a(name="cnas-format")
+        div(id="cnas-format")
+            h4 Copy number aberration (CNA) file format.
+            p(class="caption")
+                | The CNA file is a tab-separated file (*.tsv) that includes all CNAs for a dataset.
+                | Each row contains the data for a single copy number segment that occurs in one gene in one particular sample.
+                | The table below shows an example row.
+                | The columns whose names are starred are required.
+            table(class="table table-bordered table-striped")
+                tr
+                    th Index
+                    th Name (*=required)
+                    th Example
+                    th Description
+                tr
+                    td 1
+                    td Gene*
+                    td PIK3CA
+                    td Gene name.
+                tr
+                    td 2
+                    td Sample*
+                    td TCGA-FD-A3B6
+                    td Sample ID.
+                tr
+                    td 3
+                    td CNA type
+                    td 
+                        | Type of CNA that occurred. CGAT understands the following CNA types:
+                        ul
+                            li AMP
+                            li DEL
+
+                    td Copy number type.
+                tr
+                    td 4
+                    td Left
+                    td 29843973
+                    td Left start-point of segment.
+                tr
+                    td 5
+                    td Right
+                    td 30327089
+                    td Right end-point of segment.
 
         a(name="samples-format")
         div(id="samples-format")
@@ -119,6 +168,6 @@ block body
                 | Each row lists a single sample ID.
                 | All rows in the data file are included.
 
-    script(src='components/jquery/jquery.min.js').
+    script(src='components/jquery/dist/jquery.min.js').
     script(src='components/jquery-form/jquery.form.js')
     script(src="js/dataset-upload-control.js")

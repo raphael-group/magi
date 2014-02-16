@@ -82,7 +82,7 @@ div(ng-controller="ViewCtrl")
 		//- Copy number browser
 		div(id="cna-holder")
 			h3 Copy number browser
-			select(class="form-control", ng-model="cna_gene", ng-options="g for (g, _) in cna_genes")
+			select(class="form-control", ng-model="cna_gene", ng-options="g for (g, _) in cna_browser_data")
 				option(value="") -- choose gene --
 			br
-			cnabrowser(data="cna_gene" sty="s2ty")
+			cnabrowser(data="cna_gene", sty="s2ty")

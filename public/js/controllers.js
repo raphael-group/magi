@@ -45,6 +45,9 @@ angular.module('cgat.controllers', []).
       $scope.noData = noMutations && noEdges;
       $scope.genes = genes.split("-").join(", ");
       $scope.datasets = dbs.split("-").join(", ");
-    
+
+      // Add the CNA browser data
+      $scope.cna_browser_data = json.cna_browser_data;
+      console.log($scope.cna_browser_data)
     });
   });

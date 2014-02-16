@@ -5,11 +5,12 @@ $(document).ready(function() {
         datasetNameEl = "#dataset",
         groupNameEl = "#groupName",
         snvFileEl = "#SNVs",
+        cnaFileEl = "#CNAs",
         sampleFileEl = "#testedSamples";
 
-    var infoClasses  = 'alert alert-info'
-    , warningClasses = 'alert alert-warning'
-    , successClasses = 'alert alert-success';
+    var infoClasses  = 'alert alert-info',
+        warningClasses = 'alert alert-warning',
+        successClasses = 'alert alert-success';
 
     // Perform validation on the form when it is submitted
     $(formEl).submit(function(e){
@@ -17,7 +18,8 @@ $(document).ready(function() {
 
         // Extract input data
         var dataset  = $(datasetNameEl).val(),
-            snvFile = $(snvFileEl)[0].files[0]
+            snvFile = $(snvFileEl)[0].files[0],
+            cnaFile = $(cnaFileEl)[0].files[0],
             sampleFile = $(sampleFileEl)[0].files[0],
             groupName = $(groupNameEl).val();
 
@@ -47,6 +49,24 @@ $(document).ready(function() {
             snvFileValidates = true;
         }
 
+        // Make sure there's a CNA file, and that it is not too large etc.
+        var cnaFileValidates = false;
+        if (!cnaFile){
+            status('Please choose a CNA file.', warningClasses);
+            return false;
+        }
+        else if (cnaFile.size > 10000000){
+            status('CNA file is too large. Please upload a smaller CNA file.', warningClasses);
+            return false;
+        }
+        else if(cnaFile.type != 'text/plain' && cnaFile.type != 'text/tab-separated-values'){
+            status('CNA file upload: only text and tsv files are allowed.', warningClasses);
+            return false;
+        }
+        else{
+            cnaFileValidates = true;
+        }
+
         // Make sure there's a sample file and it's not too large etc.
         var sampleFileValidates = false;
         if (!sampleFile){
@@ -66,12 +86,13 @@ $(document).ready(function() {
         }
 
         // If everything checks out, submit the form
-        if (datasetValidates && snvFileValidates && sampleFileValidates){
+        if (datasetValidates && snvFileValidates && cnaFileValidates && sampleFileValidates){
             status('Uploading...', infoClasses);
 
             // Create a mini-form
             var data = new FormData();
             data.append( 'SNVs', snvFile );
+            data.append( 'CNAs', cnaFile );
             data.append( 'testedSamples', sampleFile );
             data.append( 'dataset', dataset );
             data.append( 'groupName', groupName );

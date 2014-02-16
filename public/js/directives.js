@@ -138,18 +138,21 @@ angular.module('cgat.directives', []).
 
         // Clear the elements inside of the directive
         vis.selectAll('*').remove();
-
+        
+        // Extract the global styling info
         var styles = styling.data();
-        styles.lolliplot.width = $(elm[0]).parent().width();
+        styles.cnabrowser.width = $(elm[0]).parent().width();
 
-        var gene = data.gene
-        , geneinfo = data.geneinfo
-        , cliq = data.cliq
-        , seg = data.seq
-        , region = data.region;
+        // Merge the global and cna browser styles into one
+        var style = styles.cnabrowser;
+        for (var attrname in styles.global)
+          style[attrname] = styles.global[attrname];
 
-        // Use our D3 cancer genomics library to draw the subnetwork
-        cna_browser( vis, scope.sty, gene, geneinfo, cliq, seg, region, styles );
+        // Create the cnabrowser
+        vis.datum(data)
+          .call(
+            window.cna_browser({style: style})
+          );
 
       })
       }

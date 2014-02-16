@@ -4,19 +4,6 @@ var mongoose = require( 'mongoose' ),
 	PPIs     = require( "../model/ppis" ),
 	Domains  = require( "../model/domains" );
 
-// List of inactivating mutation types
-var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
-				   "splice_site", "frame_shift_del"];
-
-// Determine if a set of mutations includes at least one inactivating SNV
-function includes_inactivating(mut_tys){
-	for (var i = 0; i < mut_tys.length; i++){
-		if (inactiveTys.indexOf(mut_tys[i].toLowerCase()) != -1)
-			return true;
-	}
-	return false;
-}
-
 exports.viewData = function getViewData(req, res){
 	// Parse query params
 	var genes = req.query.genes.split("-"),
@@ -57,7 +44,8 @@ exports.viewData = function getViewData(req, res){
 				// Create empty Objects to store transcript/oncoprint data
 				var M = {},
 					transcript_data = {}
-					sample2ty = {};
+					sample2ty = {},
+					cna_browser_data = {};
 
 				// Initialize with genes as keys (in case genes aren't in the data)
 				for (var i in genes){
@@ -70,17 +58,17 @@ exports.viewData = function getViewData(req, res){
 					// Parse dataset values into short variable handles
 					var G = mutGenes[i];
 
-					// Load the mutated samples
-					G.mutated_samples.forEach(function(s){
-						// Determine if the SNVs are inactivating
-						if (includes_inactivating(s.mut_tys))
-							M[G.gene][s.sample] = ['inactive_snv'];
-						else
-							M[G.gene][s.sample] = ['snv'];
+					// Record the CNAs
+					if (G.cnas){
+						cna_browser_data[G.gene] = G.cnas;
+						cna_browser_data[G.gene].gene = G.gene;
+					}
 
-						// Record the sample's dataset
-						sample2ty[s.sample] = datasetNames[G.dataset_id];
-					});
+					// Load the mutated samples
+					for (var s in G.mutated_samples){
+						sample2ty[s] = datasetNames[G.dataset_id];
+						M[G.gene][s] = G.mutated_samples[s];
+					}
 
 					for (t in G.snvs){
 						// Add transcript if it's not present
@@ -98,9 +86,9 @@ exports.viewData = function getViewData(req, res){
 				}
 				
 				// Compute coverage of gene set
-				var num_mutated_samples = Object.keys(sample2ty).length
-				, coverage       = (num_mutated_samples * 100. / num_samples).toFixed(2)
-				, coverage_str   = coverage + "% (" + num_mutated_samples + '/' + num_samples + ")"
+				var num_mutated_samples = Object.keys(sample2ty).length,
+					coverage = (num_mutated_samples * 100. / num_samples).toFixed(2),
+					coverage_str = coverage + "% (" + num_mutated_samples + '/' + num_samples + ")"
 
 				// Assemble data into single Object
 				var oncoprint_data = {M : M, sample2ty: sample2ty, coverage_str: coverage_str};
@@ -111,6 +99,12 @@ exports.viewData = function getViewData(req, res){
 					return { name: g, heat: mutSamples.length };
 				});
 
+				// Add sample2ty to each cna_browser gene
+				mutGenes.forEach(function(g){
+					if (g.cnas){
+						cna_browser_data[g.gene].sample2ty = sample2ty;
+					}
+				});
 
 				PPIs.ppilist(genes, function(err, ppis){
 					PPIs.formatPPIs(ppis, function(err, edges){
@@ -120,9 +114,10 @@ exports.viewData = function getViewData(req, res){
 										subnetwork_data: subnetwork_data,
 										oncoprint_data: oncoprint_data,
 										transcript_data: transcript_data,
-										domainDBs: Object.keys(domainDBs)
+										domainDBs: Object.keys(domainDBs),
+										cna_browser_data: cna_browser_data
 									};
-						
+
 						// Send JSON response
 						res.json( pkg );
 
