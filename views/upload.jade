@@ -4,7 +4,7 @@ block body
         h3 Upload your mutation data.
         p(class="caption")
             | Query your own mutation data by uploading it to our servers.
-            | Provide a name, an optional group, and files containing the SNVs and samples in your dataset.
+            | Provide a name, an optional group, and files containing the SNVs and/or CNAs, and samples in your dataset.
             | After uploading your data, you will be able to query it from the&nbsp;
             a(href="/") home page
             | . You can manage all your uploaded datasets from your&nbsp;
@@ -31,7 +31,7 @@ block body
             input(type="file", id="CNAs", name="CNAs")
             br
             label
-                | Tested samples (
+                | Tested samples (optional,&nbsp;
                 a(href="/upload#samples-format") format
                 | ).
 

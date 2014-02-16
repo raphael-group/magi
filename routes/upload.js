@@ -20,27 +20,26 @@ exports.uploadDataset = function uploadDataset(req, res){
 
     form.parse(req, function(err, fields, files) {
     	// Parse the form variables into shorter handles
-    	var snv_file = files.SNVs.path,
-    		cna_file = files.CNAs.path,
-    		samples_file = files.testedSamples.path,
-    		dataset = fields.dataset,
+    	var dataset = fields.dataset,
     		group_name = fields.groupName;
 
-    	console.log(cna_file)
+    	if (files.SNVs) snv_file = files.SNVs.path;
+    	else snv_file = null;
+
+    	if (files.CNAs) cna_file = files.CNAs.path;
+    	else cna_file = null;
+
+    	if (files.testedSamples) samples_file = files.testedSamples.path;
+    	else samples_file = null;
+
     	// Pass the files to the parsers
 		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, false, req.user._id)
 			.then(function(){
 		    	// Once the parsers have finished, destroy the tmp files
-				fs.unlink(snv_file, function (err) {
-					if (err) throw err;
-					fs.unlink(cna_file, function (err) {
-						if (err) throw err;
-						fs.unlink(samples_file, function (err) {
-							if (err) throw err;
-							res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to query your dataset." });
-						});
-					});
-				});
+				if (snv_file) fs.unlinkSync( snv_file );
+				if (cna_file) fs.unlinkSync( cna_file );
+				if (samples_file) fs.unlinkSync( samples_file );
+				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to query your dataset." });
 			})
 			.fail(function(){
 				res.send({ status: "Data could not be parsed." });

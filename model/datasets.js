@@ -104,11 +104,26 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		domain  = require( "./domains" ),
 		Q       = require( 'q' );
 
+	// Make sure that either/both an SNV and CNA file were provided
+	if (!(snvs_file || cnas_file)){
+		console.log("addDatasetFromFile: either/both SNV file or CNA file are *required*.")
+		process.exit(1);
+	}
+
 	// Read in the sample file asynchronously
-	var samples;
+	var samples = [],
+		givenSampleList = true;
+
 	function loadSampleFile(){
 		// Set up promise
 		var d = Q.defer();
+
+		// Return if no samples file is provided
+		if (!samples_file){
+			givenSampleList = false;
+			d.resolve();
+			return d.promise;
+		}
 
 		fs.readFile(samples_file, 'utf-8', function (err, data) {
 			// Exit if there's an error
@@ -134,6 +149,12 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		// Set up promise
 		var d = Q.defer();
 
+		// If a CNA file wasn't provided, return
+		if (!cnas_file){
+			d.resolve();
+			return d.promise;
+		}
+
 		fs.readFile(cnas_file, 'utf-8', function (err, data) {
 			// Exit if there's an error, else callback
 			if (err) throw new Error(err);
@@ -158,7 +179,10 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					end    = fields[4] * 1;
 
 				// Ignore samples not in the whitelist
-				if (samples.indexOf(sample) == -1) continue;
+				if (samples.indexOf(sample) == -1){
+					if (givenSampleList) continue;
+					else samples.push( sample );
+				}
 
 				// Create the mutation
 				var mut = { dataset: dataset, ty: cnaTy, sample: sample,
@@ -230,6 +254,12 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		// Set up promise
 		var d = Q.defer();
 
+		// If a CNA file wasn't provided, return
+		if (!snvs_file){
+			d.resolve();
+			return d.promise;
+		}
+
 		fs.readFile(snvs_file, 'utf-8', function (err, data) {
 			// Exit if there's an error, else callback
 			if (err) throw new Error(err);
@@ -258,6 +288,13 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				// Create the mutation
 				var mut = { sample: sample, dataset: dataset, locus: locus,
 				            aan: aan, aao: aao, ty: mutTy };
+				
+				// If a sample list was provided, restrict to only those
+				// samples
+				if (samples.indexOf(sample) == -1){
+					if (givenSampleList) continue;
+					else samples.push( sample );
+				}
 
 				// Append the mutation to the list of mutations in the
 				// current gene

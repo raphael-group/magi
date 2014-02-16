@@ -31,17 +31,19 @@ $(document).ready(function() {
         }
         else{ datasetValidates = true; }
 
-        // Make sure there's an SNV file, and that it is not too large etc.
-        var snvFileValidates = false;
-        if (!snvFile){
-            status('Please choose an SNV file.', warningClasses);
+        // Check if the user passed an SNV/CNA file
+        if (!(cnaFile || snvFile)){
+            status('Please choose an SNV and/or CNA file.', warningClasses);
             return false;
         }
-        else if (snvFile.size > 10000000){
+
+        // Make sure there's an SNV file, and that it is not too large etc.
+        var snvFileValidates = false;
+        if (snvFile && snvFile.size > 10000000){
             status('SNV file is too large. Please upload a smaller SNV file.', warningClasses);
             return false;
         }
-        else if(snvFile.type != 'text/plain' && snvFile.type != 'text/tab-separated-values'){
+        else if(snvFile && snvFile.type != 'text/plain' && snvFile.type != 'text/tab-separated-values'){
             status('SNV file upload: only text and tsv files are allowed.', warningClasses);
             return false;
         }
@@ -51,15 +53,11 @@ $(document).ready(function() {
 
         // Make sure there's a CNA file, and that it is not too large etc.
         var cnaFileValidates = false;
-        if (!cnaFile){
-            status('Please choose a CNA file.', warningClasses);
-            return false;
-        }
-        else if (cnaFile.size > 10000000){
+        if (cnaFile && cnaFile.size > 10000000){
             status('CNA file is too large. Please upload a smaller CNA file.', warningClasses);
             return false;
         }
-        else if(cnaFile.type != 'text/plain' && cnaFile.type != 'text/tab-separated-values'){
+        else if(cnaFile && cnaFile.type != 'text/plain' && cnaFile.type != 'text/tab-separated-values'){
             status('CNA file upload: only text and tsv files are allowed.', warningClasses);
             return false;
         }
@@ -67,17 +65,13 @@ $(document).ready(function() {
             cnaFileValidates = true;
         }
 
-        // Make sure there's a sample file and it's not too large etc.
+        // Make sure that if there's a sample file, it's not too large etc.
         var sampleFileValidates = false;
-        if (!sampleFile){
-            status('Please choose an sample file.', warningClasses);
-            return false;
-        }
-        else if (sampleFile.size > 1000000){
+        if (sampleFile && sampleFile.size > 1000000){
             status('Sample file is too large. Please upload a smaller sample file.', warningClasses);
             return false;
         }
-        else if(sampleFile.type != 'text/plain' && sampleFile.type != 'text/tab-separated-values'){
+        else if(sampleFile && sampleFile.type != 'text/plain' && sampleFile.type != 'text/tab-separated-values'){
             status('Sample file upload: only text and tsv files are allowed.', warningClasses);
             return false;
         }
@@ -91,9 +85,13 @@ $(document).ready(function() {
 
             // Create a mini-form
             var data = new FormData();
-            data.append( 'SNVs', snvFile );
-            data.append( 'CNAs', cnaFile );
-            data.append( 'testedSamples', sampleFile );
+            if (snvFile)
+                data.append( 'SNVs', snvFile );
+            if (cnaFile)
+                data.append( 'CNAs', cnaFile );
+            if (sampleFile)
+                data.append( 'testedSamples', sampleFile );
+            
             data.append( 'dataset', dataset );
             data.append( 'groupName', groupName );
 
