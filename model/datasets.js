@@ -313,7 +313,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				}
 
 				// Record the mutated sample
-				var mutClass = inactiveTys.indexOf(  mutTy ) != -1 ? "inactive_snv" : "snv";
+				var mutClass = inactiveTys.indexOf(  mutTy.toLowerCase() ) != -1 ? "inactive_snv" : "snv";
 				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(mutClass) == -1){
 					mutSamples[gene][sample].push( mutClass );
 				}

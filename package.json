@@ -11,7 +11,7 @@
     "postinstall": "bower install"
   },
   "dependencies": {
-    "express": "latest",
+    "express": "3.4.x",
     "jade": "latest",
     "mongoose": "latest",
     "bower": "latest",
