@@ -6,7 +6,8 @@ $(document).ready(function() {
         groupNameEl = "#groupName",
         snvFileEl = "#SNVs",
         cnaFileEl = "#CNAs",
-        sampleFileEl = "#testedSamples";
+        sampleFileEl = "#testedSamples",
+        colorEl = "#color";
 
     var infoClasses  = 'alert alert-info',
         warningClasses = 'alert alert-warning',
@@ -21,7 +22,8 @@ $(document).ready(function() {
             snvFile = $(snvFileEl)[0].files[0],
             cnaFile = $(cnaFileEl)[0].files[0],
             sampleFile = $(sampleFileEl)[0].files[0],
-            groupName = $(groupNameEl).val();
+            groupName = $(groupNameEl).val(),
+            color = $(colorEl).val();
 
         // Make sure the dataset is named
         var datasetValidates = false;
@@ -79,8 +81,17 @@ $(document).ready(function() {
             sampleFileValidates = true;
         }
 
+        // Make sure there's a valid hex color
+        function isHexColor(c){ return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(c) }
+        var colorValidates = true;
+        if (!isHexColor(color)){
+            colorValidates = false;
+            status('Please enter a valid hex color.', warningClasses)
+            return false;
+        }
+
         // If everything checks out, submit the form
-        if (datasetValidates && snvFileValidates && cnaFileValidates && sampleFileValidates){
+        if (datasetValidates && snvFileValidates && cnaFileValidates && sampleFileValidates && colorValidates){
             status('Uploading...', infoClasses);
 
             // Create a mini-form
@@ -94,6 +105,7 @@ $(document).ready(function() {
             
             data.append( 'dataset', dataset );
             data.append( 'groupName', groupName );
+            data.append( 'color', color );
 
             // Submit an AJAX-ified form
             $.ajax({

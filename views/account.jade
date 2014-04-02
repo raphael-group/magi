@@ -21,6 +21,7 @@ block body
 					th Group
 					th Name
 					th Number of samples
+					th Color
 					th Created on
 					th Last updated
 					th Remove
@@ -35,6 +36,7 @@ block body
 									| #{group.name}
 							td #{db.title}
 							td #{db.num_samples}
+							td(style="background:#{db.color};width:20px;height:20px;", title="#{db.color}")
 							td #{ moment(db.created_at).format("MM/DD/YYYY") }
 							td #{ moment(db.updated_at).fromNow() }
 							td

@@ -84,6 +84,14 @@ angular.module('cgat.directives', []).
         for (var attrname in styles.global)
             style[attrname] = styles.global[attrname];
 
+        // Add any dataset specific colors
+        style.colorSchemes =  { sampleType: {} };
+        if (scope.datasetColors){
+          Object.keys(scope.datasetColors).forEach(function(name){
+            style.global.colorSchemes.sampleType[name] = scope.datasetColors[name];
+          });
+        }
+
         // Draw the transcript with a legend
         vis.datum(data)
           .call(
@@ -108,6 +116,14 @@ angular.module('cgat.directives', []).
         var style = styles.transcript_plot;
         for (var attrname in styles.global)
             style[attrname] = styles.global[attrname];
+
+        // Add any dataset specific colors
+        style.colorSchemes =  { sampleType: {} };
+        if (scope.datasetColors){
+          Object.keys(scope.datasetColors).forEach(function(name){
+            style.global.colorSchemes.sampleType[name] = scope.datasetColors[name];
+          });
+        }
 
         // Draw the transcript with a legend
         vis.datum(scope.data)
@@ -148,6 +164,14 @@ angular.module('cgat.directives', []).
         for (var attrname in styles.global)
           style[attrname] = styles.global[attrname];
 
+        // Add any dataset specific colors
+        style.colorSchemes =  { sampleType: {} };
+        if (scope.datasetColors){
+          Object.keys(scope.datasetColors).forEach(function(name){
+            style.colorSchemes.sampleType[name] = scope.datasetColors[name];
+          });
+        }
+
         // Create the cnabrowser
         vis.datum(data)
           .call(
@@ -183,6 +207,14 @@ angular.module('cgat.directives', []).
           var style = styles.mutation_matrix;
           for (var attrname in styles.global)
               style[attrname] = styles.global[attrname];
+
+          // Add any dataset specific colors
+          style.colorSchemes =  { sampleType: {} };
+          if (scope.datasetColors){
+            Object.keys(scope.datasetColors).forEach(function(name){
+              style.colorSchemes.sampleType[name] = scope.datasetColors[name];
+            });
+          }
 
           // Create the mutation matrix
           vis.datum(data)

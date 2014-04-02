@@ -33,7 +33,7 @@ angular.module('cgat.controllers', []).
       // Subnetwork data
       $scope.subnetwork_data = json.subnetwork_data;
       
-      // Lolliplot data
+      // Transcript plot data
       $scope.domainDBs = json.domainDBs;
       $scope.gene_transcripts = json.transcript_data;
       $scope.numTranscripts = function(transcripts){ return Object.keys(transcripts).length; };
@@ -46,8 +46,9 @@ angular.module('cgat.controllers', []).
       $scope.genes = genes.split(",").join(", ");
       $scope.datasets = dbs.split(",").join(", ");
 
-      // Add the CNA browser data
+      // Add the CNA browser data and the dataset colors
       $scope.cna_browser_data = json.cna_browser_data;
+      $scope.datasetColors = json.datasetColors;
 
     });
   });

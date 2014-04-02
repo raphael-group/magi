@@ -21,7 +21,8 @@ exports.uploadDataset = function uploadDataset(req, res){
     form.parse(req, function(err, fields, files) {
     	// Parse the form variables into shorter handles
     	var dataset = fields.dataset,
-    		group_name = fields.groupName;
+    		group_name = fields.groupName,
+    		color = fields.color;
 
     	if (files.SNVs) snv_file = files.SNVs.path;
     	else snv_file = null;
@@ -33,7 +34,7 @@ exports.uploadDataset = function uploadDataset(req, res){
     	else samples_file = null;
 
     	// Pass the files to the parsers
-		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, false, req.user._id)
+		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, false, color, req.user._id)
 			.then(function(){
 		    	// Once the parsers have finished, destroy the tmp files
 				if (snv_file) fs.unlinkSync( snv_file );

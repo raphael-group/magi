@@ -21,7 +21,8 @@ var DatasetSchema = new mongoose.Schema({
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
-	is_standard: { type: Boolean, default: false, required: true }
+	is_standard: { type: Boolean, default: false, required: true },
+	color: { type: String, required: true }
 });
 
 mongoose.model( 'Dataset', DatasetSchema );
@@ -33,7 +34,7 @@ exports.datasetGroups = function datasetgroups(query, callback){
 
 	Dataset.aggregate(
 		{ $match: query },
-		{$group: {_id: '$group', dbs: { $push: {title: '$title', _id: '$_id', samples: '$samples', updated_at: '$updated_at'} } }},
+		{$group: {_id: '$group', dbs: { $push: {title: '$title', color: '$color', _id: '$_id', samples: '$samples', updated_at: '$updated_at'} } }},
 		{$sort: {_id: -1}}, // sort descending by group name
 		function(err, res){
 			// Handle error (if necessary)
@@ -96,7 +97,7 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 				   "splice_site", "frame_shift_del"];
 
 // Loads a SNVs into the database
-exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file, is_standard, user_id){
+exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = mongoose.model( 'Dataset' ),
@@ -348,12 +349,11 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			mutGenes.push( Gene );
 		}
 
-
 		// Formulate queries and updates for the datbase
 		var query = { title: dataset, group: group_name, is_standard: is_standard },
 			newDataset  = { title: dataset, samples: samples, // samples from input sample list
 					  		group: group_name, updated_at: Date.now(),
-					  		is_standard: is_standard, user_id: user_id };
+					  		is_standard: is_standard, user_id: user_id, color: color };
 
 		if (user_id) query.user_id = user_id;
 

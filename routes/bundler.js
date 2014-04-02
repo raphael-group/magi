@@ -21,6 +21,10 @@ exports.viewData = function getViewData(req, res){
 		var datasetNames = {};
 		datasets.forEach(function(d){ datasetNames[d._id] = d.title; });
 
+		// Create a map of each dataset to its color
+		var datasetColors = {};
+		datasets.forEach(function(d){ if (d.color) datasetColors[d.title] = d.color });
+
 		Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
 			// Create a list of all the transcripts in the mutated genes
 			var transcripts = [];
@@ -91,7 +95,7 @@ exports.viewData = function getViewData(req, res){
 					coverage_str = coverage + "% (" + num_mutated_samples + '/' + num_samples + ")"
 
 				// Assemble data into single Object
-				var mutation_matrix = {M : M, sample2ty: sample2ty, coverage_str: coverage_str};
+				var mutation_matrix = {M : M, sample2ty: sample2ty, coverage_str: coverage_str };
 
 				// Create nodes using the number of mutations in each gene
 				var nodes = genes.map(function(g){
@@ -115,7 +119,8 @@ exports.viewData = function getViewData(req, res){
 										mutation_matrix: mutation_matrix,
 										transcript_data: transcript_data,
 										domainDBs: Object.keys(domainDBs),
-										cna_browser_data: cna_browser_data
+										cna_browser_data: cna_browser_data,
+										datasetColors: datasetColors
 									};
 
 						// Send JSON response
