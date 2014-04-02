@@ -19,7 +19,7 @@ div(ng-controller="ViewCtrl")
 						li
 							i
 								b Network.&nbsp;
-							| Shows the interactions among genes on the HINT+HI2012 interaction networks.
+							| Shows the interactions among genes on the HINT, HPRD, or iRefIndex interaction networks.
 							| You can <b>toggle the interaction networks</b> shown by clicking on them in the legend,
 							| and you can <b>reposition the nodes </b>in the subnetwork for a better view by <b>dragging/dropping</b> them.
 						li
@@ -29,7 +29,7 @@ div(ng-controller="ViewCtrl")
 							| Full ticks represent SNVs, downticks represent deletions, upticks represent amplifications,
 							| and triangles represent fusions, rearragements or splice variants.
 							| Only samples with a mutation in the given subnetwork are shown.
-							| You can <b>zoom in on and drag the oncoprint</b> by scrolling and/or clicking the figure with your mouse.
+							| You can <b>zoom in on and drag the mutation matrix</b> by scrolling and/or clicking the figure with your mouse.
 						li
 							i
 								b Transcript annotation.&nbsp;
@@ -49,9 +49,9 @@ div(ng-controller="ViewCtrl")
 							| Each row represents one sample.
 							| You can mouseover copy number aberration to get more detail information.
 
-		h3 Oncoprint
-		div(id="oncoprint-holder")
-			oncoprint(data="oncoprint_data")
+		h3 Mutation matrix
+		div(id="mutation-matrix-holder")
+			mutationmatrix(data="mutation_matrix")
 
 		hr(style="clear:both;margin:0px;")
 

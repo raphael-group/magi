@@ -18,6 +18,9 @@ var app = module.exports = express();
 app.locals.moment = require('moment');
 app.locals.production = app.get('env') === 'production';
 
+// Set the feedback widget ID based on whether we are in dev or production
+app.locals.webengageID = app.get('env') === 'production' ? 'aa131322' : '~47b66aaa';
+
 // Load models to register their schemas
 var user = require( './model/user' ),
 	database = require( './model/datasets' ),
@@ -124,6 +127,7 @@ app.get('/terms', routes.terms)
 app.get('/contact', routes.contact)
 app.get('/support', routes.support)
 app.get('/privacy', routes.privacy)
+app.get('/acknowledgements', routes.acknowledgements)
 
 // set up the authentication routes
 app.get('/login', routes.login);

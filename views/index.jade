@@ -71,12 +71,17 @@ block body
                 label
                   //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
                   //- dataset name with a non-letter (which would break HTML rules)
-                  input(type="checkbox", name="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
+                  input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
                 | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
           br
+      div(id="example-queries")
+        h4 Example queries
+        a(id="swi-snf-pan-can") SWI-SNF / TCGA Pan-Cancer
+        a(id="cohesin-pan-can") Cohesin / TCGA Pan-Cancer
+        a(id="pi3k-gbm") PI(3)K and BRAF / TCGA GBM
 
-      hr(style="clear:both")
-      div(id="component-descriptions", style="width:700px")
+      hr
+      div(id="component-descriptions")
         h3 Components
         br
         a(name="oncoprint")
@@ -186,3 +191,4 @@ block body
   script(src='components/jquery-form/jquery.form.js')
   script(src='js/banner.js')
   script(src='js/query-control.js')
+  script(src='js/example-queries.js')

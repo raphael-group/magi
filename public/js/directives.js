@@ -74,20 +74,20 @@ angular.module('cgat.directives', []).
         // Clear the elements inside of the directive
         vis.selectAll('*').remove();
 
-        // We extract the width of the parent's parent, because the lolliplot's
+        // We extract the width of the parent's parent, because the transcript plot's
         // are hidden by default
         var styles = styling.data();
-        styles.lolliplot.width = $(elm[0]).parent().parent().width();
+        styles.transcript_plot.width = $(elm[0]).parent().parent().width();
 
-        // Merge the global and oncoprint styles into one
-        var style = styles.lolliplot;
+        // Merge the global and transcript plot styles into one
+        var style = styles.transcript_plot;
         for (var attrname in styles.global)
             style[attrname] = styles.global[attrname];
 
         // Draw the transcript with a legend
         vis.datum(data)
           .call(
-            lolliplots({ style: style })
+            transcript_plot({ style: style })
               .addLegend()
           );
       });
@@ -99,20 +99,20 @@ angular.module('cgat.directives', []).
         // Clear the elements inside of the directive
         vis.selectAll('*').remove();
 
-        // We extract the width of the parent's parent, because the lolliplot's
+        // We extract the width of the parent's parent, because the transcript plot's
         // are hidden by default
         var styles = styling.data();
-        styles.lolliplot.width = $(elm[0]).parent().parent().width();
+        styles.transcript_plot.width = $(elm[0]).parent().parent().width();
 
-        // Merge the global and oncoprint styles into one
-        var style = styles.lolliplot;
+        // Merge the global and transcript plot styles into one
+        var style = styles.transcript_plot;
         for (var attrname in styles.global)
             style[attrname] = styles.global[attrname];
 
         // Draw the transcript with a legend
         vis.datum(scope.data)
           .call(
-            lolliplots({ style: style, domainDB: db })
+            transcript_plot({ style: style, domainDB: db })
               .addLegend()
           );
 
@@ -158,8 +158,7 @@ angular.module('cgat.directives', []).
       }
     }
   }).
-
-  directive("oncoprint", function(styling){
+  directive("mutationmatrix", function(styling){
     return {
       restrict: 'E',
       scope: { data: '=' },
@@ -167,7 +166,7 @@ angular.module('cgat.directives', []).
         // set up initial svg object
         var vis = d3.select(elm[0])
           .append("div")
-          .attr("id", "oncoprint");
+          .attr("id", "mutation-matrix");
 
         scope.$watch('data', function(data){
           // Do nothing if the object is the same or hasn't updated
@@ -178,17 +177,17 @@ angular.module('cgat.directives', []).
 
           // Use our D3 cancer genomics library to draw the subnetwork
           var styles = styling.data();
-          styles.oncoprint.width = $(elm[0]).parent().width();
+          styles.mutation_matrix.width = $(elm[0]).parent().width();
 
-          // Merge the global and oncoprint styles into one
-          var style = styles.oncoprint;
+          // Merge the global and mutation matrix styles into one
+          var style = styles.mutation_matrix;
           for (var attrname in styles.global)
               style[attrname] = styles.global[attrname];
 
-          // Create the oncoprint
+          // Create the mutation matrix
           vis.datum(data)
             .call(
-              window.oncoprint({style: style})
+              window.mutation_matrix({style: style})
               .addCoverage()
               .addLegend()
               .addSortingMenu()

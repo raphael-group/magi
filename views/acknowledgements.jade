@@ -1,0 +1,106 @@
+extends layout
+block body
+
+	div(class="container", id="acknowledgements")
+		h3 Acknowledgements
+		| CGAT was created by the <a href="http://compbio.cs.brown.edu" target="_new">Raphael research group</a> at <a href="http://brown.edu" target="_new">Brown University.</a>
+		br
+		br
+		h4 Funding
+		| CGAT is supported by Brown University, the National Science Foundation and National Institutes of Health. 
+		br
+		br
+		a(href="http://www.brown.edu/", target="_new")
+			img(src="img/acknowledgements/brown-gray.gif", id="brown-gray", title="Brown University")
+			img(src="img/acknowledgements/brown-color.gif", id="brown-color", title="Brown University", class="color")
+		a(href="http://www.nsf.gov/", target="_new")
+			img(src="img/acknowledgements/nsf-gray.gif" id="nsf-gray", title="National Science Foundation")
+			img(src="img/acknowledgements/nsf-color.gif" id="nsf-color", title="National Science Foundation", class="color")
+		a(href="http://www.nih.gov/", target="_new")
+			img(src="img/acknowledgements/nih-gray.gif", id="nih", title="National Institutes of Health")
+		br
+		br
+		h4 Data
+		| CGAT uses public mutation data from The Cancer Genome Atlas's Pan-Cancer project [1], 
+		br
+		br
+		a(href="http://cancergenome.nih.gov/", target="_new")
+			img(src="img/acknowledgements/tcga-gray.gif", id="tcga-gray", title="The Cancer Genome Atlas")
+			img(src="img/acknowledgements/tcga-color.gif", id="tcga-color", title="The Cancer Genome Atlas", class="color")
+		br
+		br
+		| the <a href="http://hint.yulab.org/" target="_new">HINT</a>, <a href="http://hprd.org/" target="_new">HPRD</a>,
+		| <a href="http://irefindex.org/wiki/index.php?title=iRefIndex" target="_new">iRefIndex</a>,
+		| and <a href="http://homes.gersteinlab.org/Khurana-PLoSCompBio-2013/" target="_new">Multinet</a> interaction networks [2-5],
+		br
+		br
+		a(href="http://hint.yulab.org/", target="_new")
+			img(src="img/acknowledgements/hint-gray.gif", id="hint-gray", title="HINT interaction network")
+			img(src="img/acknowledgements/hint-color.gif", id="hint-color", title="HINT interaction network", class="color")
+		a(href="http://hprd.org/", target="_new")
+			img(src="img/acknowledgements/hprd-gray.gif", id="hprd-gray", title="HPRD interaction network")
+			img(src="img/acknowledgements/hprd-color.gif", id="hprd-color", title="HPRD interaction network", class="color")
+		a(href="http://irefindex.org/wiki/index.php?title=iRefIndex", target="_new")
+			img(src="img/acknowledgements/irefindex-gray.gif", id="irefindex-gray", title="iRefIndex interaction network")
+			img(src="img/acknowledgements/irefindex-color.gif", id="irefindex-color", title="iRefIndex interaction network", class="color")
+		br
+		br
+		| and the <a href="http://pfam.sanger.ac.uk/" target="_new">PFAM</a>, <a href="http://smart.embl-heidelberg.de/" target="_new">SMART</a>,
+		| and <a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml" target="_new">Conserved Domain</a> protein domain databases [6-9].
+		br
+		br
+		a(href="http://pfam.sanger.ac.uk/", target="_new")
+			img(src="img/acknowledgements/pfam-gray.gif", id="pfam-gray", title="PFAM protein domain database")
+			img(src="img/acknowledgements/pfam-color.gif", id="pfam-color", title="PFAM protein domain database", class="color")
+		a(href="http://smart.embl-heidelberg.de/", target="_new")
+			img(src="img/acknowledgements/smart-gray.gif", id="smart-gray", title="SMART protein domain database")
+			img(src="img/acknowledgements/smart-color.gif", id="smart-color", title="SMART protein domain database", class="color")
+		a(href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml", target="_new")
+			img(src="img/acknowledgements/cd-gray.gif", id="cd-gray", title="Conserved Domain protein domain database")
+			img(src="img/acknowledgements/cd-color.gif", id="cd-color", title="Conserved Domain protein domain database", class="color")
+		br
+		br
+		h4 References
+		ol
+			li 
+				a(href="http://www.ncbi.nlm.nih.gov/pubmed/24071849", target="_new")
+					| Wildstein, J. <i>et al</i>. (2013) The Cancer Genome Atlas Pan-Cancer analysis project. <i>Nat. Genet.</i> 45, 1113–1120.
+			li
+				a(href="http://www.ncbi.nlm.nih.gov/pubmed/22846459", target="_new")
+					| Das J. and Yu H. (2012) HINT: High-quality protein interactomes and their applications in understanding human disease. <i>BMC Systems Biology</i>, 30;6(1):92. 
+			li
+				a(href="http://www.ncbi.nlm.nih.gov/pubmed/18988627", target="_new")
+					| Prasad, T. S. K. <i>et al</i>. (2009) Human Protein Reference Database - 2009 Update. <i>Nucleic Acids Research</i>. 37, D767-72.
+			li
+				a(href="http://www.ncbi.nlm.nih.gov/pubmed/18823568?dopt=Abstract", target="_new")
+					| Razick, S., Magklaras, G., Donaldson, IM. (2008) iRefIndex: A consolidated protein interaction database with provenance. <i>BMC Bioinformatics</i>. 9(1):405.
+			li
+				a(href="http://www.ncbi.nlm.nih.gov/pubmed/23505346", target="_new")
+					| Khurana E., Fu Y., Chen J., Gerstein, M. (2013) Interpretation of Genomic Variants Using a Unified Biological Network Approach. <i>PLoS Comput Biol</i> 9(3): e1002886.
+			li
+				a(href="http://www.ncbi.nlm.nih.gov/pubmed/22127870", target="_new")
+					| Punta <i>et al.</i> (2012) The Pfam protein families database. <i>Nucleic Acids Research</i> Database Issue 40:D290-D301
+			li
+				a(href="http://www.ncbi.nlm.nih.gov/pubmed/9600884", target="_new")
+					| Schultz <i>et al.</i> (1998) SMART, a simple modular architecture research tool: Identification of signaling domains. <i>PNAS</i> 95 (11) 5857-5864.
+			li
+				a(href="https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0CCkQFjAA&url=http%3A%2F%2Fnar.oxfordjournals.org%2Fcontent%2F40%2FD1%2FD302.abstract%3Fkeytype%3Dref%26ijkey%3DzEUBqwPAoFl4T9p&ei=AjY8U-ahFMresASdwYC4CQ&usg=AFQjCNH2PM58ZEvSTVbT07jM5C77uYpoFw&sig2=Iqrt7R2Z-cbCX_3_ok8NyA&bvm=bv.63934634,d.cWc", target="_new")
+					| Letunic, I., Doerks, T., Bork, P. (2012) SMART 7: recent updates to the protein domain annotation resource. <i>Nucl. Acids Res.</i> 40 (D1): D302-D305.
+			li
+				a(href="http://www.ncbi.nlm.nih.gov/pubmed/23197659?dopt=AbstractPlus", target="_new")
+					| Marchler-Bauer <i>et al.</i> (2013) CDD: conserved domains and protein three-dimensional structure. <i>Nucleic Acids Res</i> 41(D1):D348-52. Epub.
+
+
+	script(src='components/jquery/dist/jquery.min.js')
+	script.
+		var imgs = [ "brown", "nsf", "tcga", "hint", "hprd", "irefindex", "pfam", "smart", "cd"];
+		imgs.forEach(function(name){
+			$("img#" + name + "-gray").mouseover(function(){
+				$(this).hide();
+				$("img#" + name + "-color").show();
+			});
+			$("img#" + name + "-color").mouseout(function(){
+				$(this).hide();
+				$("img#" + name + "-gray").show();
+			});
+		});

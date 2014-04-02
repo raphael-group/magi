@@ -109,6 +109,11 @@ ul.db-group{
 	list-style-type: none;
 }
 
+div#example-queries{ clear:both; }
+div#example-queries a{ margin-right:15px; }
+textarea.highlight, li.highlight{ border:1px dashed red;}
+ul.highlight{ border-bottom:1px dashed red;}
+
 div#component-descriptions{ width:700px; }
 div#component-descriptions h4{ background:#666; color:#fff; padding-left:6px;padding-bottom:3px;padding-top:3px; }
 div#component-descriptions h4 a{ color:#F80000; }
@@ -117,6 +122,10 @@ div#component-descriptions img{ border:1px solid #d3d3d3;padding-top:5px;padding
 /* Account page */
 table tr.even td{ background:#fff;}
 table tr.odd td, table tr.odd th{ background:rgb(249, 249, 249);}
+
+/* Acknowledgements page */
+div#acknowledgements img{ margin-right:25px;}
+div#acknowledgements img.color{ display:none;}
 
 /* Upload page */
 div#upload form{ width:40%;}

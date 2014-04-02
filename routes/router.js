@@ -13,6 +13,7 @@ exports.terms   = about.terms;
 exports.contact = about.contact;
 exports.support = about.support;
 exports.privacy = about.privacy;
+exports.acknowledgements = about.acknowledgements;
 
 // Authentication routes
 exports.account = auth.account;

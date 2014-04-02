@@ -51,11 +51,11 @@ exports.queryhandler = function queryhandler(req, res){
 
 	// Split genes while ignoring blank lines
 	genes = genes.replace(/(\r\n|\n|\r)/gm, "\n");
-	genes = genes.split("\n").filter(function(g){ return g != ""; }).join("-");
+	genes = genes.split("\n").filter(function(g){ return g != ""; }).join(",");
 
 	// Make query string
 	var querystring = require( 'querystring' ),
-		query = querystring.stringify( {genes: genes, datasets: datasets.join("-") } );
+		query = querystring.stringify( {genes: genes, datasets: datasets.join(",") } );
 
 	res.redirect('/view#!/?' + query)
 

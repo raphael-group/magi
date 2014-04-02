@@ -21,3 +21,9 @@ exports.privacy  = function privacy(req, res){
 	console.log('/privacy')
 	res.render('privacy', {user: req.user});
 }
+
+// Route for the acknowledgements page
+exports.acknowledgements  = function privacy(req, res){
+	console.log('/acknowledgements')
+	res.render('acknowledgements', {user: req.user});
+}

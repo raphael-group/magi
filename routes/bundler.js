@@ -6,8 +6,8 @@ var mongoose = require( 'mongoose' ),
 
 exports.viewData = function getViewData(req, res){
 	// Parse query params
-	var genes = req.query.genes.split("-"),
-		dataset_ids = req.query.datasets.split("-");
+	var genes = req.query.genes.split(","),
+		dataset_ids = req.query.datasets.split(",");
 
 	// Load and format SNVs then PPIs
 	// Then return JSON object.
@@ -41,7 +41,7 @@ exports.viewData = function getViewData(req, res){
 					})
 				});
 
-				// Create empty Objects to store transcript/oncoprint data
+				// Create empty Objects to store transcript/mutation matrix data
 				var M = {},
 					transcript_data = {}
 					sample2ty = {},
@@ -91,7 +91,7 @@ exports.viewData = function getViewData(req, res){
 					coverage_str = coverage + "% (" + num_mutated_samples + '/' + num_samples + ")"
 
 				// Assemble data into single Object
-				var oncoprint_data = {M : M, sample2ty: sample2ty, coverage_str: coverage_str};
+				var mutation_matrix = {M : M, sample2ty: sample2ty, coverage_str: coverage_str};
 
 				// Create nodes using the number of mutations in each gene
 				var nodes = genes.map(function(g){
@@ -112,7 +112,7 @@ exports.viewData = function getViewData(req, res){
 						var subnetwork_data = { edges: edges, nodes: nodes };
 						var pkg = 	{
 										subnetwork_data: subnetwork_data,
-										oncoprint_data: oncoprint_data,
+										mutation_matrix: mutation_matrix,
 										transcript_data: transcript_data,
 										domainDBs: Object.keys(domainDBs),
 										cna_browser_data: cna_browser_data
