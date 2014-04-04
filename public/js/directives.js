@@ -57,7 +57,7 @@ angular.module('cgat.directives', []).
   directive("transcript", function(styling){
     return {
       restrict: 'E',
-      scope: { data: '=', db: '='}, // Hsin-Ta added for domain selection
+      scope: { data: '=', db: '=', datasetcolors: '='},
       link: function(scope, elm, attrs){
       // set up initial svg object
       var vis = d3.select(elm[0])
@@ -86,9 +86,9 @@ angular.module('cgat.directives', []).
 
         // Add any dataset specific colors
         style.colorSchemes =  { sampleType: {} };
-        if (scope.datasetColors){
-          Object.keys(scope.datasetColors).forEach(function(name){
-            style.global.colorSchemes.sampleType[name] = scope.datasetColors[name];
+        if (scope.datasetcolors){
+          Object.keys(scope.datasetcolors).forEach(function(name){
+            style.colorSchemes.sampleType[name] = scope.datasetcolors[name];
           });
         }
 
@@ -97,6 +97,7 @@ angular.module('cgat.directives', []).
           .call(
             transcript_plot({ style: style })
               .addLegend()
+              .addVerticalPanning()
           );
       });
       // Domain db selection
@@ -119,9 +120,9 @@ angular.module('cgat.directives', []).
 
         // Add any dataset specific colors
         style.colorSchemes =  { sampleType: {} };
-        if (scope.datasetColors){
-          Object.keys(scope.datasetColors).forEach(function(name){
-            style.global.colorSchemes.sampleType[name] = scope.datasetColors[name];
+        if (scope.datasetcolors){
+          Object.keys(scope.datasetcolors).forEach(function(name){
+            style.colorSchemes.sampleType[name] = scope.datasetcolors[name];
           });
         }
 
@@ -130,6 +131,7 @@ angular.module('cgat.directives', []).
           .call(
             transcript_plot({ style: style, domainDB: db })
               .addLegend()
+              .addVerticalPanning()
           );
 
       });
@@ -141,7 +143,7 @@ angular.module('cgat.directives', []).
   directive("cnabrowser", function(styling){
     return {
       restrict: 'E',
-      scope: { data: '=', sty: '='},
+      scope: { data: '=', sty: '=', datasetcolors: '='},
       link: function(scope, elm, attrs){
       // set up initial svg object
       var vis = d3.select(elm[0])
@@ -166,9 +168,9 @@ angular.module('cgat.directives', []).
 
         // Add any dataset specific colors
         style.colorSchemes =  { sampleType: {} };
-        if (scope.datasetColors){
-          Object.keys(scope.datasetColors).forEach(function(name){
-            style.colorSchemes.sampleType[name] = scope.datasetColors[name];
+        if (scope.datasetcolors){
+          Object.keys(scope.datasetcolors).forEach(function(name){
+            style.colorSchemes.sampleType[name] = scope.datasetcolors[name];
           });
         }
 
@@ -185,7 +187,7 @@ angular.module('cgat.directives', []).
   directive("mutationmatrix", function(styling){
     return {
       restrict: 'E',
-      scope: { data: '=' },
+      scope: { data: '=', datasetcolors: '=' },
       link: function(scope, elm, attrs){
         // set up initial svg object
         var vis = d3.select(elm[0])
@@ -210,9 +212,9 @@ angular.module('cgat.directives', []).
 
           // Add any dataset specific colors
           style.colorSchemes =  { sampleType: {} };
-          if (scope.datasetColors){
-            Object.keys(scope.datasetColors).forEach(function(name){
-              style.colorSchemes.sampleType[name] = scope.datasetColors[name];
+          if (scope.datasetcolors){
+            Object.keys(scope.datasetcolors).forEach(function(name){
+              style.colorSchemes.sampleType[name] = scope.datasetcolors[name];
             });
           }
 
