@@ -237,7 +237,7 @@ angular.module('cgat.directives', []).
       scope: {},
       link: function(scope, elm, attrs) {
         // create the page elements that initiate the save POST request
-        var parent = d3.select(elm[0])
+        var parent = d3.select(elm[0]);
         var elem = parent
           .append('div')
           //.attr('id', 'saveBox');
@@ -251,12 +251,18 @@ angular.module('cgat.directives', []).
           var svg = d3.select('div#subnetwork').select('#figure').node(),
               name = 'name';
 
+          console.log(svg);
+
           // send out the post request
           $.post('/saveSVG', {'html': svg.outerHTML, 'fileName': name})
             .done(function(res) {
+              console.log(Object.keys(res).sort());
+              var svgStr = (new XMLSerializer).serializeToString(res['childNodes'][0]);
+              console.log(svgStr);
+              console.log('--');
               // When the post has returned, create a link in the browser to download the SVG
               function download() {
-                var url = window.URL.createObjectURL(new Blob([res], { "type" : "text\/xml" }));
+                var url = window.URL.createObjectURL(new Blob([svgStr], { "type" : "text\/xml" }));
                 var a = d3.select("body")
                     .append('a')
                     .attr("download", "test.svg")
@@ -265,9 +271,9 @@ angular.module('cgat.directives', []).
 
                 a.node().click();
 
-                setTimeout(function() {
-                  window.URL.revokeObjectURL(url);
-                }, 10);
+                // setTimeout(function() {
+                //   window.URL.revokeObjectURL(url);
+                // }, 10);
               }
 
               // create a button to download the response

@@ -22,5 +22,10 @@
   },
   "repository": {
     "type": "git"
-  }
+  },
+  "description": "This repository contains the code to run a webserver based on the gd3 suite of genomic visualization tools. The server allows you to query a set of genes' mutations in cohorts of tumors, and to see mutations and protein-protein interactions among those genes.",
+  "main": "oauth2.js",
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
 }
