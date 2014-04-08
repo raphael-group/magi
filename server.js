@@ -192,7 +192,7 @@ function saveSVG(req, res) {
 
     res.setHeader('Content-Disposition', 'attachment');
     res.setHeader('Content-type', 'image/svg+xml');
-    //res.render('svg', {_layoutFile:'', htm:svgNode, css:null});
+    console.log(svgNode.outerHTML)
     res.send(svgNode.outerHTML);
   };
 
