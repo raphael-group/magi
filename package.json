@@ -15,7 +15,6 @@
     "jade": "latest",
     "mongoose": "latest",
     "bower": "latest",
-    "q": "latest",
     "formidable": "latest",
     "passport": "latest",
     "passport-google-oauth": "latest",

@@ -10,6 +10,7 @@ var express  = require('express'),
 	mongoose = require('mongoose'),
 	config   = require('./oauth2.js'),
 	passport = require('passport'),
+  jsdom    = require('jsdom'),
 	GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 var app = module.exports = express();
@@ -157,6 +158,8 @@ app.get('/sitemap.xml', function(req, res) {
 });
 
 
+
+
 // redirect all others to the index (HTML5 history)
 //app.get('*', routes.index);
 
@@ -164,6 +167,36 @@ app.get('/sitemap.xml', function(req, res) {
 function ensureAuthenticated(req, res, next) {
 	if (req.isAuthenticated()) { return next(); }
 	res.redirect('/login')
+}
+
+/**
+ * Save image response functions
+ */
+
+// Handle save figure requests
+app.post('/saveSVG', function(req, res) {
+  saveSVG(req, res);
+});
+
+function saveSVG(req, res) {
+  var bowerDir = 'public/components/',
+      fileName = req.body['fileName'],
+      svgHTML = req.body['html'];
+
+  // run the jsdom headless browser
+  var runHeadless = function (errors, window) {
+    var svg = window.d3.select('svg');
+    svg.attr('xmlns', 'http://www.w3.org/2000/svg')
+         .attr('xmlns:xlink','http://www.w3.org/1999/xlink');
+    var svgNode = svg.node();
+
+    res.setHeader('Content-Disposition', 'attachment');
+    res.setHeader('Content-type', 'image/svg+xml');
+    //res.render('svg', {_layoutFile:'', htm:svgNode, css:null});
+    res.send(svgNode.outerHTML);
+  };
+
+  jsdom.env(svgHTML,[bowerDir+'d3/d3.js', bowerDir+'jquery/dist/jquery.js'], runHeadless);
 }
 
 /**

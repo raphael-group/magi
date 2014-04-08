@@ -230,4 +230,60 @@ angular.module('cgat.directives', []).
       })
       }
     }
-  });
+  }).
+  directive('savebox', function() {
+    return {
+      restrict: 'E',
+      scope: {},
+      link: function(scope, elm, attrs) {
+        // create the page elements that initiate the save POST request
+        var parent = d3.select(elm[0])
+        var elem = parent
+          .append('div')
+          //.attr('id', 'saveBox');
+          .append('a')
+            .attr('id','saveBox')
+            .text('Save');
+
+        // event handlers that send and listen for POST requests
+        $('#saveBox').click(function() {
+          // harvest the SVG from the subnetwork
+          var svg = d3.select('div#subnetwork').select('#figure').node(),
+              name = 'name';
+
+          // send out the post request
+          $.post('/saveSVG', {'html': svg.outerHTML, 'fileName': name})
+            .done(function(res) {
+              // When the post has returned, create a link in the browser to download the SVG
+              function download() {
+                var url = window.URL.createObjectURL(new Blob([res], { "type" : "text\/xml" }));
+                var a = d3.select("body")
+                    .append('a')
+                    .attr("download", "test.svg")
+                    .attr("href", url)
+                    .style("display", "none");
+
+                a.node().click();
+
+                setTimeout(function() {
+                  window.URL.revokeObjectURL(url);
+                }, 10);
+              }
+
+              // create a button to download the response
+              var button = parent
+                .append("button")
+                  .style("width", "150px")
+                  .style("font-size", "12px")
+                  .style("line-height", "1.4em")
+                  .style("margin", "5px 0 0 0")
+                  .text("Download")
+                  .on("click", function(d, i) {
+                    d3.event.preventDefault();
+                    download();
+                  });
+
+            });
+        });
+      }
+    }});
