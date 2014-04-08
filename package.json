@@ -18,7 +18,8 @@
     "formidable": "latest",
     "passport": "latest",
     "passport-google-oauth": "latest",
-    "moment": "latest"
+    "moment": "latest",
+    "jsdom": "latest"
   },
   "repository": {
     "type": "git"
