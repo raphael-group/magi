@@ -25,6 +25,10 @@ exports.viewData = function getViewData(req, res){
 		var datasetColors = {};
 		datasets.forEach(function(d){ if (d.color) datasetColors[d.title] = d.color });
 
+		// Create a map of each 
+		var typeToNumSamples = {};
+		datasets.forEach(function(d){ typeToNumSamples[d.title] = d.samples.length;  });
+
 		Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
 			// Create a list of all the transcripts in the mutated genes
 			var transcripts = [];
@@ -48,7 +52,7 @@ exports.viewData = function getViewData(req, res){
 				// Create empty Objects to store transcript/mutation matrix data
 				var M = {},
 					transcript_data = {}
-					sample2ty = {},
+					sampleToTypes = {},
 					cna_browser_data = {};
 
 				// Initialize with genes as keys (in case genes aren't in the data)
@@ -70,7 +74,7 @@ exports.viewData = function getViewData(req, res){
 
 					// Load the mutated samples
 					for (var s in G.mutated_samples){
-						sample2ty[s] = datasetNames[G.dataset_id];
+						sampleToTypes[s] = datasetNames[G.dataset_id];
 						M[G.gene][s] = G.mutated_samples[s];
 					}
 
@@ -88,14 +92,9 @@ exports.viewData = function getViewData(req, res){
 						trsData.mutations = updatedMutations;
 					}
 				}
-				
-				// Compute coverage of gene set
-				var num_mutated_samples = Object.keys(sample2ty).length,
-					coverage = (num_mutated_samples * 100. / num_samples).toFixed(2),
-					coverage_str = coverage + "% (" + num_mutated_samples + '/' + num_samples + ")"
 
 				// Assemble data into single Object
-				var mutation_matrix = {M : M, sample2ty: sample2ty, coverage_str: coverage_str };
+				var mutation_matrix = {M : M, sampleToTypes: sampleToTypes, typeToNumSamples: typeToNumSamples };
 
 				// Create nodes using the number of mutations in each gene
 				var nodes = genes.map(function(g){
@@ -103,10 +102,10 @@ exports.viewData = function getViewData(req, res){
 					return { name: g, heat: mutSamples.length };
 				});
 
-				// Add sample2ty to each cna_browser gene
+				// Add sampleToTypes to each cna_browser gene
 				mutGenes.forEach(function(g){
 					if (g.cnas){
-						cna_browser_data[g.gene].sample2ty = sample2ty;
+						cna_browser_data[g.gene].sampleToTypes = sampleToTypes;
 					}
 				});
 
