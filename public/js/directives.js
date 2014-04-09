@@ -322,7 +322,7 @@ angular.module('cgat.directives', []).
         var subnetSave = saveContainer
                 .append('a')
                   .attr('id','saveSubnetBox')
-                  .text('Save checked visualizations');
+                  .text('Submit download request');
 
         // event handlers that send and listen for POST requests
         $('#saveSubnetBox').click(function() {
