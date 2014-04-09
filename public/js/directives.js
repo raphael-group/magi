@@ -305,24 +305,31 @@ angular.module('cgat.directives', []).
         ];
 
         var saveCheckboxes = saveContainer.append('ul')
-          .style('list-style', 'none')
-          .style('padding', '0px')
-          .selectAll('li')
-          .data(saveOptData)
-          .enter()
-          .append('li')
-            .style('display', 'inline')
-            .style('margin-right', '20px')
-            .append('label')
-              .text(function(d){return d.name})
-              .append('input')
-                .attr('id', function(d){return d.id})
-                .attr('type', 'checkbox');
+            .style('list-style', 'none')
+            .style('padding', '0px')
+            .selectAll('li')
+            .data(saveOptData)
+            .enter()
+            .append('li')
+              .style('display', 'inline')
+              .style('margin-right', '20px')
+              .append('label')
+                .text(function(d){return d.name})
+                .append('input')
+                  .attr('id', function(d){return d.id})
+                  .attr('type', 'checkbox');
 
-        var subnetSave = saveContainer
-                .append('a')
-                  .attr('id','saveSubnetBox')
-                  .text('Submit download request');
+        var subnetSave = saveContainer.append('a')
+            .attr('id','saveSubnetBox')
+            .text('Submit download request');
+
+        var checkMessage = saveContainer.append('p')
+            .style('background', 'rgb(242, 222, 222)')
+            .style('border', '1px solid rgb(205, 174, 179)')
+            .style('border-radius', '4px')
+            .style('display', 'none')
+            .style('padding', '5px')
+            .text('Error: Please select at least one visualization to download.');
 
         // event handlers that send and listen for POST requests
         $('#saveSubnetBox').click(function() {
@@ -338,8 +345,10 @@ angular.module('cgat.directives', []).
               || saveResponses[MUT_MTX].checked == true;
 
           if (saveAtLeastOne == false) {
-            alert('Please select at least one visualization to save.');
+            checkMessage.style('display', 'block');
             return;
+          } else {
+            checkMessage.style('display', 'none');
           }
 
           if (saveResponses[CNA_VIZ].checked == true) {
@@ -348,6 +357,8 @@ angular.module('cgat.directives', []).
           }
           if (saveResponses[TRN_ANT].checked == true) {
             // If a gene transcript hasn't been selected, don't try to save an SVG
+            var tMenu = d3.select('div#transcript-holder select').node(),
+                tMenuOptSelected = tMenu.selectedIndex;
             if (tMenuOptSelected != 0) {
               saveSVG('transcript-svg', 'transcript-annotation.svg');
             }
@@ -358,9 +369,6 @@ angular.module('cgat.directives', []).
           if (saveResponses[MUT_MTX].checked == true) {
             saveSVG('mutation-matrix', 'mutation-matrix.svg');
           }
-
-          var tMenu = d3.select('div#transcript-holder select').node(),
-              tMenuOptSelected = tMenu.selectedIndex;
 
           parent.selectAll('button').remove();
         });
