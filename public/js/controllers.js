@@ -39,7 +39,7 @@ angular.module('cgat.controllers', []).
       $scope.numTranscripts = function(transcripts){ return Object.keys(transcripts).length; };
 
       // Check if there is any data
-      var noMutations = Object.keys(json.mutation_matrix.sample2ty).length == 0,
+      var noMutations = Object.keys(json.mutation_matrix.sampleToTypes).length == 0,
           noEdges = json.subnetwork_data.edges.length == 0;
       
       $scope.noData = noMutations && noEdges;
