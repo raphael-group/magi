@@ -175,11 +175,10 @@ function ensureAuthenticated(req, res, next) {
 
 // Handle save figure requests
 app.post('/saveSVG', function(req, res) {
-  console.log('post received');
   res.send(req.body['html']);
-  //saveSVG(req, res);
 });
 
+// Not needed as of the moment; delete if not needed for PDF generation
 function saveSVG(req, res) {
   var bowerDir = 'public/components/',
       fileName = req.body['fileName'],
