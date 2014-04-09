@@ -298,13 +298,13 @@ angular.module('cgat.directives', []).
 
         // Options for user selection on which viz to save
         var saveOptData = [
+            {name:'Copy number browser', id:'cna'},
             {name:'Mutation matrix', id:'mutmatrix'},
             {name:'Subnetwork', id:'subnetwork'},
-            {name:'Transcript annotation', id:'transcript'},
-            {name:'Copy number browser', id:'cna'}
+            {name:'Transcript annotation', id:'transcript'}
         ];
 
-        saveContainer.append('ul')
+        var saveCheckboxes = saveContainer.append('ul')
           .style('list-style', 'none')
           .style('padding', '0px')
           .selectAll('li')
@@ -326,16 +326,43 @@ angular.module('cgat.directives', []).
 
         // event handlers that send and listen for POST requests
         $('#saveSubnetBox').click(function() {
+          var saveResponses = saveCheckboxes[0],
+              CNA_VIZ = 0,
+              MUT_MTX = 1,
+              SUB_NET = 2,
+              TRN_ANT = 3;
+
+          var saveAtLeastOne = saveResponses[CNA_VIZ].checked == true
+              || saveResponses[TRN_ANT].checked == true
+              || saveResponses[SUB_NET].checked == true
+              || saveResponses[MUT_MTX].checked == true;
+
+          if (saveAtLeastOne == false) {
+            alert('Please select at least one visualization to save.');
+            return;
+          }
+
+          if (saveResponses[CNA_VIZ].checked == true) {
+            // TODO implement
+            //saveSVG('cna-viz', 'cna.svg');
+          }
+          if (saveResponses[TRN_ANT].checked == true) {
+            // If a gene transcript hasn't been selected, don't try to save an SVG
+            if (tMenuOptSelected != 0) {
+              saveSVG('transcript-svg', 'transcript-annotation.svg');
+            }
+          }
+          if (saveResponses[SUB_NET].checked == true) {
+            saveSVG('subnetwork', 'subnetwork.svg');
+          }
+          if (saveResponses[MUT_MTX].checked == true) {
+            saveSVG('mutation-matrix', 'mutation-matrix.svg');
+          }
+
           var tMenu = d3.select('div#transcript-holder select').node(),
               tMenuOptSelected = tMenu.selectedIndex;
 
           parent.selectAll('button').remove();
-          saveSVG('subnetwork', 'subnetwork.svg');
-          saveSVG('mutation-matrix', 'mutation-matrix.svg');
-          // If a gene transcript hasn't been selected, don't try to save an SVG
-          if (tMenuOptSelected != 0) {
-            saveSVG('transcript-svg', 'transcript-annotation.svg');
-          }
         });
       }
     }});
