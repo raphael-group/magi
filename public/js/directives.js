@@ -236,46 +236,44 @@ angular.module('cgat.directives', []).
       restrict: 'E',
       scope: {},
       link: function(scope, elm, attrs) {
-        // create the page elements that initiate the save POST request
-        var parent = d3.select(elm[0]);
-        var elem = parent
-          .append('div')
-          //.attr('id', 'saveBox');
-          .append('a')
-            .attr('id','saveBox')
-            .text('Save');
-
-        // event handlers that send and listen for POST requests
-        $('#saveBox').click(function() {
+        // Generalized post code to handle SVG download for each visualization
+        function saveSVG(divContainerId, saveFileName) {
           // harvest the SVG from the subnetwork
-          var svg = d3.select('div#subnetwork').select('#figure').node(),
-              name = 'name';
+          var svg = null,
+              name = '';
 
-          console.log(svg);
+          // Switch statement hack to change SVG search based on viz
+          if (saveFileName == 'subnetwork.svg') {
+            svg = d3.select('div#'+divContainerId).select('#figure').node();
+          } else if (saveFileName == 'mutation-matrix.svg') {
+            svg = d3.select('div#'+divContainerId).select('svg#mutation-matrix').node();
+          } else if (saveFileName == 'transcript-annotation.svg') {
+            console.log()
+            svg = d3.selectAll('div.'+divContainerId).selectAll('svg')[0][0];
+          } else {
+            svg = d3.select('div#'+divContainerId).select('#figure').node();
+          }
 
           // send out the post request
           $.post('/saveSVG', {'html': svg.outerHTML, 'fileName': name})
-            .done(function(res) {
-              console.log(Object.keys(res).sort());
-              var svgStr = (new XMLSerializer).serializeToString(res['childNodes'][0]);
-              console.log(svgStr);
-              console.log('--');
+            .done(function(svgStr) {
+
               // When the post has returned, create a link in the browser to download the SVG
               function download() {
+                // todo: like crowbar
                 var url = window.URL.createObjectURL(new Blob([svgStr], { "type" : "text\/xml" }));
                 var a = d3.select("body")
                     .append('a')
-                    .attr("download", "test.svg")
+                    .attr("download", saveFileName)
                     .attr("href", url)
                     .style("display", "none");
 
                 a.node().click();
 
-                // setTimeout(function() {
-                //   window.URL.revokeObjectURL(url);
-                // }, 10);
+                setTimeout(function() {
+                  window.URL.revokeObjectURL(url);
+                }, 10);
               }
-
               // create a button to download the response
               var button = parent
                 .append("button")
@@ -283,13 +281,54 @@ angular.module('cgat.directives', []).
                   .style("font-size", "12px")
                   .style("line-height", "1.4em")
                   .style("margin", "5px 0 0 0")
-                  .text("Download")
+                  .text("Download " + saveFileName)
                   .on("click", function(d, i) {
                     d3.event.preventDefault();
                     download();
                   });
-
+              console.log(button);
             });
+        }
+
+        // create the page elements that initiate the save POST request
+        var parent = d3.select(elm[0]);
+        var saveContainer = parent.append('div');
+
+        // Options for user selection on which viz to save
+        var saveOptData = [
+            {name:'Mutation matrix', id:'mutmatrix'},
+            {name:'Subnetwork', id:'subnetwork'},
+            {name:'Transcript annotation', id:'transcript'},
+            {name:'Copy number browser', id:'cna'}
+        ];
+
+        saveContainer.append('ul')
+          .style('list-style', 'none')
+          .style('padding', '0px')
+          .selectAll('li')
+          .data(saveOptData)
+          .enter()
+          .append('li')
+            .style('display', 'inline')
+            .style('margin-right', '20px')
+            .append('label')
+              .text(function(d){return d.name})
+              .append('input')
+                .attr('id', function(d){return d.id})
+                .attr('type', 'checkbox');
+
+        var subnetSave = saveContainer
+                .append('a')
+                  .attr('id','saveSubnetBox')
+                  .text('Save checked visualizations');
+
+        // event handlers that send and listen for POST requests
+        $('#saveSubnetBox').click(function() {
+          // TODO: rename/refactor mutation and transcript file structure to make this work
+          parent.selectAll('button').remove();
+          saveSVG('subnetwork', 'subnetwork.svg');
+          saveSVG('transcript-svg', 'transcript-annotation.svg');
+          saveSVG('mutation-matrix', 'mutation-matrix.svg');
         });
       }
     }});

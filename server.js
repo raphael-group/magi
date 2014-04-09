@@ -175,7 +175,9 @@ function ensureAuthenticated(req, res, next) {
 
 // Handle save figure requests
 app.post('/saveSVG', function(req, res) {
-  saveSVG(req, res);
+  console.log('post received');
+  res.send(req.body['html']);
+  //saveSVG(req, res);
 });
 
 function saveSVG(req, res) {
@@ -192,8 +194,13 @@ function saveSVG(req, res) {
 
     res.setHeader('Content-Disposition', 'attachment');
     res.setHeader('Content-type', 'image/svg+xml');
-    console.log(svgNode.outerHTML)
-    res.send(svgNode.outerHTML);
+
+    res.send('complete');
+
+    console.log('----')
+    console.log((svgNode.outerHTML).substring(0, 120));
+    console.log('Size of svgNode: ' + Buffer.byteLength(svgNode.outerHTML, 'utf8') + " bytes");
+    console.log(typeof svgNode.outerHTML);
   };
 
   jsdom.env(svgHTML,[bowerDir+'d3/d3.js', bowerDir+'jquery/dist/jquery.js'], runHeadless);
