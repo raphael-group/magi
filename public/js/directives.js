@@ -260,7 +260,7 @@ angular.module('cgat.directives', []).
 
               // When the post has returned, create a link in the browser to download the SVG
               function download() {
-                // todo: like crowbar
+                // Store the data and create a download link
                 var url = window.URL.createObjectURL(new Blob([svgStr], { "type" : "text\/xml" }));
                 var a = d3.select("body")
                     .append('a')
@@ -268,13 +268,16 @@ angular.module('cgat.directives', []).
                     .attr("href", url)
                     .style("display", "none");
 
+                // Activate the download through a click event
                 a.node().click();
 
+                // Garbage collection
                 setTimeout(function() {
                   window.URL.revokeObjectURL(url);
                 }, 10);
               }
-              // create a button to download the response
+
+              // create a button to download the svg data
               var button = parent
                 .append("button")
                   .style("width", "150px")
@@ -286,7 +289,6 @@ angular.module('cgat.directives', []).
                     d3.event.preventDefault();
                     download();
                   });
-              console.log(button);
             });
         }
 
@@ -324,11 +326,16 @@ angular.module('cgat.directives', []).
 
         // event handlers that send and listen for POST requests
         $('#saveSubnetBox').click(function() {
-          // TODO: rename/refactor mutation and transcript file structure to make this work
+          var tMenu = d3.select('div#transcript-holder select').node(),
+              tMenuOptSelected = tMenu.selectedIndex;
+
           parent.selectAll('button').remove();
           saveSVG('subnetwork', 'subnetwork.svg');
-          saveSVG('transcript-svg', 'transcript-annotation.svg');
           saveSVG('mutation-matrix', 'mutation-matrix.svg');
+          // If a gene transcript hasn't been selected, don't try to save an SVG
+          if (tMenuOptSelected != 0) {
+            saveSVG('transcript-svg', 'transcript-annotation.svg');
+          }
         });
       }
     }});
