@@ -321,6 +321,7 @@ angular.module('cgat.directives', []).
 
         var subnetSave = saveContainer.append('a')
             .attr('id','saveSubnetBox')
+            .style('cursor', 'pointer')
             .text('Submit download request');
 
         var checkMessage = saveContainer.append('p')
@@ -346,6 +347,7 @@ angular.module('cgat.directives', []).
 
           if (saveAtLeastOne == false) {
             checkMessage.style('display', 'block');
+            parent.selectAll('button').remove();
             return;
           } else {
             checkMessage.style('display', 'none');
