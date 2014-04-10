@@ -1,7 +1,7 @@
 // Routes for the view
 exports.view  = function view(req, res){
 	console.log('view')
-	res.render('view', {user: req.user});
+	res.render('new-view', {user: req.user});
 }
 
 // Load partials for Angular in the view
