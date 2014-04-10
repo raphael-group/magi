@@ -6,15 +6,19 @@ function saveSVG(divContainerId, saveFileName) {
 
   // Switch statement hack to change SVG search based on viz
   if (saveFileName == 'subnetwork.svg') {
-    svg = d3.select('div#'+divContainerId).select('#figure').node();
+    svg = d3.select('div#'+divContainerId+' #figure');
   } else if (saveFileName == 'mutation-matrix.svg') {
-    svg = d3.select('div#'+divContainerId).select('svg#mutation-matrix').node();
+    svg = d3.select('div#'+divContainerId+' svg#mutation-matrix');
   } else if (saveFileName == 'transcript-annotation.svg') {
-    console.log()
-    svg = d3.selectAll('div#'+divContainerId).selectAll('svg')[0][0];
+    svg = d3.select('div#'+divContainerId+' svg');
+  } else if (saveFileName == 'cna.svg') {
+    svg = d3.select('div#'+divContainerId+' svg#'+divContainerId);
   } else {
-    svg = d3.select('div#'+divContainerId).select('#figure').node();
+    svg = d3.select('div#'+divContainerId).select('svg#figure');
   }
+
+  svg.attr('xmlns', 'http://www.w3.org/2000/svg');
+  svg = svg.node();
 
   // send out the post request
   $.post('/saveSVG', {'html': svg.outerHTML, 'fileName': name})
@@ -71,8 +75,7 @@ $('#downloadLink').click(function() {
   }
 
   if (saveResponses[CNA_VIZ].checked == true) {
-    // TODO implement
-    //saveSVG('cna-viz', 'cna.svg');
+    saveSVG('cna-browser', 'cna.svg');
   }
   if (saveResponses[TRN_ANT].checked == true) {
     saveSVG('transcript-plot', 'transcript-annotation.svg');
