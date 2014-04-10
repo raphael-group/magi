@@ -7,7 +7,7 @@ var m2Element = "div#mutation-matrix",
 	transcriptSelectElement = "select#transcript-plot-select",
 	cnaBrowserElement = "div#cna-browser",
 	cnaBrowserSelectElement = "select#cna-browser-select",
-	controlsElement = "div#control-panel";
+	controlsElement = "div#control-panel div#controls";
 
 // Select each element for easy access later
 var m2 = d3.select(m2Element),
@@ -60,7 +60,7 @@ d3.json(query, function(err, data){
 	// Add the mutation matrix
 	var m2Chart = mutation_matrix({style: style.mutation_matrix})
 	              .addCoverage()
-	              .addLegend()
+	              .addMutationLegend()
 	              .addSortingMenu();
 	m2.datum(data.mutation_matrix);
 	m2Chart(m2);
@@ -140,7 +140,21 @@ d3.json(query, function(err, data){
 
 	// Update the control panel
 	var datasetToColor = data.datasetColors,
-		datasetToNumSamples = data.mutation_matrix.
+		datasetToNumSamples = data.mutation_matrix.typeToNumSamples;
+
+	var datasetData = Object.keys(datasetToColor).map(function(d){
+		return { name: d, color: datasetToColor[d], numSamples: datasetToNumSamples[d] };
+	});
+
+	controls.append("h5").text("Datasets");
+	var datasetEls = controls.append("ul")
+		.attr("id", "datasets")
+		.selectAll(".dataset")
+		.data(datasetData).enter()
+		.append("li");
+
+	datasetEls.append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
+	datasetEls.append("div").text(function(d){ return d.name + " (" + d.numSamples + ")"; });
 
 });
 
