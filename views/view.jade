@@ -7,30 +7,32 @@ block body
       div(id="saveBox" class="panel panel-default" style="padding:0px")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", data-toggle="collapse", data-parent="#accordion", href="#collapseSave", style="cursor:pointer;font-size:14px;")
-            | Save options
+            | Download options
             span(style="float:right") [+]
         div(id="collapseSave", class="panel-collapse collapse")
           div(class="panel-body", style="padding:5px")
-            p Select visualizations:
             ul(id="saveOptList", style="padding:0px;list-style:none;")
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="cna")
+                  input(type="checkbox", id="cna", style="margin-right:5px;")
                   | Copy number browser
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="mutmatrix")
+                  input(type="checkbox", id="mutmatrix", style="margin-right:5px;")
                   | Mutation matrix
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="subnetwork")
+                  input(type="checkbox", id="subnetwork", style="margin-right:5px;")
                   | Subnetwork
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="transcript")
+                  input(type="checkbox", id="transcript", style="margin-right:5px;")
                   | Transcript annotation
             a(id="downloadLink", style="cursor:pointer")
-              | Download
+              | &raquo; Download as SVG
+            br
+            a(id="downloadLinkPNG", style="cursor:pointer")
+              | &raquo; Download as PNG
 
             div(id="saveErrMsgContainer")
 
