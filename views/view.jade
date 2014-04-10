@@ -4,6 +4,36 @@ block body
     div(id="control-panel")
       h4 Control Panel
       div(id="controls")
+      div(id="saveBox" class="panel panel-default" style="padding:0px")
+        div(class="panel-heading", style="padding:5px")
+          h5(class="panel-title", data-toggle="collapse", data-parent="#accordion", href="#collapseSave", style="cursor:pointer;font-size:14px;")
+            | Save options
+            span(style="float:right") [+]
+        div(id="collapseSave", class="panel-collapse collapse")
+          div(class="panel-body", style="padding:5px")
+            p Select visualizations:
+            ul(id="saveOptList", style="padding:0px;list-style:none;")
+              li
+                label(style="font-weight:400")
+                  input(type="checkbox", id="cna")
+                  | Copy number browser
+              li
+                label(style="font-weight:400")
+                  input(type="checkbox", id="mutmatrix")
+                  | Mutation matrix
+              li
+                label(style="font-weight:400")
+                  input(type="checkbox", id="subnetwork")
+                  | Subnetwork
+              li
+                label(style="font-weight:400")
+                  input(type="checkbox", id="transcript")
+                  | Transcript annotation
+            a(id="downloadLink", style="cursor:pointer")
+              | Download
+
+            div(id="saveErrMsgContainer")
+
     div(id="view")
       div(class="panel panel-default")
         div(class="panel-heading")
@@ -48,11 +78,6 @@ block body
                 | You can mouseover copy number aberration to get more detail information.
 
       div
-        div(class="panel-body")
-        h4 Save Options
-        p Test, ya.
-
-      div
         h3 Mutation matrix
         div(id="mutation-matrix")
 
@@ -84,4 +109,5 @@ block body
       script(src='components/gd3/js/mutation-matrix.js').
       script(src='components/gd3/js/subnetwork.js').
       script(src='js/d3-tooltip.js').
+      script(src='js/save.js').
       script(src='js/view.js').

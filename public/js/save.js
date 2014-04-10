@@ -11,7 +11,7 @@ function saveSVG(divContainerId, saveFileName) {
     svg = d3.select('div#'+divContainerId).select('svg#mutation-matrix').node();
   } else if (saveFileName == 'transcript-annotation.svg') {
     console.log()
-    svg = d3.selectAll('div.'+divContainerId).selectAll('svg')[0][0];
+    svg = d3.selectAll('div#'+divContainerId).selectAll('svg')[0][0];
   } else {
     svg = d3.select('div#'+divContainerId).select('#figure').node();
   }
@@ -38,48 +38,20 @@ function saveSVG(divContainerId, saveFileName) {
     });
 }
 
-// create the page elements that initiate the save POST request
-var parent = d3.select(elm[0]);
-var saveContainer = parent.append('div');
-
-// Options for user selection on which viz to save
-var saveOptData = [
-    {name:'Copy number browser', id:'cna'},
-    {name:'Mutation matrix', id:'mutmatrix'},
-    {name:'Subnetwork', id:'subnetwork'},
-    {name:'Transcript annotation', id:'transcript'}
-];
-
-var saveCheckboxes = saveContainer.append('ul')
-    .style('list-style', 'none')
-    .style('padding', '0px')
-    .selectAll('li')
-    .data(saveOptData)
-    .enter()
-    .append('li')
-      .style('display', 'inline')
-      .style('margin-right', '20px')
-      .append('label')
-        .text(function(d){return d.name})
-        .append('input')
-          .attr('id', function(d){return d.id})
-          .attr('type', 'checkbox');
-
-var subnetSave = saveContainer.append('a')
-    .attr('id','saveSubnetBox')
-    .style('cursor', 'pointer')
-    .text('Submit download request');
-
-var checkMessage = saveContainer.append('p')
-    .style('background', 'rgb(242, 222, 222)')
-    .style('border', '1px solid rgb(205, 174, 179)')
-    .style('border-radius', '4px')
-    .style('display', 'none')
-    .style('padding', '5px')
-    .text('Error: Please select at least one visualization to download.');
+// error message box
+var checkMessage = d3.select('div#saveErrMsgContainer')
+      .append('p')
+          .style('background', 'rgb(242, 222, 222)')
+          .style('border', '1px solid rgb(205, 174, 179)')
+          .style('border-radius', '4px')
+          .style('display', 'none')
+          .style('padding', '5px')
+          .text('Error: No visualizations selected.');
 
 // event handlers that send and listen for POST requests
-$('#saveSubnetBox').click(function() {
+$('#downloadLink').click(function() {
+  var saveCheckboxes = d3.selectAll('ul#saveOptList li label input');
+
   var saveResponses = saveCheckboxes[0],
       CNA_VIZ = 0,
       MUT_MTX = 1,
@@ -93,7 +65,6 @@ $('#saveSubnetBox').click(function() {
 
   if (saveAtLeastOne == false) {
     checkMessage.style('display', 'block');
-    parent.selectAll('button').remove();
     return;
   } else {
     checkMessage.style('display', 'none');
@@ -104,12 +75,7 @@ $('#saveSubnetBox').click(function() {
     //saveSVG('cna-viz', 'cna.svg');
   }
   if (saveResponses[TRN_ANT].checked == true) {
-    // If a gene transcript hasn't been selected, don't try to save an SVG
-    var tMenu = d3.select('div#transcript-holder select').node(),
-        tMenuOptSelected = tMenu.selectedIndex;
-    if (tMenuOptSelected != 0) {
-      saveSVG('transcript-svg', 'transcript-annotation.svg');
-    }
+    saveSVG('transcript-plot', 'transcript-annotation.svg');
   }
   if (saveResponses[SUB_NET].checked == true) {
     saveSVG('subnetwork', 'subnetwork.svg');
@@ -117,6 +83,4 @@ $('#saveSubnetBox').click(function() {
   if (saveResponses[MUT_MTX].checked == true) {
     saveSVG('mutation-matrix', 'mutation-matrix.svg');
   }
-
-  parent.selectAll('button').remove();
 });
