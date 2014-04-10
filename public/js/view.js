@@ -7,7 +7,7 @@ var m2Element = "div#mutation-matrix",
 	transcriptSelectElement = "select#transcript-plot-select",
 	cnaBrowserElement = "div#cna-browser",
 	cnaBrowserSelectElement = "select#cna-browser-select",
-	sidebarElement = "div#sidebar";
+	controlsElement = "div#control-panel";
 
 // Select each element for easy access later
 var m2 = d3.select(m2Element),
@@ -16,7 +16,7 @@ var m2 = d3.select(m2Element),
 	transcriptSelect = d3.select(transcriptSelectElement),
 	cnaBrowser = d3.select(cnaBrowserElement),
 	cnaBrowserSelect = d3.select(cnaBrowserSelectElement),
-	sidebar = d3.select(sidebarElement);
+	controls = d3.select(controlsElement);
 
 var elements = [ {name: "mutation_matrix", el: m2Element}, {name: "subnetwork", el: subnetworkElement},
 				 {name: "transcript", el: transcriptElement}, {name: "cnabrowser", el: cnaBrowserElement} ];
@@ -137,6 +137,10 @@ d3.json(query, function(err, data){
 		cnaBrowser.datum(data.cna_browser_data[geneName]);
 		cnaChart(cnaBrowser);
 	});
+
+	// Update the control panel
+	var datasetToColor = data.datasetColors,
+		datasetToNumSamples = data.mutation_matrix.
 
 });
 

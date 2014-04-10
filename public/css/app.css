@@ -45,7 +45,7 @@ ul#more-info li{display:inline;padding-left:5px;padding-right:5px;}
 /* Styling index page (choosing genes or datasets) */
 div#db-chooser{width:30%;float:right}
 div#gene-chooser{width:40%;float:left}
-/*div#input-chooser{margin-left:15%;margin-right:15%;}*/
+
 img#small-logo {
   margin: -15px 0 0 0;
   padding:0;
@@ -131,8 +131,22 @@ div#acknowledgements img.color{ display:none;}
 div#upload form{ width:40%;}
 
 /* Styling for visualizations */
-div.half-page-view{ width:50%;padding:5px; }
+div#control-panel{
+  width:200px;
+  position:fixed;
+  top:50px;
+  border:#333 solid 10px;
+  height:300px;
+  right:20px;
+}
+div#control-panel h4{
+  text-align:center;
+  background:#333;
+  color:#fff;
+}
 
+div#view{margin-left:20px;margin-right:230px;}
+div.half-page-view{ width:40%;padding:5px; }
 div.half-page-view.leftside{border-right:1px solid #eee;float:left;}
 div.half-page-view.rightside{float:right;}
 
