@@ -257,38 +257,22 @@ angular.module('cgat.directives', []).
           // send out the post request
           $.post('/saveSVG', {'html': svg.outerHTML, 'fileName': name})
             .done(function(svgStr) {
-
               // When the post has returned, create a link in the browser to download the SVG
-              function download() {
-                // Store the data and create a download link
-                var url = window.URL.createObjectURL(new Blob([svgStr], { "type" : "text\/xml" }));
-                var a = d3.select("body")
-                    .append('a')
-                    .attr("download", saveFileName)
-                    .attr("href", url)
-                    .style("display", "none");
+              // Store the data and create a download link
+              var url = window.URL.createObjectURL(new Blob([svgStr], { "type" : "text\/xml" }));
+              var a = d3.select("body")
+                  .append('a')
+                  .attr("download", saveFileName)
+                  .attr("href", url)
+                  .style("display", "none");
 
-                // Activate the download through a click event
-                a.node().click();
+              // Activate the download through a click event
+              a.node().click();
 
-                // Garbage collection
-                setTimeout(function() {
-                  window.URL.revokeObjectURL(url);
-                }, 10);
-              }
-
-              // create a button to download the svg data
-              var button = parent
-                .append("button")
-                  .style("width", "150px")
-                  .style("font-size", "12px")
-                  .style("line-height", "1.4em")
-                  .style("margin", "5px 0 0 0")
-                  .text("Download " + saveFileName)
-                  .on("click", function(d, i) {
-                    d3.event.preventDefault();
-                    download();
-                  });
+              // Garbage collection
+              setTimeout(function() {
+                window.URL.revokeObjectURL(url);
+              }, 10);
             });
         }
 
