@@ -1,14 +1,7 @@
 // Routes for the view
 exports.view  = function view(req, res){
 	console.log('view')
-	res.render('new-view', {user: req.user});
-}
-
-// Load partials for Angular in the view
-exports.partials =  function partials(req, res){
-	console.log( req.params.name );
-	var name = req.params.name;
-	res.render('partials/' + name);
+	res.render('view', {user: req.user});
 }
 
 // Error page if someone tries to access the view page

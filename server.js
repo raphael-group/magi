@@ -112,7 +112,6 @@ app.post('/', routes.queryhandler)
 
 // gd3 view
 app.get('/view', routes.view)
-app.get('/partials/:name', routes.partials);
 app.get('/data/bundle', routes.viewData)
 app.get('/query-error', routes.queryError)
 

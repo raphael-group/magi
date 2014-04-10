@@ -57,7 +57,7 @@ exports.queryhandler = function queryhandler(req, res){
 	var querystring = require( 'querystring' ),
 		query = querystring.stringify( {genes: genes, datasets: datasets.join(",") } );
 
-	res.redirect('/view#!/?' + query)
+	res.redirect('/view?' + query)
 
 }
 
