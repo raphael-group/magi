@@ -128,6 +128,8 @@ var saveSVG = function(divContainerId, saveFileName) {
     img = importSVG(svg, canvas),
     w = window.open();
   w.document.body.appendChild(img);
+
+  return w;
 }
 
 // When the "Download SVG" link is clicked, download the visualizations
@@ -178,9 +180,49 @@ var savePNG = function(divContainerId, saveFileName) {
   svgImg.src = svgDataURL(svg);
   w.document.body.appendChild(pngImg);
 
+  return w;
 }
 
 // When the "Download PNG" link is clicked, download the visualizations
 $('#downloadLinkPNG').click(function() {
   downloadVisualizations(savePNG);
+});
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// PRINT CODE
+//
+function printVisualization(viz) {
+  if (viz == SAVEJS_CONST.CNA_VIZ) {
+    saveSVG('cna-browser', SAVEJS_FNAMES.CNA_VIZ).print();
+  }
+  if (viz == SAVEJS_CONST.MUT_MTX) {
+    saveSVG('mutation-matrix', SAVEJS_FNAMES.MUT_MTX).print();
+  }
+  if (viz == SAVEJS_CONST.SUB_NET) {
+    saveSVG('subnetwork', SAVEJS_FNAMES.SUB_NET).print();
+  }
+  if (viz == SAVEJS_CONST.TRN_ANT) {
+    saveSVG('transcript-plot', SAVEJS_FNAMES.TRN_ANT).print();
+  }
+}
+
+$('#printCnaViz').click(function(e) {
+  e.preventDefault();
+  printVisualization(SAVEJS_CONST.CNA_VIZ);
+});
+$('#printMutMtx').click(function(e) {
+  e.preventDefault();
+  console.log('clicked');
+  printVisualization(SAVEJS_CONST.MUT_MTX);
+});
+$('#printSubNet').click(function(e) {
+  e.preventDefault();
+  printVisualization(SAVEJS_CONST.SUB_NET);
+});
+$('#printTrnAnt').click(function(e) {
+  e.preventDefault();
+  printVisualization(SAVEJS_CONST.TRN_ANT);
 });
