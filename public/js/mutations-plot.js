@@ -4,6 +4,10 @@ function mutation_plot(params){
 		style  = params.style || {},
 		colorSchemes = style.colorSchemes || {};
 
+	// Initialize the two types on the x- and y-axes
+	var ty1 = params.ty1 || "snvs",
+		ty2 = params.ty2 || "cnas";
+
 	// Define the default global variables
 	var margin = style.margin || {top: 30, right: 10, bottom: 40, left: 60},
     	width = style.width || 640,
@@ -18,10 +22,8 @@ function mutation_plot(params){
 	var width = width - margin.left - margin.right,
 		height = width - margin.top - margin.bottom;
 
-	// 
-	var ty1 = "snvs",
-		ty2 = "cnas",
-		updatePlot,
+	// Global variables
+	var	updatePlot,
 		mutationTypes,
 		addAxesSelectors;
 
@@ -265,7 +267,9 @@ function mutation_plot(params){
 				});
 			}
 
+			// Append axes selectors in a div below the selection
 			addAxesSelectors = function (){
+				// Add two selectors, one for the x- and one for the y-axis
 				var selectors = selection.append("div")
 					.selectAll(".select")
 					.data(["X-axis", "Y-axis"]).enter()
@@ -276,6 +280,8 @@ function mutation_plot(params){
 				selectors.append("label")
 					.text(function(d){ return d; });
 
+				// Have the selectors float in the same line, where each selector updates
+				// the type according to which axis is being modified
 				var select = selectors.append("select")
 					.attr("class", "form-control")
 					.attr("id", function(d){ return d; })
@@ -287,12 +293,14 @@ function mutation_plot(params){
 						updatePlot();
 					});
 
+				// Add the options
 				var opts = select.selectAll(".option")
 					.data(mutationTypes).enter()
 					.append("option")
 					.attr("value", function(d){ return d; })
 					.text(function(d){ return tyToName[d]; });
 
+				// Initialize the axes' values with the current types
 				$("#X-axis").val(ty1);
 				$("#Y-axis").val(ty2);
 

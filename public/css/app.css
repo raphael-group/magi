@@ -133,33 +133,28 @@ div#upload form{ width:40%;}
 /* Styling for visualizations */
 div#control-panel{
   width:200px;
-  position:fixed;
-  top:50px;
   border:#333 solid 10px;
-  right:20px;
+  float:right;
+  margin-right:20px;
 }
+.fixed {
+    position: fixed; 
+    top: 0; 
+    z-index: 1;
+    right:0px;
+}
+
 div#control-panel h4{
   text-align:center;
   background:#333;
   color:#fff;
 }
 
-div#control-panel div#controls{ padding:5px; }
-div#control-panel div#controls ul#datasets{
-  list-style-type: none;
-  padding-left:7px;
-  font-size:90%;
-}
+div#control-panel div#controls{ padding-top:2px; }
+div#control-panel div#controls ul#datasets{list-style-type: none;padding-left:7px;font-size:90%;}
 
 div#control-panel div#controls ul#datasets li div{display:inline-block;}
-div#control-panel div#controls ul#datasets li div.dataset-color{
-  margin-right:10px;
-  height:11px;
-  width:11px;
-  border-radius:3px;
-  padding:2px;
-  border:1px solid #eee;
-}
+div#control-panel div#controls ul#datasets li div.dataset-color{margin-right:10px;height:11px;width:11px;border-radius:3px;padding:2px;border:1px solid #eee;}
 div#view{margin-left:20px;margin-right:230px;}
 
 div.half-page-view{ width:50%;padding:5px; }

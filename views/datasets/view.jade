@@ -59,14 +59,13 @@ block body
 		script(src="/js/mutations-plot.js").
 		script(src='/js/dataTables-bootstrap-pagination.js').
 		script(type='text/javascript').
-			//- Add the mutations plot
+			//- Add the mutations plot with the axes selectors
 			var data = !{JSON.stringify(db.summary.mutation_plot_data)};
 			var plot = d3.select("div#mutations-plot")
 				.append("div")
 				.datum(data);
 			var mutationPlot = mutation_plot();
 			mutationPlot( plot );
-			//setTimeout(function(){ console.log("MOVING"); mutationPlot.selectMutationTypes( "amps", "nonsense" ); }, 2000);
 			mutationPlot.addAxesSelectors();
 			//- Make the most mutated genes sortable as a DataTable
 			$(document).ready(function(){
