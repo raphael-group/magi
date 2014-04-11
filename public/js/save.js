@@ -1,20 +1,100 @@
-// Generalized post code to handle SVG download for each visualization
-function saveSVG(divContainerId, saveFileName) {
-  // harvest the SVG from the subnetwork
-  var svg = null,
-      name = '';
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// CONVENIENCE FUNCTIONS FOR IMAGE DOWNLOAD
+//
 
-  // Switch statement hack to change SVG search based on viz
-  if (saveFileName == 'subnetwork.svg') {
-    svg = d3.select('div#'+divContainerId).select('#figure').node();
-  } else if (saveFileName == 'mutation-matrix.svg') {
-    svg = d3.select('div#'+divContainerId).select('svg#mutation-matrix').node();
-  } else if (saveFileName == 'transcript-annotation.svg') {
-    console.log()
-    svg = d3.selectAll('div.'+divContainerId).selectAll('svg')[0][0];
+var SAVEJS_CONST = {
+  CNA_VIZ: 0,
+  MUT_MTX: 1,
+  SUB_NET: 2,
+  TRN_ANT: 3
+};
+
+var SAVEJS_FNAMES = {
+  CNA_VIZ: 'cna.svg',
+  MUT_MTX: 'mutation-matrix.svg',
+  SUB_NET: 'subnetwork.svg',
+  TRN_ANT: 'transcript-annotation.svg'
+}
+
+// error message box
+var checkMessage = d3.select('div#saveErrMsgContainer')
+      .append('p')
+          .style('background', 'rgb(242, 222, 222)')
+          .style('border', '1px solid rgb(205, 174, 179)')
+          .style('border-radius', '4px')
+          .style('display', 'none')
+          .style('padding', '5px')
+          .text('Error: No visualizations selected.');
+
+
+// Download any selected visualizations using a given save function. Creates error prompt if no
+//    visualizations are selected in the tool.
+//
+// saveFn (function variable) - function that takes a visualization ID and save file name as input
+function downloadVisualizations(saveFn) {
+  var saveCheckboxes = d3.selectAll('ul#saveOptList li label input')[0];
+
+  var vizSelected = saveCheckboxes[SAVEJS_CONST.CNA_VIZ].checked == true
+      || saveCheckboxes[SAVEJS_CONST.TRN_ANT].checked == true
+      || saveCheckboxes[SAVEJS_CONST.SUB_NET].checked == true
+      || saveCheckboxes[SAVEJS_CONST.MUT_MTX].checked == true;
+
+  if (vizSelected == false) {
+    checkMessage.style('display', 'block');
+    return;
   } else {
-    svg = d3.select('div#'+divContainerId).select('#figure').node();
+    checkMessage.style('display', 'none');
   }
+
+  if (saveCheckboxes[SAVEJS_CONST.CNA_VIZ].checked == true) {
+    saveFn('cna-browser', SAVEJS_FNAMES.CNA_VIZ);
+  }
+  if (saveCheckboxes[SAVEJS_CONST.TRN_ANT].checked == true) {
+    saveFn('transcript-plot', SAVEJS_FNAMES.TRN_ANT);
+  }
+  if (saveCheckboxes[SAVEJS_CONST.SUB_NET].checked == true) {
+    saveFn('subnetwork', SAVEJS_FNAMES.SUB_NET);
+  }
+  if (saveCheckboxes[SAVEJS_CONST.MUT_MTX].checked == true) {
+    saveFn('mutation-matrix', SAVEJS_FNAMES.MUT_MTX);
+  }
+}
+
+
+// Grab an SVG based on the save file name from the tool. RETURNs the d3 svg object
+//
+// saveFileName (string) - one of SAVEJS_FNAMES
+function grabSVG(saveFileName) {
+  var svg = null;
+  if (saveFileName == SAVEJS_FNAMES.SUB_NET) {
+    svg = d3.select('div#'+divContainerId+' #figure');
+  } else if (saveFileName == SAVEJS_FNAMES.MUT_MTX) {
+    svg = d3.select('div#'+divContainerId+' svg#mutation-matrix');
+  } else if (saveFileName == SAVEJS_FNAMES.TRN_ANT) {
+    svg = d3.select('div#'+divContainerId+' svg');
+  } else if (saveFileName == SAVEJS_FNAMES.CNA_VIZ) {
+    svg = d3.select('div#'+divContainerId+' svg#'+divContainerId);
+  } else {
+    svg = d3.select('div#'+divContainerId).select('svg#figure');
+  }
+
+  svg.attr('xmlns', 'http://www.w3.org/2000/svg');
+
+  return svg;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// SVG DOWNLOAD CODE
+//
+
+// Generalized post code to handle SVG download for each visualization
+var saveSVG = function(divContainerId, saveFileName) {
+  // harvest the SVG from the tool
+  var svg = grabSVG(saveFileName).node();
 
   // send out the post request
   $.post('/saveSVG', {'html': svg.outerHTML, 'fileName': name})
@@ -38,85 +118,24 @@ function saveSVG(divContainerId, saveFileName) {
     });
 }
 
-// create the page elements that initiate the save POST request
-var parent = d3.select(elm[0]);
-var saveContainer = parent.append('div');
+// When the "Download SVG" link is clicked, download the visualizations
+$('#downloadLink').click(function() {
+  downloadVisualizations(saveSVG);
+});
 
-// Options for user selection on which viz to save
-var saveOptData = [
-    {name:'Copy number browser', id:'cna'},
-    {name:'Mutation matrix', id:'mutmatrix'},
-    {name:'Subnetwork', id:'subnetwork'},
-    {name:'Transcript annotation', id:'transcript'}
-];
 
-var saveCheckboxes = saveContainer.append('ul')
-    .style('list-style', 'none')
-    .style('padding', '0px')
-    .selectAll('li')
-    .data(saveOptData)
-    .enter()
-    .append('li')
-      .style('display', 'inline')
-      .style('margin-right', '20px')
-      .append('label')
-        .text(function(d){return d.name})
-        .append('input')
-          .attr('id', function(d){return d.id})
-          .attr('type', 'checkbox');
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// PNG DOWNLOAD CODE
+//
 
-var subnetSave = saveContainer.append('a')
-    .attr('id','saveSubnetBox')
-    .style('cursor', 'pointer')
-    .text('Submit download request');
+// Generalized post code to handle PNG download for each visualization
+var savePNG = function(divContainerId, saveFileName) {
+  var svg = grabSVG(saveFileName).node();
+}
 
-var checkMessage = saveContainer.append('p')
-    .style('background', 'rgb(242, 222, 222)')
-    .style('border', '1px solid rgb(205, 174, 179)')
-    .style('border-radius', '4px')
-    .style('display', 'none')
-    .style('padding', '5px')
-    .text('Error: Please select at least one visualization to download.');
-
-// event handlers that send and listen for POST requests
-$('#saveSubnetBox').click(function() {
-  var saveResponses = saveCheckboxes[0],
-      CNA_VIZ = 0,
-      MUT_MTX = 1,
-      SUB_NET = 2,
-      TRN_ANT = 3;
-
-  var saveAtLeastOne = saveResponses[CNA_VIZ].checked == true
-      || saveResponses[TRN_ANT].checked == true
-      || saveResponses[SUB_NET].checked == true
-      || saveResponses[MUT_MTX].checked == true;
-
-  if (saveAtLeastOne == false) {
-    checkMessage.style('display', 'block');
-    parent.selectAll('button').remove();
-    return;
-  } else {
-    checkMessage.style('display', 'none');
-  }
-
-  if (saveResponses[CNA_VIZ].checked == true) {
-    // TODO implement
-    //saveSVG('cna-viz', 'cna.svg');
-  }
-  if (saveResponses[TRN_ANT].checked == true) {
-    // If a gene transcript hasn't been selected, don't try to save an SVG
-    var tMenu = d3.select('div#transcript-holder select').node(),
-        tMenuOptSelected = tMenu.selectedIndex;
-    if (tMenuOptSelected != 0) {
-      saveSVG('transcript-svg', 'transcript-annotation.svg');
-    }
-  }
-  if (saveResponses[SUB_NET].checked == true) {
-    saveSVG('subnetwork', 'subnetwork.svg');
-  }
-  if (saveResponses[MUT_MTX].checked == true) {
-    saveSVG('mutation-matrix', 'mutation-matrix.svg');
-  }
-
-  parent.selectAll('button').remove();
+// When the "Download PNG" link is clicked, download the visualizations
+$('#downloadLinkPNG').click(function() {
+  console.log('clicky');
 });

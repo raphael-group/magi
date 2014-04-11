@@ -312,7 +312,6 @@ angular.module('cgat.directives', []).
             .style('background', 'rgb(242, 222, 222)')
             .style('border', '1px solid rgb(205, 174, 179)')
             .style('border-radius', '4px')
-            .style('display', 'none')
             .style('padding', '5px')
             .text('Error: Please select at least one visualization to download.');
 
