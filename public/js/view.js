@@ -187,8 +187,37 @@ d3.json(query, function(err, data){
 
 	///////////////////////////////////////////////////////////////////////////
 	// Update the control panel
-	controls.append("h5").text("Datasets");
-	var datasetEls = controls.append("ul")
+	var datasetsPanel = controls.append("div")
+		.attr("class", "panel panel-default")
+		.style("padding", "0px")
+
+	// Add a heading
+	var datasetHeading = datasetsPanel.append("div")
+		.attr("class", "panel-heading")
+		.style("padding", "5px")
+			.append("h5")
+			.attr("class", "panel-title")
+			.attr("data-toggle", "collapse")
+			.attr("data-parent", "#accordion")
+			.attr("href", "#collapseDataset")
+			.style("cursor", "pointer")
+			.style("font-size", "14px")
+			.style("width", "100%")
+			.text("Datasets");
+
+	datasetHeading.append("span")
+		.style("float", "right")
+		.text("[+]");
+
+	// Add each dataset
+	var datasetsBody = datasetsPanel.append("div")
+		.attr("id", "collapseDataset")
+		.attr("class", "panel-collapse collapse in")
+			.append("div")
+			.attr("class", "panel-body")
+			.style("padding", "5px");
+
+	var datasetEls = datasetsBody.append("ul")
 		.attr("id", "datasets")
 		.selectAll(".dataset")
 		.data(datasetData).enter()

@@ -121,6 +121,9 @@ app.get('/upload', ensureAuthenticated, routes.upload)
 app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset)
 app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
 
+// Dataset views
+app.get('/datasets', routes.datasets.index);
+app.get('/datasets/view/:datasetID', routes.datasets.view);
 
 // more information
 app.get('/terms', routes.terms)

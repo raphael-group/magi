@@ -102,7 +102,6 @@ block body
       div
         h3 Copy number browser
         select(class="form-control", id="cna-browser-select")
-          option(value="") -- choose gene --
         div(id="cna-browser")
 
       script(src='components/jquery/dist/jquery.min.js').
@@ -115,3 +114,15 @@ block body
       script(src='js/d3-tooltip.js').
       script(src='js/save.js').
       script(src='js/view.js').
+      script.
+        $(document).ready(function(){
+          var jControlPanel = $('#control-panel');
+          $(window).bind('scroll', function() {
+            if ($(window).scrollTop() > 45) {
+              jControlPanel.addClass('fixed');
+            }
+            else {
+              jControlPanel.removeClass('fixed');
+            }
+          });
+        });

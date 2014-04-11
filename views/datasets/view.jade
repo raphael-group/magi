@@ -1,0 +1,100 @@
+extends ../layout
+block body
+	div(class="container")
+		h1
+			-if (db.group)
+				| 	#{db.group} // 
+			| #{db.title}
+		hr
+		div(id="dataset-summary")
+			div(id="mutations-summary")
+				h4 Dataset at a glance
+				table(class="table table-striped")
+					tr
+						th No. Samples
+						td #{db.summary.num_samples}
+					tr
+						th No. mutated genes
+						td #{db.summary.num_mutated_genes}
+					tr
+						th No. SNVs
+						td #{db.summary.num_snvs}
+					tr
+						th No. CNAs
+						td #{db.summary.num_cnas}
+
+
+			hr
+			div(id="most-mutated-genes")
+				h4 Most Mutated Genes
+				table(class="table table-condensed table-hover text-center", style="font-size:80%", id="mutated-gene-table")
+					thead
+						tr(style="background:#e3e3e3")
+							th <br/>Gene
+							th Mutated <br/> Samples 
+							th <br/>SNVs
+							th Inactivating <br/>SNVs
+							th <br/>CNAs
+					tbody
+						-for (var i = 0; i < db.summary.most_mutated_genes.length; i++)
+							-var g = db.summary.most_mutated_genes[i];
+							tr
+								td #{g.name}
+								td #{g.mutated_samples}
+								td #{g.snvs}
+								td #{g.inactivating}
+								td #{g.cnas}
+
+		div(id="mutations-plot")
+			h4 Mutations plot
+
+		//- Run the script to create the mutations plot
+		//- script(src='components/jquery/dist/jquery.min.js').
+		//- script(src='components/bootstrap/dist/js/bootstrap.min.js').
+		script(src='/components/d3/d3.min.js').
+		script(src='/components/jquery/dist/jquery.min.js').
+		script(src='/components/DataTables/media/js/jquery.dataTables.js').
+		script(src='/components/bootstrap/dist/js/bootstrap.min.js').
+		script(src='/js/d3-tooltip.js').
+		script(src="/js/mutations-plot.js").
+		script(src='/js/dataTables-bootstrap-pagination.js').
+		script(type='text/javascript').
+			//- Add the mutations plot with the axes selectors
+			var data = !{JSON.stringify(db.summary.mutation_plot_data)};
+			var plot = d3.select("div#mutations-plot")
+				.append("div")
+				.datum(data);
+			var mutationPlot = mutation_plot();
+			mutationPlot( plot );
+			mutationPlot.addAxesSelectors();
+			//- Make the most mutated genes sortable as a DataTable
+			$(document).ready(function(){
+				var tblID = "#mutated-gene-table";
+				$(tblID).DataTable({
+					"aaSorting": [[1, "desc"]],
+					"aoColumns": [
+								{ "asSorting": [ "asc", "desc" ] },
+								{ "asSorting": [ "desc", "asc" ] },
+								{ "asSorting": [ "desc", "asc" ] },
+								{ "asSorting": [ "desc", "asc" ] },
+								{ "asSorting": [ "desc", "asc" ] }
+							],
+					"sPaging": "pagination",
+					"sPaginationType": "bootstrap",
+					"oLanguage": {
+						"oPaginate": {
+							"sPrevious": "",
+							"sNext": ""
+						}
+					}
+				});
+				
+				// Remove the "length" dropdown
+				$(tblID + "_length").remove();
+				//$(tblID + "_filter label").text("");
+				$(tblID + "_filter input").addClass("form-control");
+				$(tblID + "_filter input").attr("placeholder", "Search");
+				$(tblID + "_filter input").insertAfter(tblID + "_filter label");
+				$(tblID + "_filter label").remove();
+				$(tblID + "_info").insertAfter("div.dataTables_paginate");
+			});

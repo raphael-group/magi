@@ -4,10 +4,12 @@
   "dependencies": {
     "d3": "3",
     "bootstrap": "3.x",
-    "angular": "1.2.x",
-    "angular-route": "1.2.x",
     "showdown": "0.3.x",
     "jquery-form": "3.x",
-    "gd3": "latest"
+    "gd3": "latest",
+    "DataTables": "1.9.x"
+  },
+  "resolutions": {
+    "jquery": ">= 1.9.0"
   }
 }

@@ -1,0 +1,47 @@
+extends ../layout
+block body
+  div(class="container")
+    h1 Datasets
+    -var seenStandard = false;
+    -var seenUser = false;
+    -for (var i in groups)
+      -var group = groups[i];
+      //- Create a horizontal break if this is the first standard/user dataset
+      -if (group.groupClass == "standard" && !seenStandard)
+        - seenStandard = true;
+        hr
+        h4 Provided datasets
+      -if (group.groupClass == "user" && !seenUser)
+        - seenUser = true;
+        hr
+        h4 Your datasets
+        a(href="/upload", style="float:right") Upload a new dataset.
+      table(class="table table-bordered table-condensed")
+        tr(class="odd")
+          th Group
+          th Name
+          th Number of samples
+          th Color
+          th Created on
+          th Last updated
+          -if (!seenStandard)
+            th Remove
+        -for(var i = 0; i < groups.length; i++)
+          -var group = groups[i];
+          -var rowClass = i % 2 == 0 ? 'even' : 'odd';
+          -for (var j in group.dbs)
+            -var db = group.dbs[j];
+            tr(class="#{ rowClass }")
+              td
+                - if (j == 0)
+                  | #{group.name}
+              td
+                a(href="/datasets/view/#{ db._id }") #{db.title}
+              td #{db.num_samples}
+              td(style="background:#{db.color};width:20px;height:20px;", title="#{db.color}")
+              td #{ moment(db.created_at).format("MM/DD/YYYY") }
+              td #{ moment(db.updated_at).fromNow() }
+              -if (!seenStandard)
+                td
+                  a(href="/delete/dataset?did=#{db._id}", title="Remove dataset")
+                    span(class="glyphicon glyphicon-trash")
