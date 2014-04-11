@@ -4,7 +4,7 @@ var formidable = require('formidable'),
 	path = require('path'),
 	Dataset  = require( "../model/datasets" );
 
-// Render's home page
+// Renders home page
 exports.index = function index(req, res){
 	console.log('/index')
 	Dataset.datasetGroups({is_standard: true}, function(err, standardGroups){
@@ -13,6 +13,9 @@ exports.index = function index(req, res){
 
 		// Append the groupClass standard to each group
 		standardGroups.forEach(function(g){ g.groupClass = "standard"; })
+		standardGroups.forEach(function(g){
+			g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
+		});
 
 		// Load the user's datasets (if necessary)
 		if (req.user){
@@ -22,6 +25,9 @@ exports.index = function index(req, res){
 
 				// Append the groupClass standard to each group
 				userGroups.forEach(function(g){ g.groupClass = "user"; });
+				userGroups.forEach(function(g){
+					g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
+				});
 
 				res.render('index', { user: req.user, groups: standardGroups.concat(userGroups) });
 			});

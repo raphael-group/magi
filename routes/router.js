@@ -4,7 +4,8 @@ var about = require( './about' ),
 	bundler = require( './bundler' ),
 	index = require( './index' ),
 	upload = require( './upload' ),
-	view = require( './view' );
+	view = require( './view' ),
+	datasets = require("./datasets");
 
 //*  Export the routes in each subrouter *//
 
@@ -35,5 +36,9 @@ exports.deleteDataset = upload.deleteDataset;
 
 // Routes for the main view
 exports.view       = view.view;
-exports.partials   = view.partials;
 exports.queryError = view.queryError;
+
+// Datasets
+exports.datasets = {}
+exports.datasets.index = datasets.index;
+exports.datasets.view = datasets.view
