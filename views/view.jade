@@ -82,17 +82,32 @@ block body
                 | You can mouseover copy number aberration to get more detail information.
 
       div
-        h3 Mutation matrix <a id="printMutMtx" href="">(print)</a>
+        h3
+          | Mutation matrix
+          small
+            | &nbsp;&nbsp;
+            a(id="printMutMtx", title="Print mutation matrix.")
+                span(class="glyphicon glyphicon-print")
         div(id="mutation-matrix")
 
-      hr(style="clear:both;margin:0px;")
+      hr(style="margin:0px;")
 
       div(class="half-page-view leftside")
-          h3 Subnetwork <a id="printSubNet" href="">(print)</a>
+          h3
+            | Subnetwork
+            small(style="font-size:12px")
+              | &nbsp;&nbsp;
+              a(id="printSubNet", title="Print subnetwork.")
+                  span(class="glyphicon glyphicon-print")
           div(id="subnetwork")
 
       div(class="half-page-view rightside")
-          h3 Transcript annotation <a id="printTrnAnt" href="">(print)</a>
+          h3
+            | Transcript annotation
+            small
+              | &nbsp;&nbsp;
+              a(id="printTrnAnt", title="Print copy number browser.")
+                  span(class="glyphicon glyphicon-print")
           select(class="form-control", id="transcript-plot-select")
           div(id="transcript-plot")
 
@@ -100,7 +115,13 @@ block body
 
       //- Copy number browser
       div
-        h3 Copy number browser <a id="printCnaViz" href="">(print)</a>
+        h3
+          | Copy number browser
+          small
+            | &nbsp;&nbsp;
+            a(id="printCnaViz", title="Print copy number browser.")
+                span(class="glyphicon glyphicon-print")
+
         select(class="form-control", id="cna-browser-select")
         div(id="cna-browser")
 
@@ -119,10 +140,11 @@ block body
           var jControlPanel = $('#control-panel');
           $(window).bind('scroll', function() {
             if ($(window).scrollTop() > 45) {
-              jControlPanel.addClass('fixed');
+              jControlPanel.addClass('fixed').css("position", "fixed").css("top", 0);
             }
             else {
-              jControlPanel.removeClass('fixed');
+              jControlPanel.css("top", 50-$(window).scrollTop());
+              jControlPanel.removeClass('fixed').css("position", "fixed");
             }
           });
         });
