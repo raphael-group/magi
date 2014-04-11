@@ -19,7 +19,8 @@
     "passport": "latest",
     "passport-google-oauth": "latest",
     "moment": "latest",
-    "jsdom": "latest"
+    "jsdom": "latest",
+    "q": "latest"
   },
   "repository": {
     "type": "git"

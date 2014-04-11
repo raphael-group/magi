@@ -18,6 +18,7 @@ var DatasetSchema = new mongoose.Schema({
 	title: { type: String, required: true },
 	samples: { type: [String], required: true },
 	group: { type: String, required: false},
+	summary: { type: {}, required: true },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
@@ -144,7 +145,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	// Read in the CNAs file asynchronously
 	var snvs = {},
 		cnas = {},
-		mutSamples = {};
+		mutSamples = {},
+		summary = {},
+		mutationTypes = [];
 
 	function loadCNAFile(){
 		// Set up promise
@@ -321,6 +324,11 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				else{
 					mutSamples[gene][sample] = [ mutClass ];
 				}
+
+				// Record the mutation type
+				if (mutationTypes.indexOf(mutTy) === -1){
+					mutationTypes.push( mutTy.toLowerCase() );
+				}
 			}
 
 			d.resolve();
@@ -329,6 +337,92 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 		return d.promise; 
 
+	}
+
+	function computeSummary(){
+		var num_samples = samples.length,
+			num_snvs = 0,
+			num_cnas = 0,
+			num_mutated_genes, 
+			most_mutated_genes,
+			most_mutated_pathways,
+			muation_plot_data;
+
+		function isInactivating(mut){ return inactiveTys.indexOf(  mut.ty.toLowerCase() )}
+		function dist(d){ return d.snvs * d.snvs + d.cnas * d.cnas; }
+		function initMutatedGene(){
+			var d = {amp: 0, del: 0, snvs: 0, inactivating: 0, cnas: 0, mutated_samples: {} };
+			mutationTypes.forEach(function(ty){ d[ty.toLowerCase()] = 0; });
+			return d
+		}
+
+		// Create a map of each gene to the number and types of its mutations
+		var mutated_genes = {};
+
+		// For snvs, iterate through each mutated transcript for each gene to counts its mutations
+		Object.keys(snvs).forEach(function(g){
+			mutated_genes[g] = initMutatedGene();
+			var mutations = [];
+			Object.keys(snvs[g]).forEach(function(t){
+				mutations.push.apply( mutations, snvs[g][t].mutations );
+			});
+
+			var inactivating = mutations.filter(isInactivating).length;
+			mutated_genes[g].snvs = mutations.length
+			mutated_genes[g].inactivating = inactivating;
+
+			mutations.forEach(function(m){
+				mutated_genes[g][m.ty.toLowerCase()] += 1;
+				mutated_genes[g].mutated_samples[m.sample] = true;
+			})
+
+			num_snvs += mutations.length;
+		})
+
+		// For CNAs, iterate through each gene's segments in each sample to count the 
+		// number of amplifications and deletions
+		Object.keys(cnas).forEach(function(g){
+			if (!mutated_genes[g]) mutated_genes[g] = initMutatedGene();
+			mutated_genes[g].cnas = cnas[g].segments.length;
+			cnas[g].segments.forEach(function(S){
+				mutated_genes[g][S.segments[0].ty.toLowerCase()] += 1;
+				mutated_genes[g].mutated_samples[S.sample] = true;
+			});
+			num_cnas += cnas[g].segments.length;
+
+		});
+
+		// Count the number of mutated genes in the dataset
+		var genes = Object.keys(mutated_genes)
+		num_mutated_genes = Object.keys(genes).length;
+
+		// Extract the 500 most mutated genes
+		most_mutated_genes = genes.sort(function(a, b){
+			return dist(mutated_genes[a]) > dist(mutated_genes[b]) ? -1 : 1;
+		}).slice(0, 500)
+		.map(function(g){
+			var d = mutated_genes[g];
+			return { name: g, mutated_samples: Object.keys(d.mutated_samples).length, cnas: d.cnas,
+					 snvs: d.snvs, inactivating: d.inactivating }
+		});
+
+		// Create the data for the mutation plot
+		mutation_plot_data = {};
+		most_mutated_genes.forEach(function(d){
+			mutation_plot_data[d.name] = mutated_genes[d.name]
+			mutation_plot_data[d.name].mutated_samples = Object.keys(mutated_genes[d.name].mutated_samples).length;
+		});
+
+		// Update the summary
+		summary = {
+			most_mutated_genes: most_mutated_genes,
+			most_mutated_pathways: most_mutated_pathways,
+			num_samples: num_samples,
+			num_mutated_genes: num_mutated_genes,
+			num_snvs: num_snvs,
+			num_cnas: num_cnas,
+			mutation_plot_data: mutation_plot_data
+		};
 	}
 
 	// Save the dataset
@@ -352,7 +446,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		// Formulate queries and updates for the datbase
 		var query = { title: dataset, group: group_name, is_standard: is_standard },
 			newDataset  = { title: dataset, samples: samples, // samples from input sample list
-					  		group: group_name, updated_at: Date.now(),
+					  		group: group_name, updated_at: Date.now(), summary: summary,
 					  		is_standard: is_standard, user_id: user_id, color: color };
 
 		if (user_id) query.user_id = user_id;
@@ -387,6 +481,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	return loadSampleFile()
 			.then( loadCNAFile )
 			.then( loadSNVFile )
+			.then( computeSummary )
 			.then( createDataset );
 
 }

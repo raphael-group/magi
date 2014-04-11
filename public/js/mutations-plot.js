@@ -16,7 +16,24 @@ function mutation_plot(params){
     	fontFamily = style.fontFamily || "Arial",
     	fontSize = style.fontSize || 4,
     	animationSpeed = style.animationSpeed || 1000,
-    	tyToName = style.tyToName || { "snvs": "No. SNVs", "cnas": "No. CNAs", "amps": "No. Amplifications", "nonsense": "No. Nonsense" }
+    	tyToName = style.tyToName || {
+    									"snvs": "No. SNVs",
+    									"cnas": "No. CNAs",
+    									"amp": "No. Amplifications",
+    									"del": "No. Deletions",
+    									"frame_shift_del": "No. Frameshift Deletions",
+    									"frame_shift_ins": "No. Frameshift Insertions",
+    									"missense_mutation": "No. Missense Mutations",
+    									"nonsense_mutation": "No. Nonsense Mutations",
+    									"in_frame_del": "No. Inframe Deletions",
+    									"splice_site": "No. Splice-Site Mutations",
+    									"frame_shift_ins": "No. Frameshift Insertions",
+    									"frame_shift_del": "No. Frameshift Deletions",
+    									"nonstop_mutation": "No. Nonstop Mutations",
+    									"inactivating": "No. Inactivating",
+    									"mutated_samples": "No. Mutated Samples"
+    								  };
+    function mutTyToName(ty){ return tyToName[ty] ? tyToName[ty] : ty; }
 	
 	// Update the width/height using the margins
 	var width = width - margin.left - margin.right,
@@ -49,11 +66,9 @@ function mutation_plot(params){
 
 						var quantiles = [dist(dataset[4*n/5]), dist(dataset[3*n/5]), dist(dataset[2*n/5]), dist(dataset[n/5])];
 
-						// 
+						// Create a map from each gene to its data
 						var points = {};
-						dataset.forEach(function(d){
-							points[d.gene] = d ;
-						});
+						dataset.forEach(function(d){ points[d.gene] = d ; });
 
 						// Find the extent of the data
 						var xMax = d3.max(dataset, function(d) { return +d.x; }),
@@ -132,12 +147,6 @@ function mutation_plot(params){
 				.attr("class", "y axis")
 				.style("cursor", "move");
 
-			yAxisEl.select("path").style("opacity", 0);
-			yAxisEl.selectAll(".tick line")
-				.style("stroke", "lightgrey")
-				.style("opacity", 0.7)
-				.style("stroke-dasharray", ("3, 3"));
-
 			var yLabel = svg.append("text")
 				.attr("class", "y label")
 				.attr("text-anchor", "end")
@@ -191,7 +200,7 @@ function mutation_plot(params){
 					.style("opacity", 0.7)
 					.style("stroke-dasharray", ("3, 3"));
 
-				xLabel.text(tyToName[ty1]);
+				xLabel.text(mutTyToName(ty1));
 
 				yAxis.scale(y);
 				yAxisEl.call(yAxis);
@@ -201,7 +210,7 @@ function mutation_plot(params){
 					.style("opacity", 0.7)
 					.style("stroke-dasharray", ("3, 3"));
 
-				yLabel.text(tyToName[ty2]);
+				yLabel.text(mutTyToName(ty2));
 
 				// Create a transition
 				poly.transition().duration(animationSpeed)
@@ -223,8 +232,8 @@ function mutation_plot(params){
 				var t = zoom.translate(),
 					tx = t[0],
 					ty = t[1];
-
-				tx = Math.max(Math.min(tx, 0), width - data[ty1][ty2].xMax);
+				tx = Math.min(Math.max(tx, 0), width - data[ty1][ty2].xMax);
+				console.log(data[ty1][ty2].xMax, [tx, ty])
 				zoom.translate([tx, ty]);
 
 				// Update the axes
@@ -233,9 +242,9 @@ function mutation_plot(params){
 
 				// Move the points into position
 				poly.attr("transform", function(g) {
-						var d = points[g];
-						return "translate(" + x(d.x) + "," + y(d.y) + ")";
-					});
+					var d = points[g];
+					return "translate(" + x(d.x) + "," + y(d.y) + ")";
+				});
 
 				// Update the tooltips and the visible points 
 				updatePoints();
@@ -295,10 +304,10 @@ function mutation_plot(params){
 
 				// Add the options
 				var opts = select.selectAll(".option")
-					.data(mutationTypes).enter()
+					.data(mutationTypes.sort()).enter()
 					.append("option")
 					.attr("value", function(d){ return d; })
-					.text(function(d){ return tyToName[d]; });
+					.text(function(d){ return mutTyToName(d); });
 
 				// Initialize the axes' values with the current types
 				$("#X-axis").val(ty1);
