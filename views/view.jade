@@ -9,8 +9,10 @@ block body
           h5(class="panel-title", data-toggle="collapse", data-parent="#accordion", href="#collapseSave", style="cursor:pointer;font-size:14px;")
             | Download options
             span(style="float:right") [+]
+
         div(id="collapseSave", class="panel-collapse collapse")
           div(class="panel-body", style="padding:5px")
+            p(style="margin:0px;") Select <a href="" id="saveSelectAll"> all</a> or <a href="" id="saveSelectNone">none</a>
             ul(id="saveOptList", style="padding:0px;list-style:none;")
               li
                 label(style="font-weight:400")
@@ -80,17 +82,17 @@ block body
                 | You can mouseover copy number aberration to get more detail information.
 
       div
-        h3 Mutation matrix
+        h3 Mutation matrix <a id="printMutMtx" href="">(print)</a>
         div(id="mutation-matrix")
 
       hr(style="clear:both;margin:0px;")
 
       div(class="half-page-view leftside")
-          h3 Subnetwork
+          h3 Subnetwork <a id="printSubNet" href="">(print)</a>
           div(id="subnetwork")
 
       div(class="half-page-view rightside")
-          h3 Transcript annotation
+          h3 Transcript annotation <a id="printTrnAnt" href="">(print)</a>
           select(class="form-control", id="transcript-plot-select")
           div(id="transcript-plot")
 
@@ -98,7 +100,7 @@ block body
 
       //- Copy number browser
       div
-        h3 Copy number browser
+        h3 Copy number browser <a id="printCnaViz" href="">(print)</a>
         select(class="form-control", id="cna-browser-select")
         div(id="cna-browser")
 
