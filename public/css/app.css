@@ -149,17 +149,17 @@ div.half-page-view.leftside{border-right:1px solid #eee;float:left;}
 div.half-page-view.rightside{float:right;}
 
 /* Dataset summary page */
-div#dataset-summary{ width:35%;display:table-cell;}
-div#dataset-summary div#most-mutated-genes table{ margin-bottom:5px;}
-div#dataset-summary div#most-mutated-genes table tr th{ text-align:center;cursor:pointer; }
-div#dataset-summary div#most-mutated-genes table tr.odd td.sorting_1{ background:rgb(194, 198, 232); }
-div#dataset-summary div#most-mutated-genes table tr.even td.sorting_1{ background:rgb(234, 236, 254); }
-div#dataset-summary div#most-mutated-genes table th.sorting_asc span{ color:rgb(194, 198, 232); }
+div#dataset-summary div#left{ width:35%;display:table-cell;}
+div#dataset-summary table{ margin-bottom:5px;}
+div#dataset-summary table tr th{ text-align:center;cursor:pointer; }
+div#dataset-summary table tr.odd td.sorting_1{ background:rgb(194, 198, 232); }
+div#dataset-summary table tr.even td.sorting_1{ background:rgb(234, 236, 254); }
+div#dataset-summary table th.sorting_asc span{ color:rgb(194, 198, 232); }
 div.dataTables_paginate{ text-align: center;}
-div#dataset-summary div#most-mutated-genes ul.pagination{ margin-top:0px;padding-top:0px;font-size:80%;margin:0px auto; }
-div#dataset-summary div#most-mutated-genes ul.pagination{ margin-top:0px;padding-top:0px;font-size:80%;margin:0px auto; }
-div#dataset-summary div#most-mutated-genes #mutated-gene-table_filter{ padding-bottom:5px;}
-div#dataset-summary div#most-mutated-genes #mutated-gene-table_info{ font-size:70%;float:right; }
+div#dataset-summary ul.pagination{ margin-top:0px;padding-top:0px;font-size:80%;margin:0px auto; }
+div#dataset-summary ul.pagination{ margin-top:0px;padding-top:0px;font-size:80%;margin:0px auto; }
+div#dataset-summary div.dataTables_filter{ padding-bottom:5px;}
+.dataTables_info{ font-size:70%;float:right; }
 div#mutations-plot{ padding-left:10%;display:table-cell;}
 
 /* The good DataTable styling */
@@ -173,6 +173,15 @@ table.dataTable thead th {padding: 3px 18px 3px 10px;border-bottom: 1px solid bl
 /* Contact page */
 address{ margin-left:15px;width:350px }
 address img{ float:right; }
+
+/* Styling for d3-tip */
+.d3-tip {line-height: 1;padding: 7px;background: rgba(0, 0, 0, 0.8);color: #fff;border-radius: 5px;font-size:80%;max-width:300px;}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {box-sizing: border-box;display: inline;font-size: 10px;width: 100%;line-height: 1;color: rgba(0, 0, 0, 0.8);content: "\25BC";position: absolute;text-align: center;}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {margin: -3px 0 0 0;top: 100%;left: 0;}
 
 /* Styling for d3 tooltips */
 /* Taken from bootstrap: https://github.com/twitter/bootstrap/blob/master/less/tooltip.less */

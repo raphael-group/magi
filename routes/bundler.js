@@ -2,7 +2,9 @@
 var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
 	PPIs     = require( "../model/ppis" ),
-	Domains  = require( "../model/domains" );
+	Domains  = require( "../model/domains" ),
+	Annotations  = require( "../model/annotations" );
+
 
 exports.viewData = function getViewData(req, res){
 	// Parse query params
@@ -93,38 +95,56 @@ exports.viewData = function getViewData(req, res){
 					}
 				}
 
-				// Assemble data into single Object
-				var mutation_matrix = {M : M, sampleToTypes: sampleToTypes, typeToNumSamples: typeToNumSamples };
+				// Load the annotations for each gene
+				var Annotation = mongoose.model( 'Annotation' );
+				Annotation.find({gene: {$in: genes}}, function(err, support){
+					// Throw error if necessary
+					if (err) throw new Error(err);
 
-				// Create nodes using the number of mutations in each gene
-				var nodes = genes.map(function(g){
-					var mutSamples = Object.keys( M[g] );
-					return { name: g, heat: mutSamples.length };
-				});
+					// Assemble the annotations
+					var annotations = {};
+					genes.forEach(function(g){ annotations[g] = {}; })
+					support.forEach(function(A){
+						if (!annotations[A.gene][A.mutation_class]){
+							annotations[A.gene][A.mutation_class] = [];
+						}
+						annotations[A.gene][A.mutation_class].push( A.cancer );
+					})
 
-				// Add sampleToTypes to each cna_browser gene
-				mutGenes.forEach(function(g){
-					if (g.cnas){
-						cna_browser_data[g.gene].sampleToTypes = sampleToTypes;
-					}
-				});
+					// Assemble data into single Object
+					var mutation_matrix = {M : M, sampleToTypes: sampleToTypes, typeToNumSamples: typeToNumSamples };
 
-				PPIs.ppilist(genes, function(err, ppis){
-					PPIs.formatPPIs(ppis, function(err, edges){
-						// Package data into one object
-						var subnetwork_data = { edges: edges, nodes: nodes };
-						var pkg = 	{
-										subnetwork_data: subnetwork_data,
-										mutation_matrix: mutation_matrix,
-										transcript_data: transcript_data,
-										domainDBs: Object.keys(domainDBs),
-										cna_browser_data: cna_browser_data,
-										datasetColors: datasetColors
-									};
+					// Create nodes using the number of mutations in each gene
+					var nodes = genes.map(function(g){
+						var mutSamples = Object.keys( M[g] );
+						return { name: g, heat: mutSamples.length };
+					});
 
-						// Send JSON response
-						res.json( pkg );
+					// Add sampleToTypes to each cna_browser gene
+					mutGenes.forEach(function(g){
+						if (g.cnas){
+							cna_browser_data[g.gene].sampleToTypes = sampleToTypes;
+						}
+					});
 
+					PPIs.ppilist(genes, function(err, ppis){
+						PPIs.formatPPIs(ppis, function(err, edges){
+							// Package data into one object
+							var subnetwork_data = { edges: edges, nodes: nodes };
+							var pkg = 	{
+											subnetwork_data: subnetwork_data,
+											mutation_matrix: mutation_matrix,
+											transcript_data: transcript_data,
+											domainDBs: Object.keys(domainDBs),
+											cna_browser_data: cna_browser_data,
+											datasetColors: datasetColors,
+											annotations: annotations
+										};
+
+							// Send JSON response
+							res.json( pkg );
+
+						});
 					});
 				});
 			});

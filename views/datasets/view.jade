@@ -1,12 +1,12 @@
 extends ../layout
 block body
-	div(class="container")
+	div(class="container", id="dataset-summary")
 		h1
 			-if (db.group)
 				| 	#{db.group} // 
 			| #{db.title}
 		hr
-		div(id="dataset-summary")
+		div(id="left")
 			div(id="mutations-summary")
 				h4 Dataset at a glance
 				table(class="table table-striped")
@@ -35,6 +35,7 @@ block body
 							th <br/>SNVs
 							th Inactivating <br/>SNVs
 							th <br/>CNAs
+							th View
 					tbody
 						-for (var i = 0; i < db.summary.most_mutated_genes.length; i++)
 							-var g = db.summary.most_mutated_genes[i];
@@ -44,9 +45,37 @@ block body
 								td #{g.snvs}
 								td #{g.inactivating}
 								td #{g.cnas}
-
+								td
+									a(href="/view?genes=#{g.name}&datasets=#{db._id}") >>
 		div(id="mutations-plot")
 			h4 Mutations plot
+		hr(style="clear:both")
+		div(id="most-mutated-pathways")
+			h4 Most Mutated Pathways
+			table(class="table table-condensed table-hover text-center", id="mutated-pathway-table", style="font-size:90%")
+				thead
+					tr(style="background:#e3e3e3")
+						th(style="width:50%") Gene Set
+						th No. Genes
+						th Database
+						th Mutated Samples 
+						th SNVs
+						th Inactivating SNVs
+						th CNAs
+						th Top 5 Genes
+				tbody
+					-for (var i = 0; i < db.summary.most_mutated_gene_sets.length; i++)
+						-var S = db.summary.most_mutated_gene_sets[i];
+						tr
+							td(style="text-align:left") #{S.name}
+							td #{S.num_genes}
+							td #{S.database}
+							td #{S.mutated_samples}
+							td #{S.snvs}
+							td #{S.inactivating}
+							td #{S.cnas}
+							td
+								a(href="/view?genes=#{S.top_genes}&datasets=#{db._id}") View
 
 		//- Run the script to create the mutations plot
 		//- script(src='components/jquery/dist/jquery.min.js').
@@ -57,7 +86,7 @@ block body
 		script(src='/components/bootstrap/dist/js/bootstrap.min.js').
 		script(src='/js/d3-tooltip.js').
 		script(src="/js/mutations-plot.js").
-		script(src='/js/dataTables-bootstrap-pagination.js').
+		script(src='/js/dataTableWrapper.js').
 		script(type='text/javascript').
 			//- Add the mutations plot with the axes selectors
 			var data = !{JSON.stringify(db.summary.mutation_plot_data)};
@@ -67,34 +96,15 @@ block body
 			var mutationPlot = mutation_plot();
 			mutationPlot( plot );
 			mutationPlot.addAxesSelectors();
-			//- Make the most mutated genes sortable as a DataTable
+			//- Make the most mutated gene and gene set tables sortable as a DataTable
 			$(document).ready(function(){
-				var tblID = "#mutated-gene-table";
-				$(tblID).DataTable({
-					"aaSorting": [[1, "desc"]],
-					"aoColumns": [
-								{ "asSorting": [ "asc", "desc" ] },
-								{ "asSorting": [ "desc", "asc" ] },
-								{ "asSorting": [ "desc", "asc" ] },
-								{ "asSorting": [ "desc", "asc" ] },
-								{ "asSorting": [ "desc", "asc" ] }
-							],
-					"sPaging": "pagination",
-					"sPaginationType": "bootstrap",
-					"oLanguage": {
-						"oPaginate": {
-							"sPrevious": "",
-							"sNext": ""
-						}
-					}
+				addDataTable({
+					tableID: "#mutated-gene-table",
+					aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, null ]
 				});
-				
-				// Remove the "length" dropdown
-				$(tblID + "_length").remove();
-				//$(tblID + "_filter label").text("");
-				$(tblID + "_filter input").addClass("form-control");
-				$(tblID + "_filter input").attr("placeholder", "Search");
-				$(tblID + "_filter input").insertAfter(tblID + "_filter label");
-				$(tblID + "_filter label").remove();
-				$(tblID + "_info").insertAfter("div.dataTables_paginate");
+				addDataTable({
+					tableID: "#mutated-pathway-table",
+					aaSorting: [[3, "desc"]],
+					aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "desc", "asc" ] }, null, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, null]
+				});
 			});

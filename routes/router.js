@@ -5,7 +5,8 @@ var about = require( './about' ),
 	index = require( './index' ),
 	upload = require( './upload' ),
 	view = require( './view' ),
-	datasets = require("./datasets");
+	datasets = require("./datasets"),
+	annotations = require("./annotations");
 
 //*  Export the routes in each subrouter *//
 
@@ -42,3 +43,9 @@ exports.queryError = view.queryError;
 exports.datasets = {}
 exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view
+
+// Annotations
+exports.annotations = {}
+exports.annotations.gene = annotations.gene;
+exports.annotations.cancer = annotations.cancer;
+exports.annotations.save = annotations.save;

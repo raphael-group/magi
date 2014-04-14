@@ -7,7 +7,12 @@ var m2Element = "div#mutation-matrix",
 	transcriptSelectElement = "select#transcript-plot-select",
 	cnaBrowserElement = "div#cna-browser",
 	cnaBrowserSelectElement = "select#cna-browser-select",
-	controlsElement = "div#control-panel div#controls";
+	controlsElement = "div#control-panel div#controls",
+	annotatedGeneElement = "div#annotation select#gene",
+	interactionElement = "div#annotation select#interaction",
+	interactorElement = "div#annotation select#interactor",
+	annotationsElement = "div#annotation input#annotations",
+	submitElement = "div#annotation button#submit";
 
 // Select each element for easy access later
 var m2 = d3.select(m2Element),
@@ -16,7 +21,12 @@ var m2 = d3.select(m2Element),
 	transcriptSelect = d3.select(transcriptSelectElement),
 	cnaBrowser = d3.select(cnaBrowserElement),
 	cnaBrowserSelect = d3.select(cnaBrowserSelectElement),
-	controls = d3.select(controlsElement);
+	controls = d3.select(controlsElement),
+	annotatedGene = d3.select(annotatedGeneElement),
+	interaction = d3.select(interactionElement),
+	interactor = d3.select(interactorElement),
+	annotation = d3.select(annotationsElement),
+	submit = d3.select(submitElement);
 
 var elements = [ {name: "mutation_matrix", el: m2Element}, {name: "subnetwork", el: subnetworkElement},
 				 {name: "transcript", el: transcriptElement}, {name: "cnabrowser", el: cnaBrowserElement} ];
@@ -31,6 +41,20 @@ var defaultStyle = function(){
 	sty.colorSchemes.network["Multinet"] = "rgb(92, 128, 178)";
 	return sty; 
 }
+
+// Hard-code the classes and names of mutations (TODO: more elegant way later)
+var mutationToClass = {
+			snv: "SNV",
+			del: "Del",
+			inactive_snv: "SNV",
+			amp: "Amp"
+		},
+	mutationToName = {
+			snv: "SNV",
+			del: "Deletion",
+			inactive_snv: "Inactivating SNV",
+			amp: "Amplification"
+		};
 
 // Parse the GET url parameters and generate the GET query to get the data
 function getParameterByName(name) {
@@ -72,11 +96,39 @@ d3.json(query, function(err, data){
 	datasetData.forEach(function(d){ datasetToInclude[d.name] = true; });
 
 	///////////////////////////////////////////////////////////////////////////
+	// Define a function to generate the tooltips for the mutation matrix.
+	// You need a function to generate the tooltip function since the annotations can
+	// change over time
+	function generateAnnotations(annotations){
+		return function(d, i){
+			var mutationClass = mutationToClass[d.ty],
+				tip = "Sample: " + d.sample + '<br />Type: ' + d.dataset + "<br/>" + "Mutation: " + mutationToName[d.ty];
+			if (annotations[d.gene] && annotations[d.gene][mutationClass]){
+				var cancers = annotations[d.gene][mutationClass]
+				if (cancers.length <= 2){
+					tip += "<br/>Known mutations in " + cancers.join(" and ") + ".";
+				}
+				else{
+					tip += "<br/>Known mutations in " + cancers.slice(0, 2).join(", ") + ", and " + (cancers.length - 2) + " others.";	
+				}
+
+				tip += "<br/><a href='/annotations/gene/" + d.gene + "' target='_new'>View details &raquo;</a>"
+
+				console.log(tip)
+			}
+
+			return tip;
+		}
+	}
+
 	// Add the mutation matrix
+	var annotations = data.annotations;
 	var m2Chart = mutation_matrix({style: style.mutation_matrix})
-	              .addCoverage()
-	              .addMutationLegend()
-	              .addSortingMenu();
+					.addCoverage()
+					.addMutationLegend()
+					.addSortingMenu()
+					.addTooltips(generateAnnotations(annotations));
+
 	m2.datum(data.mutation_matrix);
 	m2Chart(m2);
 
@@ -118,6 +170,7 @@ d3.json(query, function(err, data){
 	var transcriptParams = { style: style.transcript, domainDB: data.domainDBs[0] },
 		transcriptChart = transcript_plot(transcriptParams)
 	              		.addLegend()
+	              		.addTooltips()
 	              		.addVerticalPanning();
 
 	// Watch the transcript selector to update the current transcript plot on change
@@ -147,7 +200,7 @@ d3.json(query, function(err, data){
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes
-	var cnaChart = cna_browser({ style: style.cnabrowser });
+	var cnaChart = cna_browser({ style: style.cnabrowser }).addTooltips();
 	function updateCNAChart(){
 		// Retrieve the current gene
 		var geneName = $(this).val();
@@ -183,6 +236,10 @@ d3.json(query, function(err, data){
 		cnaBrowser.datum(data.cna_browser_data[cnaGenes[0].name]);
 		cnaChart(cnaBrowser);
 		cnaChart.filterDatasets(datasetToInclude);
+	}
+	else{
+		cnaBrowserSelect.style("display", "none");
+		d3.select("div#cna-browser").append("b").text("No copy number data for these genes.")
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -243,6 +300,134 @@ d3.json(query, function(err, data){
 
 	datasetEls.append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
 	datasetEls.append("div").text(function(d){ return d.name + " (" + d.numSamples + ")"; });
+
+	///////////////////////////////////////////////////////////////////////////
+	// Update the annotations
+
+	// Add the genes to the first select
+	annotatedGene.selectAll(".gene-option")
+		.data(genes).enter()
+		.append("option")
+			.attr("value", function(g){ return g; })
+			.text(function(g){ return g; });
+
+	// List of all cancer types
+	var cancers = ["Acute lymphoblastic leukemia (ALL)", "Acute myeloid leukemia", "Adrenocortical carcinoma", "AIDS-related cancers", "AIDS-related lymphoma", "Anal cancer", "Appendix cancer", "Astrocytoma, childhood cerebellar or cerebral", "Basal-cell carcinoma", "Bile duct cancer, extrahepatic (see Cholangiocarcinoma)", "Bladder cancer", "Bone tumor, Osteosarcoma/Malignant fibrous histiocytoma", "Brainstem glioma", "Brain cancer", "Brain tumor, cerebellar astrocytoma", "Brain tumor, cerebral astrocytoma/malignant glioma", "Brain tumor, ependymoma", "Brain tumor, medulloblastoma", "Brain tumor, supratentorial primitive neuroectodermal tumors", "Brain tumor, visual pathway and hypothalamic glioma", "Breast cancer", "Bronchial adenomas/carcinoids", "Burkitt\'s lymphoma", "Carcinoid tumor, childhood", "Carcinoid tumor, gastrointestinal", "Carcinoma of unknown primary", "Central nervous system lymphoma, primary", "Cerebellar astrocytoma, childhood", "Cerebral astrocytoma/Malignant glioma, childhood", "Cervical cancer", "Childhood cancers", "Chronic bronchitis", "Chronic lymphocytic leukemia", "Chronic myelogenous leukemia", "Chronic myeloproliferative disorders", "Chronic obstructive pulmonary disease (COPD)", "Colon Cancer", "Cutaneous T-cell lymphoma", "Desmoplastic small round cell tumor", "Emphysema", "Endometrial cancer", "Ependymoma", "Esophageal cancer", "Ewing\'s sarcoma in the Ewing family of tumors", "Extracranial germ cell tumor, Childhood", "Extragonadal Germ cell tumor", "Extrahepatic bile duct cancer", "Eye Cancer, Intraocular melanoma", "Eye Cancer, Retinoblastoma", "Gallbladder cancer", "Gastric (Stomach) cancer", "Gastrointestinal Carcinoid Tumor", "Gastrointestinal stromal tumor (GIST)", "Germ cell tumor: extracranial, extragonadal, or ovarian", "Gestational trophoblastic tumor", "Glioma of the brain stem", "Glioma, Childhood Cerebral Astrocytoma", "Glioma, Childhood Visual Pathway and Hypothalamic", "Gastric carcinoid", "Hairy cell leukemia", "Head and neck cancer", "Heart cancer", "Hepatocellular (liver) cancer", "Hodgkin lymphoma", "Hypopharyngeal cancer", "Hypothalamic and visual pathway glioma, childhood", "Intraocular Melanoma", "Islet Cell Carcinoma (Endocrine Pancreas)", "Kaposi sarcoma", "Kidney cancer (renal cell cancer)", "Laryngeal Cancer", "Leukemias", "Leukemia, acute lymphoblastic (also called acute lymphocytic leukemia)", "Leukemia, acute myeloid (also called acute myelogenous leukemia)", "Leukemia, chronic lymphocytic (also called chronic lymphocytic leukemia)", "Leukemia, chronic myelogenous (also called chronic myeloid leukemia)", "Leukemia, hairy cell", "Lip and Oral Cavity Cancer", "Liposarcoma", "Liver Cancer (Primary)", "Lung Cancer, Non-Small Cell", "Lung Cancer, Small Cell", "Lymphomas", "Lymphoma, AIDS-related", "Lymphoma, Burkitt", "Lymphoma, cutaneous T-Cell", "Lymphoma, Hodgkin", "Lymphomas, Non-Hodgkin (an old classification of all lymphomas except Hodgkin\'s)", "Lymphoma, Primary Central Nervous System", "Macroglobulinemia, Waldenstr\\u00f6m", "Male breast cancer", "Malignant Fibrous Histiocytoma of Bone/Osteosarcoma", "Medulloblastoma, Childhood", "Melanoma", "Melanoma, Intraocular (Eye)", "Merkel Cell Carcinoma", "Mesothelioma, Adult Malignant", "Mesothelioma, Childhood", "Metastatic Squamous Neck Cancer with Occult Primary", "Mouth Cancer", "Multiple Endocrine Neoplasia Syndrome, Childhood", "Multiple Myeloma/Plasma Cell Neoplasm", "Mycosis Fungoides", "Myelodysplastic Syndromes", "Myelodysplastic/Myeloproliferative Diseases", "Myelogenous Leukemia, Chronic", "Myeloid Leukemia, Adult Acute", "Myeloid Leukemia, Childhood Acute", "Myeloma, Multiple (Cancer of the Bone-Marrow)", "Myeloproliferative Disorders, Chronic", "Nasal cavity and paranasal sinus cancer", "Nasopharyngeal carcinoma", "Neuroblastoma", "Non-Hodgkin lymphoma", "Non-small cell lung cancer", "Oral Cancer", "Oropharyngeal cancer", "Osteosarcoma/malignant fibrous histiocytoma of bone", "Ovarian cancer", "Ovarian epithelial cancer (Surface epithelial-stromal tumor)", "Ovarian germ cell tumor", "Ovarian low malignant potential tumor", "Pancreatic cancer", "Pancreatic cancer, islet cell", "Paranasal sinus and nasal cavity cancer", "Parathyroid cancer", "Penile cancer", "Pharyngeal cancer", "Pheochromocytoma", "Pineal astrocytoma", "Pineal germinoma", "Pineoblastoma and supratentorial primitive neuroectodermal tumors, childhood", "Pituitary adenoma", "Plasma cell neoplasia/Multiple myeloma", "Pleuropulmonary blastoma", "Primary central nervous system lymphoma", "Prostate cancer", "Rectal cancer", "Renal cell carcinoma (kidney cancer)", "Renal pelvis and ureter, transitional cell cancer", "Retinoblastoma", "Rhabdomyosarcoma, childhood", "Salivary gland cancer", "Sarcoma, Ewing family of tumors", "Sarcoma, Kaposi", "Sarcoma, soft tissue", "Sarcoma, uterine", "S\\u00e9zary syndrome", "Skin cancer (nonmelanoma)", "Skin cancer (melanoma)", "Skin carcinoma, Merkel cell", "Small cell lung cancer", "Small intestine cancer", "Soft tissue sarcoma", "Squamous cell carcinoma \\u2013 see Skin cancer (nonmelanoma)", "Squamous neck cancer with occult primary, metastatic", "Stomach cancer", "Supratentorial primitive neuroectodermal tumor, childhood", "T-Cell lymphoma, cutaneous \\u2013 see Mycosis Fungoides and S\\u00e9zary syndrome", "Testicular cancer", "Throat cancer", "Thymoma, childhood", "Thymoma and Thymic carcinoma", "Thyroid cancer", "Thyroid cancer, childhood", "Transitional cell cancer of the renal pelvis and ureter", "Trophoblastic tumor, gestational", "Unknown primary site, carcinoma of, adult", "Unknown primary site, cancer of, childhood", "Ureter and renal pelvis, transitional cell cancer", "Urethral cancer", "Uterine cancer, endometrial", "Uterine sarcoma", "Vaginal cancer", "Visual pathway and hypothalamic glioma, childhood", "Vulvar cancer", "Waldenstrom macroglobulinemia", "Wilms tumor (kidney cancer), childhood"];
+
+	// Updater for whenever an interaction type is chosen
+	function updateInteraction(){
+		var val = $(interactionElement).val(),
+			geneName = $(annotatedGeneElement).val();
+
+		if (geneName != "" && val != ""){
+			if (val == "interact"){
+				var  interactorData = genes.filter(function(g){ return g != geneName; });
+			}
+			else{
+				var interactorData = cancers.sort();
+			}
+			interactor.selectAll("*").remove();
+			interactor.selectAll(".gene2-option")
+				.data(interactorData).enter()
+				.append("option")
+					.attr("value", function(d){ return d; })
+					.text(function(d){ return d; });
+			interactor.style("display", "inline");
+			annotation.style("display", "inline");
+			submit.style("display", "inline");
+		}
+		else{
+			annotation.style("display", "none");
+			submit.style("display", "none");
+		}
+	}
+
+	interaction.on("change", updateInteraction);
+	annotatedGene.on("change", updateInteraction);
+
+	// Define the submit request
+    var infoClasses  = 'alert alert-info',
+    	warningClasses = 'alert alert-warning',
+    	successClasses = 'alert alert-success';
+
+	$("div#annotation form#annotation-form").on("submit", function(e){
+		// Reset the messages
+		annotationStatus("", "");
+
+		// Validate the entries
+		var pmid = $(annotationsElement).val(),
+			gene = $(annotatedGeneElement).val(),
+			mClass = $(interactionElement).val(),
+			cancerTy = $(interactorElement).val();
+
+		if (pmid == "" || pmid.length != 8 || isNaN(parseFloat(pmid)) || !isFinite(pmid) ){
+			annotationStatus("Please enter at least one valid PMID (8-character number).", warningClasses);
+			return false;
+		}
+
+		if (gene == "" || mClass == "" || cancerTy == ""){
+			annotationStatus("Please select a gene, an interaction, and a second gene or cancer.", warningClasses);
+			return false;
+		}
+
+		// If the entries validate, create a mini-form and then submit via Ajax
+        var formData = new FormData();
+        formData.append( 'support', pmid );
+        formData.append( 'gene', gene );
+        formData.append( 'interaction', mClass );
+        formData.append( 'interactor', cancerTy );
+
+        $.ajax({
+            // Note: can't use JSON otherwise IE8 will pop open a dialog
+            // window trying to download the JSON as a file
+            url: '/save/annotation',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: 'POST',
+
+            error: function(xhr) {
+                annotationStatus('Database error: ' + xhr.status);
+            },
+            
+            success: function(response) {
+                if(response.error) {
+                    annotationStatus('Oops, something bad happened.', warningClasses);
+                    return;
+                }
+                
+                // Log the status
+                annotationStatus(response.status, successClasses);
+
+                // Add the data to the current annotations
+                if (!annotations[gene]) annotations[gene] = {};
+                if (!annotations[gene][mClass]) annotations[gene][mClass] = [];
+				annotations[gene][mClass].push( cancerTy );
+
+				m2Chart.addTooltips(generateAnnotations(annotations));
+
+                // Reset the form
+                annotation.style("display", "none");
+                submit.style("display", "none");
+                interactor.style("display", "none");
+                $(interactionElement).val("");
+                $(annotatedGeneElement).val("");
+                $(annotationElement).val("");
+
+
+            }
+        });
+
+        // Return false because we don't actually want the form to submit
+        return false;
+
+	});
+
+    function annotationStatus(msg, classes) {
+        $("#annotationStatus").attr('class', classes);
+        $('#annotationStatus').html(msg);
+    }
 
 });
 

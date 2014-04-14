@@ -1,3 +1,34 @@
+function addDataTable(params){
+    // Parse the params
+    var tblID = params.tableID || "tbl",
+        aaSorting = params.aaSorting || [[1, "desc"]],
+        aoColumns = params.aoColumns || null;
+
+    // Add the data table
+    $(tblID).DataTable({
+        "aaSorting": aaSorting,
+        "aoColumns": aoColumns,
+        "sPaging": "pagination",
+        "sPaginationType": "bootstrap",
+        "oLanguage": {
+            "oPaginate": {
+                "sPrevious": "",
+                "sNext": ""
+            }
+        }
+    });
+
+    // Reorder and style the controls for the table
+    $(tblID + "_length").remove();
+    $(tblID + "_filter input").addClass("form-control");
+    $(tblID + "_filter input").attr("placeholder", "Search");
+    $(tblID + "_filter input").insertAfter(tblID + "_filter label");
+    $(tblID + "_filter label").remove();
+    $(tblID + "_info").insertAfter("div." + tblID.split("#")[1] + "_paging");
+
+}
+
+
 // Copied from https://datatables.net/plug-ins/pagination on 04/10/2014 11:44pm,
 // and modified slightly to use the Bootstrap pagination style
 
@@ -29,7 +60,7 @@ $.extend( $.fn.dataTableExt.oPagination, {
                 }
             };
  
-            $(nPaging).append(
+            $(nPaging).addClass(oSettings.sTableId + "_paging").append(
                 '<ul class="pagination">'+
                     '<li class="prev disabled"><a href="#">&laquo; '+oLang.sPrevious+'</a></li>'+
                     '<li class="next disabled"><a href="#">'+oLang.sNext+' &raquo; </a></li>'+

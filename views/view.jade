@@ -38,6 +38,38 @@ block body
 
             div(id="saveErrMsgContainer")
 
+      div(id="annotation" class="panel panel-default", style="padding:0px;")
+        div(class="panel-heading", style="padding:5px")
+          h5(class="panel-title", data-toggle="collapse", data-parent="#accordion", href="#collapseAnnotation", style="cursor:pointer;font-size:14px;")
+            | Annotate
+            span(style="float:right") [+]
+
+        div(id="collapseAnnotation", class="panel-collapse collapse in")
+          div(class="panel-body", style="padding:5px;font-size:90%")
+            - if (user)
+              | Add your own annotations to the database.
+              form(method="post", role="form", id="annotation-form")
+                select(class="form-control", id="gene")
+                  option(value="") -- choose gene --
+                br
+                select(class="form-control", id="interaction")
+                  option(value="") -- choose interaction --
+                  option(value="Amp") is amplified in
+                  option(value="Del") is deleted in
+                  option(value="SNV") is mutated in
+                  //-option(value="interact") interacts with
+                br
+                select(class="form-control", id="interactor",  style="display:none;")
+                br
+                br
+                input(class="form-control", id="annotations", placeholder="PMID.", style="display:none")
+                br
+                button(type="submit", id="submit", class="btn btn-default", style="display:none") Submit
+                br
+                div(id="annotationStatus")
+            - else
+              | You must <a href="/login">Login</a> to be able to add annotations.
+
     div(id="view")
       div(class="panel panel-default")
         div(class="panel-heading")
@@ -128,11 +160,11 @@ block body
       script(src='components/jquery/dist/jquery.min.js').
       script(src='components/d3/d3.min.js').
       script(src='components/bootstrap/dist/js/bootstrap.min.js').
+      script(src='components/d3-tip/index.js').
       script(src='components/gd3/js/cna-browser.js').
       script(src='components/gd3/js/transcript-plot.js').
       script(src='components/gd3/js/mutation-matrix.js').
       script(src='components/gd3/js/subnetwork.js').
-      script(src='js/d3-tooltip.js').
       script(src='js/save.js').
       script(src='js/view.js').
       script.

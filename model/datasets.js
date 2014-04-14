@@ -1,7 +1,7 @@
 // Import required modules
-var mongoose = require( 'mongoose' );
-var Domain  = require( "./domains" );
-var Genome  = require( "./genome" );
+var mongoose = require( 'mongoose' ),
+	Genome  = require( "./genome" ),
+	GeneSets  = require( "./genesets" );
 
 // Create schemas to hold the SNVs
 var MutGeneSchema = new mongoose.Schema({
@@ -145,6 +145,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	// Read in the CNAs file asynchronously
 	var snvs = {},
 		cnas = {},
+		mutGenes = {},
 		mutSamples = {},
 		summary = {},
 		mutationTypes = [];
@@ -199,7 +200,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				cnas[gene].segments[sample].push( mut );
 
 				if (!(gene in mutSamples)) mutSamples[gene] = {};
-				//if (!(gene in mutTys)) mutTys[gene] = [];
 
 				// Record the mutated sample
 				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(cnaTy) == -1){
@@ -208,6 +208,14 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				else{
 					mutSamples[gene][sample] = [ cnaTy ];
 				}
+
+				// Record the mutation in the master list of genes to all their mutated samples
+				if (!(gene in mutGenes))
+					mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, amp: {}, del: {} };
+
+				mutGenes[gene].mutated_samples[sample] = true;
+				mutGenes[gene].cnas[sample] = true;
+				mutGenes[gene][cnaTy.toLowerCase()][sample] = true;
 
 			}
 
@@ -329,6 +337,17 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				if (mutationTypes.indexOf(mutTy) === -1){
 					mutationTypes.push( mutTy.toLowerCase() );
 				}
+
+				// Record the mutation in the master list of genes to all their mutated samples
+				if (!(gene in mutGenes))
+					mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, amp: {}, del: {} };
+
+				if (!(mutTy in mutGenes[gene])) mutGenes[gene][mutTy] = {};
+				mutGenes[gene].mutated_samples[sample] = true;
+				mutGenes[gene].snvs[sample] = true;
+				mutGenes[gene][mutTy][sample] = true;
+
+				if (mutClass == "inactive_snv") mutGenes[gene].inactivating[sample] = true;
 			}
 
 			d.resolve();
@@ -340,89 +359,126 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	}
 
 	function computeSummary(){
+		// Set up promise
+		console.log(dataset + " summary:")
+		var promise = Q.defer();
 		var num_samples = samples.length,
 			num_snvs = 0,
 			num_cnas = 0,
-			num_mutated_genes, 
+			num_mutated_genes,
 			most_mutated_genes,
-			most_mutated_pathways,
+			most_mutated_gene_sets,
 			muation_plot_data;
 
+		function numMutatedSamples(sampleToMut){ return sampleToMut ? Object.keys(sampleToMut).length : 0; }
 		function isInactivating(mut){ return inactiveTys.indexOf(  mut.ty.toLowerCase() )}
-		function dist(d){ return d.snvs * d.snvs + d.cnas * d.cnas; }
-		function initMutatedGene(){
-			var d = {amp: 0, del: 0, snvs: 0, inactivating: 0, cnas: 0, mutated_samples: {} };
-			mutationTypes.forEach(function(ty){ d[ty.toLowerCase()] = 0; });
-			return d
-		}
-
-		// Create a map of each gene to the number and types of its mutations
-		var mutated_genes = {};
-
-		// For snvs, iterate through each mutated transcript for each gene to counts its mutations
-		Object.keys(snvs).forEach(function(g){
-			mutated_genes[g] = initMutatedGene();
-			var mutations = [];
-			Object.keys(snvs[g]).forEach(function(t){
-				mutations.push.apply( mutations, snvs[g][t].mutations );
-			});
-
-			var inactivating = mutations.filter(isInactivating).length;
-			mutated_genes[g].snvs = mutations.length
-			mutated_genes[g].inactivating = inactivating;
-
-			mutations.forEach(function(m){
-				mutated_genes[g][m.ty.toLowerCase()] += 1;
-				mutated_genes[g].mutated_samples[m.sample] = true;
-			})
-
-			num_snvs += mutations.length;
-		})
-
-		// For CNAs, iterate through each gene's segments in each sample to count the 
-		// number of amplifications and deletions
-		Object.keys(cnas).forEach(function(g){
-			if (!mutated_genes[g]) mutated_genes[g] = initMutatedGene();
-			mutated_genes[g].cnas = cnas[g].segments.length;
-			cnas[g].segments.forEach(function(S){
-				mutated_genes[g][S.segments[0].ty.toLowerCase()] += 1;
-				mutated_genes[g].mutated_samples[S.sample] = true;
-			});
-			num_cnas += cnas[g].segments.length;
-
-		});
+		function dist(x, y){ return x * x + y * y; } // distance from the origin
 
 		// Count the number of mutated genes in the dataset
-		var genes = Object.keys(mutated_genes)
-		num_mutated_genes = Object.keys(genes).length;
-
-		// Extract the 500 most mutated genes
-		most_mutated_genes = genes.sort(function(a, b){
-			return dist(mutated_genes[a]) > dist(mutated_genes[b]) ? -1 : 1;
-		}).slice(0, 500)
-		.map(function(g){
-			var d = mutated_genes[g];
-			return { name: g, mutated_samples: Object.keys(d.mutated_samples).length, cnas: d.cnas,
-					 snvs: d.snvs, inactivating: d.inactivating }
+		var genes = Object.keys(mutGenes);
+		num_mutated_genes = genes.length;
+		console.log("\tNo. mutated genes:", num_mutated_genes);
+		var genes = genes.map(function(g){
+			var snvSamples = mutGenes[g] ? numMutatedSamples(mutGenes[g].snvs) : 0,
+				cnaSamples = mutGenes[g] ? numMutatedSamples(mutGenes[g].cnas) : 0;
+			num_snvs += snvSamples;
+			num_cnas += cnaSamples;
+			return { name: g, snvs: snvSamples, cnas: cnaSamples };
 		});
+		console.log("\tNo. SNVs:", num_snvs);
+		console.log("\tNo. CNAs:", num_cnas);
+
+		// Extract the 100 most mutated genes
+		genes = genes.sort(function(a, b){ return dist(a.snvs, a.cnas) > dist(b.snvs, b.cnas) ? -1 : 1; })
+			.slice(0, Math.min(500, genes.length))
+			.map(function(g){
+				var d = mutGenes[g.name];
+				return {
+							name: g.name,
+							cnas: g.cnas,
+							snvs: g.snvs,
+							mutated_samples: numMutatedSamples(d.mutated_samples),
+							inactivating: numMutatedSamples(d.inactivating)
+						}
+			});
+		most_mutated_genes = genes.slice(0, Math.min(genes.length, 100));
 
 		// Create the data for the mutation plot
 		mutation_plot_data = {};
-		most_mutated_genes.forEach(function(d){
-			mutation_plot_data[d.name] = mutated_genes[d.name]
-			mutation_plot_data[d.name].mutated_samples = Object.keys(mutated_genes[d.name].mutated_samples).length;
+		genes.forEach(function(d){
+			mutation_plot_data[d.name] = 	{ 
+												cnas: d.cnas,
+												snvs: d.snvs,
+												mutated_samples: d.mutated_samples,
+												inactivating: d.inactivating
+											};
+			mutationTypes.forEach(function(ty){
+				mutation_plot_data[d.name][ty] = numMutatedSamples(mutGenes[d.name][ty]);
+			});
 		});
 
-		// Update the summary
-		summary = {
-			most_mutated_genes: most_mutated_genes,
-			most_mutated_pathways: most_mutated_pathways,
-			num_samples: num_samples,
-			num_mutated_genes: num_mutated_genes,
-			num_snvs: num_snvs,
-			num_cnas: num_cnas,
-			mutation_plot_data: mutation_plot_data
-		};
+		// Find the most mutated pathways/complexes
+		function numMutations(geneset, ty){
+			var mutatedSamples = {};
+			for (var i = 0; i < geneset.length; i++){
+				if (mutGenes[geneset[i]]){
+					for (var s in mutGenes[geneset[i]][ty]){
+						mutatedSamples[s] = true;
+					}
+				}
+			}
+			return numMutatedSamples(mutatedSamples);
+		}
+
+		var GeneSet = mongoose.model( 'GeneSet' );
+		GeneSet.find({}, function(err, genesets){
+			// Throw err if necessary
+			if (err) throw new Error(err);
+
+			// Sort the genesets by the number of their mutations, and report the first twenty
+			var genesets = genesets.map(function(S){
+				var d = {
+					name: S.description,
+					database: S.database,
+					num_genes: S.genes.length,
+					mutated_samples: numMutations(S.genes, "mutated_samples"),
+					cnas: numMutations(S.genes, "cnas"),
+					snvs: numMutations(S.genes, "snvs"),
+					inactivating: numMutations(S.genes, "inactivating"),
+				};
+				
+				// Find the top 5 most mutated genes
+				var mutatedGenes = S.genes.filter(function(g){
+					return mutGenes[g] ? numMutatedSamples(mutGenes[g].mutated_samples) > 0 : false;
+				})
+				.sort(function(a, b){
+					var x = mutGenes[a] ? numMutatedSamples(mutGenes[a].mutated_samples) : 0,
+						y = mutGenes[b] ? numMutatedSamples(mutGenes[b].mutated_samples) : 0;
+					return x < y ? 1 : -1;
+				});
+				d.top_genes = mutatedGenes.slice(0, Math.min(5, mutatedGenes.length)).join(",");
+				return d;
+			});
+
+			// Create the objects to represent the most mutated gene sets
+			genesets.filter(function(S){ return S.mutated_samples > 0; }).sort(function(a, b){ return a.mutated_samples < b.mutated_samples ? 1 : -1; });
+			most_mutated_gene_sets = genesets.slice(0, Math.min(genesets.length, 20));
+
+			// Update the summary
+			summary = {
+				most_mutated_genes: most_mutated_genes,
+				most_mutated_gene_sets: most_mutated_gene_sets,
+				num_samples: num_samples,
+				num_mutated_genes: num_mutated_genes,
+				num_snvs: num_snvs,
+				num_cnas: num_cnas,
+				mutation_plot_data: mutation_plot_data
+			};
+
+			promise.resolve();
+		});
+
+		return promise.promise;
 	}
 
 	// Save the dataset

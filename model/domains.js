@@ -1,7 +1,7 @@
 // Import required modules
 var mongoose = require( 'mongoose' );
 
-// Create PPI schema and add it to Mongoose
+// Create domain schema and add it to Mongoose
 var DomainSchema = new mongoose.Schema({
 	transcript: {type: String, required: true},
 	domains: { type: {}, required: true},

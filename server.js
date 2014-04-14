@@ -125,6 +125,11 @@ app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
 app.get('/datasets', routes.datasets.index);
 app.get('/datasets/view/:datasetID', routes.datasets.view);
 
+// Annotation views
+app.get('/annotations/gene/:gene', routes.annotations.gene);
+app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
+app.post('/save/annotation', ensureAuthenticated, routes.annotations.save);
+
 // more information
 app.get('/terms', routes.terms)
 app.get('/contact', routes.contact)
