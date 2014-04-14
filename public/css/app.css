@@ -4,7 +4,6 @@ html,body{
   margin: 0;
   padding: 0;
 
-  background:rgb(255, 255, 255);
   font-family: 'Calibri', sans-serif
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
@@ -18,13 +17,40 @@ h1, h2, h3, h4, h5{
 }
 
 /* Layout styling */
+div.container {
+
+}
+
+div.indexTop {
+  margin:0 auto 100px auto;
+  min-height: 170px
+  text-align:center;
+  width: 750px;
+}
+div.indexTop ul {
+  list-style: none;
+}
+div.indexTop ul li {
+  display: inline;
+  margin-right: 35px;
+  font-size: 20px;
+}
+div.indexTop ul li a {
+  color: #679937;
+  font-size: 20px;
+}
+div.indexTop ul li a.loginBtn {
+  border-color: #ddd;
+  margin-top: -3px;
+}
+
 div.container-index {
   margin: 0 auto;
   width: 650px;
 }
 div#header{
-  background: #333;
-  border-bottom: 1px solid #ccc;
+  /*background: #333;*/
+  /*border-bottom: 1px solid #ccc;*/
   height: 35px;
   margin:0;
   padding:0 15px;
@@ -131,12 +157,12 @@ div#acknowledgements img.color{ display:none;}
 div#upload form{ width:40%;}
 
 /* Styling for visualizations */
-div#control-panel{width:200px;border:#333 solid 10px;position:absolute;right:20px;}
+div#control-panel{width:200px;border:#333 solid 10px;position:absolute;right:20px;background:#333;}
 .fixed {position: fixed; top: 0; z-index: 1;right:20px;}
 
 div#control-panel h4{text-align:center;background:#333;color:#fff;padding-bottom:3px;}
 
-div#control-panel div#controls{ padding-top:2px; }
+div#control-panel div#controls{ padding-top:2px; border-radius:4px;}
 div#control-panel div#controls ul#datasets{list-style-type: none;padding-left:7px;font-size:90%;}
 
 div#control-panel div#controls ul#datasets li div{display:inline-block;}

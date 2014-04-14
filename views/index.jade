@@ -1,10 +1,19 @@
 extends layout
 block body
   div(class="container")
-    img(src="img/cgat.svg", id="splash-logo")
-    h1(id="splash-header") Cancer Genomics Analysis Tool
+    div(class="indexTop")
+      ul
+        li
+          a(class="btn btn-default loginBtn", href="/auth/Google") Log in
+        li
+          a(href="#sec-about") About
+        li
+          a(href="#input-chooser") Search
+        li
+          a(href="#component-descriptions") Instructions
+      img(src="img/cgatTitle.svg", id="splash-logo")
     div(id="splash-img")
-    div(id="splash-txt")
+    div(id="sec-about")
       p CGAT is a tool for exploring and analyzing gene sets that may be
         | associated with cancer.
       p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
