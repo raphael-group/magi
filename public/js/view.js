@@ -163,7 +163,7 @@ d3.json(query, function(err, data){
 		var transcripts = Object.keys(data.transcript_data[g]).map(function(t){
 			return { name: t, numMutations: data.transcript_data[g][t].mutations.length };
 		});
-		transcripts.sort(function(a, b){ return a.numMutations < b.numMutations });
+		transcripts.sort(function(a, b){ return a.numMutations < b.numMutations ? 1 : -1 });
 
 		var optGroup = transcriptSelect.append("optgroup")
 			.attr("label", g);
@@ -233,7 +233,7 @@ d3.json(query, function(err, data){
 	var cnaGenes = Object.keys(data.cna_browser_data).map(function(g){
 		return { name: g, numCNAs: data.cna_browser_data[g].segments.length };
 	});
-	cnaGenes.sort(function(a, b){ return a.numCNAs < b.numCNAs; });
+	cnaGenes.sort(function(a, b){ return a.numCNAs < b.numCNAs ? 1 : -1; });
 
 	// Watch the CNA browser selector to update the current CNA browser on change
 	cnaBrowserSelect.selectAll(".cna-option")
@@ -306,8 +306,9 @@ d3.json(query, function(err, data){
 
 			// Filter the mutation matrix, transcript plot, and CNA browser
 			m2Chart.filterDatasets(datasetToInclude);
-			transcriptChart.filterDatasets(datasetToInclude);
-			cnaChart.filterDatasets(datasetToInclude);
+			if (genes.length > 0) transcriptChart.filterDatasets(datasetToInclude);
+			
+			if (cnaGenes.length > 0) cnaChart.filterDatasets(datasetToInclude);
 
 			// Fade in/out this dataset
 			d3.select(this).style("opacity", opacity);

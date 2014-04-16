@@ -112,7 +112,12 @@ exports.viewData = function getViewData(req, res){
 					})
 
 					// Assemble data into single Object
-					var mutation_matrix = {M : M, sampleToTypes: sampleToTypes, typeToNumSamples: typeToNumSamples };
+					var mutation_matrix = {
+											M : M,
+											sampleToTypes: sampleToTypes,
+											sampleTypes: Object.keys(typeToNumSamples),
+											typeToNumSamples: typeToNumSamples
+										};
 
 					// Create nodes using the number of mutations in each gene
 					var nodes = genes.map(function(g){

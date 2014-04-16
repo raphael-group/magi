@@ -179,9 +179,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				var fields = lines[i].split('\t'),
 					gene   = fields[0],
 					sample = fields[1],
-					cnaTy  = fields[2] == "AMP" ? "amp" : "del",
-					start  = fields[3] * 1,
-					end    = fields[4] * 1;
+					cnaTy  = fields[2] == "AMP" ? "amp" : fields[2] == "DEL" ? "del" : "fus",
+					start  = fields[3],
+					end    = fields[4];
 
 				// Ignore samples not in the whitelist
 				if (samples.indexOf(sample) == -1){
@@ -189,19 +189,20 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					else samples.push( sample );
 				}
 
-				// Create the mutation
-				var mut = { dataset: dataset, ty: cnaTy, sample: sample,
-				            start: start, end: end };
+				// Record the CNA if a start/end were provided
+				if (start != "" && end != ""){
+					var mut = { dataset: dataset, ty: cnaTy, sample: sample,
+					            start: start * 1, end: end * 1 };
 
-				// Append the mutation to the list of mutations in the
-				// current gene
-				if (!(gene in cnas)) cnas[gene] = {segments: {}};
-				if (!(sample in cnas[gene])) cnas[gene].segments[sample] = [];
-				cnas[gene].segments[sample].push( mut );
-
-				if (!(gene in mutSamples)) mutSamples[gene] = {};
+					// Append the mutation to the list of mutations in the
+					// current gene
+					if (!(gene in cnas)) cnas[gene] = {segments: {}};
+					if (!(sample in cnas[gene])) cnas[gene].segments[sample] = [];
+					cnas[gene].segments[sample].push( mut );
+				}
 
 				// Record the mutated sample
+				if (!(gene in mutSamples)) mutSamples[gene] = {};
 				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(cnaTy) == -1){
 					mutSamples[gene][sample].push(cnaTy);
 				}
@@ -211,7 +212,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				// Record the mutation in the master list of genes to all their mutated samples
 				if (!(gene in mutGenes))
-					mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, amp: {}, del: {} };
+					mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, fus: {}, amp: {}, del: {} };
 
 				mutGenes[gene].mutated_samples[sample] = true;
 				mutGenes[gene].cnas[sample] = true;
@@ -325,7 +326,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				}
 
 				// Record the mutated sample
-				var mutClass = inactiveTys.indexOf(  mutTy.toLowerCase() ) != -1 ? "inactive_snv" : "snv";
+				var mutClass = mutTy && inactiveTys.indexOf(  mutTy.toLowerCase() ) != -1 ? "inactive_snv" : "snv";
 				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(mutClass) == -1){
 					mutSamples[gene][sample].push( mutClass );
 				}
@@ -340,7 +341,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				// Record the mutation in the master list of genes to all their mutated samples
 				if (!(gene in mutGenes))
-					mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, amp: {}, del: {} };
+					mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, fus: {}, amp: {}, del: {} };
 
 				if (!(mutTy in mutGenes[gene])) mutGenes[gene][mutTy] = {};
 				mutGenes[gene].mutated_samples[sample] = true;
