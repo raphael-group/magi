@@ -78,13 +78,11 @@ block body
 								a(href="/view?genes=#{S.top_genes}&datasets=#{db._id}") View
 
 		//- Run the script to create the mutations plot
-		//- script(src='components/jquery/dist/jquery.min.js').
-		//- script(src='components/bootstrap/dist/js/bootstrap.min.js').
 		script(src='/components/d3/d3.min.js').
 		script(src='/components/jquery/dist/jquery.min.js').
 		script(src='/components/DataTables/media/js/jquery.dataTables.js').
 		script(src='/components/bootstrap/dist/js/bootstrap.min.js').
-		script(src='/js/d3-tooltip.js').
+		script(src='/components/d3-tip/index.js').
 		script(src="/js/mutations-plot.js").
 		script(src='/js/dataTableWrapper.js').
 		script(type='text/javascript').

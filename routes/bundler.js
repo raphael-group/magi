@@ -106,9 +106,9 @@ exports.viewData = function getViewData(req, res){
 					genes.forEach(function(g){ annotations[g] = {}; })
 					support.forEach(function(A){
 						if (!annotations[A.gene][A.mutation_class]){
-							annotations[A.gene][A.mutation_class] = [];
+							annotations[A.gene][A.mutation_class] = {};
 						}
-						annotations[A.gene][A.mutation_class].push( A.cancer );
+						annotations[A.gene][A.mutation_class][A.cancer] = A.support;
 					})
 
 					// Assemble data into single Object

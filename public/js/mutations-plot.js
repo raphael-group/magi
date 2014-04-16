@@ -157,7 +157,7 @@ function mutation_plot(params){
 				.style("font-size", 14);
 
 			// Add the points and initialize them so the first transition isn't awkward
-			points = points = data[ty1][ty2].points;
+			points = data[ty1][ty2].points;
 			var poly = fig.selectAll(".polygon")
 				.data(genes).enter()
 				.append("polygon")
@@ -170,6 +170,18 @@ function mutation_plot(params){
 					return "translate(" + x(d.x) + "," + y(d.y) + ")";
 				});
 
+			// Add tooltips
+			var tip = d3.tip()
+				.attr('class', 'd3-tip')
+				.offset([-10, 0])
+				.html(function(g){
+					var d = points[g];
+					return d.gene + "<br/>" + tyToName[ty1] + ": " + d.x + "<br/>" + tyToName[ty2] + ": " + d.y;
+				});
+
+			svg.call(tip);
+			poly.on("mouseover", tip.show)
+		 		.on("mouseout", tip.hide);
 
 			var points;
 
@@ -258,22 +270,6 @@ function mutation_plot(params){
 						return x(d.x) < 0  || y(d.y) > height || y(d.y) < 0;
 					})
 					.style("opacity", 0);
-
-				// Add tooltips to each point
-				poly.tooltip(function(g) {
-					var d = points[g];
-					var tip = d.gene + "<br/>" + tyToName[ty1] + ": " + d.x + "<br/>" + tyToName[ty2] + ": " + d.y;
-					return {
-						detection: 'shape',
-						displacement: [60, 5],
-						gravity: 'right',
-						mousemove: false,
-						placement: 'fixed',
-						position: [x(d.x), y(d.y)],
-						text: tip,
-						type: 'tooltip'
-					};
-				});
 			}
 
 			// Append axes selectors in a div below the selection
