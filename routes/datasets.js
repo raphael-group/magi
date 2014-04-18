@@ -10,11 +10,12 @@ exports.index = function index(req, res){
 		if (err) throw new Error(err);
 
 		// Append the groupClass standard to each group
-		standardGroups.forEach(function(g){ g.groupClass = "standard"; })
 		standardGroups.forEach(function(g){
 			g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
 		});
 
+
+		var groupData = [{groups: standardGroups, ty: "standard"}];
 
 		// Load the user's datasets (if necessary)
 		if (req.user){
@@ -23,16 +24,19 @@ exports.index = function index(req, res){
 				if (err) throw new Error(err);
 
 				// Append the groupClass standard to each group
-				userGroups.forEach(function(g){ g.groupClass = "user"; });
 				userGroups.forEach(function(g){
 					g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
 				});
 
-				res.render('datasets/index', { user: req.user, groups: userGroups.concat(standardGroups) });
+				if (userGroups.length > 0){
+					groupData.insert(0, 0, userGroups);
+				}
+
+				res.render('datasets/index', { user: req.user, groupClasses: groupData });
 			});
 		}
 		else{
-			res.render('datasets/index', { user: req.user, groups: standardGroups });
+			res.render('datasets/index', { user: req.user, groupClasses: groupData });
 		}
 	});
 }
@@ -51,7 +55,9 @@ exports.view = function view(req, res){
 		}
 
 		// Check if the dataset is standard, and render it if it is
-		if (db.is_standard || db.user_id == req.user._id){
+		// or if the user owns the database (add the "" to make sure)
+		// the id is a string and not an ObjectId
+		if (db.is_standard || (db.user_id + "") == (req.user._id + "")){
 			res.render('datasets/view', { user: req.user, db: db });
 		}
 		else{

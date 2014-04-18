@@ -26,6 +26,7 @@ function mutation_plot(params){
     									"missense_mutation": "No. Missense Mutations",
     									"nonsense_mutation": "No. Nonsense Mutations",
     									"in_frame_del": "No. Inframe Deletions",
+    									"in_frame_ins": "No. Inframe Insertions",
     									"splice_site": "No. Splice-Site Mutations",
     									"frame_shift_ins": "No. Frameshift Insertions",
     									"frame_shift_del": "No. Frameshift Deletions",
@@ -64,7 +65,7 @@ function mutation_plot(params){
 							return { x: +geneToData[g][t1], y: +geneToData[g][t2], gene: g };
 						}).sort(function(a, b){ return dist(a) > dist(b) ? -1 : 1 });
 
-						var quantiles = [dist(dataset[4*n/5]), dist(dataset[3*n/5]), dist(dataset[2*n/5]), dist(dataset[n/5])];
+						var quantiles = [dist(dataset[n-1]), dist(dataset[81*n/100]), dist(dataset[27*n/100]), dist(dataset[9*n/100]), dist(dataset[3*n/100]), dist(dataset[0])];
 
 						// Create a map from each gene to its data
 						var points = {};
@@ -93,8 +94,7 @@ function mutation_plot(params){
 				.range([height, 0]);
 				
 			var colorScale = d3.scale.pow().exponent(1.2)
-				.range(["rgb(167, 206, 230)", "rgb(213, 220, 97)", "rgb(202, 66, 64)", "rgb(202, 66, 64)"])
-				.nice();
+				.range(["rgb(167, 206, 230)", "rgb(213, 220, 97)", "rgb(202, 66, 64)", "rgb(202, 66, 64)"]);
 			
 			//Define X axis
 			var xAxis = d3.svg.axis()
@@ -203,7 +203,7 @@ function mutation_plot(params){
 				// Reset the zoom
 				zoom.x(x).y(y);
 
-				// Update the axes
+				// Update the axes and make sure the strokes are still visible
 				xAxis.scale(x);
 				xAxisEl.call(xAxis);
 				xAxisEl.select("path").style("opacity", 0);
@@ -250,7 +250,15 @@ function mutation_plot(params){
 
 				// Update the axes
 				fig.select(".x.axis").call(xAxis);
+				xAxisEl.selectAll(".tick line")
+					.style("stroke", "lightgrey")
+					.style("opacity", 0.7)
+					.style("stroke-dasharray", ("3, 3"));
 				fig.select(".y.axis").call(yAxis);
+				yAxisEl.selectAll(".tick line")
+					.style("stroke", "lightgrey")
+					.style("opacity", 0.7)
+					.style("stroke-dasharray", ("3, 3"));
 
 				// Move the points into position
 				poly.attr("transform", function(g) {

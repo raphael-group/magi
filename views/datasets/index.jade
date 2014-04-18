@@ -4,14 +4,14 @@ block body
     h1 Datasets
     -var seenStandard = false;
     -var seenUser = false;
-    -for (var i in groups)
-      -var group = groups[i];
+    -for (var i in groupClasses)
+      -var groups = groupClasses[i].groups;
       //- Create a horizontal break if this is the first standard/user dataset
-      -if (group.groupClass == "standard" && !seenStandard)
+      -if (groupClasses[i].ty == "standard" && !seenStandard)
         - seenStandard = true;
         hr
         h4 Provided datasets
-      -if (group.groupClass == "user" && !seenUser)
+      -if (groupClasses[i].ty == "user" && !seenUser)
         - seenUser = true;
         hr
         h4 Your datasets
@@ -26,15 +26,18 @@ block body
           th Last updated
           -if (!seenStandard)
             th Remove
-        -for(var i = 0; i < groups.length; i++)
-          -var group = groups[i];
-          -var rowClass = i % 2 == 0 ? 'even' : 'odd';
-          -for (var j in group.dbs)
-            -var db = group.dbs[j];
+        -for(var j = 0; j < groups.length; j++)
+          -var group = groups[j];
+          -var rowClass = j % 2 == 0 ? 'even' : 'odd';
+          -for (var k in group.dbs)
+            -var db = group.dbs[k];
             tr(class="#{ rowClass }")
               td
-                - if (j == 0)
-                  | #{group.name}
+                - if (k == 0)
+                  -if (group.name == "")
+                    | Other
+                  -else
+                    | #{group.name}
               td
                 a(href="/datasets/view/#{ db._id }") #{db.title}
               td #{db.num_samples}

@@ -175,7 +175,7 @@ d3.json(query, function(err, data){
 			.text(function(d){ return d.name + " (" + d.numMutations + " mutations)"; });
 
 		// Store the first gene and transcript for initialization later
-		if (i == 0){
+		if (transcripts.length > 0 && !firstGene && !firstTranscript){
 			firstGene = g;
 			firstTranscript = transcripts[0].name;
 		}

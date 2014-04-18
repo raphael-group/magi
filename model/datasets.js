@@ -326,7 +326,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				}
 
 				// Record the mutated sample
-				var mutClass = mutTy && inactiveTys.indexOf(  mutTy.toLowerCase() ) != -1 ? "inactive_snv" : "snv";
+				var mutTy = mutTy.toLowerCase(), //lowercase so case doesn't matter
+					mutClass = mutTy && inactiveTys.indexOf(  mutTy ) != -1 ? "inactive_snv" : "snv";
 				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(mutClass) == -1){
 					mutSamples[gene][sample].push( mutClass );
 				}
@@ -336,7 +337,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				// Record the mutation type
 				if (mutationTypes.indexOf(mutTy) === -1){
-					mutationTypes.push( mutTy.toLowerCase() );
+					mutationTypes.push( mutTy );
 				}
 
 				// Record the mutation in the master list of genes to all their mutated samples
