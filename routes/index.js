@@ -41,7 +41,8 @@ exports.index = function index(req, res){
 // Parse a user's POST to properly format the view
 exports.queryhandler = function queryhandler(req, res){
 	// Parse params
-	var genes = req.body.genes || "";
+	var genes = req.body.genes || "",
+		showDuplicates = req.body.showDuplicates || "";
 
 	/* Extract datasets */
 	// Dataset checkboxes are prepended with db- to ensure no starts their
@@ -61,7 +62,7 @@ exports.queryhandler = function queryhandler(req, res){
 
 	// Make query string
 	var querystring = require( 'querystring' ),
-		query = querystring.stringify( {genes: genes, datasets: datasets.join(",") } );
+		query = querystring.stringify( {genes: genes, datasets: datasets.join(","), showDuplicates: showDuplicates == "on" } );
 
 	res.redirect('/view?' + query)
 

@@ -52,13 +52,15 @@ var mutationToClass = {
 			snv: "SNV",
 			del: "Del",
 			inactive_snv: "SNV",
-			amp: "Amp"
+			amp: "Amp",
+			other: "Other"
 		},
 	mutationToName = {
 			snv: "SNV",
 			del: "Deletion",
 			inactive_snv: "Inactivating SNV",
-			amp: "Amplification"
+			amp: "Amplification",
+			other: "Other"
 		};
 
 // Parse the GET url parameters and generate the GET query to get the data
@@ -69,7 +71,10 @@ function getParameterByName(name) {
 
 var genes = getParameterByName("genes")
 	datasets = getParameterByName("datasets"),
-	query = "/data/bundle?genes=" + genes + "&datasets=" + datasets;
+	showDuplicates = getParameterByName("showDuplicates") == "true",
+	query = "/data/bundle?genes=" + genes + "&datasets=" + datasets,
+
+console.log("showDuplicates:", showDuplicates)
 
 ///////////////////////////////////////////////////////////////////////////
 // Get the data and initialize the view
@@ -91,11 +96,11 @@ d3.json(query, function(err, data){
 	// Parse and store the dataset colors and number of samples, and
 	// by default include all datasets in each visualization
 	var datasetToColor = data.datasetColors,
-		datasetToNumSamples = data.mutation_matrix.typeToNumSamples;
+		datasetToSamples = data.mutation_matrix.typeToSamples;
 
 	var datasetData = Object.keys(datasetToColor).map(function(d){
-		return { name: d, color: datasetToColor[d], numSamples: datasetToNumSamples[d], active: true };
-	});
+		return { name: d, color: datasetToColor[d], numSamples: datasetToSamples[d].length, active: true };
+	}).sort(function(a, b){ return d3.ascending(a.name, b.name); });
 
 	var datasetToInclude = {};
 	datasetData.forEach(function(d){ datasetToInclude[d.name] = true; });
@@ -108,7 +113,7 @@ d3.json(query, function(err, data){
 		return function(d, i){
 			var mutationClass = mutationToClass[d.ty],
 				tip  = "<div class='m2-tooltip' id='" + d.gene + "-" + d.sample + "'>"
-			tip += "<span>Sample: " + d.sample + '<br />Type: ' + d.dataset + "<br/>" + "Mutation: " + mutationToName[d.ty] + "</span>";
+			tip += "<span>Sample: " + d.sample.name + '<br />Type: ' + d.dataset + "<br/>" + "Mutation: " + mutationToName[d.ty] + "</span>";
 			if (annotations[d.gene] && annotations[d.gene][mutationClass]){
 				var cancers = Object.keys(annotations[d.gene][mutationClass]);
 				tip += "<br style='clear:both'/>Known mutations<div class='less-info'>"
@@ -142,6 +147,7 @@ d3.json(query, function(err, data){
 					.addMutationLegend()
 					.addSortingMenu()
 					.addTooltips(generateAnnotations(annotations));
+	if (showDuplicates) m2Chart.showDuplicates();
 
 	m2.datum(data.mutation_matrix);
 	m2Chart(m2);

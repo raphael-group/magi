@@ -65,7 +65,8 @@ function mutation_plot(params){
 							return { x: +geneToData[g][t1], y: +geneToData[g][t2], gene: g };
 						}).sort(function(a, b){ return dist(a) > dist(b) ? -1 : 1 });
 
-						var quantiles = [dist(dataset[n-1]), dist(dataset[81*n/100]), dist(dataset[27*n/100]), dist(dataset[9*n/100]), dist(dataset[3*n/100]), dist(dataset[0])];
+						var quantilePoints = [n-1, 81*n/100, 27*n/100, 9*n/100, 3*n/100, 0],
+							quantiles = quantilePoints.map(function(d){ return dist(dataset[Math.round(d)]); })
 
 						// Create a map from each gene to its data
 						var points = {};

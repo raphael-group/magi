@@ -19,20 +19,21 @@ html(ng-app="cgat")
 			ga('send', 'pageview');
 
 	body()
-		div(class="container-fluid", id="header", role="navigation")
-			div(class="page-header")
-				div(id="login")
-					//- Ask the user to login or show his/her name
-					- if (user)
-						| Welcome, &nbsp;
-						a(href="/account") #{user.name}
-						| &nbsp; | &nbsp;
-						a(href="/logout") Logout
-					- else
-						a(href="/auth/Google") Login via Google
-				h1
-					a(href="/")
-						//- img(src="/img/cgatTop.svg", id="small-logo")
+		block header
+			div(class="container-fluid", id="header", role="navigation")
+				div(class="page-header")
+					div(id="login")
+						//- Ask the user to login or show his/her name
+						- if (user)
+							| Welcome, &nbsp;
+							a(href="/account") #{user.name}
+							| &nbsp; | &nbsp;
+							a(href="/logout") Logout
+						- else
+							a(href="/auth/Google") Login via Google
+					h1
+						a(href="/")
+							img(src="/img/cgatTop.svg", id="small-logo")
 
 		br
 		block body

@@ -6,6 +6,7 @@ $(document).ready(function() {
         groupNameEl = "#groupName",
         snvFileEl = "#SNVs",
         cnaFileEl = "#CNAs",
+        aberrationFileEl = "#aberrations",
         sampleFileEl = "#testedSamples",
         colorEl = "#color";
 
@@ -19,6 +20,7 @@ $(document).ready(function() {
 
         // Extract input data
         var dataset  = $(datasetNameEl).val(),
+            aberrationFile = $(aberrationFileEl)[0].files[0],
             snvFile = $(snvFileEl)[0].files[0],
             cnaFile = $(cnaFileEl)[0].files[0],
             sampleFile = $(sampleFileEl)[0].files[0],
@@ -34,9 +36,23 @@ $(document).ready(function() {
         else{ datasetValidates = true; }
 
         // Check if the user passed an SNV/CNA file
-        if (!(cnaFile || snvFile)){
-            status('Please choose an SNV and/or CNA file.', warningClasses);
+        if (!(cnaFile || snvFile || aberrationFile)){
+            status('Please choose an aberration, SNV, and/or CNA file.', warningClasses);
             return false;
+        }
+
+        // Make sure there's an aberrations file, and that it is not too large etc.
+        var aberrationFileValidates = false;
+        if (aberrationFile && aberrationFile.size > 10000000){
+            status('Aberration file is too large. Please upload a smaller aberration file.', warningClasses);
+            return false;
+        }
+        else if(aberrationFile && aberrationFile.type != 'text/plain' && aberrationFile.type != 'text/tab-separated-values'){
+            status('Aberration file upload: only text and tsv files are allowed.', warningClasses);
+            return false;
+        }
+        else{
+            aberrationFileValidates = true;
         }
 
         // Make sure there's an SNV file, and that it is not too large etc.
@@ -91,11 +107,13 @@ $(document).ready(function() {
         }
 
         // If everything checks out, submit the form
-        if (datasetValidates && snvFileValidates && cnaFileValidates && sampleFileValidates && colorValidates){
+        if (datasetValidates && aberrationFileValidates && snvFileValidates && cnaFileValidates && sampleFileValidates && colorValidates){
             status('Uploading...', infoClasses);
 
             // Create a mini-form
             var data = new FormData();
+            if (aberrationFile)
+                data.append( 'aberrations', aberrationFile );
             if (snvFile)
                 data.append( 'SNVs', snvFile );
             if (cnaFile)

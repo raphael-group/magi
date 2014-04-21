@@ -23,13 +23,20 @@ exports.viewData = function getViewData(req, res){
 		var datasetNames = {};
 		datasets.forEach(function(d){ datasetNames[d._id] = d.title; });
 
+		// Create a map of dataset ids to their z_index (in the case of duplicate samples)
+		var datasetIDToPrecedence = {};
+		datasets.sort(function(a, b){ return a.is_standard ? 1 : a.updated_at > b.updated_at ? -1 : 1 });
+		for (var i = 0; i < datasets.length; i++){
+			datasetIDToPrecedence[datasets[i]._id] = i;
+		}
+
 		// Create a map of each dataset to its color
 		var datasetColors = {};
 		datasets.forEach(function(d){ if (d.color) datasetColors[d.title] = d.color });
 
-		// Create a map of each 
-		var typeToNumSamples = {};
-		datasets.forEach(function(d){ typeToNumSamples[d.title] = d.samples.length;  });
+		// Create a map of each type to the number of mutated samples
+		var typeToSamples = {};
+		datasets.forEach(function(d){ typeToSamples[d.title] = d.samples;  });
 
 		Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
 			// Create a list of all the transcripts in the mutated genes
@@ -55,7 +62,10 @@ exports.viewData = function getViewData(req, res){
 				var M = {},
 					transcript_data = {}
 					sampleToTypes = {},
-					cna_browser_data = {};
+					cna_browser_data = {},
+					// make a list of mutated samples with their unique IDs
+					seenSample = {},
+					samples = [];
 
 				// Initialize with genes as keys (in case genes aren't in the data)
 				for (var i in genes){
@@ -66,7 +76,8 @@ exports.viewData = function getViewData(req, res){
 				// Iterate through each dataset
 				for (var i = 0; i < mutGenes.length; i++){
 					// Parse dataset values into short variable handles
-					var G = mutGenes[i];
+					var G = mutGenes[i],
+						z_index = datasetIDToPrecedence[G.dataset_id];
 
 					// Record the CNAs
 					if (G.cnas){
@@ -76,8 +87,13 @@ exports.viewData = function getViewData(req, res){
 
 					// Load the mutated samples
 					for (var s in G.mutated_samples){
-						sampleToTypes[s] = datasetNames[G.dataset_id];
-						M[G.gene][s] = G.mutated_samples[s];
+						var _id = G.dataset_id + "-" + s;
+						sampleToTypes[_id] = datasetNames[G.dataset_id];
+						M[G.gene][_id] = G.mutated_samples[s];
+						if (!(_id in seenSample)){
+							samples.push( {_id: _id, name: s, z_index: z_index } );
+							seenSample[_id] = true;
+						}
 					}
 
 					for (t in G.snvs){
@@ -115,8 +131,9 @@ exports.viewData = function getViewData(req, res){
 					var mutation_matrix = {
 											M : M,
 											sampleToTypes: sampleToTypes,
-											sampleTypes: Object.keys(typeToNumSamples),
-											typeToNumSamples: typeToNumSamples
+											sampleTypes: Object.keys(typeToSamples),
+											typeToSamples: typeToSamples,
+											samples: samples
 										};
 
 					// Create nodes using the number of mutations in each gene

@@ -98,7 +98,8 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 				   "splice_site", "frame_shift_del"];
 
 // Loads a SNVs into the database
-exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file, is_standard, color, user_id){
+exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
+									  aberration_file, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = mongoose.model( 'Dataset' ),
@@ -107,8 +108,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		Q       = require( 'q' );
 
 	// Make sure that either/both an SNV and CNA file were provided
-	if (!(snvs_file || cnas_file)){
-		console.log("addDatasetFromFile: either/both SNV file or CNA file are *required*.")
+	if (!(snvs_file || cnas_file || aberration_file)){
+		console.log("addDatasetFromFile: at least one of the SNV, CNA, or aberration files are *required*.")
 		process.exit(1);
 	}
 
@@ -150,7 +151,78 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		summary = {},
 		mutationTypes = [];
 
+	function recordMutation(gene, sample, mutClass){
+		// Make sure the gene is initialized in both data structures
+		if (!(gene in mutSamples)) mutSamples[gene] = {};
+		if (!(gene in mutGenes))
+			mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, fus: {}, amp: {}, del: {} };
+
+		// Add the sample and the mutation class to the mutSamples data structure
+		if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(mutClass) == -1){
+			mutSamples[gene][sample].push( mutClass );
+		}
+		else{
+			mutSamples[gene][sample] = [ mutClass ];
+		}
+
+		// Record the gene as being mutated in the given sample
+		mutGenes[gene].mutated_samples[sample] = true;		
+	}
+
+	function loadAberrationFile(){
+		console.log("Aberrations")
+		// Set up promise
+		var d = Q.defer();
+
+		// If an aberration file wasn't provided, return
+		if (!aberration_file){
+			d.resolve();
+			return d.promise;
+		}
+
+		fs.readFile(aberration_file, 'utf-8', function (err, data) {
+			// Exit if there's an error, else callback
+			if (err) throw new Error(err);
+
+			// Load the lines, but skip the header (the first line)
+			var lines = data.trim().split('\n');
+
+			// Make sure there're some lines in the file
+			if (lines.length == 0){
+				console.log("Empty aberrations file. Exiting.")
+				process.exit(1);
+			}
+
+			lines.forEach(function(l){
+				// Ignore the line if it starts with a '#'
+				if (l.lastIndexOf('#', 0) === 0){
+					return;
+				}
+
+				// Extract the fields
+				var fields = l.split('\t'),
+					sample   = fields[0],
+					mutations = fields.slice(1, fields.length);
+
+				// Ignore samples not in the whitelist
+				if (samples.indexOf(sample) == -1){
+					if (givenSampleList) return;
+					else samples.push( sample );
+				}
+
+				// Record the mutations
+				var mutClass = "other";
+				mutations.forEach(function(gene){
+					recordMutation(gene, sample, mutClass);
+				});
+			});
+			d.resolve();
+		});
+		return d.promise;
+	}
+
 	function loadCNAFile(){
+		console.log("CNAs")
 		// Set up promise
 		var d = Q.defer();
 
@@ -168,15 +240,20 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			var lines = data.trim().split('\n');
 
 			// Make sure there're some lines in the file
-			if (lines.length < 2){
-				console.log("Empty CNA file (or just header). Exiting.")
+			if (lines.length == 0){
+				console.log("Empty CNA file. Exiting.")
 				process.exit(1);
 			}
 
 			// Parse the mutations into a hash from gene to transcripts' mutations
-			for (var i = 1; i < lines.length; i++){
-				// Parse the line
-				var fields = lines[i].split('\t'),
+			lines.forEach(function(l){
+				// Ignore the line if it starts with a '#'
+				if (l.lastIndexOf('#', 0) === 0){
+					return;
+				}
+
+				// Extract the fields
+				var fields = l.split('\t'),
 					gene   = fields[0],
 					sample = fields[1],
 					cnaTy  = fields[2] == "AMP" ? "amp" : fields[2] == "DEL" ? "del" : "fus",
@@ -185,7 +262,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				// Ignore samples not in the whitelist
 				if (samples.indexOf(sample) == -1){
-					if (givenSampleList) continue;
+					if (givenSampleList) return;
 					else samples.push( sample );
 				}
 
@@ -202,23 +279,11 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				}
 
 				// Record the mutated sample
-				if (!(gene in mutSamples)) mutSamples[gene] = {};
-				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(cnaTy) == -1){
-					mutSamples[gene][sample].push(cnaTy);
-				}
-				else{
-					mutSamples[gene][sample] = [ cnaTy ];
-				}
-
-				// Record the mutation in the master list of genes to all their mutated samples
-				if (!(gene in mutGenes))
-					mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, fus: {}, amp: {}, del: {} };
-
-				mutGenes[gene].mutated_samples[sample] = true;
+				recordMutation(gene, sample, cnaTy);
 				mutGenes[gene].cnas[sample] = true;
 				mutGenes[gene][cnaTy.toLowerCase()][sample] = true;
 
-			}
+			});
 
 			// Load locations of each gene and find their neighbors 
 			var Gene = mongoose.model( 'Gene' );
@@ -264,6 +329,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 	// Read in the SNVs file asynchronously
 	function loadSNVFile(){	
+		console.log("SNVs")
 		// Set up promise
 		var d = Q.defer();
 
@@ -281,14 +347,19 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			var lines = data.trim().split('\n');
 
 			// Make sure there're some lines in the file
-			if (lines.length < 2){
-				console.log("Empty SNV file (or just header). Exiting.")
+			if (lines.length == 0){
+				console.log("Empty SNV file. Exiting.")
 				process.exit(1);
 			}
 
-			for (var i = 1; i < lines.length; i++){
-				// Parse the line
-				var fields     = lines[i].split('\t'),
+			lines.forEach(function(l){
+				// Ignore the line if it starts with a '#'
+				if (l.lastIndexOf('#', 0) === 0){
+					return;
+				}
+
+				// Extract the fields
+				var fields = l.split('\t'),
 					gene       = fields[0],
 					sample     = fields[1],
 					transcript = fields[2],
@@ -305,52 +376,45 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				// If a sample list was provided, restrict to only those
 				// samples
 				if (samples.indexOf(sample) == -1){
-					if (givenSampleList) continue;
+					if (givenSampleList) return;
 					else samples.push( sample );
 				}
 
 				// Append the mutation to the list of mutations in the
 				// current gene
-				if (!(gene in snvs)) snvs[gene] = {};
-				if (!(gene in mutSamples)) mutSamples[gene] = {};
+				if (mutTy && mutTy != '--'){
+					if (!(gene in snvs)) snvs[gene] = {};
 
-				// Only add the transcript mutations if the transcript is defined
-				if (transcript != '--'){
-					if (!(transcript in snvs[gene])){
-						// Create a new null transcript, including the relevant domains
-						var transcript_info = { mutations: [], length: length * 1 };
-						snvs[gene][transcript] = transcript_info;				
+					// Only add the transcript mutations if the transcript is defined
+					if (transcript && transcript != '--'){
+						if (!(transcript in snvs[gene])){
+							// Create a new null transcript, including the relevant domains
+							var transcript_info = { mutations: [], length: length * 1 };
+							snvs[gene][transcript] = transcript_info;				
+						}
+				
+						snvs[gene][transcript].mutations.push( mut );
 					}
-			
-					snvs[gene][transcript].mutations.push( mut );
+
+					// Record the mutation type
+					var mutTy = mutTy.toLowerCase(), //lowercase so case doesn't matter
+						mutClass = mutTy && inactiveTys.indexOf(  mutTy ) != -1 ? "inactive_snv" : "snv";
+
+					if (mutationTypes.indexOf(mutTy) === -1){
+						mutationTypes.push( mutTy );
+					}
+
+					// Record the mutated sample
+					recordMutation(gene, sample, mutClass);
+
+					if (!(mutTy in mutGenes[gene])) mutGenes[gene][mutTy] = {};
+
+					mutGenes[gene].snvs[sample] = true;
+					mutGenes[gene][mutTy][sample] = true;
+
+					if (mutClass == "inactive_snv") mutGenes[gene].inactivating[sample] = true;
 				}
-
-				// Record the mutated sample
-				var mutTy = mutTy.toLowerCase(), //lowercase so case doesn't matter
-					mutClass = mutTy && inactiveTys.indexOf(  mutTy ) != -1 ? "inactive_snv" : "snv";
-				if (sample in mutSamples[gene] && mutSamples[gene][sample].indexOf(mutClass) == -1){
-					mutSamples[gene][sample].push( mutClass );
-				}
-				else{
-					mutSamples[gene][sample] = [ mutClass ];
-				}
-
-				// Record the mutation type
-				if (mutationTypes.indexOf(mutTy) === -1){
-					mutationTypes.push( mutTy );
-				}
-
-				// Record the mutation in the master list of genes to all their mutated samples
-				if (!(gene in mutGenes))
-					mutGenes[gene] = { snvs: {}, cnas: {}, inactivating: {}, mutated_samples: {}, fus: {}, amp: {}, del: {} };
-
-				if (!(mutTy in mutGenes[gene])) mutGenes[gene][mutTy] = {};
-				mutGenes[gene].mutated_samples[sample] = true;
-				mutGenes[gene].snvs[sample] = true;
-				mutGenes[gene][mutTy][sample] = true;
-
-				if (mutClass == "inactive_snv") mutGenes[gene].inactivating[sample] = true;
-			}
+			});
 
 			d.resolve();
 
@@ -537,6 +601,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	}
 	
 	return loadSampleFile()
+			.then( loadAberrationFile )
 			.then( loadCNAFile )
 			.then( loadSNVFile )
 			.then( computeSummary )

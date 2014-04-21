@@ -1,4 +1,17 @@
 extends layout
+block header
+  div(class="container-fluid", id="header", role="navigation")
+    div(class="page-header")
+      div(id="login")
+        //- Ask the user to login or show his/her name
+        - if (user)
+          | Welcome, &nbsp;
+          a(href="/account") #{user.name}
+          | &nbsp; | &nbsp;
+          a(href="/logout") Logout
+        - else
+          a(href="/auth/Google") Login via Google
+
 block body
   div(class="container")
     div(class="indexTop")
@@ -22,16 +35,8 @@ block body
   div(class="container-index", id="input-chooser")
     form(method="post", action="/", role="form", id="query-form")
       div(id="gene-chooser")
-        h4 Enter or upload gene set.
+        h4 Enter gene set (25 maximum).
         br
-        label
-          | Upload text file. &nbsp;
-          small Genes will appear in the box below.
-        input(type="file", id="geneSet", name="geneSet", style="display:inline")
-        br
-        br
-        label
-          | Enter genes (25 maximum).
         textarea(id="genes-list", name="genes", class="form-control", rows="10")
           | STAG1
           | STAG2
@@ -39,52 +44,62 @@ block body
           | SMC3
           | RAD21
         br
-        button(type="submit", id="submit", class="btn btn-default") Submit
+        b
+          abbr(title="Show all samples in each dataset even if samples from different datasets have the same IDs.") Show duplicate samples
+        input(type="checkbox", name="showDuplicates", id="showDuplicates", style="float:right")
+        br
+        br
+        button(type="submit", id="submit", class="btn btn-default") Submit query
         br
         br
         div(id="status")
 
       div(id="db-chooser")
-        h4 Choose dataset.
-        a(href="/upload") Upload your own.
-        br
-        br
-        -var seenStandard = false;
-        -var seenUser = false;
-        -for (var i in groups)
-          -var group = groups[i];
-          //- Create a horizontal break if this is the first standard/user dataset
-          -if (group.groupClass == "standard" && !seenStandard)
-            - seenStandard = true;
-            hr
-            h4 Provided datasets
-          -if (group.groupClass == "user" && !seenUser)
-            - seenUser = true;
-            hr
-            h4 Your datasets
+         h4 Choose dataset
+         small
+          |or &nbsp;
+          a(href="/upload") upload your own.
+         br
+         -var seenStandard = false;
+         -var seenUser = false;
+         -for (var i in groups)
+           -var group = groups[i];
+           //- Create a horizontal break if this is the first standard/user dataset
+           -if (group.groupClass == "standard" && !seenStandard)
+             - seenStandard = true;
+             hr
+             h4 Provided datasets
+           -if (group.groupClass == "user" && !seenUser)
+             - seenUser = true;
+             hr
+             h4 Your datasets
+ 
+           // Determine whether the datasets are part of a group
+           - if (group.name != "")
+             - groupClass = "groupedClass"
+             input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{i}', this.checked );")
+             h5(onclick="toggleGroup(this, '#{i}')", style="cursor:pointer") #{group.name} &nbsp;
+               span(class="glyphicon glyphicon-chevron-down", style="font-size:80%")
+ 
+           - else groupClass = "ungroupedClass"
+ 
+           //- Output each dataset group as a list of checkboxes
+           ul(class="#{groupClass} db-group", id="group-#{i}")
+             -for (var j in group.dbs)
+               -var db = group.dbs[j];
+               li
+                 label
+                   //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
+                   //- dataset name with a non-letter (which would break HTML rules)
+                   input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
+                 | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
 
-          // Determine whether the datasets are part of a group
-          - if (group.name != "")
-            - groupClass = "groupedClass"
-            input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{i}', this.checked );")
-            h5(onclick="toggleGroup(this, '#{i}')", style="cursor:pointer") #{group.name} &nbsp;
-              span(class="glyphicon glyphicon-chevron-down", style="font-size:80%")
+      br(style="clear:both")
 
-          - else groupClass = "ungroupedClass"
-
-          //- Output each dataset group as a list of checkboxes
-          ul(class="#{groupClass} db-group", id="group-#{i}")
-            -for (var j in group.dbs)
-              -var db = group.dbs[j];
-              li
-                label
-                  //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
-                  //- dataset name with a non-letter (which would break HTML rules)
-                  input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
-                | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
-          br
       div(id="example-queries")
-        h4 Example queries
+        h4
+          | Example queries&nbsp;
+          small Click a query name to populate the form above.
         a(id="swi-snf-pan-can") SWI-SNF / TCGA Pan-Cancer
         a(id="cohesin-pan-can") Cohesin / TCGA Pan-Cancer
         a(id="pi3k-gbm") PI(3)K and BRAF / TCGA GBM
@@ -195,9 +210,11 @@ block body
         | The mutation data for the CNA browser is the same as for the&nbsp;
         a(href="#oncoprint") oncoprint
         | .
-  script(src='components/d3/d3.min.js')
-  script(src='components/jquery/dist/jquery.min.js')
-  script(src='components/jquery-form/jquery.form.js')
-  script(src='js/banner.js')
-  script(src='js/query-control.js')
-  script(src='js/example-queries.js')
+
+  script(src='/components/d3/d3.min.js')
+  script(src='/components/jquery/dist/jquery.min.js')
+  script(src='/components/jquery-form/jquery.form.js')
+  //-script(src='/components/bootstrap/dist/js/bootstrap.min.js')
+  script(src='/js/banner.js')
+  script(src='/js/query-control.js')
+  script(src='/js/example-queries.js')

@@ -31,6 +31,12 @@ block body
             input(type="file", id="CNAs", name="CNAs")
             br
             label
+                | Generic aberration matrix (
+                a(href="/upload#aberrations-format") format
+                | ).
+            input(type="file", id="aberrations", name="aberrations")
+            br
+            label
                 | Tested samples (optional,&nbsp;
                 a(href="/upload#samples-format") format
                 | ).
@@ -53,6 +59,14 @@ block body
         | The input files for CGAT are all text (.txt) or tab-separated (.tsv) files.
         br
         br
+        a(name="aberrations-format")
+        div(id="aberrations-format")
+            h4 Generic aberrations file format.
+            p(class="caption")
+                | The generic aberrations file is a tab-separated file (*.tsv) that includes aberrations of an unspecified type for a dataset.
+                | Each row lists a sample ID in the first column, and a list of genes with aberrations in that sample in the remaining columns.
+        br
+        br
         a(name="snvs-format")
         div(id="snvs-format")
             h4 Single nucleotide variant (SNV) file format.
@@ -64,7 +78,7 @@ block body
                 | Missing data should be replaced with '--'.
             table(class="table table-bordered table-striped")
                 tr
-                    th Index
+                    th Column
                     th Name (*=required)
                     th Example
                     th Description
@@ -129,7 +143,7 @@ block body
                 | The columns whose names are starred are required.
             table(class="table table-bordered table-striped")
                 tr
-                    th Index
+                    th Column
                     th Name (*=required)
                     th Example
                     th Description
@@ -177,7 +191,7 @@ block body
     script(src='components/jquery-form/jquery.form.js')
     script(src="js/dataset-upload-control.js")
     script.
-        var color = '#' + Math.floor(Math.random()*16777215).toString(16);
+        var color = '#' + Math.random().toString(16).substr(-6);
         $("input#color").on("change", function(){
             $("span#db-color").css('background', $("input#color").val());
         });

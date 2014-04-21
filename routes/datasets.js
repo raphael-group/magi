@@ -29,7 +29,7 @@ exports.index = function index(req, res){
 				});
 
 				if (userGroups.length > 0){
-					groupData.insert(0, 0, userGroups);
+					groupData = [{groups: userGroups, ty: "user"}, groupData[0]];
 				}
 
 				res.render('datasets/index', { user: req.user, groupClasses: groupData });
