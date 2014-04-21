@@ -54,7 +54,7 @@ if (app.get('env') === 'development') {
 // production only
 if (app.get('env') === 'production') {
   // TODO
-  app.set('site url', 'http://biotools.cs.brown.edu/')
+  app.set('site url', 'http://cgat.cs.brown.edu/')
 };
 
 // config passport to use Google OAuth2
