@@ -34,25 +34,6 @@ block body
   br
   div(class="container-index", id="input-chooser")
     form(method="post", action="/", role="form", id="query-form")
-      div(id="gene-chooser")
-        h4 Enter gene set (25 maximum).
-        br
-        textarea(id="genes-list", name="genes", class="form-control", rows="10")
-          | STAG1
-          | STAG2
-          | SMC1A
-          | SMC3
-          | RAD21
-        br
-        b
-          abbr(title="Show all samples in each dataset even if samples from different datasets have the same IDs.") Show duplicate samples
-        input(type="checkbox", name="showDuplicates", id="showDuplicates", style="float:right")
-        br
-        br
-        button(type="submit", id="submit", class="btn btn-default") Submit query
-        br
-        br
-        div(id="status")
 
       div(id="db-chooser")
          h4 Choose dataset
@@ -89,18 +70,19 @@ block body
            // TODO add something like http://davidstutz.github.io/bootstrap-multiselect/#further-examples Using optgroup with filtering and the select all option.
            div(class="btn-group")
             button(type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown")
+              //input(type="checkbox")
               | #{group.name} <span class="caret"></span>
             ul(class="dropdown-menu #{groupClass} db-group", role="menu", id="group-#{i}")
               li
-                input(type="checkbox", id="selectAll-#{i}", class="group-checkbox group-selectAll")
+                input(type="checkbox", id="selectAll-#{i}", class="group-selectAll")
                 | &nbsp; <strong>Select All</strong>
               -for (var j in group.dbs)
                -var db = group.dbs[j];
                li
-                 label
+                 label(class="#{db.title}", id="db-#{db._id}")
                    //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
                    //- dataset name with a non-letter (which would break HTML rules)
-                   input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
+                   input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox", groupName="#{group.name}")
                  | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
            br
 
@@ -115,7 +97,32 @@ block body
            //-         input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
            //-       | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
 
+      div(id="db-list")
+        h4 Selected Datasets
+        br
+        div(id="db-list-selected")
+          ul
       br(style="clear:both")
+      br
+      div(id="gene-chooser")
+        h4 Enter gene set (25 maximum).
+        br
+        textarea(id="genes-list", name="genes", class="form-control", rows="10")
+          | STAG1
+          | STAG2
+          | SMC1A
+          | SMC3
+          | RAD21
+        br
+        b
+          abbr(title="Show all samples in each dataset even if samples from different datasets have the same IDs.") Show duplicate samples
+        input(type="checkbox", name="showDuplicates", id="showDuplicates", style="float:right")
+        br
+        br
+        button(type="submit", id="submit", class="btn btn-default") Submit query
+        br
+        br
+        div(id="status")
 
       div(id="example-queries")
         h4
