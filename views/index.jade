@@ -26,12 +26,12 @@ block body
           a(href="#component-descriptions") Instructions
       img(src="img/cgatTitle.svg", id="splash-logo")
     div(id="splash-img")
-    div(id="sec-about")
+    div(id="sec-about", class="text-center")
       p CGAT is a tool for exploring and analyzing gene sets that may be
         | associated with cancer.
       p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
         | <a href="http://vrl.cs.brown.edu/">Visualization Research Lab</a> at Brown University.
-
+  br
   div(class="container-index", id="input-chooser")
     form(method="post", action="/", role="form", id="query-form")
       div(id="gene-chooser")
@@ -57,7 +57,8 @@ block body
       div(id="db-chooser")
          h4 Choose dataset
          small
-          |or &nbsp;
+          a(href="/datasets/") View existing datasets
+          | &nbsp; or &nbsp;
           a(href="/upload") upload your own.
          br
          -var seenStandard = false;
