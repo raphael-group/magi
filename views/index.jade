@@ -34,6 +34,76 @@ block body
   br
   div(class="container-index", id="input-chooser")
     form(method="post", action="/", role="form", id="query-form")
+
+      div(id="db-chooser")
+         h4 Choose dataset
+
+         small
+          a(href="/datasets/") View existing datasets
+          | &nbsp; or &nbsp;
+          a(href="/upload") upload your own.
+         br
+         -var seenStandard = false;
+         -var seenUser = false;
+         -for (var i in groups)
+           -var group = groups[i];
+           //- Create a horizontal break if this is the first standard/user dataset
+           -if (group.groupClass == "standard" && !seenStandard)
+             - seenStandard = true;
+             hr
+             h4 Provided datasets
+           -if (group.groupClass == "user" && !seenUser)
+             - seenUser = true;
+             hr
+             h4 Your datasets
+
+           // Determine whether the datasets are part of a group
+           - if (group.name != "")
+             - groupClass = "groupedClass"
+             //- input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{i}', this.checked );")
+             //- h5(onclick="toggleGroup(this, '#{i}')", style="cursor:pointer") #{group.name} &nbsp;
+             //-   span(class="glyphicon glyphicon-chevron-down", style="font-size:80%")
+
+           - else groupClass = "ungroupedClass"
+
+           //- Output each dataset group as a list of checkboxes
+           // TODO add something like http://davidstutz.github.io/bootstrap-multiselect/#further-examples Using optgroup with filtering and the select all option.
+           div(class="btn-group")
+            button(type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown")
+              //input(type="checkbox")
+              | #{group.name} <span class="caret"></span>
+            ul(class="dropdown-menu #{groupClass} db-group", role="menu", id="group-#{i}")
+              li
+                input(type="checkbox", id="selectAll-#{i}", class="group-selectAll")
+                | &nbsp; <strong>Select All</strong>
+              -for (var j in group.dbs)
+               -var db = group.dbs[j];
+               li
+                 label(class="#{db.title}", id="db-#{db._id}")
+                   //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
+                   //- dataset name with a non-letter (which would break HTML rules)
+                   input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox", groupName="#{group.name}")
+                 | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
+           br
+
+           // Old drop down code
+           //- ul(class="#{groupClass} db-group", id="group-#{i}")
+           //-   -for (var j in group.dbs)
+           //-     -var db = group.dbs[j];
+           //-     li
+           //-       label
+           //-         //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
+           //-         //- dataset name with a non-letter (which would break HTML rules)
+           //-         input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
+           //-       | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
+
+      div(id="db-list")
+        h4 Selected Datasets
+        br
+        div(id="db-list-selected")
+          ul
+      br(style="clear:both")
+      br
       div(id="gene-chooser")
         h4 Enter gene set (25 maximum).
         br
@@ -53,49 +123,6 @@ block body
         br
         br
         div(id="status")
-
-      div(id="db-chooser")
-         h4 Choose dataset
-         small
-          a(href="/datasets/") View existing datasets
-          | &nbsp; or &nbsp;
-          a(href="/upload") upload your own.
-         br
-         -var seenStandard = false;
-         -var seenUser = false;
-         -for (var i in groups)
-           -var group = groups[i];
-           //- Create a horizontal break if this is the first standard/user dataset
-           -if (group.groupClass == "standard" && !seenStandard)
-             - seenStandard = true;
-             hr
-             h4 Provided datasets
-           -if (group.groupClass == "user" && !seenUser)
-             - seenUser = true;
-             hr
-             h4 Your datasets
- 
-           // Determine whether the datasets are part of a group
-           - if (group.name != "")
-             - groupClass = "groupedClass"
-             input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{i}', this.checked );")
-             h5(onclick="toggleGroup(this, '#{i}')", style="cursor:pointer") #{group.name} &nbsp;
-               span(class="glyphicon glyphicon-chevron-down", style="font-size:80%")
- 
-           - else groupClass = "ungroupedClass"
- 
-           //- Output each dataset group as a list of checkboxes
-           ul(class="#{groupClass} db-group", id="group-#{i}")
-             -for (var j in group.dbs)
-               -var db = group.dbs[j];
-               li
-                 label
-                   //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
-                   //- dataset name with a non-letter (which would break HTML rules)
-                   input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
-                 | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
-
-      br(style="clear:both")
 
       div(id="example-queries")
         h4
@@ -215,6 +242,7 @@ block body
   script(src='/components/d3/d3.min.js')
   script(src='/components/jquery/dist/jquery.min.js')
   script(src='/components/jquery-form/jquery.form.js')
+  script(src='/components/bootstrap/js/dropdown.js')
   //-script(src='/components/bootstrap/dist/js/bootstrap.min.js')
   script(src='/js/banner.js')
   script(src='/js/query-control.js')

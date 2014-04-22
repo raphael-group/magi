@@ -55,7 +55,34 @@ $(document).ready(function() {
         // If everything checks out, submit the form!
         return true;
     });
+
+    $('.group-selectAll').change(function() {
+        var groupNum = (this.id).replace('selectAll-',''),
+            checkboxClass = '.group-'+groupNum+'-checkbox',
+            selectAllObj = this;
+        $(checkboxClass).each(function(i) {
+            this.checked = selectAllObj.checked;
+            // if(this.checked == true) {
+            //     var nameOfThis = $('label#'+this.id).attr('class');
+            //     $('#db-list-selected ul').append('<p>'+nameOfThis+'</p>');
+            // }
+        });
+        addSelectedData();
+    });
 });
+
+function addSelectedData() {
+    // Delete existing entries
+    $('#db-list-selected ul').empty()
+    // Repopulate
+    $('.group-checkbox').each(function() {
+        if(this.checked) {
+            var nameOfThis = $('label#'+this.id).attr('class'),
+                groupName = $(this).attr('groupName');
+            $('#db-list-selected ul').append('<li>'+groupName+': '+nameOfThis+'</li>');
+        }
+    })
+}
 
 // Toggle the checkboxes for a given group of datasets
 function toggleGroup(el, group){
