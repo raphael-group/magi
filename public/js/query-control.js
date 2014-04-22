@@ -58,16 +58,11 @@ $(document).ready(function() {
 
     $('.group-selectAll').change(function() {
         var groupNum = (this.id).replace('selectAll-',''),
-            checkboxClass = '.group-'+groupNum+'-checkbox';
-        console.log(this);
-        console.log(groupNum)
-        console.log(checkboxClass);
+            checkboxClass = '.group-'+groupNum+'-checkbox',
+            selectAllObj = this;
         $(checkboxClass).each(function(i) {
-            if(this.class == '.group-selectAll') {
-                return;
-            }
             console.log('each');
-            this.checked = this.checked == true ? false : true;
+            this.checked = selectAllObj.checked;
         });
     });
 });

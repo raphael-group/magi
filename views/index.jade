@@ -86,6 +86,7 @@ block body
            - else groupClass = "ungroupedClass"
 
            //- Output each dataset group as a list of checkboxes
+           // TODO add something like http://davidstutz.github.io/bootstrap-multiselect/#further-examples Using optgroup with filtering and the select all option.
            div(class="btn-group")
             button(type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown")
               | #{group.name} <span class="caret"></span>
@@ -103,6 +104,7 @@ block body
                  | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
            br
 
+           // Old drop down code
            //- ul(class="#{groupClass} db-group", id="group-#{i}")
            //-   -for (var j in group.dbs)
            //-     -var db = group.dbs[j];
