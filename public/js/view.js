@@ -15,6 +15,7 @@ var m2Element = "div#mutation-matrix",
 	cancerInputElement = "div#annotation div#cancers",
 	cancerTypeaheadElement = "div#annotation div#cancers input#cancer-typeahead"
 	annotationsElement = "div#annotation div#annotations",
+	commentElement = "div#annotation textarea#comment",
 	submitElement = "div#annotation button#submit";
 
 // Select each element for easy access later
@@ -44,6 +45,7 @@ var defaultStyle = function(){
 	sty.colorSchemes.network["HINT"] = "rgb(127, 92, 159)";
 	sty.colorSchemes.network["iRefIndex"] = "rgb(140, 91, 56)";
 	sty.colorSchemes.network["Multinet"] = "rgb(92, 128, 178)";
+	sty.colorSchemes.network["Community"] = "rgb(230, 189, 123)";
 	return sty; 
 }
 
@@ -73,8 +75,6 @@ var genes = getParameterByName("genes")
 	datasets = getParameterByName("datasets"),
 	showDuplicates = getParameterByName("showDuplicates") == "true",
 	query = "/data/bundle?genes=" + genes + "&datasets=" + datasets,
-
-console.log("showDuplicates:", showDuplicates)
 
 ///////////////////////////////////////////////////////////////////////////
 // Get the data and initialize the view
@@ -412,19 +412,24 @@ d3.json(query, function(err, data){
 		// Reset the messages
 		annotationStatus("", "");
 
-		// Validate the entries
+		// Retrieve the values of the entries
 		var pmid = $(annotationsElement + " input").val(),
 			gene = $(annotatedGeneElement).val(),
-			mClass = $(interactionElement).val(),
-			cancerTy = $(cancerTypeaheadElement).val();
+			interactionClass = $(interactionElement).val(),
+			comment = $(commentElement).val();
 
+		// Validate the PMID
 		if (pmid == "" || pmid.length != 8 || isNaN(parseFloat(pmid)) || !isFinite(pmid) ){
 			annotationStatus("Please enter at least one valid PMID (8-character number).", warningClasses);
 			return false;
 		}
 
-		if (gene == "" || mClass == "" || cancerTy == ""){
-			annotationStatus("Please select a gene, an interaction, and a second gene or cancer.", warningClasses);
+		// Validate the interaction/annotation
+		var interactorName = interactionClass == "interact" ? $(interactorElement).val() : $(cancerTypeaheadElement).val();
+		if (gene == "" || interactionClass == "" || interactorName == ""){
+			if (interactionClass == "interact"){ var msg = "Please select a pair of genes." }
+			else{ var msg = "Please select a pair of genes." }
+			annotationStatus(msg, warningClasses);
 			return false;
 		}
 
@@ -432,8 +437,9 @@ d3.json(query, function(err, data){
         var formData = new FormData();
         formData.append( 'support', pmid );
         formData.append( 'gene', gene );
-        formData.append( 'interaction', mClass );
-        formData.append( 'interactor', cancerTy );
+        formData.append( 'interaction', interactionClass );
+        formData.append( 'interactor', interactorName );
+        formData.append( 'comment', comment );
 
         $.ajax({
             // Note: can't use JSON otherwise IE8 will pop open a dialog
@@ -459,12 +465,16 @@ d3.json(query, function(err, data){
                 annotationStatus(response.status, successClasses);
 
                 // Add the data to the current annotations
-                if (!annotations[gene]) annotations[gene] = {};
-                if (!annotations[gene][mClass]) annotations[gene][mClass] = {};
-                if (!annotations[gene][mClass][cancerTy]) annotations[gene][mClass][cancerTy] = [];
-				annotations[gene][mClass][cancerTy].push( pmid );
+                if (interactionClass != "interact"){
+                	var cancerTy = interactorName,
+                		mClass = interactionClass;
+	                if (!annotations[gene]) annotations[gene] = {};
+	                if (!annotations[gene][mClass]) annotations[gene][mClass] = {};
+	                if (!annotations[gene][mClass][cancerTy]) annotations[gene][mClass][cancerTy] = [];
+					annotations[gene][mClass][cancerTy].push( pmid );
 
-				m2Chart.addTooltips(generateAnnotations(annotations));
+					m2Chart.addTooltips(generateAnnotations(annotations));
+				}
 
                 // Reset the form
                 annotateInput.style("display", "none");
@@ -474,6 +484,8 @@ d3.json(query, function(err, data){
                 $(annotatedGeneElement).val("");
                 $(annotationsElement + " input").val("");
                 $(cancerTypeaheadElement).val("");
+                $(interactorElement).val("");
+                $(commentElement).val("");
 
             }
         });
