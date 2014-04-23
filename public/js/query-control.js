@@ -1,13 +1,13 @@
 // Form control for when the user is formatting his/her query
 $(document).ready(function() {
     // Globals for this UI
-    var formEl = "#query-form"
-    , geneListEl = "#genes-list"
-    , geneUpoadEl = "#geneSet";
+    var formEl = "#query-form",
+        geneListEl = "#genes-list",
+        geneUpoadEl = "#geneSet";
 
-    var infoClasses  = 'alert alert-info'
-    , warningClasses = 'alert alert-warning'
-    , successClasses = 'alert alert-success';
+    var infoClasses  = 'alert alert-info',
+        warningClasses = 'alert alert-warning',
+        successClasses = 'alert alert-success';
 
     // Perform validation on the form when it is submitted
     $(formEl).on("submit", function(e){
@@ -29,16 +29,13 @@ $(document).ready(function() {
         }
 
         // Make sure there are no duplicated genes
-        var seen = [],
+        var seen = {},
             duplicates = false;
-        for (var i in genes){
-            if (seen.indexOf(genes[i]) != -1){
-                console.log(seen)
-                duplicates = true;
-                break
-            }
-            seen.push( genes[i] );
-        }
+        
+        genes.forEach(function(g){
+            if (seen[g]) duplicates = true;
+            seen[g] = true;
+        });
 
         if (duplicates){
             status('Please do not enter duplicate genes.', warningClasses);
@@ -54,4 +51,10 @@ $(document).ready(function() {
         // If everything checks out, submit the form!
         return true;
     });
+    
+    function status(msg, className){
+        $(formEl + " div#status").attr("class", className);
+        $(formEl + " div#status").html( msg );
+    }
 });
+
