@@ -69,6 +69,9 @@ $(document).ready(function() {
         });
         addSelectedData();
     });
+    $('.group-checkbox').change(function() {
+        addSelectedData();
+    });
 });
 
 function addSelectedData() {
