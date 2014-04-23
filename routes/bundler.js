@@ -62,6 +62,8 @@ exports.viewData = function getViewData(req, res){
 				var M = {},
 					transcript_data = {}
 					sampleToTypes = {},
+					// CNA samples don't need IDs like the mutation matrix
+					cnaSampleToTypes = {}, 
 					cna_browser_data = {},
 					// make a list of mutated samples with their unique IDs
 					seenSample = {},
@@ -89,6 +91,7 @@ exports.viewData = function getViewData(req, res){
 					for (var s in G.mutated_samples){
 						var _id = G.dataset_id + "-" + s;
 						sampleToTypes[_id] = datasetNames[G.dataset_id];
+						cnaSampleToTypes[s] = datasetNames[G.dataset_id];
 						M[G.gene][_id] = G.mutated_samples[s];
 						if (!(_id in seenSample)){
 							samples.push( {_id: _id, name: s, z_index: z_index } );
@@ -99,7 +102,7 @@ exports.viewData = function getViewData(req, res){
 					for (t in G.snvs){
 						// Add transcript if it's not present
 						if (!(t in transcript_data[G.gene])){
-							transcript_data[G.gene][t] = { mutations: [] };
+							transcript_data[G.gene][t] = { mutations: [], gene: G.gene };
 							transcript_data[G.gene][t].length = G.snvs[t].length;
 							transcript_data[G.gene][t].domains = transcript2domains[t] || {};	
 						}
@@ -145,7 +148,7 @@ exports.viewData = function getViewData(req, res){
 					// Add sampleToTypes to each cna_browser gene
 					mutGenes.forEach(function(g){
 						if (g.cnas){
-							cna_browser_data[g.gene].sampleToTypes = sampleToTypes;
+							cna_browser_data[g.gene].sampleToTypes = cnaSampleToTypes;
 						}
 					});
 

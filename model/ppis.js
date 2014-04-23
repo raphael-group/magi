@@ -7,7 +7,8 @@ var PPISchema = new mongoose.Schema({
 	target: String,
 	weight: Number,
 	network: String,
-	references: { type: [String], required: false}
+	references: { type: [String], required: false},
+	support: { type: Array, required: false}
 });
 
 mongoose.model( 'PPI', PPISchema );
@@ -20,6 +21,26 @@ exports.ppilist = function ppilist(genes, callback){
   		else callback("", ppis);
 	})// end PPI.find
 }// end exports.ppilist
+
+// upsert an interaction
+exports.upsertInteraction = function(source, target, network, ref, comment, user_id, callback){
+	var PPI = mongoose.model( 'PPI' );
+		Q = require( 'q' );
+
+	var d = Q.defer();
+
+	PPI.findOneAndUpdate(
+		{source: source, target: target, network: network},
+		{$push: {support: {ref: ref, comment: comment, user_id: user_id}}},
+		{safe: true, upsert: true},
+		function(err, model) {
+			console.log(err);
+			d.resolve();
+		}
+	);
+
+	return d.promise;
+}
 
 // Format PPIs for gd3
 exports.formatPPIs = function formatPPIs(ppis, callback){

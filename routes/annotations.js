@@ -1,7 +1,8 @@
 // Load required modules
 var	mongoose = require( 'mongoose' ),
 	formidable = require('formidable'),
-	Annotations  = require( "../model/annotations" );
+	Annotations  = require( "../model/annotations" ),
+	PPIs = require( "../model/ppis" );
 
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
@@ -51,11 +52,22 @@ exports.save = function save(req, res){
     	var gene = fields.gene,
     		interaction = fields.interaction,
     		interactor = fields.interactor,
-    		support = fields.support;
+    		support = fields.support,
+    		comment = fields.comment;
 
 		if (req.user){
 	    	if (interaction == "interact"){
-	    		res.send({ status: "Interactions not implemented yet." });
+	    		var source = gene,
+	    			target = interactor;
+				PPIs.upsertInteraction(source, target, "Community", support, comment, req.user._id, function(err){
+					if (err) throw new Error(err);
+				})
+				.then(function(){
+					res.send({ status: "Interaction saved successfully!" });
+				})
+				.fail(function(){
+					res.send({ error: "Interaction could not be parsed." });
+				});
 	    	}
 	    	else{
 		    	// Rename the form elements for easy understanding
@@ -63,14 +75,14 @@ exports.save = function save(req, res){
 		    		mutation_class = interaction;
 
 		    	// Add the annotation
-				Annotations.upsertAnnotation(gene, cancer, mutation_class, support, req.user._id, function(err){
+				Annotations.upsertAnnotation(gene, cancer, mutation_class, support, comment, req.user._id, function(err){
 					if (err) throw new Error(err);
 				})
 				.then(function(){
-					res.send({ status: "Data uploaded successfully!" });
+					res.send({ status: "Annotation saved successfully!" });
 				})
 				.fail(function(){
-					res.send({ error: "Data could not be parsed." });
+					res.send({ error: "Annotation could not be parsed." });
 				});
 	    	}
 	    }

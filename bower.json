@@ -8,7 +8,8 @@
     "gd3": "latest",
     "DataTables": "latest",
     "d3-tip": "latest",
-    "typeahead.js": "latest"
+    "typeahead.js": "latest",
+    "hogan": "latest"
   },
   "resolutions": {
     "jquery": ">= 1.9.0"

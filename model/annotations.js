@@ -6,15 +6,17 @@ var AnnotationSchema = new mongoose.Schema({
 	gene: { type: String, required: true},
 	mutation_class: { type: String, required: false},
 	cancer: { type: String, required: true },
-	support: { type: [String], required: true},
-	user_id: {type: mongoose.Schema.Types.ObjectId, required: false},
+	position: { type: Number, required: false},
+	domain: { type: {}, required: false},
+	mutation_type: { type: String, required: false},
+	support: { type: Array, required: true},
 	created_at: { type: Date, default: Date.now, required: true }	
 });
 
 mongoose.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
-exports.upsertAnnotation = function(gene, cancer, mutation_class, support, user_id, callback){
+exports.upsertAnnotation = function(gene, cancer, mutation_class, ref, comment, user_id, callback){
 	var Annotation = mongoose.model( 'Annotation' ),
 		Q = require( 'q' );
 
@@ -22,7 +24,7 @@ exports.upsertAnnotation = function(gene, cancer, mutation_class, support, user_
 
 	Annotation.findOneAndUpdate(
 		{gene: gene, cancer: cancer, mutation_class: mutation_class, user_id: user_id},
-		{$push: {support: support}},
+		{$push: {support: {ref: ref, user_id: user_id, comment: comment}}},
 		{safe: true, upsert: true},
 		function(err, model) {
 			console.log(err);
