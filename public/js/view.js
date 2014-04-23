@@ -118,10 +118,10 @@ d3.json(query, function(err, data){
 				var cancers = Object.keys(annotations[d.gene][mutationClass]);
 				tip += "<br style='clear:both'/>Known mutations<div class='less-info'>"
 				if (cancers.length <= 2){
-					tip += " in " + cancers.join(" and ") + ".";
+					tip += " in " + cancers.map(invertCancerTy).join(" and ") + ".";
 				}
 				else{
-					tip += " in " + cancers.slice(0, 2).join(", ") + ", and " + (cancers.length - 2) + " others.";	
+					tip += " in " + cancers.slice(0, 2).map(invertCancerTy).join(", ") + ", and " + (cancers.length - 2) + " others.";	
 				}
 
 				tip += "<br/><a href='/annotations/gene/" + d.gene + "' target='_new'>Click to view details &raquo;</a></div>"
@@ -146,7 +146,11 @@ d3.json(query, function(err, data){
 					.addCoverage()
 					.addMutationLegend()
 					.addSortingMenu()
-					.addTooltips(generateAnnotations(annotations));
+					.addTooltips(generateAnnotations(annotations))
+					.addOnClick(function(d, i){
+						var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
+						setAnnotation(d.gene, mutClass, d.dataset);
+					});
 	if (showDuplicates) m2Chart.showDuplicates();
 
 	m2.datum(data.mutation_matrix);
@@ -156,7 +160,9 @@ d3.json(query, function(err, data){
 	var subnetChart = subnetwork({style: style.subnetwork})
                 	.addNetworkLegend()
                 	.addGradientLegend()
-                	.addTooltips();
+                	.addTooltips()
+                	.addOnClick(function(d, i){ setAnnotation(d.source.name, "interact", d.target.name ); });
+
 	subnet.datum(data.subnetwork_data);
 	subnetChart(subnet);
 
@@ -191,8 +197,13 @@ d3.json(query, function(err, data){
 	var transcriptParams = { style: style.transcript, domainDB: data.domainDBs[0] },
 		transcriptChart = transcript_plot(transcriptParams)
 	              		.addLegend()
-	              		.addTooltips()
-	              		.addVerticalPanning();
+	              		.addVerticalPanning()
+	              		.addTooltips(function(d, i){
+	              			return d.sample + '<br />Type: ' + d.dataset + "<br/>"
+	              				   + d.ty.replace(/_/g, ' ') + '<br />'
+	              				   + d.locus + ': ' + d.aao + '>' + d.aan;
+	              		})
+						.addOnClick(function(d, i){ console.log(d); setAnnotation(d.gene, "SNV", d.dataset); });
 
 	// Watch the transcript selector to update the current transcript plot on change
 	transcriptSelect.on("change", function(){
@@ -221,7 +232,13 @@ d3.json(query, function(err, data){
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes
-	var cnaChart = cna_browser({ style: style.cnabrowser }).addTooltips();
+	var cnaChart = cna_browser({ style: style.cnabrowser })
+		.addTooltips()
+		.addOnClick(function(d){
+			var mutClass = d.ty == "amp" ? "Amp" : "Del";
+			setAnnotation(d.gene, mutClass, d.dataset);
+		});
+
 	function updateCNAChart(){
 		// Retrieve the current gene
 		var geneName = $(this).val();
@@ -333,42 +350,86 @@ d3.json(query, function(err, data){
 			.attr("value", function(g){ return g; })
 			.text(function(g){ return g; });
 
-	// Make the cancer typeahead
-	var substringMatcher = function(strs) {
-		return function findMatches(q, cb) {
-			var matches, substringRegex;
+	///////////////////////////////////////////////////////////////////////////
+	// Set up the cancers input, with abbreviations
+	
+	// List of cancers from wikipedia (http://en.wikipedia.org/wiki/List_of_cancer_types)
+	//var cancers = ["Acute lymphoblastic leukemia (ALL)", "Acute myeloid leukemia", "Adrenocortical carcinoma", "AIDS-related cancers", "AIDS-related lymphoma", "Anal cancer", "Appendix cancer", "Astrocytoma, childhood cerebellar or cerebral", "Basal-cell carcinoma", "Bile duct cancer, extrahepatic (see Cholangiocarcinoma)", "Bladder cancer", "Bone tumor, Osteosarcoma/Malignant fibrous histiocytoma", "Brainstem glioma", "Brain cancer", "Brain tumor, cerebellar astrocytoma", "Brain tumor, cerebral astrocytoma/malignant glioma", "Brain tumor, ependymoma", "Brain tumor, medulloblastoma", "Brain tumor, supratentorial primitive neuroectodermal tumors", "Brain tumor, visual pathway and hypothalamic glioma", "Breast cancer", "Bronchial adenomas/carcinoids", "Burkitt\'s lymphoma", "Carcinoid tumor, childhood", "Carcinoid tumor, gastrointestinal", "Carcinoma of unknown primary", "Central nervous system lymphoma, primary", "Cerebellar astrocytoma, childhood", "Cerebral astrocytoma/Malignant glioma, childhood", "Cervical cancer", "Childhood cancers", "Chronic bronchitis", "Chronic lymphocytic leukemia", "Chronic myelogenous leukemia", "Chronic myeloproliferative disorders", "Chronic obstructive pulmonary disease (COPD)", "Colon Cancer", "Cutaneous T-cell lymphoma", "Desmoplastic small round cell tumor", "Emphysema", "Endometrial cancer", "Ependymoma", "Esophageal cancer", "Ewing\'s sarcoma in the Ewing family of tumors", "Extracranial germ cell tumor, Childhood", "Extragonadal Germ cell tumor", "Extrahepatic bile duct cancer", "Eye Cancer, Intraocular melanoma", "Eye Cancer, Retinoblastoma", "Gallbladder cancer", "Gastric (Stomach) cancer", "Gastrointestinal Carcinoid Tumor", "Gastrointestinal stromal tumor (GIST)", "Germ cell tumor: extracranial, extragonadal, or ovarian", "Gestational trophoblastic tumor", "Glioma of the brain stem", "Glioma, Childhood Cerebral Astrocytoma", "Glioma, Childhood Visual Pathway and Hypothalamic", "Gastric carcinoid", "Hairy cell leukemia", "Head and neck cancer", "Heart cancer", "Hepatocellular (liver) cancer", "Hodgkin lymphoma", "Hypopharyngeal cancer", "Hypothalamic and visual pathway glioma, childhood", "Intraocular Melanoma", "Islet Cell Carcinoma (Endocrine Pancreas)", "Kaposi sarcoma", "Kidney cancer (renal cell cancer)", "Laryngeal Cancer", "Leukemias", "Leukemia, acute lymphoblastic (also called acute lymphocytic leukemia)", "Leukemia, acute myeloid (also called acute myelogenous leukemia)", "Leukemia, chronic lymphocytic (also called chronic lymphocytic leukemia)", "Leukemia, chronic myelogenous (also called chronic myeloid leukemia)", "Leukemia, hairy cell", "Lip and Oral Cavity Cancer", "Liposarcoma", "Liver Cancer (Primary)", "Lung Cancer, Non-Small Cell", "Lung Cancer, Small Cell", "Lymphomas", "Lymphoma, AIDS-related", "Lymphoma, Burkitt", "Lymphoma, cutaneous T-Cell", "Lymphoma, Hodgkin", "Lymphomas, Non-Hodgkin (an old classification of all lymphomas except Hodgkin\'s)", "Lymphoma, Primary Central Nervous System", "Macroglobulinemia, Waldenstr\\u00f6m", "Male breast cancer", "Malignant Fibrous Histiocytoma of Bone/Osteosarcoma", "Medulloblastoma, Childhood", "Melanoma", "Melanoma, Intraocular (Eye)", "Merkel Cell Carcinoma", "Mesothelioma, Adult Malignant", "Mesothelioma, Childhood", "Metastatic Squamous Neck Cancer with Occult Primary", "Mouth Cancer", "Multiple Endocrine Neoplasia Syndrome, Childhood", "Multiple Myeloma/Plasma Cell Neoplasm", "Mycosis Fungoides", "Myelodysplastic Syndromes", "Myelodysplastic/Myeloproliferative Diseases", "Myelogenous Leukemia, Chronic", "Myeloid Leukemia, Adult Acute", "Myeloid Leukemia, Childhood Acute", "Myeloma, Multiple (Cancer of the Bone-Marrow)", "Myeloproliferative Disorders, Chronic", "Nasal cavity and paranasal sinus cancer", "Nasopharyngeal carcinoma", "Neuroblastoma", "Non-Hodgkin lymphoma", "Non-small cell lung cancer", "Oral Cancer", "Oropharyngeal cancer", "Osteosarcoma/malignant fibrous histiocytoma of bone", "Ovarian cancer", "Ovarian epithelial cancer (Surface epithelial-stromal tumor)", "Ovarian germ cell tumor", "Ovarian low malignant potential tumor", "Pancreatic cancer", "Pancreatic cancer, islet cell", "Paranasal sinus and nasal cavity cancer", "Parathyroid cancer", "Penile cancer", "Pharyngeal cancer", "Pheochromocytoma", "Pineal astrocytoma", "Pineal germinoma", "Pineoblastoma and supratentorial primitive neuroectodermal tumors, childhood", "Pituitary adenoma", "Plasma cell neoplasia/Multiple myeloma", "Pleuropulmonary blastoma", "Primary central nervous system lymphoma", "Prostate cancer", "Rectal cancer", "Renal cell carcinoma (kidney cancer)", "Renal pelvis and ureter, transitional cell cancer", "Retinoblastoma", "Rhabdomyosarcoma, childhood", "Salivary gland cancer", "Sarcoma, Ewing family of tumors", "Sarcoma, Kaposi", "Sarcoma, soft tissue", "Sarcoma, uterine", "S\\u00e9zary syndrome", "Skin cancer (nonmelanoma)", "Skin cancer (melanoma)", "Skin carcinoma, Merkel cell", "Small cell lung cancer", "Small intestine cancer", "Soft tissue sarcoma", "Squamous cell carcinoma \\u2013 see Skin cancer (nonmelanoma)", "Squamous neck cancer with occult primary, metastatic", "Stomach cancer", "Supratentorial primitive neuroectodermal tumor, childhood", "T-Cell lymphoma, cutaneous \\u2013 see Mycosis Fungoides and S\\u00e9zary syndrome", "Testicular cancer", "Throat cancer", "Thymoma, childhood", "Thymoma and Thymic carcinoma", "Thyroid cancer", "Thyroid cancer, childhood", "Transitional cell cancer of the renal pelvis and ureter", "Trophoblastic tumor, gestational", "Unknown primary site, carcinoma of, adult", "Unknown primary site, cancer of, childhood", "Ureter and renal pelvis, transitional cell cancer", "Urethral cancer", "Uterine cancer, endometrial", "Uterine sarcoma", "Vaginal cancer", "Visual pathway and hypothalamic glioma, childhood", "Vulvar cancer", "Waldenstrom macroglobulinemia", "Wilms tumor (kidney cancer), childhood"];
+	
+	//	List of cancers with abbreviations from TCGA (http://goo.gl/2A3UuH) and ICGC (http://dcc.icgc.org/projects)
+	var abbrToCancer = {blca: "Bladder Urothelial Carcinoma", boca: "Bone Cancer", brca: "Breast invasive carcinoma", cesc: "Cervical squamous cell carcinoma and endocervical adenocarcinoma", clle: "Chronic Lymphocyclic Leukemia", cmdi: "Chronic Myeloid Disorders", coad: "Colon adenocarcinoma", coadread: "Colorectcal cancer", dibc: "Lymphoid Neoplasm Diffuse Large B-cell Lymphoma", eopc: "Early Onset Prostate Cancer", esad: "Esophageal Adenocarcinoma", esca: "Esophageal carcinoma", gbm: "Glioblastoma multiforme", hnsc: "Head and Neck squamous cell carcinoma", kich: "Kidney Chromophobe", kirc: "Kidney renal clear cell carcinoma", kirp: "Kidney renal papillary cell carcinoma", laml: "Acute Myeloid Leukemia", lgg: "Brain Lower Grade Glioma", lica: "Liver Cancer", lihc: "Liver hepatocellular carcinoma", linc: "Liver Cancer", liri: "Liver Cancer", luad: "Lung adenocarcinoma", lusc: "Lung squamous cell carcinoma", maly: "Malignant Lymphoma", meso: "Mesothelioma", nbl: "Neuroblastoma", orca: "Oral Cancer", ov: "Ovarian serous cystadenocarcinoma", paad: "Prostate adenocarcinoma", paca: "Pancreatic Cancer", paen: "Pancreatic Cancer Endocrine neoplasms", pbca: "Pediatric Brain Cancer", pcpg: "Pheochromocytoma and Paraganglioma", prad: "Prostate adenocarcinoma", read: "Rectum adenocarcinoma", reca: "Renal Cancer", sarc: "Sarcoma", skcm: "Skin Cutaneous Melanoma", stad: "Stomach adenocarcinoma", thca: "Thyroid carcinoma", ucec: "Uterine Corpus Endometrial Carcinoma", ucs: "Uterine Carcinosarcoma"},
+		cancerToAbbr = {};
 
-			// an array that will be populated with substring matches
-			matches = [];
+	// Create a map of cancers to their abbreviations, and a list of all cancers
+	Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; })
+	cancers = Object.keys(cancerToAbbr);
 
-			// regex used to determine if a string contains the substring `q`
-			substrRegex = new RegExp(q, 'i');
+	// 
+	function invertCancerTy(name){ return name in cancerToAbbr ? cancerToAbbr[name].toUpperCase()  : name; }
+	function getCancerTy(name){
+		var lowName = name.toLowerCase()
+		return lowName in abbrToCancer ? abbrToCancer[lowName] : name;
+	}
 
-			// iterate through the pool of strings and for any string that
-			// contains the substring `q`, add it to the `matches` array
-			$.each(strs, function(i, str) {
-				if (substrRegex.test(str)) {
-				// the typeahead jQuery plugin expects suggestions to a
-				// JavaScript object, refer to typeahead docs for more info
-				matches.push({ value: str });
-				}
-			});
-
-			cb(matches);
-		};
-	};
-
-	var cancers = ["Acute lymphoblastic leukemia (ALL)", "Acute myeloid leukemia", "Adrenocortical carcinoma", "AIDS-related cancers", "AIDS-related lymphoma", "Anal cancer", "Appendix cancer", "Astrocytoma, childhood cerebellar or cerebral", "Basal-cell carcinoma", "Bile duct cancer, extrahepatic (see Cholangiocarcinoma)", "Bladder cancer", "Bone tumor, Osteosarcoma/Malignant fibrous histiocytoma", "Brainstem glioma", "Brain cancer", "Brain tumor, cerebellar astrocytoma", "Brain tumor, cerebral astrocytoma/malignant glioma", "Brain tumor, ependymoma", "Brain tumor, medulloblastoma", "Brain tumor, supratentorial primitive neuroectodermal tumors", "Brain tumor, visual pathway and hypothalamic glioma", "Breast cancer", "Bronchial adenomas/carcinoids", "Burkitt\'s lymphoma", "Carcinoid tumor, childhood", "Carcinoid tumor, gastrointestinal", "Carcinoma of unknown primary", "Central nervous system lymphoma, primary", "Cerebellar astrocytoma, childhood", "Cerebral astrocytoma/Malignant glioma, childhood", "Cervical cancer", "Childhood cancers", "Chronic bronchitis", "Chronic lymphocytic leukemia", "Chronic myelogenous leukemia", "Chronic myeloproliferative disorders", "Chronic obstructive pulmonary disease (COPD)", "Colon Cancer", "Cutaneous T-cell lymphoma", "Desmoplastic small round cell tumor", "Emphysema", "Endometrial cancer", "Ependymoma", "Esophageal cancer", "Ewing\'s sarcoma in the Ewing family of tumors", "Extracranial germ cell tumor, Childhood", "Extragonadal Germ cell tumor", "Extrahepatic bile duct cancer", "Eye Cancer, Intraocular melanoma", "Eye Cancer, Retinoblastoma", "Gallbladder cancer", "Gastric (Stomach) cancer", "Gastrointestinal Carcinoid Tumor", "Gastrointestinal stromal tumor (GIST)", "Germ cell tumor: extracranial, extragonadal, or ovarian", "Gestational trophoblastic tumor", "Glioma of the brain stem", "Glioma, Childhood Cerebral Astrocytoma", "Glioma, Childhood Visual Pathway and Hypothalamic", "Gastric carcinoid", "Hairy cell leukemia", "Head and neck cancer", "Heart cancer", "Hepatocellular (liver) cancer", "Hodgkin lymphoma", "Hypopharyngeal cancer", "Hypothalamic and visual pathway glioma, childhood", "Intraocular Melanoma", "Islet Cell Carcinoma (Endocrine Pancreas)", "Kaposi sarcoma", "Kidney cancer (renal cell cancer)", "Laryngeal Cancer", "Leukemias", "Leukemia, acute lymphoblastic (also called acute lymphocytic leukemia)", "Leukemia, acute myeloid (also called acute myelogenous leukemia)", "Leukemia, chronic lymphocytic (also called chronic lymphocytic leukemia)", "Leukemia, chronic myelogenous (also called chronic myeloid leukemia)", "Leukemia, hairy cell", "Lip and Oral Cavity Cancer", "Liposarcoma", "Liver Cancer (Primary)", "Lung Cancer, Non-Small Cell", "Lung Cancer, Small Cell", "Lymphomas", "Lymphoma, AIDS-related", "Lymphoma, Burkitt", "Lymphoma, cutaneous T-Cell", "Lymphoma, Hodgkin", "Lymphomas, Non-Hodgkin (an old classification of all lymphomas except Hodgkin\'s)", "Lymphoma, Primary Central Nervous System", "Macroglobulinemia, Waldenstr\\u00f6m", "Male breast cancer", "Malignant Fibrous Histiocytoma of Bone/Osteosarcoma", "Medulloblastoma, Childhood", "Melanoma", "Melanoma, Intraocular (Eye)", "Merkel Cell Carcinoma", "Mesothelioma, Adult Malignant", "Mesothelioma, Childhood", "Metastatic Squamous Neck Cancer with Occult Primary", "Mouth Cancer", "Multiple Endocrine Neoplasia Syndrome, Childhood", "Multiple Myeloma/Plasma Cell Neoplasm", "Mycosis Fungoides", "Myelodysplastic Syndromes", "Myelodysplastic/Myeloproliferative Diseases", "Myelogenous Leukemia, Chronic", "Myeloid Leukemia, Adult Acute", "Myeloid Leukemia, Childhood Acute", "Myeloma, Multiple (Cancer of the Bone-Marrow)", "Myeloproliferative Disorders, Chronic", "Nasal cavity and paranasal sinus cancer", "Nasopharyngeal carcinoma", "Neuroblastoma", "Non-Hodgkin lymphoma", "Non-small cell lung cancer", "Oral Cancer", "Oropharyngeal cancer", "Osteosarcoma/malignant fibrous histiocytoma of bone", "Ovarian cancer", "Ovarian epithelial cancer (Surface epithelial-stromal tumor)", "Ovarian germ cell tumor", "Ovarian low malignant potential tumor", "Pancreatic cancer", "Pancreatic cancer, islet cell", "Paranasal sinus and nasal cavity cancer", "Parathyroid cancer", "Penile cancer", "Pharyngeal cancer", "Pheochromocytoma", "Pineal astrocytoma", "Pineal germinoma", "Pineoblastoma and supratentorial primitive neuroectodermal tumors, childhood", "Pituitary adenoma", "Plasma cell neoplasia/Multiple myeloma", "Pleuropulmonary blastoma", "Primary central nervous system lymphoma", "Prostate cancer", "Rectal cancer", "Renal cell carcinoma (kidney cancer)", "Renal pelvis and ureter, transitional cell cancer", "Retinoblastoma", "Rhabdomyosarcoma, childhood", "Salivary gland cancer", "Sarcoma, Ewing family of tumors", "Sarcoma, Kaposi", "Sarcoma, soft tissue", "Sarcoma, uterine", "S\\u00e9zary syndrome", "Skin cancer (nonmelanoma)", "Skin cancer (melanoma)", "Skin carcinoma, Merkel cell", "Small cell lung cancer", "Small intestine cancer", "Soft tissue sarcoma", "Squamous cell carcinoma \\u2013 see Skin cancer (nonmelanoma)", "Squamous neck cancer with occult primary, metastatic", "Stomach cancer", "Supratentorial primitive neuroectodermal tumor, childhood", "T-Cell lymphoma, cutaneous \\u2013 see Mycosis Fungoides and S\\u00e9zary syndrome", "Testicular cancer", "Throat cancer", "Thymoma, childhood", "Thymoma and Thymic carcinoma", "Thyroid cancer", "Thyroid cancer, childhood", "Transitional cell cancer of the renal pelvis and ureter", "Trophoblastic tumor, gestational", "Unknown primary site, carcinoma of, adult", "Unknown primary site, cancer of, childhood", "Ureter and renal pelvis, transitional cell cancer", "Urethral cancer", "Uterine cancer, endometrial", "Uterine sarcoma", "Vaginal cancer", "Visual pathway and hypothalamic glioma, childhood", "Vulvar cancer", "Waldenstrom macroglobulinemia", "Wilms tumor (kidney cancer), childhood"];
-	$(cancerInputElement + " .typeahead").typeahead({
-		  hint: true,
-		  highlight: true,
-		  minLength: 1
+	// Set up the bloodhound for the typeahead enginge
+	var cancerBloodhound = new Bloodhound({
+		datumTokenizer: function(data){
+			// For each datum, return an array of the value (cancers) and 
+			// abbreviations broken up by whitespace
+			var cancerTokens = Bloodhound.tokenizers.whitespace(data.value),
+				abbrTokens = Bloodhound.tokenizers.whitespace(data.abbr)
+			return cancerTokens.concat(abbrTokens);
 		},
-		{
+		queryTokenizer: Bloodhound.tokenizers.whitespace,
+		local: $.map(cancers, function(c) { return { value: c, abbr: invertCancerTy(c) }; })
+	});
+	cancerBloodhound.initialize();
+
+	// Compile the template for showing suggestions
+	var templ = Hogan.compile('<p><strong>{{value}}</strong> ({{abbr}})</p>');
+	$(cancerInputElement + " .typeahead").typeahead({highlight: true}, {
 		  name: 'cancers',
 		  displayKey: 'value',
-		  source: substringMatcher(cancers)
+		  source: cancerBloodhound.ttAdapter(),
+		  templates:{
+		  	suggestion: function(data){ return templ.render(data); }
+		  }
 	});
+
+	// Resetter for the annotation menu
+	function resetAnnotation(){
+		interactor.selectAll("*").remove();
+		interactor.style("display", "none");
+		annotateInput.style("display", "none");
+		cancerInput.style("display", "none");
+		$(interactionElement).val("");
+		$(annotatedGeneElement).val("");
+		$(annotationsElement + " input").val("");
+		$(cancerTypeaheadElement).val("");
+		$(interactorElement).val("");
+		$(commentElement).val("");
+	}
+	$("#reset-annotation").on("click", resetAnnotation);
+
+	// Setter for the current interaction type
+	function setAnnotation( gene, interaction, interactorName, addFields ){
+		// Reset the form
+		resetAnnotation();
+
+		// Set the gene name and the interaction type, and update
+		// the remainder of the form appropriately
+		$(annotatedGeneElement).val(gene);
+		$(interactionElement).val(interaction);
+		updateInteraction();
+
+		// Make the interaction-specific changes
+		if (interaction == "interact"){
+			$(interactorElement).val(interactorName);
+		}
+		else{
+			$(cancerInputElement + " input").val(getCancerTy(interactorName));
+		}
+	}
 
 	// Updater for whenever an interaction type is chosen
 	function updateInteraction(){
@@ -477,16 +538,7 @@ d3.json(query, function(err, data){
 				}
 
                 // Reset the form
-                annotateInput.style("display", "none");
-                interactor.style("display", "none");
-                cancerInput.style("display", "none")
-                $(interactionElement).val("");
-                $(annotatedGeneElement).val("");
-                $(annotationsElement + " input").val("");
-                $(cancerTypeaheadElement).val("");
-                $(interactorElement).val("");
-                $(commentElement).val("");
-
+				resetAnnotation();
             }
         });
 
