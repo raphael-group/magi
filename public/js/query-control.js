@@ -12,8 +12,8 @@ $(document).ready(function() {
     // Perform validation on the form when it is submitted
     $(formEl).on("submit", function(e){
         // Extract input data
-        var geneList  = $(geneListEl).val()
-        , numDatasets = $(formEl + ' input.group-checkbox[type=checkbox]:checked').length;
+        var geneList  = $(geneListEl).val(),
+            numDatasets = $('input[name=multiselect]:checked').length;
 
         // Make sure at least one gene is entered
         if (geneList == ""){
@@ -23,7 +23,6 @@ $(document).ready(function() {
 
         // Make sure no more than 25 genes are entered
         var genes = geneList.split("\n").filter(function(g){ return g != ""; });
-        console.log(genes)
         if (genes.length > 25){
             status('Please enter <b>at most 25 genes</b> (one per line).', warningClasses);
             return false;
@@ -55,58 +54,4 @@ $(document).ready(function() {
         // If everything checks out, submit the form!
         return true;
     });
-
-    $('.group-selectAll').change(function() {
-        var groupNum = (this.id).replace('selectAll-',''),
-            checkboxClass = '.group-'+groupNum+'-checkbox',
-            selectAllObj = this;
-        $(checkboxClass).each(function(i) {
-            this.checked = selectAllObj.checked;
-            // if(this.checked == true) {
-            //     var nameOfThis = $('label#'+this.id).attr('class');
-            //     $('#db-list-selected ul').append('<p>'+nameOfThis+'</p>');
-            // }
-        });
-        addSelectedData();
-    });
 });
-
-function addSelectedData() {
-    // Delete existing entries
-    $('#db-list-selected ul').empty()
-    // Repopulate
-    $('.group-checkbox').each(function() {
-        if(this.checked) {
-            var nameOfThis = $('label#'+this.id).attr('class'),
-                groupName = $(this).attr('groupName');
-            $('#db-list-selected ul').append('<li>'+groupName+': '+nameOfThis+'</li>');
-        }
-    })
-}
-
-// Toggle the checkboxes for a given group of datasets
-function toggleGroup(el, group){
-    // Toggle a slide to show/hide each dataset in the group
-    $('ul#group-' + group).slideToggle();
-
-    // Change the direction of the caret based on whether we
-    // are showing/hiding the group of datasets
-    var caret = $(el).children("span");
-    if (caret.hasClass("glyphicon-chevron-down")){
-        var oldClass = "glyphicon-chevron-down"
-        , newClass   = "glyphicon-chevron-up";
-    }
-    else{
-        var oldClass = "glyphicon-chevron-up"
-        , newClass   = "glyphicon-chevron-down";
-    }
-    caret.removeClass(oldClass);
-    caret.addClass(newClass);
-}
-
-// (Un)Check all the checkboxes in the given group, depending on the value
-// of checked
-function toggleCheckboxes(group, checked){
-    var checkboxes = $("input.group-" + group + "-checkbox");
-    checkboxes.prop("checked", checked);
-}

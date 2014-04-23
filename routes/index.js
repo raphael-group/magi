@@ -12,7 +12,7 @@ exports.index = function index(req, res){
 		if (err) throw new Error(err);
 
 		// Append the groupClass standard to each group
-		standardGroups.forEach(function(g){ g.groupClass = "standard"; })
+		standardGroups.forEach(function(g){ g.groupClass = "public"; })
 		standardGroups.forEach(function(g){
 			g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
 		});
@@ -24,7 +24,7 @@ exports.index = function index(req, res){
 				if (err) throw new Error(err);
 
 				// Append the groupClass standard to each group
-				userGroups.forEach(function(g){ g.groupClass = "user"; });
+				userGroups.forEach(function(g){ g.groupClass = "private"; });
 				userGroups.forEach(function(g){
 					g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
 				});
@@ -45,15 +45,22 @@ exports.queryhandler = function queryhandler(req, res){
 		showDuplicates = req.body.showDuplicates || "";
 
 	/* Extract datasets */
-	// Dataset checkboxes are prepended with db- to ensure no starts their
+	// Dataset checkboxes are prepended with 'db' to ensure no starts their
 	// dataset name with a non-letter (which would break HTML rules)
-	var checkedDatasets = Object.keys( req.body ).filter(function(n){
-		return n.substr(0, 3) == 'db-'
-	});
+	if (req.body.multiselect instanceof Array){
+		var checkedDatasets = req.body.multiselect.filter(function(n){
+			return n.substr(0, 2) == 'db'
+		});
+	}
+	// Otherwise we have a single dataset stored as a string
+	else{
+		var checkedDatasets = [ req.body.multiselect ]
+	}
 
 	// Extract the true dataset title from the names
 	var datasets = checkedDatasets.map(function(n){
-		return n.split("db-")[1];
+		var arr = n.split(" ");
+		return arr[arr.length - 1];
 	});
 
 	// Split genes while ignoring blank lines

@@ -1,7 +1,9 @@
 extends ../layout
 block body
   div(class="container")
-    h1 Datasets
+    h1
+      | Datasets&nbsp;
+      small Click a dataset's name to view a summary of its mutations.
     -var seenStandard = false;
     -var seenUser = false;
     -for (var i in groupClasses)

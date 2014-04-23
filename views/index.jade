@@ -32,218 +32,205 @@ block body
       p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
         | <a href="http://vrl.cs.brown.edu/">Visualization Research Lab</a> at Brown University.
   br
-  div(class="container-index", id="input-chooser")
-    form(method="post", action="/", role="form", id="query-form")
+  div(class="container-index", id="input-chooser") 
+    div(id="query", class="panel-success panel")
+      div(class="panel-heading")
+        h3(class="panel-title") Construct your query
+      div(class="panel-body")
+        form(method="post", action="/", role="form", id="query-form")
+          div(id="db-chooser", class="col-lg-12")
+            div(id="db-select", class="col-lg-6")
+              h5 Datasets
+              div(style="margin-top:3px")
+                select(class="multiselect", multiple="multiple")
+                   -for (var i in groups)
+                     -var group = groups[i];
+                     -var groupName = group.name == "" ? "Other" : group.name;
+                     optgroup(label="#{groupName}")
+                       -for (var j in group.dbs)
+                         -var db = group.dbs[j];
+                         option(value="db #{group.groupClass} #{group.name} #{db._id}") #{db.title}
 
-      div(id="db-chooser")
-         h4 Choose dataset
+            div(class="col-lg-1")
+            div(class="col-lg-5 instructions")
+              b Instructions
+              ul
+                li Select datasets from the dropdown.
+                li Search by:
+                  ul
+                    li group name
+                    li cancer type
+                    li <code>public</code> or <code>private</code>
+                li
+                  a(href="/datasets") View available datasets.
+                li
+                  a(href="/upload") Upload your own data.
 
-         small
-          a(href="/datasets/") View existing datasets
-          | &nbsp; or &nbsp;
-          a(href="/upload") upload your own.
-         br
-         -var seenStandard = false;
-         -var seenUser = false;
-         -for (var i in groups)
-           -var group = groups[i];
-           //- Create a horizontal break if this is the first standard/user dataset
-           -if (group.groupClass == "standard" && !seenStandard)
-             - seenStandard = true;
-             hr
-             h4 Provided datasets
-           -if (group.groupClass == "user" && !seenUser)
-             - seenUser = true;
-             hr
-             h4 Your datasets
 
-           // Determine whether the datasets are part of a group
-           - if (group.name != "")
-             - groupClass = "groupedClass"
-             //- input(type="checkbox", style="float:right;", onclick="toggleCheckboxes('#{i}', this.checked );")
-             //- h5(onclick="toggleGroup(this, '#{i}')", style="cursor:pointer") #{group.name} &nbsp;
-             //-   span(class="glyphicon glyphicon-chevron-down", style="font-size:80%")
+          hr(style="clear:both;margin:10px")
+          div(id="gene-chooser", class="col-lg-12")
+            div(id="gene-textarea", class="col-lg-6")
+              h5 Gene set (25 maximum).
+              textarea(id="genes-list", name="genes", class="form-control", rows="5", style="margin-top:3px")
+                | STAG1
+                | STAG2
+                | SMC1A
+                | SMC3
+                | RAD21
+              br
+            div(class="col-lg-1")
+            div(class="instructions col-lg-5")
+              b Instructions
+              ul
+                li Enter up to 25 genes to query.
+          br(style="clear:both")
+          div(id="submit-query", class="text-center")
+            button(type="submit", id="submit", class="btn btn-success") Submit query
+            br
+            br
+            div(id="status")
 
-           - else groupClass = "ungroupedClass"
+          div(id="example-queries")
+            h4
+              | Example queries&nbsp;
+              small Click a query name to populate the form above.
+            a(id="swi-snf-pan-can") SWI-SNF / TCGA Pan-Cancer
+            a(id="cohesin-pan-can") Cohesin / TCGA Pan-Cancer
+            a(id="pi3k-gbm") PI(3)K and BRAF / TCGA GBM
+          br
+          div(id="advanced-options", class="panel panel-default")
+            div(class="panel-heading", data-toggle="collapse", data-parent="#accordion", href="#collapseOptions", style="cursor:pointer;font-size:14px;")
+              span(class="panel-title")
+                | Advanced options
+                span(style="float:right") [+]
+            div(id="collapseOptions", class="panel-collapse collapse")
+              div(class="panel-body")
+                b
+                  abbr(title="Show all samples in each dataset even if samples from different datasets have the same IDs.") Show duplicate samples
+                input(type="checkbox", name="showDuplicates", id="showDuplicates", style="margin-left:10px")
 
-           //- Output each dataset group as a list of checkboxes
-           // TODO add something like http://davidstutz.github.io/bootstrap-multiselect/#further-examples Using optgroup with filtering and the select all option.
-           div(class="btn-group")
-            button(type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown")
-              //input(type="checkbox")
-              | #{group.name} <span class="caret"></span>
-            ul(class="dropdown-menu #{groupClass} db-group", role="menu", id="group-#{i}")
-              li
-                input(type="checkbox", id="selectAll-#{i}", class="group-selectAll")
-                | &nbsp; <strong>Select All</strong>
-              -for (var j in group.dbs)
-               -var db = group.dbs[j];
-               li
-                 label(class="#{db.title}", id="db-#{db._id}")
-                   //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
-                   //- dataset name with a non-letter (which would break HTML rules)
-                   input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox", groupName="#{group.name}")
-                 | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
-           br
-
-           // Old drop down code
-           //- ul(class="#{groupClass} db-group", id="group-#{i}")
-           //-   -for (var j in group.dbs)
-           //-     -var db = group.dbs[j];
-           //-     li
-           //-       label
-           //-         //- Dataset checkboxes are prepended with 'db-' to ensure no one starts their
-           //-         //- dataset name with a non-letter (which would break HTML rules)
-           //-         input(type="checkbox", name="db-#{db._id}", id="db-#{db._id}", class="group-#{i}-checkbox group-checkbox")
-           //-       | &nbsp; #{db.title} &nbsp; (#{db.num_samples})
-
-      div(id="db-list")
-        h4 Selected Datasets
-        br
-        div(id="db-list-selected")
-          ul
-      br(style="clear:both")
+    div(id="component-descriptions")
+      h3 Components
       br
-      div(id="gene-chooser")
-        h4 Query gene set (25 maximum).
+      a(name="oncoprint")
+      h4
+        a(href="/#oncoprint") #
+        | &nbsp; Oncoprint
+      br
+      div(class="text-center")
+        img(src="img/oncoprint-multi-cancer.gif")
         br
-        textarea(id="genes-list", name="genes", class="form-control", rows="10")
-          | STAG1
-          | STAG2
-          | SMC1A
-          | SMC3
-          | RAD21
+        i Oncoprint of multiple cancer types.
+      br
+      div(class="text-center")
+        img(src="img/oncoprint-single-cancer.gif")
         br
-        b
-          abbr(title="Show all samples in each dataset even if samples from different datasets have the same IDs.") Show duplicate samples
-        input(type="checkbox", name="showDuplicates", id="showDuplicates", style="float:right")
+        i Oncoprint of a single cancer type.
+      br
+      | Oncoprints show the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns).
+      | Each cell in the oncoprint contains shape, which represents whether or not a gene is mutated in the given sample.
+      | Oncoprints are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
+      | For a cohort with multiple cancer types each cell is colored by the cancer type of the sample,
+      | while for a cohort with one cancer type each cell is colored by whether or not the gene is the only
+      | gene to harbor a mutation in that sample.
+      br
+      br
+      | Mutation datasets are provided, or you can&nbsp;
+      a(href="/upload") upload your own
+      | .
+      br
+      br
+      a(name="subnetwork")
+      h4
+        a(href="/#subnetwork") #
+        | &nbsp; Subnetwork
+      br
+      div(class="text-center")
+        img(src="img/subnetwork.gif")
         br
+        i Subnetwork of five genes with edges from three interaction networks.
+      br
+      | The subnetwork visualization shows the interactions among a set of nodes (proteins)
+      | in one or multiple protein interaction networks. Edges that appear in multiple subnetworks
+      | will appear together in the visualization. Nodes are colored by the number of samples in which
+      | they are mutated.
+      br
+      br
+      | We provide the&nbsp;
+      a(href="http://hint.yulab.org/", target="_new") HINT
+      | ,&nbsp;
+      a(href="http://www.hprd.org/", target="_new") HPRD
+      | ,&nbsp;and&nbsp;
+      a(href="http://irefindex.org/wiki/index.php?title=iRefIndex", target="_new") iRefIndex
+      | &nbsp; protein-protein interaction (PPI) networks.
+      | To request additional PPI networks, please&nbsp;
+      a(href="/contact") contact us
+      | .
+      br
+      br
+      a(name="transcript-plot")
+      h4
+        a(href="/#transcript-plot") #
+        | &nbsp; Transcript plot
+      br
+      div(class="text-center")
+        img(src="img/transcript-plot.gif")
         br
-        button(type="submit", id="submit", class="btn btn-default") Submit query
+        i Transcript plot for STAG1's transcript ENST00000383202 in multiple cancer types.
+      br
+      | The transcript plot shows locations at which mutations occur in a gene's transcript.
+      | Mutations are color-coded by cancer type, and different mutation types (e.g. missense, nonsense)
+      | are represented by different symbols. In addition, protein domains from different databases
+      | are shown along the length of the transcript.
+      br
+      br
+      | The mutation data for the transcript plot is the same as for the&nbsp;
+      a(href="#oncoprint") oncoprint
+      | . Protein domains are provided for the&nbsp;
+      a(href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml") Conserved Domain
+      | ,&nbsp;
+      a(href="http://pfam.sanger.ac.uk/") PFAM
+      | , and&nbsp;
+      a(href="http://smart.embl-heidelberg.de/") SMART
+      | &nbsp; databases.
+      br
+      br
+      a(name="cna-browser")
+      h4
+        a(href="/#cna-browser") #
+        | &nbsp; Copy Number Aberration (CNA) Browser
+      br
+      div(class="text-center")
+        img(src="img/cna-browser.gif")
         br
-        br
-        div(id="status")
-
-      div(id="example-queries")
-        h4
-          | Example queries&nbsp;
-          small Click a query name to populate the form above.
-        a(id="swi-snf-pan-can") SWI-SNF / TCGA Pan-Cancer
-        a(id="cohesin-pan-can") Cohesin / TCGA Pan-Cancer
-        a(id="pi3k-gbm") PI(3)K and BRAF / TCGA GBM
-
-      hr
-      div(id="component-descriptions")
-        h3 Components
-        br
-        a(name="oncoprint")
-        h4
-          a(href="/#oncoprint") #
-          | &nbsp; Oncoprint
-        br
-        div(class="text-center")
-          img(src="img/oncoprint-multi-cancer.gif")
-          br
-          i Oncoprint of multiple cancer types.
-        br
-        div(class="text-center")
-          img(src="img/oncoprint-single-cancer.gif")
-          br
-          i Oncoprint of a single cancer type.
-        br
-        | Oncoprints show the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns).
-        | Each cell in the oncoprint contains shape, which represents whether or not a gene is mutated in the given sample.
-        | Oncoprints are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
-        | For a cohort with multiple cancer types each cell is colored by the cancer type of the sample,
-        | while for a cohort with one cancer type each cell is colored by whether or not the gene is the only
-        | gene to harbor a mutation in that sample.
-        br
-        br
-        | Mutation datasets are provided, or you can&nbsp;
-        a(href="/upload") upload your own
-        | .
-        br
-        br
-        a(name="subnetwork")
-        h4
-          a(href="/#subnetwork") #
-          | &nbsp; Subnetwork
-        br
-        div(class="text-center")
-          img(src="img/subnetwork.gif")
-          br
-          i Subnetwork of five genes with edges from three interaction networks.
-        br
-        | The subnetwork visualization shows the interactions among a set of nodes (proteins)
-        | in one or multiple protein interaction networks. Edges that appear in multiple subnetworks
-        | will appear together in the visualization. Nodes are colored by the number of samples in which
-        | they are mutated.
-        br
-        br
-        | We provide the&nbsp;
-        a(href="http://hint.yulab.org/", target="_new") HINT
-        | ,&nbsp;
-        a(href="http://www.hprd.org/", target="_new") HPRD
-        | ,&nbsp;and&nbsp;
-        a(href="http://irefindex.org/wiki/index.php?title=iRefIndex", target="_new") iRefIndex
-        | &nbsp; protein-protein interaction (PPI) networks.
-        | To request additional PPI networks, please&nbsp;
-        a(href="/contact") contact us
-        | .
-        br
-        br
-        a(name="transcript-plot")
-        h4
-          a(href="/#transcript-plot") #
-          | &nbsp; Transcript plot
-        br
-        div(class="text-center")
-          img(src="img/transcript-plot.gif")
-          br
-          i Transcript plot for STAG1's transcript ENST00000383202 in multiple cancer types.
-        br
-        | The transcript plot shows locations at which mutations occur in a gene's transcript.
-        | Mutations are color-coded by cancer type, and different mutation types (e.g. missense, nonsense)
-        | are represented by different symbols. In addition, protein domains from different databases
-        | are shown along the length of the transcript.
-        br
-        br
-        | The mutation data for the transcript plot is the same as for the&nbsp;
-        a(href="#oncoprint") oncoprint
-        | . Protein domains are provided for the&nbsp;
-        a(href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml") Conserved Domain
-        | ,&nbsp;
-        a(href="http://pfam.sanger.ac.uk/") PFAM
-        | , and&nbsp;
-        a(href="http://smart.embl-heidelberg.de/") SMART
-        | &nbsp; databases.
-        br
-        br
-        a(name="cna-browser")
-        h4
-          a(href="/#cna-browser") #
-          | &nbsp; Copy Number Aberration (CNA) Browser
-        br
-        div(class="text-center")
-          img(src="img/cna-browser.gif")
-          br
-          i CNA browser for the CD44 gene.
-        br
-        | The copy number aberration browser shows the amplified/deleted segments
-        | that have been mapped to a particular gene. Since many segments span more than
-        | the length of the gene, the segments are shown in the context of a 
-        | chromosome arm. Segments are colored by cancer type.
-        br
-        br
-        | The mutation data for the CNA browser is the same as for the&nbsp;
-        a(href="#oncoprint") oncoprint
-        | .
+        i CNA browser for the CD44 gene.
+      br
+      | The copy number aberration browser shows the amplified/deleted segments
+      | that have been mapped to a particular gene. Since many segments span more than
+      | the length of the gene, the segments are shown in the context of a 
+      | chromosome arm. Segments are colored by cancer type.
+      br
+      br
+      | The mutation data for the CNA browser is the same as for the&nbsp;
+      a(href="#oncoprint") oncoprint
+      | .
 
   script(src='/components/d3/d3.min.js')
   script(src='/components/jquery/dist/jquery.min.js')
   script(src='/components/jquery-form/jquery.form.js')
-  script(src='/components/bootstrap/js/dropdown.js')
-  //-script(src='/components/bootstrap/dist/js/bootstrap.min.js')
+  script(src='/components/bootstrap/dist/js/bootstrap.min.js')
+  script(src='/components/bootstrap-multiselect/js/bootstrap-multiselect.js')
   script(src='/js/banner.js')
   script(src='/js/query-control.js')
   script(src='/js/example-queries.js')
+  script.
+    $(document).ready(function() {
+      $('.multiselect').multiselect({
+        enableCaseInsensitiveFiltering: true,
+        includeSelectAllOption: true,
+        maxHeight: 400,
+        buttonWidth: 350,
+        filterBehavior: 'both'
+      });
+    });
+  link(rel="stylesheet", href="/components/bootstrap-multiselect/css/bootstrap-multiselect.css", type="text/css")
