@@ -79,9 +79,13 @@ function addSelectedData() {
         if(this.checked) {
             var nameOfThis = $('label#'+this.id).attr('class'),
                 groupName = $(this).attr('groupName');
+            console.log(groupName);
             $('#db-list-selected ul').append('<li>'+groupName+': '+nameOfThis+'</li>');
         }
-    })
+    });
+    if ( $('#db-list-selected ul').children().length == 0 ) {
+     $('#db-list-selected ul').append('<li></li>');
+    }
 }
 
 // Toggle the checkboxes for a given group of datasets
