@@ -127,7 +127,9 @@ exports.viewData = function getViewData(req, res){
 						if (!annotations[A.gene][A.mutation_class]){
 							annotations[A.gene][A.mutation_class] = {};
 						}
-						annotations[A.gene][A.mutation_class][A.cancer] = A.support;
+						console.log( A.support );
+						var refs = A.support.map(function(d){ return d.ref; });
+						annotations[A.gene][A.mutation_class][A.cancer] = refs;
 					})
 
 					// Assemble data into single Object

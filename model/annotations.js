@@ -16,15 +16,15 @@ var AnnotationSchema = new mongoose.Schema({
 mongoose.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
-exports.upsertAnnotation = function(gene, cancer, mutation_class, ref, comment, user_id, callback){
+exports.upsertAnnotation = function(query, support, callback){
 	var Annotation = mongoose.model( 'Annotation' ),
 		Q = require( 'q' );
 
 	var d = Q.defer();
 
 	Annotation.findOneAndUpdate(
-		{gene: gene, cancer: cancer, mutation_class: mutation_class, user_id: user_id},
-		{$push: {support: {ref: ref, user_id: user_id, comment: comment}}},
+		query,
+		{$push: {support: support}},
 		{safe: true, upsert: true},
 		function(err, model) {
 			console.log(err);

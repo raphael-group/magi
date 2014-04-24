@@ -11,7 +11,7 @@ block header
           a(href="/logout") Logout
         - else
           a(href="/auth/Google") Login via Google
-
+  link(rel="stylesheet", href="/components/bootstrap-multiselect/css/bootstrap-multiselect.css", type="text/css")
 block body
   div(class="container")
     div(class="indexTop")
@@ -19,37 +19,49 @@ block body
         li
           a(class="btn btn-default loginBtn", href="/auth/Google") Log in
         li
-          a(href="#sec-about") About
+          a(href="#", id="about") About
         li
-          a(href="#input-chooser") Search
+          a(href="#", id="search") Search
         li
-          a(href="#component-descriptions") Instructions
+          a(href="#", id="instructions") Instructions
+        li
+          a(href="/upload") Upload
+        li
+          a(href="/datasets") Datasets
       img(src="img/cgatTitle.svg", id="splash-logo")
     div(id="splash-img")
+    a(name="sec-about")
     div(id="sec-about", class="text-center")
       p CGAT is a tool for exploring and analyzing gene sets that may be
         | associated with cancer.
       p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
         | <a href="http://vrl.cs.brown.edu/">Visualization Research Lab</a> at Brown University.
   br
+  a(name="input-chooser")
   div(class="container-index", id="input-chooser") 
-    div(id="query", class="panel-success panel")
-      div(class="panel-heading")
-        h3(class="panel-title") Construct your query
+    ul(id="cgat-actions", class="nav nav-tabs nav-justified", style="")
+      li(style="background-color:#dff0d8;border-radius:4px")
+        a(href="/") Query
+      li
+        a(href="/upload") Upload Mutation Data
+      li
+        a(href="/datasets") View Dataset Summaries
+    div(id="query", class="panel-success panel", style="margin-top:-2px")
       div(class="panel-body")
         form(method="post", action="/", role="form", id="query-form")
           div(id="db-chooser", class="col-lg-12")
             div(id="db-select", class="col-lg-6")
               h5 Datasets
               div(style="margin-top:3px")
-                select(class="multiselect", multiple="multiple")
+                select(id="dataset-multiselect", class="multiselect", multiple="multiple")
                    -for (var i in groups)
                      -var group = groups[i];
                      -var groupName = group.name == "" ? "Other" : group.name;
                      optgroup(label="#{groupName}")
                        -for (var j in group.dbs)
                          -var db = group.dbs[j];
-                         option(value="db #{group.groupClass} #{group.name} #{db._id}") #{db.title}
+                         //- The checkbox values are constructed
+                         option(value="#{db.checkboxValue}") #{db.title}
 
             div(class="col-lg-1")
             div(class="col-lg-5 instructions")
@@ -87,6 +99,8 @@ block body
           div(id="submit-query", class="text-center")
             button(type="submit", id="submit", class="btn btn-success") Submit query
             br
+            a(href="#", id="reset") Reset
+            br
             br
             div(id="status")
 
@@ -109,6 +123,7 @@ block body
                   abbr(title="Show all samples in each dataset even if samples from different datasets have the same IDs.") Show duplicate samples
                 input(type="checkbox", name="showDuplicates", id="showDuplicates", style="margin-left:10px")
 
+    a(name="component-descriptions")
     div(id="component-descriptions")
       h3 Components
       br
@@ -224,13 +239,31 @@ block body
   script(src='/js/query-control.js')
   script(src='/js/example-queries.js')
   script.
+    //- Initialize the multiselect
     $(document).ready(function() {
-      $('.multiselect').multiselect({
+      $('#dataset-multiselect').multiselect({
         enableCaseInsensitiveFiltering: true,
         includeSelectAllOption: true,
         maxHeight: 400,
         buttonWidth: 350,
         filterBehavior: 'both'
       });
+      //- Have the reset button uncheck all datasets and set the gene list to cohesin
+      $("a#reset").on("click", function(){
+          $('#dataset-multiselect').multiselect('deselect', datasetToCheckboxes.all);
+          $('#genes-list').val(["STAG1", "STAG2", "SMC1A", "SMC3", "RAD21"].join("\n"));
+          return false;
+        })
     });
-  link(rel="stylesheet", href="/components/bootstrap-multiselect/css/bootstrap-multiselect.css", type="text/css")
+    //- Make the links at the top of the page scroll down
+    function scrollToAnchor(aid){
+      var aTag = $("a[name='"+ aid +"']");
+      $('html,body').animate( {scrollTop: aTag.offset().top }, 'slow');
+      setTimeout(function() {window.location.hash = aid;}, 300);
+    }
+    $("a#instructions").on("click", function(){ scrollToAnchor("component-descriptions")});
+    $("a#about").on("click", function(){ scrollToAnchor("sec-about")});
+    $("a#search").on("click", function(){ scrollToAnchor("input-chooser")});
+    //- The example queries are mapped to databases by the server passing in
+    //- formatted DB
+    var datasetToCheckboxes = !{JSON.stringify(datasetToCheckboxes)};

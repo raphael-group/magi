@@ -8,6 +8,9 @@ block body
 				tr(style="background:#e3e3e3")
 					th Cancer
 					th Mutation Class
+					th Mutation type (optional)
+					th Protein domain (optional)
+					th Position (optional)
 					th Support
 			tbody
 				-for (var i = 0; i < annotations.length; i++)
@@ -17,9 +20,12 @@ block body
 							- var cancer = A.cancer.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 							| #{cancer}
 						td #{A.mutation_class}
+						td #{A.mutation_type}
+						td #{A.domain}
+						td #{A.position}
 						td
 							-for (var j = 0; j < A.support.length; j++)
-								a(href="http://www.ncbi.nlm.nih.gov/pubmed/#{A.support[j]}", target="_new") #{A.support[j]}
+								a(href="http://www.ncbi.nlm.nih.gov/pubmed/#{A.support[j].ref}", target="_new") #{A.support[j].ref}
 		//- Load the required scripts
 		script(src='/components/jquery/dist/jquery.min.js').
 		script(src='/components/DataTables/media/js/jquery.dataTables.js').

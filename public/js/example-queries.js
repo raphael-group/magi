@@ -1,63 +1,43 @@
 /* Create example queries */
 $(document).ready(function(){
-	// 
-	var containingDiv = "div#example-queries",
-		genesList = $("textarea#genes-list");
+	// The gene list textarea and the dataset multiselect
+	var genesList = $("textarea#genes-list"),
+		datasetMultiselect = $("#dataset-multiselect");
 	
+	// The hard-coded example queries
+	// - selector: ID of the link
+	// - genes: list of genes for the query
+	// - dataset: either group or dataset name (lowercase)
 	var exampleQueries = [
-		{	selector: containingDiv + " a#swi-snf-pan-can",
+		{	selector: "a#swi-snf-pan-can",
 			genes: ["ARID1A", "ARID1B", "ARID2", "PBRM1", "SMARCA4", "SMARCB1", "SMARCC1", "SMARCC2"],
-			grouped: true,
-			groupID: 0,
-			dataset: null
+			dataset: "tcga pan-can"
 		},
-		{	selector: containingDiv + " a#cohesin-pan-can",
+		{	selector: "a#cohesin-pan-can",
 			genes: ["STAG2", "STAG1", "SMC1A", "RAD21", "SMC3"],
-			grouped: true,
-			groupID: 0,
-			dataset: null
+			dataset: "tcga pan-can"
 		},
-		{	selector: containingDiv + " a#pi3k-gbm",
+		{	selector: "a#pi3k-gbm",
 			genes: ["PIK3CA", "PTEN", "BRAF", "AKT1", "PIK3R1"],
-			grouped: false,
-			group: 0,
-			dataset: "5329e4a3ec6f808feaa6d983"
+			dataset: "gbm"
 		}
 	];
 
+	// Add an event handler to each link to change the gene list
+	// and multi-select on click
 	exampleQueries.forEach(function(query){
-		var link = $(query.selector),
-			linkGroup = query.groupID,
-			linkDataset = query.dataset;
+		var link = $(query.selector);
 
 		link.on("click", function(){
-			// Update the text area and highlight it
+			// Update the text area and highlight it by focusing on it
 			genesList.val(query.genes.join("\n"));
-			highlightElement(genesList, 'highlight');
 
-			// Then check and highlight the datasets
-			$("input").prop("checked", false); // uncheck everything else
-			if (query.grouped){
-				var checkboxes = $("input.group-" + linkGroup + "-checkbox");
-				checkboxes.prop("checked", true);
-				$('ul#group-' + linkGroup).slideDown();
-				highlightElement($("ul#group-" + linkGroup), 'highlight');
-			}
-			else{
-				$("input#db-" + linkDataset).prop("checked", true);
-				if (linkGroup >= 0) $('ul#group-' + linkGroup).slideDown();
-				highlightElement($("input#db-" + linkDataset).parent().parent(), 'highlight');
-			}
+			// Uncheck all checkboxes in the multiselect, 
+			// then check the datasets with the given IDs
+			datasetMultiselect.multiselect('deselect', datasetToCheckboxes.all );
+			datasetMultiselect.multiselect('select', datasetToCheckboxes[query.dataset]);
 
 		});
 	});
 
 });
-
-function highlightElement(el, className){
-    el.addClass(className);
-	setTimeout(
-    	function() { el.removeClass(className); },
-    	1000
-	);
-}

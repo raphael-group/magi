@@ -64,15 +64,37 @@ block body
                   div(id="cancers", class="typeahead", style="display:none")
                     label Cancer
                     input(class="typeahead form-control", id="cancer-typeahead", type="text", placeholder="Cancer")
-                  br
+                    br
+                    br
+                  div(id="transcript-mutation", style="display:none")
+                    label
+                      | Mutation type
+                      span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
+                    input(class="form-control", id="mut_ty", placeholder="Mutation type")
+                    br
+                  div(id="transcript-position", style="display:none")
+                    label
+                      | Position
+                      span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
+                    input(class="form-control", id="position", placeholder="Mutation position", type="number")
+                    
+                    br
+                  div(id="transcript-domain", style="display:none")
+                    label
+                      | Domain
+                      span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
+                    input(class="form-control", id="domain", placeholder="Domain name")
+                    br
                   div(id="annotations")
                     label PMID
                     input(class="form-control", id="pmid", placeholder="PMID", maxlength="8")
-                  br
+                    br
                   div(id="comments")
-                    label Comments
+                    label
+                      | Comments
+                      span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
                     textarea(class="form-control", id="comment", placeholder="Enter any comments.", type="textarea")
-                  br
+                    br
                   button(type="submit", id="submit", class="btn btn-default") Submit
                   br
                 div(id="annotationStatus")

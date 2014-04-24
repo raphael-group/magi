@@ -40,7 +40,7 @@ div.indexTop ul li a.loginBtn {
   margin-top: -3px;
 }
 
-div.container-index {
+div#component-descriptions, div.container-index {
   margin: 0 auto;
   width: 800px;
 }
@@ -61,15 +61,12 @@ div.page-header{
   height: 25px;
   padding:0;margin:0;border:0;
 }
+
+/* Footer */
 ul#more-info{list-style-type: none;}
 ul#more-info li{display:inline;padding-left:5px;padding-right:5px;}
 
-/* Styling index page (choosing genes or datasets) */
-div#db-chooser{height:170px;overflow-y:none;max-height:170px;}
-div#db-select{padding-left:0px;}
-div#gene-textarea{margin-top:5px;padding-left:0px;}
-div#query div.instructions ul{padding-left:17px;}
-
+/* Logo */
 img#small-logo {
   margin: -15px 0 0 0;
   padding:0;
@@ -120,25 +117,22 @@ img#transcriptSlice{
   opacity: 1;
 }
 
-ul.groupedClass{
-	display:none;
-}
+/* Query box */
+ul#cgat-actions li{border-color:#d6e9c6;}
+ul#cgat-actions li a{ color:#3c763d;font-weight:500;font-size:16px; }
+ul#cgat-actions li a:hover{ background-color:#dff0d8; }
 
-ul.ungroupedClass{
-	margin-left:3px;
-	padding:0px;
-}
-
-ul.db-group{
-	list-style-type: none;
-}
+/* Styling index page (choosing genes or datasets) */
+div#db-chooser{height:170px;overflow-y:none;max-height:170px;}
+div#db-select{padding-left:0px;}
+div#gene-textarea{margin-top:5px;padding-left:0px;}
+div#query div.instructions ul{padding-left:17px;}
 
 div#example-queries{ clear:both; }
 div#example-queries a{ margin-right:15px; }
 textarea.highlight, li.highlight{ border:1px dashed red;}
 ul.highlight{ border-bottom:1px dashed red;}
 
-div#component-descriptions{ width:700px; }
 div#component-descriptions h4{ background:#666; color:#fff; padding-left:6px;padding-bottom:3px;padding-top:3px; }
 div#component-descriptions h4 a{ color:#F80000; }
 div#component-descriptions img{ border:1px solid #d3d3d3;padding-top:5px;padding-bottom:5px; }
@@ -198,6 +192,9 @@ table.dataTable thead th {padding: 3px 18px 3px 10px;border-bottom: 1px solid bl
 address{ margin-left:15px;width:350px }
 address img{ float:right; }
 
+/* Annotation styling */
+div#annotation div#inputs label {width: 100%;}
+div#annotation div#inputs label span.glyphicon{ float:right;font-size:80%;cursor:pointer}
 /* Styling for d3-tip */
 .d3-tip {line-height: 1;padding: 7px;background: rgba(0, 0, 0, 0.8);color: #fff;border-radius: 5px;font-size:80%;max-width:300px;}
 

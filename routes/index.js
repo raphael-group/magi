@@ -11,29 +11,55 @@ exports.index = function index(req, res){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
 
-		// Append the groupClass standard to each group
-		standardGroups.forEach(function(g){ g.groupClass = "public"; })
-		standardGroups.forEach(function(g){
-			g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
-		});
+		///////////////////////////////////////////////////////////////////////
+		// Process the groups of datasets and assign each dataset a unique
+		// checkbox ID
+
+		// Store the checkbox IDs of all and the public datasets by group
+		var datasetToCheckboxes = { all: [] };
+
+		function toCheckboxValue(_id, scope, gName){ return "db " + scope + " " + gName + " " + _id; }
+		function initGroup(groups, scope){
+			// Assign each group a scope (public/private), and sort the dbs
+			groups.forEach(function(g){ g.groupClass = scope; })
+			groups.forEach(function(g){
+				g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
+			});
+
+			// Assign each dataset a checkbox ID
+			groups.forEach(function(g){
+				var groupName = g.name == "" ? "other" : g.name.toLowerCase();
+				if (scope == "public") datasetToCheckboxes[groupName] = [];
+				g.dbs.forEach(function(db){
+					datasetToCheckboxes.all.push( db.checkboxValue = toCheckboxValue(db._id, scope, groupName) );
+					if (scope == "public"){
+						datasetToCheckboxes[groupName].push( db.checkboxValue );
+						if (groupName == "tcga pan-can" && db.title == "GBM"){
+							datasetToCheckboxes.gbm = [ db.checkboxValue ];
+						}
+					}
+				})
+			});
+		}
+
+		initGroup( standardGroups, 'public' )
 
 		// Load the user's datasets (if necessary)
+		var viewData = { user: req.user, groups: standardGroups, datasetToCheckboxes: datasetToCheckboxes };
 		if (req.user){
 			Dataset.datasetGroups({user_id: req.user._id}, function(err, userGroups){
 				// Throw error (if necessary)
 				if (err) throw new Error(err);
 
 				// Append the groupClass standard to each group
-				userGroups.forEach(function(g){ g.groupClass = "private"; });
-				userGroups.forEach(function(g){
-					g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
-				});
+				initGroup( userGroups, 'private' );
 
-				res.render('index', { user: req.user, groups: standardGroups.concat(userGroups) });
+				viewData.groups = viewData.groups.concat(userGroups)
+				res.render('index', viewData);
 			});
 		}
 		else{
-			res.render('index', { user: req.user, groups: standardGroups });
+			res.render('index', viewData);
 		}
 	});
 }

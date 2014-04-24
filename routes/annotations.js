@@ -52,6 +52,9 @@ exports.save = function save(req, res){
     	var gene = fields.gene,
     		interaction = fields.interaction,
     		interactor = fields.interactor,
+    		position = fields.position,
+    		mutation_type = fields.mutationType,
+    		domainName = fields.domainName,
     		support = fields.support,
     		comment = fields.comment;
 
@@ -70,12 +73,17 @@ exports.save = function save(req, res){
 				});
 	    	}
 	    	else{
-		    	// Rename the form elements for easy understanding
-		    	var cancer = interactor,
-		    		mutation_class = interaction;
-
 		    	// Add the annotation
-				Annotations.upsertAnnotation(gene, cancer, mutation_class, support, comment, req.user._id, function(err){
+		    	var query = {
+		    			gene: gene,
+		    			cancer: interactor,
+		    			mutation_class: interaction,
+		    			mutation_type: mutation_type,
+		    			position: position,
+		    			domain: domainName
+		    		},
+		    		support = {ref: support, user_id: req.user._id, comment: comment}
+				Annotations.upsertAnnotation(query, support, function(err){
 					if (err) throw new Error(err);
 				})
 				.then(function(){

@@ -15,6 +15,9 @@ var m2Element = "div#mutation-matrix",
 	cancerInputElement = "div#annotation div#cancers",
 	cancerTypeaheadElement = "div#annotation div#cancers input#cancer-typeahead"
 	annotationsElement = "div#annotation div#annotations",
+	transcriptMutationElement = "div#annotation div#transcript-mutation",
+	transcriptDomainElement = "div#annotation div#transcript-domain",
+	transcriptPositionElement = "div#annotation div#transcript-position",
 	commentElement = "div#annotation textarea#comment",
 	submitElement = "div#annotation button#submit";
 
@@ -31,6 +34,9 @@ var m2 = d3.select(m2Element),
 	interaction = d3.select(interactionElement),
 	interactor = d3.select(interactorElement),
 	cancerInput = d3.select(cancerInputElement),
+	transcriptMutation = d3.select(transcriptMutationElement),
+	transcirptDomain = d3.select(transcriptDomainElement),
+	transcirptPosition = d3.select(transcriptDomainElement),
 	annotation = d3.select(annotationsElement),
 	submit = d3.select(submitElement);
 
@@ -124,7 +130,7 @@ d3.json(query, function(err, data){
 					tip += " in " + cancers.slice(0, 2).map(invertCancerTy).join(", ") + ", and " + (cancers.length - 2) + " others.";	
 				}
 
-				tip += "<br/><a href='/annotations/gene/" + d.gene + "' target='_new'>Click to view details &raquo;</a></div>"
+				tip += "</div><br/><a href='/annotations/gene/" + d.gene + "' target='_new'>Click to view details &raquo;</a>"
 				
 				// Add the PMIDs
 				function pmidLink(pmid){ return "<li><a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a></li>"}
@@ -148,8 +154,9 @@ d3.json(query, function(err, data){
 					.addSortingMenu()
 					.addTooltips(generateAnnotations(annotations))
 					.addOnClick(function(d, i){
+						console.log( d )
 						var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
-						setAnnotation(d.gene, mutClass, d.dataset);
+						setAnnotation(d.gene, mutClass, d.dataset, {});
 					});
 	if (showDuplicates) m2Chart.showDuplicates();
 
@@ -161,7 +168,7 @@ d3.json(query, function(err, data){
                 	.addNetworkLegend()
                 	.addGradientLegend()
                 	.addTooltips()
-                	.addOnClick(function(d, i){ setAnnotation(d.source.name, "interact", d.target.name ); });
+                	.addOnClick(function(d, i){ setAnnotation(d.source.name, "interact", d.target.name, {} ); });
 
 	subnet.datum(data.subnetwork_data);
 	subnetChart(subnet);
@@ -203,7 +210,21 @@ d3.json(query, function(err, data){
 	              				   + d.ty.replace(/_/g, ' ') + '<br />'
 	              				   + d.locus + ': ' + d.aao + '>' + d.aan;
 	              		})
-						.addOnClick(function(d, i){ console.log(d); setAnnotation(d.gene, "SNV", d.dataset); });
+						.addOnClickMutations(function(d, i){
+							var fields = {
+								transcript_mutation: true,
+								position: d.locus,
+								mut_ty: d.ty
+							};
+							setAnnotation(d.gene, "SNV", d.dataset, fields);
+						})
+						.addOnClickDomains(function(d, i){
+							var fields = {
+								transcript_domain: true,
+								domain: d.name
+							};
+							setAnnotation(d.gene, "SNV", "", fields);
+						});
 
 	// Watch the transcript selector to update the current transcript plot on change
 	transcriptSelect.on("change", function(){
@@ -399,20 +420,25 @@ d3.json(query, function(err, data){
 	// Resetter for the annotation menu
 	function resetAnnotation(){
 		interactor.selectAll("*").remove();
-		interactor.style("display", "none");
 		annotateInput.style("display", "none");
 		cancerInput.style("display", "none");
 		$(interactionElement).val("");
 		$(annotatedGeneElement).val("");
 		$(annotationsElement + " input").val("");
 		$(cancerTypeaheadElement).val("");
-		$(interactorElement).val("");
+		$(interactorElement).hide().val("");
+		$(transcriptMutationElement + " input").val("")
+		$(transcriptMutationElement).hide();
+		$(transcriptPositionElement + " input").val("");
+		$(transcriptPositionElement).hide();
+		$(transcriptDomainElement + " input").val("");
+		$(transcriptDomainElement).hide();
 		$(commentElement).val("");
 	}
 	$("#reset-annotation").on("click", resetAnnotation);
 
 	// Setter for the current interaction type
-	function setAnnotation( gene, interaction, interactorName, addFields ){
+	function setAnnotation( gene, interaction, interactorName, fields ){
 		// Reset the form
 		resetAnnotation();
 
@@ -428,6 +454,18 @@ d3.json(query, function(err, data){
 		}
 		else{
 			$(cancerInputElement + " input").val(getCancerTy(interactorName));
+			if (fields.transcript_mutation){
+				$(transcriptMutationElement + " input").val(fields.mut_ty)
+				$(transcriptMutationElement).show();
+				$(transcriptPositionElement + " input").val(fields.position).show();
+				$(transcriptPositionElement).show();
+			}
+			else if (fields.transcript_domain){
+				//$(transcriptMutationElement).show();
+				//$(transcriptMutationElement + " input").val(fields.mut_ty);
+				$(transcriptDomainElement + " input").val(fields.domain);
+				$(transcriptDomainElement).show();
+			}
 		}
 	}
 
@@ -477,6 +515,9 @@ d3.json(query, function(err, data){
 		var pmid = $(annotationsElement + " input").val(),
 			gene = $(annotatedGeneElement).val(),
 			interactionClass = $(interactionElement).val(),
+			mutationType = $(transcriptMutationElement + " input").val(),
+			domainName = $(transcriptDomainElement + " input").val(),
+			position = $(transcriptPositionElement + " input").val(),
 			comment = $(commentElement).val();
 
 		// Validate the PMID
@@ -489,7 +530,7 @@ d3.json(query, function(err, data){
 		var interactorName = interactionClass == "interact" ? $(interactorElement).val() : $(cancerTypeaheadElement).val();
 		if (gene == "" || interactionClass == "" || interactorName == ""){
 			if (interactionClass == "interact"){ var msg = "Please select a pair of genes." }
-			else{ var msg = "Please select a pair of genes." }
+			else{ var msg = "Please select a gene and a cancer type." }
 			annotationStatus(msg, warningClasses);
 			return false;
 		}
@@ -500,6 +541,9 @@ d3.json(query, function(err, data){
         formData.append( 'gene', gene );
         formData.append( 'interaction', interactionClass );
         formData.append( 'interactor', interactorName );
+        formData.append( 'position', position );
+        formData.append( 'mutationType', mutationType );
+        formData.append( 'domainName', domainName );
         formData.append( 'comment', comment );
 
         $.ajax({
