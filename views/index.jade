@@ -11,7 +11,6 @@ block header
           a(href="/logout") Logout
         - else
           a(href="/auth/Google") Login via Google
-  link(rel="stylesheet", href="/components/bootstrap-multiselect/css/bootstrap-multiselect.css", type="text/css")
 block body
   div(class="container")
     div(class="indexTop")
@@ -21,22 +20,9 @@ block body
         li
           a(href="#", id="about") About
         li
-          a(href="#", id="search") Search
-        li
           a(href="#", id="instructions") Instructions
-        li
-          a(href="/upload") Upload
-        li
-          a(href="/datasets") Datasets
       img(src="img/cgatTitle.svg", id="splash-logo")
-    div(id="splash-img")
-    a(name="sec-about")
-    div(id="sec-about", class="text-center")
-      p CGAT is a tool for exploring and analyzing gene sets that may be
-        | associated with cancer.
-      p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
-        | <a href="http://vrl.cs.brown.edu/">Visualization Research Lab</a> at Brown University.
-  br
+
   a(name="input-chooser")
   div(class="container-index", id="input-chooser") 
     ul(id="cgat-actions", class="nav nav-tabs nav-justified", style="")
@@ -123,22 +109,30 @@ block body
                   abbr(title="Show all samples in each dataset even if samples from different datasets have the same IDs.") Show duplicate samples
                 input(type="checkbox", name="showDuplicates", id="showDuplicates", style="margin-left:10px")
 
+    a(name="sec-about")
+    h3 About CGAT
+    br
+    div(id="sec-about", class="text-center")
+      div(id="splash-img")
+      p CGAT is a tool for exploring and analyzing gene sets that may be
+        | associated with cancer.
+      p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
+        | <a href="http://vrl.cs.brown.edu/">Visualization Research Lab</a> at Brown University.
+
     a(name="component-descriptions")
     div(id="component-descriptions")
-      h3 Components
-      br
       a(name="oncoprint")
       h4
         a(href="/#oncoprint") #
         | &nbsp; Oncoprint
       br
       div(class="text-center")
-        img(src="img/oncoprint-multi-cancer.gif")
+        div(id="multi-cancer-m2")
         br
         i Oncoprint of multiple cancer types.
       br
       div(class="text-center")
-        img(src="img/oncoprint-single-cancer.gif")
+        div(id="single-cancer-m2")
         br
         i Oncoprint of a single cancer type.
       br
@@ -161,7 +155,7 @@ block body
         | &nbsp; Subnetwork
       br
       div(class="text-center")
-        img(src="img/subnetwork.gif")
+        div(id="gd3-subnetwork-plot")
         br
         i Subnetwork of five genes with edges from three interaction networks.
       br
@@ -189,9 +183,9 @@ block body
         | &nbsp; Transcript plot
       br
       div(class="text-center")
-        img(src="img/transcript-plot.gif")
+        div(id="gd3-transcript-plot")
         br
-        i Transcript plot for STAG1's transcript ENST00000383202 in multiple cancer types.
+        i Transcript plot for the SMAD4 transcript ENST00000342988 in multiple cancer types.
       br
       | The transcript plot shows locations at which mutations occur in a gene's transcript.
       | Mutations are color-coded by cancer type, and different mutation types (e.g. missense, nonsense)
@@ -216,9 +210,9 @@ block body
         | &nbsp; Copy Number Aberration (CNA) Browser
       br
       div(class="text-center")
-        img(src="img/cna-browser.gif")
+        div(id="gd3-cna-browser")
         br
-        i CNA browser for the CD44 gene.
+        i CNA browser for amplifications in the EGFR gene in glioblastoma.
       br
       | The copy number aberration browser shows the amplified/deleted segments
       | that have been mapped to a particular gene. Since many segments span more than
@@ -230,14 +224,21 @@ block body
       a(href="#oncoprint") oncoprint
       | .
 
+block belowTheFold
+  link(rel="stylesheet", href="/components/bootstrap-multiselect/css/bootstrap-multiselect.css", type="text/css")
   script(src='/components/d3/d3.min.js')
   script(src='/components/jquery/dist/jquery.min.js')
   script(src='/components/jquery-form/jquery.form.js')
   script(src='/components/bootstrap/dist/js/bootstrap.min.js')
   script(src='/components/bootstrap-multiselect/js/bootstrap-multiselect.js')
+  //- script(src="components/gd3/dist/js/gd3.min.js")
+  script(src='components/gd3/dist/js/cna-browser.js').
+  script(src='components/gd3/dist/js/transcript-plot.js').
+  script(src='components/gd3/dist/js/mutation-matrix.js').
+  script(src='components/gd3/dist/js/subnetwork.js').
   script(src='/js/banner.js')
   script(src='/js/query-control.js')
-  script(src='/js/example-queries.js')
+  script(src='/js/examples.js')
   script.
     //- Initialize the multiselect
     $(document).ready(function() {

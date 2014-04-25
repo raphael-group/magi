@@ -103,7 +103,7 @@ block body
                 span(class="glyphicon glyphicon-trash", onclick="resetAnnotation()", style="cursor:pointer")
                 | &nbsp;Reset.
             - else
-              | You must <a href="/login">Login</a> to be able to add annotations.
+              | You must <a href="/auth/google/returnTo">Login</a> to be able to add annotations.
 
     div(id="view")
       div(class="panel panel-default")
@@ -192,6 +192,7 @@ block body
         select(class="form-control", id="cna-browser-select")
         div(id="cna-browser")
 
+block belowTheFold
       script(src='components/jquery/dist/jquery.min.js').
       script(src='components/d3/d3.min.js').
       script(src='components/bootstrap/dist/js/bootstrap.min.js').

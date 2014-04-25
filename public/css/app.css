@@ -18,7 +18,7 @@ h1, h2, h3, h4, h5{
 
 /* Layout styling */
 div.indexTop {
-  margin:0 auto 100px auto;
+  margin:0 auto 60px auto;
   min-height: 170px
   text-align:center;
   width: 750px;
@@ -30,6 +30,7 @@ div.indexTop ul li {
   display: inline;
   margin-right: 35px;
   font-size: 20px;
+  margin-top:30px;
 }
 div.indexTop ul li a {
   color: #679937;
@@ -39,6 +40,19 @@ div.indexTop ul li a.loginBtn {
   border-color: #ddd;
   margin-top: -3px;
 }
+
+div#splash-txt{
+  margin: 0 auto;
+  padding: 0 0 60px 0;
+  width: 650px;
+}
+
+img#splash-logo{
+  display: block;
+  margin: 0 auto;
+  padding-top: 30px;
+}
+
 
 div#component-descriptions, div.container-index {
   margin: 0 auto;
@@ -80,22 +94,6 @@ div#splash-img{
   height: 250px;
   margin-bottom: 60px;
   max-width: 1170px;
-}
-div#splash-txt{
-  margin: 0 auto;
-  padding: 0 0 60px 0;
-  width: 650px;
-}
-
-h1#splash-header{
-  padding: 50px 0 60px 0;
-  text-align: center;
-}
-
-img#splash-logo{
-  display: block;
-  margin: 0 auto;
-  padding-top: 30px;
 }
 
 img#cnaSlice{

@@ -20,14 +20,13 @@ exports.account = function(req, res){
 	});
 }
 
-// Renders login page
-exports.login = function(req, res){
-	if (req.isAuthenticated()) res.redirect('/');
-	else res.render('login')
-}
-
 // Logs the user out and redirects to the home page
 exports.logout = function(req, res){
 	req.logout();
 	res.redirect('/');
+}
+
+// Logs the user out and redirects to the home page
+exports.login = function(req, res){
+	res.render('login');
 }

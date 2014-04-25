@@ -130,7 +130,7 @@ d3.json(query, function(err, data){
 					tip += " in " + cancers.slice(0, 2).map(invertCancerTy).join(", ") + ", and " + (cancers.length - 2) + " others.";	
 				}
 
-				tip += "</div><br/><a href='/annotations/gene/" + d.gene + "' target='_new'>Click to view details &raquo;</a>"
+				tip += "</div>"
 				
 				// Add the PMIDs
 				function pmidLink(pmid){ return "<li><a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a></li>"}
@@ -139,7 +139,7 @@ d3.json(query, function(err, data){
 					var pmids = annotations[d.gene][mutationClass][cancer].map(pmidLink).join("\n");
 					tip += "<tr><td>" + cancer + "</td><td><ul>" + pmids + "</ul></td></tr>\n"
 				});
-				tip += "</table>\n</div>"
+				tip += "</table>\n</div><br/><a href='/annotations/gene/" + d.gene + "' target='_new'>Click to view details &raquo;</a>"
 			}
 
 			return tip + "</div>\n";
@@ -243,8 +243,9 @@ d3.json(query, function(err, data){
 		transcriptChart.filterDatasets(datasetToInclude);
 	});
 
-	// Initialize the transcript plot with the first gene
-	if (genes.length > 0){
+	// Initialize the transcript plot with the first gene and transcript
+	// (if the gene has SNVs)
+	if (firstGene && firstTranscript){
 		transcript.datum(data.transcript_data[firstGene][firstTranscript]);
 		transcript.append("h5").text(firstGene);
 		transcriptChart(transcript);

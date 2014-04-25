@@ -90,7 +90,7 @@ app.use(express.compress());
 app.use(express.logger('dev'));
 app.use(express.cookieParser());
 app.use(express.cookieSession({
-	secret: 'gd3_for_president!',
+	secret: 'cgat_for_president!',
 	cookie: { maxAge: 60 * 60 * 1000 * 24 } // store for three days
 }));
 app.use(express.json());
@@ -142,6 +142,14 @@ app.get('/login', routes.login);
 app.get('/logout', routes.logout);
 app.get('/account', ensureAuthenticated, routes.account);
 
+// this route extracts the previous url (returnTo) and stores it in the session
+// so it will get rerouted on authentication
+app.get('/auth/google/returnTo', function(req, res){
+    var backURL = req.header('Referer') || '/account';
+    req.session.returnTo = backURL;
+    res.redirect('/auth/google');
+});
+
 app.get('/auth/google',
 	passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile',
                                             'https://www.googleapis.com/auth/userinfo.email'] }),
@@ -149,7 +157,9 @@ app.get('/auth/google',
 
 app.get('/auth/google/callback',
 	passport.authenticate('google', { failureRedirect: '/' }), function(req, res) {
-		res.redirect('/account');
+    var redirectTo = req.session.returnTo || '/account';
+    delete req.session.returnTo;
+		res.redirect(redirectTo);
 	}
 );
 
@@ -173,7 +183,10 @@ app.get('/sitemap.xml', function(req, res) {
 // Function that tests authentications
 function ensureAuthenticated(req, res, next) {
 	if (req.isAuthenticated()) { return next(); }
-	res.redirect('/login')
+	else{
+    req.session.returnTo = req.path;
+    res.redirect('/login');
+  }
 }
 
 /**

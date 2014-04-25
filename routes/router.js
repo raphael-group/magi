@@ -19,7 +19,7 @@ exports.acknowledgements = about.acknowledgements;
 
 // Authentication routes
 exports.account = auth.account;
-exports.login   = auth.login;
+exports.login  = auth.login;
 exports.logout  = auth.logout;
 
 // Bundler routes

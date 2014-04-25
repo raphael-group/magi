@@ -1,8 +1,9 @@
 extends layout
 block body
-    div(class="container")
-        h3 You are not logged in.
-        a(href="/auth/google") Login via Google
-        br
-        br
-        | [ Describe Google Oauth2 ]
+	div(class="container")
+		h3
+			| You must be logged in to do that.&nbsp;
+			small Please login via Google by clicking the button below.
+		br
+		a(href="/auth/google")
+			button(class="btn btn-primary") Login via Google
