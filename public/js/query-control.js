@@ -31,7 +31,7 @@ $(document).ready(function() {
         // Make sure there are no duplicated genes
         var seen = {},
             duplicates = false;
-        
+
         genes.forEach(function(g){
             if (seen[g]) duplicates = true;
             seen[g] = true;
@@ -51,7 +51,7 @@ $(document).ready(function() {
         // If everything checks out, submit the form!
         return true;
     });
-    
+
     function status(msg, className){
         $(formEl + " div#status").attr("class", className);
         $(formEl + " div#status").html( msg );

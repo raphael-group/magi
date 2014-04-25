@@ -24,7 +24,7 @@ block body
       img(src="img/cgatTitle.svg", id="splash-logo")
 
   a(name="input-chooser")
-  div(class="container-index", id="input-chooser") 
+  div(class="container-index", id="input-chooser")
     ul(id="cgat-actions", class="nav nav-tabs nav-justified", style="")
       li(style="background-color:#dff0d8;border-radius:4px")
         a(href="/") Query
@@ -116,16 +116,16 @@ block body
       hr
       div(id="splash-img")
         div
-          a Copy Number Aberations <br />
+          a(href="#", id="circle_cna") Copy Number Aberations <br />
             img(src="img/circle_cna.png")
         div
-          a Mutation Matrices <br />
+          a(href="#", id="circle_mutmtx") Mutation Matrices <br />
             img(src="img/circle_mutmtx.png")
         div
-          a Subnetworks <br />
+          a(href="#", id="circle_subnet") Subnetworks <br />
             img(src="img/circle_subnet.png")
         div
-          a Transcript annotations <br />
+          a(href="#", id="circle_transcript") Transcript annotations <br />
             img(src="img/circle_transcript.png")
       hr
       p CGAT is a tool for exploring and analyzing gene sets that may be
@@ -135,24 +135,24 @@ block body
 
     a(name="component-descriptions")
     div(id="component-descriptions")
-      a(name="oncoprint")
+      a(name="mutation-matrix")
       h4
-        a(href="/#oncoprint") #
-        | &nbsp; Oncoprint
+        a(href="/#mutation-matrix") #
+        | &nbsp; Mutation Matrix
       br
       div(class="text-center")
         div(id="multi-cancer-m2")
         br
-        i Oncoprint of multiple cancer types.
+        i Mutation matrix of multiple cancer types.
       br
       div(class="text-center")
         div(id="single-cancer-m2")
         br
-        i Oncoprint of a single cancer type.
+        i Mutation matrix of a single cancer type.
       br
-      | Oncoprints show the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns).
-      | Each cell in the oncoprint contains shape, which represents whether or not a gene is mutated in the given sample.
-      | Oncoprints are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
+      | Mutation matrices show the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns).
+      | Each cell in the mutation matrix contains shape, which represents whether or not a gene is mutated in the given sample.
+      | Mutation matrices are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
       | For a cohort with multiple cancer types each cell is colored by the cancer type of the sample,
       | while for a cohort with one cancer type each cell is colored by whether or not the gene is the only
       | gene to harbor a mutation in that sample.
@@ -208,7 +208,7 @@ block body
       br
       br
       | The mutation data for the transcript plot is the same as for the&nbsp;
-      a(href="#oncoprint") oncoprint
+      a(href="#mutation-matrix") mutation matrix
       | . Protein domains are provided for the&nbsp;
       a(href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml") Conserved Domain
       | ,&nbsp;
@@ -235,7 +235,7 @@ block body
       br
       br
       | The mutation data for the CNA browser is the same as for the&nbsp;
-      a(href="#oncoprint") oncoprint
+      a(href="#mutation-matrix") mutation matrix
       | .
 
 block belowTheFold
@@ -279,6 +279,11 @@ block belowTheFold
     $("a#instructions").on("click", function(){ scrollToAnchor("component-descriptions")});
     $("a#about").on("click", function(){ scrollToAnchor("sec-about")});
     $("a#search").on("click", function(){ scrollToAnchor("input-chooser")});
+    $("a#circle_cna").on("click", function(){ scrollToAnchor("cna-browser")});
+    $("a#circle_mutmtx").on("click", function(){ scrollToAnchor("mutation-matrix")});
+    $("a#circle_subnet").on("click", function(){ scrollToAnchor("subnetwork")});
+    $("a#circle_transcript").on("click", function(){ scrollToAnchor("transcript-plot")});
+
     //- The example queries are mapped to databases by the server passing in
     //- formatted DB
     var datasetToCheckboxes = !{JSON.stringify(datasetToCheckboxes)};

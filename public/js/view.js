@@ -131,7 +131,7 @@ d3.json(query, function(err, data){
 				}
 
 				tip += "</div>"
-				
+
 				// Add the PMIDs
 				function pmidLink(pmid){ return "<li><a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a></li>"}
 				tip += "<div class='more-info'><table class='table table-condensed'>\n<tr><th>Cancer</td><th>PMIDs</td></tr>\n"

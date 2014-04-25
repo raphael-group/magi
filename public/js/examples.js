@@ -3,7 +3,7 @@ $(document).ready(function(){
 	// The gene list textarea and the dataset multiselect
 	var genesList = $("textarea#genes-list"),
 		datasetMultiselect = $("#dataset-multiselect");
-	
+
 	// The hard-coded example queries
 	// - selector: ID of the link
 	// - genes: list of genes for the query
