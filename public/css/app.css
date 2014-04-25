@@ -41,6 +41,10 @@ div.indexTop ul li a.loginBtn {
   margin-top: -3px;
 }
 
+div#sec-about{
+  margin-top: 100px;
+}
+
 div#splash-txt{
   margin: 0 auto;
   padding: 0 0 60px 0;
@@ -149,8 +153,10 @@ div#example-queries a{ margin-right:15px; }
 textarea.highlight, li.highlight{ border:1px dashed red;}
 ul.highlight{ border-bottom:1px dashed red;}
 
-div#component-descriptions h4{ background:#666; color:#fff; padding-left:6px;padding-bottom:3px;padding-top:3px; }
-div#component-descriptions h4 a{ color:#F80000; }
+div#component-descriptions {}
+div#component-descriptions h4{ border-top: 15px solid #333; color:#333; padding-left:6px;padding-bottom:3px;padding-top:3px; }
+div#component-descriptions h4 a{ color:#bbb; }
+div#component-descriptions h4 a:hover{ color:#666; }
 div#component-descriptions img{ border:1px solid #d3d3d3;padding-top:5px;padding-bottom:5px; }
 
 /* Account page */

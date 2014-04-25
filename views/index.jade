@@ -110,9 +110,14 @@ block body
                 input(type="checkbox", name="showDuplicates", id="showDuplicates", style="margin-left:10px")
 
     a(name="sec-about")
-    h3 About CGAT
-    br
-    div(id="sec-about", class="text-center")
+    div(id="sec-about")
+      hr
+      h3 About CGAT
+      br
+      p CGAT is a tool for exploring and analyzing gene sets that may be
+        | associated with cancer.
+      p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
+        | <a href="http://vrl.cs.brown.edu/">Visualization Research Lab</a> at Brown University.
       hr
       div(id="splash-img")
         div
@@ -131,17 +136,13 @@ block body
           a(href="#", id="circle_transcript")
             img(src="img/circle_transcript.png")
             | <br /><br /> Transcript annotations
-      hr
-      p CGAT is a tool for exploring and analyzing gene sets that may be
-        | associated with cancer.
-      p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> and the
-        | <a href="http://vrl.cs.brown.edu/">Visualization Research Lab</a> at Brown University.
-
+      br
+      br
     a(name="component-descriptions")
     div(id="component-descriptions")
       a(name="mutation-matrix")
       h4
-        a(href="/#mutation-matrix") #
+        a(href="/#mutation-matrix") <span class="glyphicon glyphicon-link"></span>
         | &nbsp; Mutation Matrix
       br
       div(class="text-center")
@@ -169,7 +170,7 @@ block body
       br
       a(name="subnetwork")
       h4
-        a(href="/#subnetwork") #
+        a(href="/#subnetwork") <span class="glyphicon glyphicon-link"></span>
         | &nbsp; Subnetwork
       br
       div(class="text-center")
@@ -197,7 +198,7 @@ block body
       br
       a(name="transcript-plot")
       h4
-        a(href="/#transcript-plot") #
+        a(href="/#transcript-plot") <span class="glyphicon glyphicon-link"></span>
         | &nbsp; Transcript plot
       br
       div(class="text-center")
@@ -224,7 +225,7 @@ block body
       br
       a(name="cna-browser")
       h4
-        a(href="/#cna-browser") #
+        a(href="/#cna-browser") <span class="glyphicon glyphicon-link"></span>
         | &nbsp; Copy Number Aberration (CNA) Browser
       br
       div(class="text-center")
