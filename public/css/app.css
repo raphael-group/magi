@@ -86,14 +86,32 @@ img#small-logo {
   padding:0;
 }
 div#splash-img{
-  background-image: url('../img/banner.png');
+/*  background-image: url('../img/banner.png');
   background-position: center;
-/*  background: #333;*/
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
   height: 250px;
-  margin-bottom: 60px;
-  max-width: 1170px;
+  max-width: 1170px;*/
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+div#splash-img div {
+  display: inline-block;
+  min-width:25%;
+  text-align: center;
+  width: 25%;
+}
+
+div#splash-img a {
+  cursor: pointer;
+  text-decoration: none;
+}
+div#splash-img a:hover {
+  opacity: .7;
+}
+div#splash-img a img{
+  border:none;
 }
 
 img#cnaSlice{
