@@ -45,3 +45,35 @@ block body
 		- else
 			| You have not uploaded any datasets. &nbsp;
 			a(href="/upload") Upload your first dataset.
+		hr
+		div(id="additional-info", style="width:60%")
+			h4 Tell us about yourself
+			br
+			| We are interested in learning about our users. Please fill out the form below to tell us about yourself.&nbsp;
+			| You can also leave feedback for us at anytime by following the link in the footer of each page.&nbsp;
+			| We will not <a href="/privacy", target="_new">share your information with a third-party for any purpose</a>.
+			br
+			br
+			form(method="post", action="/user/update", role="form", id="about-yourself-form")
+				label Institution or Corporation
+				input(type="text", placeholder="e.g. Brown University", class="form-control", id="institution", name="institution", value=(user.institution ? "#{user.institution}" : ""))
+				br
+				label Department or Lab
+				input(type="text", placeholder="e.g. Computer Science Department", class="form-control", id="department", name="department", value=(user.department ? "#{user.department}" : ""))
+				br
+				label Type of researcher
+				br
+				select(class="form-control", name="researcherType", id="researcherType")
+					option(value="") -- choose below --
+					option(value="Bioinformatician", selected=(user.researcherType == "Bioinformatician" ? "selected" : undefined)) Bioinformatician
+					option(value="Biologist", selected=(user.researcherType == "Biologist" ? "selected" : undefined)) Biologist
+					option(value="Clinician", selected=(user.researcherType == "Clinician" ? "selected" : undefined)) Clinician
+					option(value="Medical doctor", selected=(user.researcherType == "Medical doctor" ? "selected" : undefined)) Medical doctor
+				br
+				label Sign up for our newsletter
+				input(type="checkbox", style="margin-left:10px", name="newsletter", id="newsletter", checked=(user.newsletter ? "checked" : undefined))
+				br
+				label Other
+				textarea(class="form-control", name="other", id="other", placeholder="Any additional info you'd like to share.")
+				br
+				button(type="submit", id="submit", class="btn btn-default") Submit

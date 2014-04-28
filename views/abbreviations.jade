@@ -1,0 +1,31 @@
+extends layout
+block body
+
+	div(class="container")
+		h2 List of abbreviations
+		hr
+		h4
+			| Cancer types&nbsp;
+			small Cancer type abbreviations are compiled from the TCGA and ICGC.
+		br
+		table(class="table table-bordered table-striped", id="cancer-abbreviations")
+			tr
+				th Abbreviation
+				th Cancer
+block belowTheFold
+	script(src="/components/d3/d3.min.js")
+	script.
+		// Add the table of abbreviations to cancer types
+		d3.json("/data/abbrToCancer.json", function(abbrToCancer){
+			var tbl = d3.select("#cancer-abbreviations tbody"),
+				abbrs = Object.keys( abbrToCancer );
+			
+			console.log( abbrs )
+
+			var trs = tbl.selectAll(".abbr")
+				.data(abbrs).enter()
+				.append("tr");
+
+			trs.append("td").text(function(d){ return d; });
+			trs.append("td").text(function(d){ return abbrToCancer[d]; });
+		});

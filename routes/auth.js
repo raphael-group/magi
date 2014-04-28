@@ -20,6 +20,27 @@ exports.account = function(req, res){
 	});
 }
 
+// Update user
+exports.update = function(req, res){
+	// Load the posted form
+	var User = mongoose.model( 'User' );
+
+	// Construct the query
+	var update = {
+			researcherType: req.body.researcherType,
+			institution: req.body.institution,
+			department: req.body.department,
+			newsletter: "newsletter" in req.body,
+			other: req.body.other
+	};
+
+	// Upsert the user, and reload the account page
+	User.findOneAndUpdate({_id: req.user._id}, update, function(err, user) {
+		if(err) throw new Error(err);
+		res.redirect('/account');
+	});
+}
+
 // Logs the user out and redirects to the home page
 exports.logout = function(req, res){
 	req.logout();

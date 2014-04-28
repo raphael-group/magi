@@ -81,8 +81,9 @@ div.page-header{
 }
 
 /* Footer */
-ul#more-info{list-style-type: none;}
-ul#more-info li{display:inline;padding-left:5px;padding-right:5px;}
+ul#more-info, ul#even-more-info{list-style-type: none;padding-left:0px;}
+ul#more-info li, ul#even-more-info li{display:inline;padding-left:5px;padding-right:5px;}
+ul#even-more-info{ font-size:80%;text-align:center;}
 
 /* Logo */
 img#small-logo {

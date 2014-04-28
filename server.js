@@ -113,7 +113,6 @@ app.post('/', routes.queryhandler)
 // gd3 view
 app.get('/view', routes.view)
 app.get('/data/bundle', routes.viewData)
-app.get('/query-error', routes.queryError)
 
 // Data-/gene set uploads
 app.post('/upload/geneset', routes.uploadGeneset)
@@ -136,11 +135,13 @@ app.get('/contact', routes.contact)
 app.get('/support', routes.support)
 app.get('/privacy', routes.privacy)
 app.get('/acknowledgements', routes.acknowledgements)
+app.get('/abbreviations', routes.abbreviations)
 
 // set up the authentication routes
 app.get('/login', routes.login);
 app.get('/logout', routes.logout);
 app.get('/account', ensureAuthenticated, routes.account);
+app.post('/user/update', ensureAuthenticated, routes.user.update)
 
 // this route extracts the previous url (returnTo) and stores it in the session
 // so it will get rerouted on authentication

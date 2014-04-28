@@ -166,7 +166,7 @@ exports.viewData = function getViewData(req, res){
 											datasetColors: datasetColors,
 											annotations: annotations
 										};
-							console.log( pkg.subnetwork_data )
+
 							// Send JSON response
 							res.json( pkg );
 

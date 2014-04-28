@@ -16,11 +16,13 @@ exports.contact = about.contact;
 exports.support = about.support;
 exports.privacy = about.privacy;
 exports.acknowledgements = about.acknowledgements;
+exports.abbreviations = about.abbreviations;
 
 // Authentication routes
 exports.account = auth.account;
 exports.login  = auth.login;
 exports.logout  = auth.logout;
+exports.user = {update: auth.update};
 
 // Bundler routes
 exports.viewData = bundler.viewData;

@@ -5,7 +5,12 @@ var mongoose = require( 'mongoose' );
 var UserSchema = new mongoose.Schema({
   googleId: Number,
   name: String,
-  email: String
+  email: String,
+  researcherType: String,
+  newsletter: Boolean,
+  institution: String,
+  department: String,
+  other: String
 });
 
 mongoose.model( 'User', UserSchema );

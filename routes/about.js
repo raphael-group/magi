@@ -27,3 +27,9 @@ exports.acknowledgements  = function privacy(req, res){
 	console.log('/acknowledgements')
 	res.render('acknowledgements', {user: req.user});
 }
+
+// Route for the abbreviations page
+exports.abbreviations  = function privacy(req, res){
+	console.log('/abbreviations')
+	 res.render('abbreviations', {user: req.user });
+}
