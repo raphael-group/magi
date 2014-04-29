@@ -50,11 +50,16 @@ exports.formatPPIs = function formatPPIs(ppis, callback){
 		var ppi   = ppis[i],
 			ppiName = [ppi.source, ppi.target].sort().join("*");
 
+		// Extract all the references for the given edge
+		var refs = {};
+		ppi.references.forEach(function(r){ refs[r] = true; })
+		ppi.support.forEach(function(s){ refs[s.ref] = true; })
+
 		// Append the current network for the given edge
 		if (ppiName in edgeNames)
-			edgeNames[ppiName].push( {name: ppi.network, refs: ppi.references } );
+			edgeNames[ppiName].push( {name: ppi.network, refs: Object.keys(refs) } );
 		else
-			edgeNames[ppiName] = [ {name: ppi.network, refs: ppi.references } ];
+			edgeNames[ppiName] = [ {name: ppi.network, refs: Object.keys(refs) } ];
 	}
 
 	// Create edges array by splitting edgeNames
