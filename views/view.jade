@@ -192,6 +192,8 @@ block body
         select(class="form-control", id="cna-browser-select")
         div(id="cna-browser")
 
+
+
 block belowTheFold
       script(src='components/jquery/dist/jquery.min.js').
       script(src='components/d3/d3.min.js').
@@ -206,7 +208,15 @@ block belowTheFold
       script(src='js/save.js').
       script(src='js/view.js').
       script(src='components/typeahead.js/dist/typeahead.bundle.min.js').
-      script.
+      //- Convert the user data to make it accessible to any javascript
+      - if (user)
+        script(type='text/javascript').
+          var user = !{JSON.stringify(user)};
+      - else
+        script(type="text/javascript").
+          var user = undefined;
+      //- Define behavior for the scroll panel to stick to the top of the window
+      script(type="text/javascript").
         $(document).ready(function(){
           var jControlPanel = $('#control-panel');
           $(window).bind('scroll', function() {

@@ -7,7 +7,7 @@ var PPISchema = new mongoose.Schema({
 	target: String,
 	weight: Number,
 	network: String,
-	references: { type: [String], required: false},
+	references: { type: Array, required: false},
 	support: { type: Array, required: false}
 });
 
@@ -31,39 +31,107 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 
 	PPI.findOneAndUpdate(
 		{source: source, target: target, network: network},
-		{$push: {support: {ref: ref, comment: comment, user_id: user_id}}},
+		{$push: {support: {pmid: ref, comment: comment, user_id: user_id}}},
 		{safe: true, upsert: true},
-		function(err, model) {
-			console.log(err);
-			d.resolve();
+		function(err, ppi) {
+			// throw error if necessary
+			if (err) throw new Error(err);
+
+			// Determine if this reference already exists			
+			var inReferences = false;
+			ppi.references.forEach(function(d){
+				if (d.ref == ref) inReferences = true;
+			});
+
+			// Save the reference if it hasn't already been saved
+			if (!inReferences){
+				ppi.references.push( {pmid: ref, upvotes: [], downvotes: [], annotation: true})
+	
+				// Save the PPI
+				ppi.save(function(err, model){
+					console.log(err);
+					d.resolve();
+				});
+			}
+			else{
+				d.resolve();
+			}
+
 		}
 	);
 
 	return d.promise;
 }
 
+// Record a user's vote for an interaction
+exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
+	// Set up the promise
+	var PPI = mongoose.model( 'PPI' );
+		Q = require( 'q' ),
+		d = Q.defer();
+
+	//Create and execute the query
+	var query = {
+		source: {$in: [source, target]},
+		target: {$in: [source, target]},
+		network: network
+	};
+	PPI.findOne(query, function(err, ppi){
+		// Throw error and resolve if necessary
+		if (err){
+			throw new Error(err);
+			d.resolve();
+		}
+
+		// Update the vote for the reference
+		ppi.references.forEach(function(ref){
+			if (ref.pmid == pmid){
+				var upIndex = ref.upvotes.indexOf( user_id ),
+					downIndex = ref.downvotes.indexOf( user_id );
+				if (vote == "up"){
+					if (upIndex == -1) ref.upvotes.push( user_id );
+					else ref.upvotes.splice(upIndex, 1);
+					if (downIndex != -1) ref.downvotes.splice(downIndex, 1);
+				}
+				else if (vote == "down"){
+					if (downIndex == -1) ref.downvotes.push( user_id );
+					else ref.downvotes.splice(downIndex, 1);
+					if (upIndex != -1) ref.upvotes.splice(upIndex, 1);
+				}
+				ppi.markModified('references');
+			}
+		})
+
+		// Then save the PPI
+		ppi.save(function(err){
+			if (err) throw new Error(err);
+			d.resolve();
+		});
+	});
+
+	return d.promise;
+}
+
 // Format PPIs for gd3
-exports.formatPPIs = function formatPPIs(ppis, callback){
+exports.formatPPIs = function formatPPIs(ppis, user_id, callback){
 	var edgeNames = {};
 	for (var i = 0; i < ppis.length; i++){
 		// Parse interaction and create unique ID
 		var ppi   = ppis[i],
 			ppiName = [ppi.source, ppi.target].sort().join("*");
 
-		// Extract all the references for the given edge
-		var refs = {};
-		ppi.references.forEach(function(r){ refs[r] = true; })
-		ppi.support.forEach(function(s){ refs[s.ref] = true; })
-
 		// Append the current network for the given edge
-		if (ppiName in edgeNames)
-			edgeNames[ppiName].push( {name: ppi.network, refs: Object.keys(refs) } );
-		else
-			edgeNames[ppiName] = [ {name: ppi.network, refs: Object.keys(refs) } ];
+		if (ppiName in edgeNames){
+			edgeNames[ppiName].push( {name: ppi.network, refs: ppi.references } );
+		}
+		else{
+			edgeNames[ppiName] = [ {name: ppi.network, refs: ppi.references } ];
+		}
 	}
 
 	// Create edges array by splitting edgeNames
-	var edges = [];
+	var edges = [],
+		refs = {};
 	for (var edgeName in edgeNames){
 		var  arr   = edgeName.split("*"),
 			source   = arr[0],
@@ -77,11 +145,34 @@ exports.formatPPIs = function formatPPIs(ppis, callback){
 			references[d.name] = references[d.name].concat( d.refs );
 		});
 
+		// Update the map of each network's edge's references to
+		// its votes and whether or not it was voted for by the current user
+		networks.forEach(function(n){
+			// Initialize the hashs for each component of this edge (if necessary)
+			if (!(n in refs)) refs[n] = {};
+			if (!(source in refs[n])) refs[n][source] = {};
+			if (!(target in refs[n][source])) refs[n][source][target] = {};
+
+			references[n].forEach(function(ref){
+				// Record the score
+				var score = ref.upvotes.length - ref.downvotes.length;
+				refs[n][source][target][ref.pmid] = { vote: null, score: score };
+
+				//  Record the user's vote for the current reference (if neccessary)
+				if (user_id && ref.upvotes.indexOf(user_id) != -1){
+					refs[n][source][target][ref.pmid].vote = "up";
+				}
+				else if (user_id && ref.downvotes.indexOf(user_id) != -1){
+					refs[n][source][target][ref.pmid].vote = "down";
+				}
+			});
+		});
+
 		edges.push({ source: source, target: target, weight: 1, networks: networks, references: references });
 	}
 
 	// Execute callback
-	callback("", edges);
+	callback("", edges, refs);
 
 }
 
@@ -127,6 +218,12 @@ exports.insertNetworkFromFile = function(filename, callback){
 								network: fields[3],
 								references: fields[4] ? fields[4].split(",") : []
 							};
+
+			// Create objects for each reference that store the fact that these
+			// are "official" references and currently have no votes
+			ppiData.references = ppiData.references.map(function(r){
+				return { pmid: r, annotation: false, upvotes: [], downvotes: []}
+			});
 
 			// Save the interaction
 			interactions.push( ppiData );

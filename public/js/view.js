@@ -97,6 +97,7 @@ if (!genes || !datasets) noData();
 
 ///////////////////////////////////////////////////////////////////////////
 // Get the data and initialize the view
+var votePPI, voteMutation;
 d3.json(query, function(err, data){
 	// Create each element's style by merging in the dataset colors and
 	// finding the width of each container
@@ -176,12 +177,140 @@ d3.json(query, function(err, data){
 	m2.datum(data.mutation_matrix);
 	m2Chart(m2);
 
+	///////////////////////////////////////////////////////////////////////////
 	// Add the subnetwork plot
+
+	// Initialize the hash of references to votes
+	var refs = data.subnetwork_data.refs;
+
+	// Function for updating the tooltips when a user votes, and storing the
+	// resulting vote in the datbase
+	votePPI = function (network, source, target, pmid, direction){
+		// Extract the voting data and the respective elements
+		var d = refs[network][source][target][pmid],
+			voteID = [network, source, target, pmid].join("-"),
+			up = $("td#" + voteID + " a.upvote"),
+			down = $("td#" + voteID + " a.downvote"),
+			count = $("td#" + voteID + " span");
+
+		// Update the arrows in the tooltip
+		if (direction == "down" || d.vote == "down") down.toggleClass("downvote-on");
+		if (direction == "up" || d.vote == "up") up.toggleClass("upvote-on");
+
+		// Update the arrows in the tooltip
+		if (direction == "up"){
+			d.score += d.vote == "up" ? -1 : d.vote == "down" ? 2 : 1;
+			d.vote = d.vote == "up" ? null : "up";
+		}
+		else if (direction == "down"){
+			d.score += d.vote == "up" ? -2 : d.vote == "down" ? 1 : -1;
+			d.vote = d.vote == "down" ? null : "down";
+		}
+
+		// Finally, update the count
+		count.text(d.score);
+
+		// Create a form to submit as an AJAX request to update the database
+        var formData = new FormData();
+        formData.append( 'source', source );
+        formData.append( 'target', target );
+        formData.append( 'network', network );
+        formData.append( 'pmid', pmid );
+        formData.append( 'vote', direction );
+
+
+        $.ajax({
+            // Note: can't use JSON otherwise IE8 will pop open a dialog
+            // window trying to download the JSON as a file
+            url: '/vote/ppi',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: 'POST',
+
+            error: function(xhr) {
+                annotationStatus('Database error: ' + xhr.status);
+            },
+            
+            success: function(response) {
+                if(response.error) {
+                    annotationStatus('Oops, something bad happened.', warningClasses);
+                    return;
+                }
+                
+                // Log the status
+                annotationStatus(response.status, successClasses);
+            }
+        });
+
+	}
+
+	// Draw the subnetwork chart with tooltips onmouseover and
+	// preset annotations onclick
 	var subnetChart = subnetwork({style: style.subnetwork})
                 	.addNetworkLegend()
                 	.addGradientLegend()
-                	.addTooltips()
-                	.addOnClick(function(d, i){ setAnnotation(d.source.name, "interact", d.target.name, {} ); });
+                	.addTooltips(function(d, activeNetworks){
+						// Sort the names to ensure source/target are always in the same order
+						// (since we have an undirected graph)
+						var sortedNames = [d.source.name, d.target.name].sort(),
+							source= sortedNames[0],
+							target = sortedNames[1],
+							tip = "<div id='subnet-tooltip'>\n";
+
+						// Add basic information about the edge
+						tip += "Source: " + source + "<br/>Target: " + target + "<br/><br/>";
+
+						// Display each tooltip's references as a table of networks to unordered
+						// lists of references
+						function pmidLink(pmid){ return "<a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a>" }
+
+						// Create a table the (active) networks in which the edge appears,
+						// and list the references for each edge
+						tip += "<table class='table table-condensed'>\n<tr><th>Network</th><th>PMID</th><th>Votes</th></tr>\n"
+						d.networks.filter(function(n){ return activeNetworks[n]; }).forEach(function(n){
+							// Add a row with just the network if there are no references
+							if (d.references[n].length == 0){
+								tip += "<tr><td>" + n + "</td><td></td><td></td></tr>";
+							}
+
+							// Add the references as separate rows
+							d.references[n].forEach(function(ref){
+								var pmid = ref.pmid,
+									voteID = [n, source, target, pmid].join("-"),
+									score = refs[n][source][target][pmid].score;
+
+								// Create a new row with the network name and reference
+								var row = "<tr><td>" + (d.references[n][0] == ref ? n : "") + "</td>";
+								row    += "<td>" + pmidLink(pmid) + "</td>";
+
+								// Add -/+ buttons for users to vote on PMIDs annotating a particular edge,
+								// but only if the user is logged in
+								if (user){
+									var upvoted = refs[n][source][target][pmid].vote == "up",
+										upLinkClass = upvoted ? "upvote upvote-on" : "upvote",
+										downvoted =  refs[n][source][target][pmid].vote == "down",
+										downLinkClass = downvoted ? "downvote downvote-on" : "downvote",
+										uplink = "<a class='" + upLinkClass + "' onclick='votePPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\", \"up\"); return false;'>+</a>",
+										downlink = "<a class='" + downLinkClass + "' onclick='votePPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\", \"down\"); return false;'>-</a>";
+								}
+								else{
+									var uplink = "", downlink = "";
+								}
+
+								row += "<td id='" + voteID + "'>" + downlink + "<span class='count'>" + score + "</span>" + uplink + "</td></tr>";
+									
+								// Append the row
+								tip += row;
+							});
+						});
+
+						return tip + "</table>\n</div>\n";
+                	})
+                	.addOnClick(function(d, i, el){
+                		setAnnotation(d.source.name, "interact", d.target.name, {} );
+                	});
 
 	subnet.datum(data.subnetwork_data);
 	subnetChart(subnet);
@@ -613,4 +742,3 @@ d3.json(query, function(err, data){
     }
 
 });
-

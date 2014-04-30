@@ -154,9 +154,11 @@ exports.viewData = function getViewData(req, res){
 					});
 
 					PPIs.ppilist(genes, function(err, ppis){
-						PPIs.formatPPIs(ppis, function(err, edges){
+						// Force the user ID to be a string to make finding it in arrays easy
+						var user_id = req.user ? req.user._id + "" : undefined;
+						PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
 							// Package data into one object
-							var subnetwork_data = { edges: edges, nodes: nodes };
+							var subnetwork_data = { edges: edges, nodes: nodes, refs: refs };
 							var pkg = 	{
 											subnetwork_data: subnetwork_data,
 											mutation_matrix: mutation_matrix,
