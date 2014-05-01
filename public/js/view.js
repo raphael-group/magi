@@ -529,13 +529,10 @@ d3.json(query, function(err, data){
       $('div#control-panel').css("width", viewportWidth+"px");
       $('div#control-panel').css("right", "0px");
       $('div#view').css('padding-top', $('div#control-panel').css('height'));
-      $('span#hideControlPanel').css('display', 'inline');
-      console.log($('div#control-panel').css('height'));
     } else {
       $('div#control-panel').css("width", "200px");
       $('div#control-panel').css("right", "20px");
       $('div#view').css('margin-top', '0px');
-      $('span#hideControlPanel').css('display', 'none');
     }
   }
 
@@ -557,7 +554,9 @@ d3.json(query, function(err, data){
       $('div#saveBox').css('display', 'block');
       $('div#annotation').css('display', 'block');
     }
-    $('div#view').css('padding-top', $('div#control-panel').css('height'));
+    if($(window).width() < 600) {
+      $('div#view').css('padding-top', $('div#control-panel').css('height'));
+    }
   });
 
 	var datasetsPanel = controls.append("div")
