@@ -506,7 +506,7 @@ d3.json(query, function(err, data){
 		.attr("value", function(d){ return d.name; })
 		.attr()
 		.text(function(d){ return d.name + " (" + d.numCNAs + " aberrations)"; })
-	
+
 	cnaBrowserSelect.on("change", updateCNAChart);
 
 	// Initialize the CNA browser with the first gene
@@ -522,6 +522,36 @@ d3.json(query, function(err, data){
 
 	///////////////////////////////////////////////////////////////////////////
 	// Update the control panel
+
+  $(window).resize(function () {
+    var viewportWidth = $(window).width();
+    if(viewportWidth < 600) {
+      $('div#control-panel').css("width", viewportWidth+"px");
+      $('div#control-panel').css("right", "0px");
+      $('div#view').css('padding-top', $('div#control-panel').css('height'));
+      $('span#hideControlPanel').css('display', 'inline');
+      console.log($('div#control-panel').css('height'));
+    } else {
+      $('div#control-panel').css("width", "200px");
+      $('div#control-panel').css("right", "20px");
+      $('div#view').css('margin-top', '0px');
+      $('span#hideControlPanel').css('display', 'none');
+    }
+  });
+
+  $('span#hideControlPanel').click(function(e) {
+    if($('div#controls').css('display') == 'block') {
+      $('div#controls').css('display', 'none');
+      $('div#saveBox').css('display', 'none');
+      $('div#annotation').css('display', 'none');
+    } else {
+      $('div#controls').css('display', 'block');
+      $('div#saveBox').css('display', 'block');
+      $('div#annotation').css('display', 'block');
+    }
+    $('div#view').css('padding-top', $('div#control-panel').css('height'));
+  });
+
 	var datasetsPanel = controls.append("div")
 		.attr("class", "panel panel-default")
 		.style("padding", "0px")
@@ -570,7 +600,7 @@ d3.json(query, function(err, data){
 			// Filter the mutation matrix, transcript plot, and CNA browser
 			m2Chart.filterDatasets(datasetToInclude);
 			if (genes.length > 0) transcriptChart.filterDatasets(datasetToInclude);
-			
+
 			if (cnaGenes.length > 0) cnaChart.filterDatasets(datasetToInclude);
 
 			// Fade in/out this dataset

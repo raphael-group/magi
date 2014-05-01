@@ -185,6 +185,8 @@ div#control-panel div#controls ul#datasets li div.dataset-color{margin-right:10p
 div#view{margin-left:20px;margin-right:230px;}
 div#view h3 small{ font-size:12px;cursor:pointer;}
 
+span#hideControlPanel {display:none;}
+
 div.half-page-view{ width:50%;padding:5px; }
 div.half-page-view.leftside{border-right:1px solid #eee;float:left;}
 div.half-page-view.rightside{float:right;}
