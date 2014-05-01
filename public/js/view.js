@@ -523,7 +523,7 @@ d3.json(query, function(err, data){
 	///////////////////////////////////////////////////////////////////////////
 	// Update the control panel
 
-  $(window).resize(function () {
+  function resizeControlPanel() {
     var viewportWidth = $(window).width();
     if(viewportWidth < 600) {
       $('div#control-panel').css("width", viewportWidth+"px");
@@ -537,6 +537,14 @@ d3.json(query, function(err, data){
       $('div#view').css('margin-top', '0px');
       $('span#hideControlPanel').css('display', 'none');
     }
+  }
+
+  $(window).resize(function () {
+    resizeControlPanel();
+  });
+
+  $(function() {
+    resizeControlPanel();
   });
 
   $('span#hideControlPanel').click(function(e) {
