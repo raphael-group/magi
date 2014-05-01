@@ -144,7 +144,7 @@ ul#cgat-actions li a{ color:#3c763d;font-weight:500;font-size:16px; }
 ul#cgat-actions li a:hover{ background-color:#dff0d8; }
 
 /* Styling index page (choosing genes or datasets) */
-div#db-chooser{height:170px;overflow-y:none;max-height:170px;}
+div#db-chooser{overflow-y:none;}
 div#db-select{padding-left:0px;}
 div#gene-textarea{margin-top:5px;padding-left:0px;}
 div#query div.instructions ul{padding-left:17px;}
