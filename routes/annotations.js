@@ -26,13 +26,10 @@ exports.cancer = function cancer(req, res){
 	console.log('/datasets/cancer');
 
 	// Parse params
-	var cancer = req.params.cancer || "",
+	var cancer = req.params.cancer.split("-").join(" ") || "",
 		Annotation = mongoose.model( 'Annotation' );
 
-	cancer = cancer.toLowerCase().split("-").join(" ");
-	console.log(cancer)
-
-	Annotation.find({cancer: cancer}, function(err, annotations){
+	Annotation.find({cancer: { $regex : new RegExp('^' + cancer + '$', 'i') }}, function(err, annotations){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
 
@@ -62,7 +59,7 @@ exports.save = function save(req, res){
 	    	if (interaction == "interact"){
 	    		var source = gene,
 	    			target = interactor;
-				PPIs.upsertInteraction(source, target, "Community", support, comment, req.user._id, function(err){
+				PPIs.upsertInteraction(source, target, "Community", support, comment, req.user._id + "", function(err){
 					if (err) throw new Error(err);
 				})
 				.then(function(){
@@ -81,9 +78,8 @@ exports.save = function save(req, res){
 		    			mutation_type: mutation_type,
 		    			position: position,
 		    			domain: domainName
-		    		},
-		    		support = {ref: support, user_id: req.user._id, comment: comment}
-				Annotations.upsertAnnotation(query, support, function(err){
+		    		};
+				Annotations.upsertAnnotation(query, support, comment, req.user._id + "", function(err){
 					if (err) throw new Error(err);
 				})
 				.then(function(){
@@ -99,6 +95,30 @@ exports.save = function save(req, res){
 	    }
 	});
 
+}
+
+// Save a vote on a mutation
+exports.mutationVote = function mutationVote(req, res){
+	console.log("/vote/mutation")
+
+	// Only allow logged in users to vote
+	if (req.user){
+		// Load the posted form
+		var form = new formidable.IncomingForm({});
+	    form.parse(req, function(err, fields, files) {
+			// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
+			Annotations.vote(fields, req.user._id + "")
+			.then(function(){
+				res.send({ status: "Mutation vote saved successfully!" });
+			})
+			.fail(function(){
+				res.send({ error: "Mutation vote could not be parsed." });
+			});
+    	});
+    }
+	else{
+    	res.send({ error: "You must be logged in to vote." });
+    }
 }
 
 // Save a vote on a PPI

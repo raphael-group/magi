@@ -129,6 +129,7 @@ app.get('/annotations/gene/:gene', routes.annotations.gene);
 app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
 app.post('/save/annotation', ensureAuthenticated, routes.annotations.save);
 app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
+app.post('/vote/mutation', ensureAuthenticated, routes.annotations.mutationVote);
 
 // more information
 app.get('/terms', routes.terms)

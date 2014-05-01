@@ -97,6 +97,7 @@ if (!genes || !datasets) noData();
 
 ///////////////////////////////////////////////////////////////////////////
 // Get the data and initialize the view
+function pmidLink(pmid){ return "<a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a>" }
 var votePPI, voteMutation;
 d3.json(query, function(err, data){
 	// Create each element's style by merging in the dataset colors and
@@ -126,6 +127,68 @@ d3.json(query, function(err, data){
 	datasetData.forEach(function(d){ datasetToInclude[d.name] = true; });
 
 	///////////////////////////////////////////////////////////////////////////
+	// Function for updating the tooltips when a user votes, and storing the
+	// resulting vote in the datbase
+	voteMutation = function (gene, mutClass, cancer, index, pmid, annotationID, direction){
+		// Extract the voting data and the respective elements
+		var d = annotations[gene][mutClass][cancer][index],
+			tdID = "annotation-" + annotationID + "-" + index,
+			up = $("td#" + tdID + " a.upvote"),
+			down = $("td#" + tdID + " a.downvote"),
+			count = $("td#" + tdID + " span.count");
+
+		// Update the arrows in the tooltip
+		if (direction == "down" || d.vote == "down") down.toggleClass("downvote-on");
+		if (direction == "up" || d.vote == "up") up.toggleClass("upvote-on");
+
+		// Update the arrows in the tooltip
+		if (direction == "up"){
+			d.score += d.vote == "up" ? -1 : d.vote == "down" ? 2 : 1;
+			d.vote = d.vote == "up" ? null : "up";
+		}
+		else if (direction == "down"){
+			d.score += d.vote == "up" ? -2 : d.vote == "down" ? 1 : -1;
+			d.vote = d.vote == "down" ? null : "down";
+		}
+
+		// Finally, update the count
+		count.text(d.score);
+
+		// Create a form to submit as an AJAX request to update the database
+        var formData = new FormData();
+        formData.append( '_id', annotationID );
+        formData.append( 'pmid', pmid );
+        formData.append( 'vote', direction );
+
+
+        $.ajax({
+            // Note: can't use JSON otherwise IE8 will pop open a dialog
+            // window trying to download the JSON as a file
+            url: '/vote/mutation',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: 'POST',
+
+            error: function(xhr) {
+                annotationStatus('Database error: ' + xhr.status);
+            },
+            
+            success: function(response) {
+                if(response.error) {
+                    annotationStatus('Oops, something bad happened.', warningClasses);
+                    return;
+                }
+                
+                // Log the status
+                annotationStatus(response.status, successClasses);
+            }
+        });
+
+	}
+
+
 	// Define a function to generate the tooltips for the mutation matrix.
 	// You need a function to generate the tooltip function since the annotations can
 	// change over time
@@ -146,12 +209,30 @@ d3.json(query, function(err, data){
 
 				tip += "</div>"
 
-				// Add the PMIDs
-				function pmidLink(pmid){ return "<li><a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a></li>"}
-				tip += "<div class='more-info'><table class='table table-condensed'>\n<tr><th>Cancer</td><th>PMIDs</td></tr>\n"
+				// Add the table of PMIDs with voting
+				tip += "<div class='more-info'><table class='table table-condensed'>\n<tr><th>Cancer</th><th>PMIDs</th><th>Votes</th></tr>\n"
 				cancers.forEach(function(cancer){
-					var pmids = annotations[d.gene][mutationClass][cancer].map(pmidLink).join("\n");
-					tip += "<tr><td>" + cancer + "</td><td><ul>" + pmids + "</ul></td></tr>\n"
+					// Retrieve all the references
+					var refs = annotations[d.gene][mutationClass][cancer];
+					if (refs.length == 0) tip += "<tr><td>" + cancer + "</td><td></td><td></td></tr>";
+					d3.range(0, refs.length).forEach(function(i){
+						var ref = refs[i];
+						tip += "<tr><td>" + (i == 0 ? cancer : "") + "</td>"
+						tip += "<td>" + pmidLink(ref.pmid) + "</td>"
+						if (user){
+							var upvoted = ref.vote == "up",
+								upLinkClass = upvoted ? "upvote upvote-on" : "upvote",
+								downvoted =  ref.vote == "down",
+								downLinkClass = downvoted ? "downvote downvote-on" : "downvote",
+								uplink = "<a class='" + upLinkClass + "' onclick='voteMutation(\"" + d.gene + "\", \"" + mutationClass + "\", \"" + cancer + "\", " + i + ", \"" + ref.pmid + "\", \"" + ref._id + "\", \"up\"); return false;'><span class='glyphicon glyphicon-thumbs-up'</span></a>",
+								downlink = "<a class='" + downLinkClass + "' onclick='voteMutation(\"" + d.gene + "\", \"" + mutationClass + "\", \"" + cancer + "\", " + i + ", \"" + ref.pmid + "\", \"" + ref._id + "\", \"down\"); return false;'><span class='glyphicon glyphicon-thumbs-down'</span></a>";
+						}
+						else{
+							var uplink = "", downlink = "";
+						}
+						var mutationID = "annotation-" + ref._id + "-" + i;
+						tip += "<td id='" + mutationID + "'>" + downlink + "<span class='count'>" + ref.score + "</span>" + uplink + "</td></tr>";
+					});
 				});
 				tip += "</table>\n</div><br/><a href='/annotations/gene/" + d.gene + "' target='_new'>Click to view details &raquo;</a>"
 			}
@@ -168,7 +249,6 @@ d3.json(query, function(err, data){
 					.addSortingMenu()
 					.addTooltips(generateAnnotations(annotations))
 					.addOnClick(function(d, i){
-						console.log( d )
 						var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
 						setAnnotation(d.gene, mutClass, d.dataset, {});
 					});
@@ -191,7 +271,7 @@ d3.json(query, function(err, data){
 			voteID = [network, source, target, pmid].join("-"),
 			up = $("td#" + voteID + " a.upvote"),
 			down = $("td#" + voteID + " a.downvote"),
-			count = $("td#" + voteID + " span");
+			count = $("td#" + voteID + " span.count");
 
 		// Update the arrows in the tooltip
 		if (direction == "down" || d.vote == "down") down.toggleClass("downvote-on");
@@ -262,10 +342,6 @@ d3.json(query, function(err, data){
 						// Add basic information about the edge
 						tip += "Source: " + source + "<br/>Target: " + target + "<br/><br/>";
 
-						// Display each tooltip's references as a table of networks to unordered
-						// lists of references
-						function pmidLink(pmid){ return "<a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a>" }
-
 						// Create a table the (active) networks in which the edge appears,
 						// and list the references for each edge
 						tip += "<table class='table table-condensed'>\n<tr><th>Network</th><th>PMID</th><th>Votes</th></tr>\n"
@@ -292,8 +368,8 @@ d3.json(query, function(err, data){
 										upLinkClass = upvoted ? "upvote upvote-on" : "upvote",
 										downvoted =  refs[n][source][target][pmid].vote == "down",
 										downLinkClass = downvoted ? "downvote downvote-on" : "downvote",
-										uplink = "<a class='" + upLinkClass + "' onclick='votePPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\", \"up\"); return false;'>+</a>",
-										downlink = "<a class='" + downLinkClass + "' onclick='votePPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\", \"down\"); return false;'>-</a>";
+										uplink = "<a class='" + upLinkClass + "' onclick='votePPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\", \"up\"); return false;'><span class='glyphicon glyphicon-thumbs-up'</span></a>",
+										downlink = "<a class='" + downLinkClass + "' onclick='votePPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\", \"down\"); return false;'><span class='glyphicon glyphicon-thumbs-down'</span></a>";
 								}
 								else{
 									var uplink = "", downlink = "";
@@ -721,7 +797,7 @@ d3.json(query, function(err, data){
 	                if (!annotations[gene]) annotations[gene] = {};
 	                if (!annotations[gene][mClass]) annotations[gene][mClass] = {};
 	                if (!annotations[gene][mClass][cancerTy]) annotations[gene][mClass][cancerTy] = [];
-					annotations[gene][mClass][cancerTy].push( pmid );
+					annotations[gene][mClass][cancerTy].push( {pmid: pmid, vote: null, score: 0} );
 
 					m2Chart.addTooltips(generateAnnotations(annotations));
 				}

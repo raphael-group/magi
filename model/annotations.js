@@ -9,6 +9,7 @@ var AnnotationSchema = new mongoose.Schema({
 	position: { type: Number, required: false},
 	domain: { type: {}, required: false},
 	mutation_type: { type: String, required: false},
+	references: { type: Array, required: true },
 	support: { type: Array, required: true},
 	created_at: { type: Date, default: Date.now, required: true }	
 });
@@ -16,21 +17,78 @@ var AnnotationSchema = new mongoose.Schema({
 mongoose.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
-exports.upsertAnnotation = function(query, support, callback){
+exports.upsertAnnotation = function(query, pmid, comment, user_id, callback){
 	var Annotation = mongoose.model( 'Annotation' ),
 		Q = require( 'q' );
 
 	var d = Q.defer();
 
+	var support = {ref: pmid, user_id: user_id, comment: comment}
 	Annotation.findOneAndUpdate(
 		query,
 		{$push: {support: support}},
 		{safe: true, upsert: true},
-		function(err, model) {
-			console.log(err);
-			d.resolve();
+		function(err, annotation) {
+			if (err) throw new Error(err);
+
+			var addReference = annotation.references.filter(function(r){ return r.pmid == pmid }).length == 0;
+			if (addReference){
+				annotation.references.push( {pmid: pmid, upvotes: [], downvotes: []} )
+				annotation.markModified('references');
+			}
+
+			annotation.save(function(err){
+				if (err) throw new Error(err);
+				d.resolve();
+			});
 		}
 	);
+
+	return d.promise;
+}
+
+// Vote for a mutation
+exports.vote = function mutationVote(fields, user_id){
+	// Set up the promise
+	var Annotation = mongoose.model( 'Annotation' );
+		Q = require( 'q' ),
+		d = Q.defer();
+
+	//Create and execute the query
+	var pmid = fields.pmid,
+		vote = fields.vote;
+	Annotation.findById(fields._id, function(err, annotation){
+		// Throw error and resolve if necessary
+		if (err){
+			throw new Error(err);
+			d.resolve();
+		}
+
+		// Update the vote for the reference
+		annotation.references.forEach(function(ref){
+			if (ref.pmid == pmid){
+				var upIndex = ref.upvotes.indexOf( user_id ),
+					downIndex = ref.downvotes.indexOf( user_id );
+				if (vote == "up"){
+					if (upIndex == -1) ref.upvotes.push( user_id );
+					else ref.upvotes.splice(upIndex, 1);
+					if (downIndex != -1) ref.downvotes.splice(downIndex, 1);
+				}
+				else if (vote == "down"){
+					if (downIndex == -1) ref.downvotes.push( user_id );
+					else ref.downvotes.splice(downIndex, 1);
+					if (upIndex != -1) ref.upvotes.splice(upIndex, 1);
+				}
+				annotation.markModified('references');
+			}
+		})
+
+		// Then save the annotation
+		annotation.save(function(err){
+			if (err) throw new Error(err);
+			d.resolve();
+		});
+	});
 
 	return d.promise;
 }

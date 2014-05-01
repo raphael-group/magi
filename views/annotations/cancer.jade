@@ -9,27 +9,29 @@ block body
 				tr(style="background:#e3e3e3")
 					th Gene
 					th Mutation Class
-					th Support
+					th Mutation type (optional)
+					th Protein domain (optional)
+					th Position (optional)
+					th PMID
+					th Expert Score
 			tbody
 				-for (var i = 0; i < annotations.length; i++)
 					-var A = annotations[i];
-					tr
-						td #{A.gene}
-						td #{A.mutation_class}
-						td
-							-for (var j = 0; j < A.support.length; j++)
-								a(href="http://www.ncbi.nlm.nih.gov/pubmed/#{A.support[j]}", target="_new") #{A.support[j]}
-
-		//- Load the required scripts
-		script(src='/components/jquery/dist/jquery.min.js').
-		script(src='/components/DataTables/media/js/jquery.dataTables.js').
-		script(src='/js/dataTableWrapper.js').
-		script(type='text/javascript').
-			//- Make the gene annotation table sortable as a DataTable
-			$(document).ready(function(){
-				addDataTable({
-					tableID: "#cancer-annotation-table",
-					aaSorting: [[0, "asc"]],
-					aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "asc", "desc" ] }, null  ]
-				});
-			});
+					- for (var j = 0; j < A.references.length; j++)
+						- var ref = A.references[j];
+						tr
+							- if (j == 0)
+								td #{A.gene}
+								td #{A.mutation_class}
+								td #{A.mutation_type}
+								td #{A.domain}
+								td #{A.position}
+							- else
+								td
+								td
+								td
+								td
+								td
+							td
+								a(href="http://www.ncbi.nlm.nih.gov/pubmed/#{ref.pmid}", target="_new") #{ref.pmid}
+							td #{ref.upvotes.length - ref.downvotes.length}

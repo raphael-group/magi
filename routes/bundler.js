@@ -11,6 +11,9 @@ exports.viewData = function getViewData(req, res){
 	var genes = req.query.genes.split(","),
 		dataset_ids = req.query.datasets.split(",");
 
+	// Force the user ID to be a string to make finding it in arrays easy
+	var user_id = req.user ? req.user._id + "" : undefined;
+
 	// Load and format SNVs then PPIs
 	// Then return JSON object.
 	Dataset.datasetlist(dataset_ids, function(err, datasets){
@@ -127,7 +130,11 @@ exports.viewData = function getViewData(req, res){
 						if (!annotations[A.gene][A.mutation_class]){
 							annotations[A.gene][A.mutation_class] = {};
 						}
-						var refs = A.support.map(function(d){ return d.ref; });
+						var refs = A.references.map(function(d){
+							var score = d.upvotes.length - d.downvotes.length,
+								vote = d.upvotes.indexOf(user_id) != -1 ? "up" : d.downvotes.indexOf(user_id) != -1 ? "down" : null;
+							return { pmid: d.pmid, score: score,  vote: vote, _id: A._id };
+						});
 						annotations[A.gene][A.mutation_class][A.cancer] = refs;
 					})
 
@@ -154,8 +161,6 @@ exports.viewData = function getViewData(req, res){
 					});
 
 					PPIs.ppilist(genes, function(err, ppis){
-						// Force the user ID to be a string to make finding it in arrays easy
-						var user_id = req.user ? req.user._id + "" : undefined;
 						PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
 							// Package data into one object
 							var subnetwork_data = { edges: edges, nodes: nodes, refs: refs };

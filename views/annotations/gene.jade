@@ -11,31 +11,28 @@ block body
 					th Mutation type (optional)
 					th Protein domain (optional)
 					th Position (optional)
-					th Support
+					th PMID
+					th Expert Score
 			tbody
 				-for (var i = 0; i < annotations.length; i++)
 					-var A = annotations[i];
-					tr
-						td
-							- var cancer = A.cancer.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-							| #{cancer}
-						td #{A.mutation_class}
-						td #{A.mutation_type}
-						td #{A.domain}
-						td #{A.position}
-						td
-							-for (var j = 0; j < A.support.length; j++)
-								a(href="http://www.ncbi.nlm.nih.gov/pubmed/#{A.support[j].ref}", target="_new") #{A.support[j].ref}
-		//- Load the required scripts
-		script(src='/components/jquery/dist/jquery.min.js').
-		script(src='/components/DataTables/media/js/jquery.dataTables.js').
-		script(src='/js/dataTableWrapper.js').
-		script(type='text/javascript').
-			//- Make the gene annotation table sortable as a DataTable
-			$(document).ready(function(){
-				addDataTable({
-					tableID: "#gene-annotation-table",
-					aaSorting: [[0, "asc"]],
-					aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "asc", "desc" ] }, null  ]
-				});
-			});
+					- for (var j = 0; j < A.references.length; j++)
+						- var ref = A.references[j];
+						tr
+							td
+								- if (j == 0)
+									- var cancer = A.cancer.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+									| #{cancer}
+							-if (j == 0 )
+								td #{A.mutation_class}
+								td #{A.mutation_type}
+								td #{A.domain}
+								td #{A.position}
+							- else
+								td
+								td
+								td
+								td
+							td
+								a(href="http://www.ncbi.nlm.nih.gov/pubmed/#{ref.pmid}", target="_new") #{ref.pmid}
+							td(class="text-center") #{ref.upvotes.length - ref.downvotes.length}
