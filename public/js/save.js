@@ -121,7 +121,7 @@ $('#saveSelectNone').click(function(e) {
 // SVG DOWNLOAD CODE
 //
 
-// Generalized post code to handle SVG download for each visualization
+// Opens up a new window so the user can then cmd+s save the SVG
 var saveSVG = function(divContainerId, saveFileName) {
   var svg = grabSVG(saveFileName).node(),
     canvas = document.createElement('canvas'),
@@ -132,9 +132,34 @@ var saveSVG = function(divContainerId, saveFileName) {
   return w;
 }
 
+// Sends the SVG to the server and then back to initiate a download prompt
+var dlSVG = function(divContainerId, saveFileName) {
+  var svg = grabSVG(saveFileName).node();
+  $.post('/saveSVG', {'html': svg.outerHTML, 'fileName': saveFileName})
+     .done(function(svgStr) {
+       // When the post has returned, create a link in the browser to download the SVG
+       // Store the data and create a download link
+       var url = window.URL.createObjectURL(new Blob([svgStr], { "type" : "text\/xml" }));
+       var a = d3.select("body")
+           .append('a')
+           .attr("download", saveFileName)
+           .attr("href", url)
+           .style("display", "none");
+
+       // Activate the download through a click event
+       a.node().click();
+
+       // Garbage collection
+       setTimeout(function() {
+         window.URL.revokeObjectURL(url);
+       }, 10);
+     });
+}
+
 // When the "Download SVG" link is clicked, download the visualizations
 $('#downloadLink').click(function() {
-  downloadVisualizations(saveSVG);
+  //downloadVisualizations(saveSVG);
+  downloadVisualizations(dlSVG);
 });
 
 
@@ -144,13 +169,8 @@ $('#downloadLink').click(function() {
 // PNG DOWNLOAD CODE
 //
 
-// Generalized post code to handle PNG download for each visualization
-var savePNG = function(divContainerId, saveFileName) {
-  var svg = grabSVG(saveFileName).node(),
-      canvas = document.createElement('canvas'),
-      img = importSVG(svg, canvas);
-
-  var w = window.open();
+function svgToPng(svg) {
+  var canvas = document.createElement('canvas');
 
   // The following is adapted from http://phrogz.net/SVG/svg_to_png.xhtml
   // It is very similar to what happens in importSVG, but takes that generated image and
@@ -178,7 +198,17 @@ var savePNG = function(divContainerId, saveFileName) {
     pngImg.src = canvas.toDataURL();
   };
   svgImg.src = svgDataURL(svg);
-  w.document.body.appendChild(pngImg);
+
+  return pngImg;
+}
+
+// Generalized post code to handle PNG download for each visualization
+var savePNG = function(divContainerId, saveFileName) {
+  var svg = grabSVG(saveFileName).node();
+
+  var w = window.open(),
+      png = svgToPng(svg);
+  w.document.body.appendChild(png);
 
   return w;
 }

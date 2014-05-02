@@ -199,7 +199,11 @@ function ensureAuthenticated(req, res, next) {
 
 // Handle save figure requests
 app.post('/saveSVG', function(req, res) {
-  res.send(req.body['html']);
+  if(req.body['html'] != undefined) {
+    res.send(req.body['html']);
+  } else if (req.body['img'] != undefined) {
+    res.send(req.body['img']);
+  }
 });
 
 // Not needed as of the moment; delete if not needed for PDF generation
