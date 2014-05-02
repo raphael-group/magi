@@ -10,7 +10,8 @@ var UserSchema = new mongoose.Schema({
   newsletter: Boolean,
   institution: String,
   department: String,
-  other: String
+  other: String,
+  queries: { type: Array, required: false, default: [] },
 });
 
 mongoose.model( 'User', UserSchema );

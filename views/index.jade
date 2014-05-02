@@ -90,6 +90,11 @@ block body
             br
             div(id="status")
 
+          - if (recentQueries && recentQueries.length > 0)
+            h4
+              | Your most recent queries
+              small(id="recent-queries")
+
           div(id="example-queries")
             h4
               | Example queries&nbsp;
@@ -291,4 +296,5 @@ block belowTheFold
 
     //- The example queries are mapped to databases by the server passing in
     //- formatted DB
-    var datasetToCheckboxes = !{JSON.stringify(datasetToCheckboxes)};
+    var datasetToCheckboxes = !{JSON.stringify(datasetToCheckboxes)},
+        recentQueries = !{JSON.stringify(recentQueries)};

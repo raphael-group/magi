@@ -148,9 +148,10 @@ app.post('/user/update', ensureAuthenticated, routes.user.update)
 // this route extracts the previous url (returnTo) and stores it in the session
 // so it will get rerouted on authentication
 app.get('/auth/google/returnTo', function(req, res){
-    var backURL = req.header('Referer') || '/account';
-    req.session.returnTo = backURL;
-    res.redirect('/auth/google');
+  console.log(req.header('Referer'))
+  var backURL = req.header('Referer') || '/account';
+  req.session.returnTo = backURL;
+  res.redirect('/auth/google');
 });
 
 app.get('/auth/google',

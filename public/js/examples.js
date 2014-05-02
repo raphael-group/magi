@@ -23,22 +23,48 @@ $(document).ready(function(){
 		}
 	];
 
+	// Change the query to use the current datasets and genes
+	function setQuery(genes, datasetIDs){
+		// Update the text area
+		genesList.val(genes.join("\n"));
+
+		// Uncheck all checkboxes in the multiselect, 
+		// then check the datasets with the given IDs
+		datasetMultiselect.multiselect('deselect', datasetToCheckboxes.all );
+		datasetMultiselect.multiselect('select', datasetIDs);
+	}
+
 	// Add an event handler to each link to change the gene list
 	// and multi-select on click
 	exampleQueries.forEach(function(query){
 		var link = $(query.selector);
-
-		link.on("click", function(){
-			// Update the text area and highlight it by focusing on it
-			genesList.val(query.genes.join("\n"));
-
-			// Uncheck all checkboxes in the multiselect, 
-			// then check the datasets with the given IDs
-			datasetMultiselect.multiselect('deselect', datasetToCheckboxes.all );
-			datasetMultiselect.multiselect('select', datasetToCheckboxes[query.dataset]);
-
-		});
+		link.on("click", function(){ setQuery( query.genes, datasetToCheckboxes[query.dataset]) });
 	});
+
+	// Add the users most recent queries
+	if (recentQueries && recentQueries.length > 0){		
+		var wrapper = d3.select("small#recent-queries"),
+			links = wrapper.selectAll(".query-link")
+			.data(recentQueries).enter()
+			.insert("a", "hr")
+			.attr("title", function(d){
+				var title = d.genes.join(", ") + " in ";
+				if (d.datasets.length > 3){
+					title += d.datasets.length + " datasets."
+				}
+				else{
+					title += d.datasets.map(function(db){
+						var arr = db.split(" ");
+						return arr[arr.length - 2];
+					}).join(", ") + ".";
+				}
+				return title;
+			})
+			.style("margin", "0px 5px 0px 5px")
+			.style("cursor", "pointer")
+			.text(function(d, i){ return i + 1; })
+			.on("click", function(d){ setQuery(d.genes, d.datasets); });
+	}
 
 });
 

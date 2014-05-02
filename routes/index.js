@@ -1,5 +1,6 @@
 // Load required modules
-var formidable = require('formidable'),
+var mongoose = require('mongoose'),
+	formidable = require('formidable'),
 	fs = require('fs'),
 	path = require('path'),
 	Dataset  = require( "../model/datasets" );
@@ -18,7 +19,7 @@ exports.index = function index(req, res){
 		// Store the checkbox IDs of all and the public datasets by group
 		var datasetToCheckboxes = { all: [] };
 
-		function toCheckboxValue(_id, scope, gName){ return "db " + scope + " " + gName + " " + _id; }
+		function toCheckboxValue(_id, scope, title, gName){ return ["db", scope, gName, title, _id].join(" "); }
 		function initGroup(groups, scope){
 			// Assign each group a scope (public/private), and sort the dbs
 			groups.forEach(function(g){ g.groupClass = scope; })
@@ -31,7 +32,7 @@ exports.index = function index(req, res){
 				var groupName = g.name == "" ? "other" : g.name.toLowerCase();
 				if (scope == "public") datasetToCheckboxes[groupName] = [];
 				g.dbs.forEach(function(db){
-					datasetToCheckboxes.all.push( db.checkboxValue = toCheckboxValue(db._id, scope, groupName) );
+					datasetToCheckboxes.all.push( db.checkboxValue = toCheckboxValue(db._id, scope, db.title, groupName) );
 					if (scope == "public"){
 						datasetToCheckboxes[groupName].push( db.checkboxValue );
 						if (groupName == "tcga pan-can" && db.title == "GBM"){
@@ -44,8 +45,15 @@ exports.index = function index(req, res){
 
 		initGroup( standardGroups, 'public' )
 
+		
+		var viewData = {
+			user: req.user,
+			groups: standardGroups,
+			datasetToCheckboxes: datasetToCheckboxes,
+			recentQueries: []
+		};
+
 		// Load the user's datasets (if necessary)
-		var viewData = { user: req.user, groups: standardGroups, datasetToCheckboxes: datasetToCheckboxes };
 		if (req.user){
 			Dataset.datasetGroups({user_id: req.user._id}, function(err, userGroups){
 				// Throw error (if necessary)
@@ -53,9 +61,16 @@ exports.index = function index(req, res){
 
 				// Append the groupClass standard to each group
 				initGroup( userGroups, 'private' );
+				viewData.groups = viewData.groups.concat(userGroups);
 
-				viewData.groups = viewData.groups.concat(userGroups)
-				res.render('index', viewData);
+				// Load the user's recent queries
+				var User = mongoose.model( 'User' );
+				User.findById(req.user._id, function(err, user){
+					if (err) throw new Error(err);
+					viewData.recentQueries = user.queries ? user.queries : [];
+					res.render('index', viewData);
+				});
+
 			});
 		}
 		else{
@@ -97,7 +112,27 @@ exports.queryhandler = function queryhandler(req, res){
 	var querystring = require( 'querystring' ),
 		query = querystring.stringify( {genes: genes, datasets: datasets.join(","), showDuplicates: showDuplicates == "on" } );
 
-	res.redirect('/view?' + query)
+	// If there is a user, save the query to the most recent queries for the user
+	if (req.user){
+		var User = mongoose.model( 'User' );
+		User.findById(req.user._id, function(err, user){
+			if (err) throw new Error(err);
+			
+			// Add the newest query, and then make sure the length is at most ten
+			user.queries.splice(0, 0, { datasets: checkedDatasets, genes: genes.split(",") })
+			user.queries = user.queries.slice(0, Math.min(10, user.queries.length));
+
+			// Update the user
+			user.markModified('queries');
+			user.save(function(err){
+				if (err) throw new Error(err);
+				res.redirect('/view?' + query);
+			});
+		});
+	}
+	else{		
+		res.redirect('/view?' + query);
+	}
 
 }
 
