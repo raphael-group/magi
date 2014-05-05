@@ -631,39 +631,34 @@ d3.json(query, function(err, data){
 	// Set up the cancers input, with abbreviations
 	
 	//	List of cancers with abbreviations from TCGA (http://goo.gl/2A3UuH) and ICGC (http://dcc.icgc.org/projects)
-	var abbrToCancer,
+	var abbrToCancer = data.abbrToCancer,
 		cancerToAbbr = {};
+	Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; })
+	cancers = Object.keys(cancerToAbbr);
 
-	d3.json("/data/abbrToCancer.json", function(abbrs){
-		// Load and parse the abbreviations
-		abbrToCancer = abbrs;
-		Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; })
-		cancers = Object.keys(cancerToAbbr);
-	
-		// Set up the bloodhound for the typeahead enginge
-		var cancerBloodhound = new Bloodhound({
-			datumTokenizer: function(data){
-				// For each datum, return an array of the value (cancers) and 
-				// abbreviations broken up by whitespace
-				var cancerTokens = Bloodhound.tokenizers.whitespace(data.value),
-					abbrTokens = Bloodhound.tokenizers.whitespace(data.abbr)
-				return cancerTokens.concat(abbrTokens);
-			},
-			queryTokenizer: Bloodhound.tokenizers.whitespace,
-			local: $.map(cancers, function(c) { return { value: c, abbr: invertCancerTy(c) }; })
-		});
-		cancerBloodhound.initialize();
+	// Set up the bloodhound for the typeahead enginge
+	var cancerBloodhound = new Bloodhound({
+		datumTokenizer: function(data){
+			// For each datum, return an array of the value (cancers) and 
+			// abbreviations broken up by whitespace
+			var cancerTokens = Bloodhound.tokenizers.whitespace(data.value),
+				abbrTokens = Bloodhound.tokenizers.whitespace(data.abbr)
+			return cancerTokens.concat(abbrTokens);
+		},
+		queryTokenizer: Bloodhound.tokenizers.whitespace,
+		local: $.map(cancers, function(c) { return { value: c, abbr: invertCancerTy(c) }; })
+	});
+	cancerBloodhound.initialize();
 
-		// Compile the template for showing suggestions
-		var templ = Hogan.compile('<p><strong>{{value}}</strong> ({{abbr}})</p>');
-		$(cancerInputElement + " .typeahead").typeahead({highlight: true}, {
-			  name: 'cancers',
-			  displayKey: 'value',
-			  source: cancerBloodhound.ttAdapter(),
-			  templates:{
-			  	suggestion: function(data){ return templ.render(data); }
-			  }
-		});
+	// Compile the template for showing suggestions
+	var templ = Hogan.compile('<p><strong>{{value}}</strong> ({{abbr}})</p>');
+	$(cancerInputElement + " .typeahead").typeahead({highlight: true}, {
+		  name: 'cancers',
+		  displayKey: 'value',
+		  source: cancerBloodhound.ttAdapter(),
+		  templates:{
+		  	suggestion: function(data){ return templ.render(data); }
+		  }
 	});
 
 	// Create a map of cancers to their abbreviations, and a list of all cancers

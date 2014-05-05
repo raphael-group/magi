@@ -31,5 +31,14 @@ exports.acknowledgements  = function privacy(req, res){
 // Route for the abbreviations page
 exports.abbreviations  = function privacy(req, res){
 	console.log('/abbreviations')
-	 res.render('abbreviations', {user: req.user });
+
+	// Load the abbreviations from the database
+	var	mongoose = require( 'mongoose' ),
+		Cancers  = require( "../model/cancers" ),
+		Cancer = mongoose.model( 'Cancer' );
+	
+	Cancer.find({}, function(err, cancers){
+		if (err) throw new Error(err);
+		res.render('abbreviations', {user: req.user, cancers: cancers });
+	});
 }
