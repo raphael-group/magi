@@ -18,6 +18,7 @@ var LogSchema = new mongoose.Schema({
 
 mongoose.model('Log', LogSchema);
 
+// TODO: send back post response
 exports.saveLog = function(logObj, userId, callback) {
   if (logObj == undefined) {
     console.log('Undefined log sent to server');
@@ -33,17 +34,13 @@ exports.saveLog = function(logObj, userId, callback) {
   log.find(findParams, function (err, logs) {
     if (err) console.log('errrrror in logging');
     if(logs.length == 0) {
-      console.log('New log created.');
       log.create(logObj, function(e, s) { if(err) console.log('Undefined log creation')});
     } else {
-      console.log('Log udpated.');
-      console.log('Num logs:');
-      console.log(logs.length);
-      console.log('</end num logs>');
-
       logs[0].end = logObj.end;
       logs[0].log = logObj.log;
     }
   });
-  //log.create(logObj, function (err, small) {if (err) console.log('Undefined log creation') });
+  if (callback != undefined) {
+    return callback();
+  }
 }

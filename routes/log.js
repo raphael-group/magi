@@ -6,4 +6,5 @@ exports.saveLog = function(req, res) {
   // console.log(req.body);
   var user_id = req.user ? req.user._id : null;
   Log.saveLog(req['body'], user_id);
+  res.send();
 }
