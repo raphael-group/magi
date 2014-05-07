@@ -16,13 +16,18 @@ var LogSchema = new mongoose.Schema({
   vizSizes: Array
 });
 
+// Register the Schema with mongoose
 mongoose.model('Log', LogSchema);
 
 var shouldWeStoreLogs = false;
 exports.enableLogging = function(state) {
   shouldWeStoreLogs = state;
 }
-// TODO: send back post response
+
+// Update or create a document for a provided user's log
+// logObj - LogSchema
+// userId - UserSchema Object
+// callback - function
 exports.saveLog = function(logObj, userId, callback) {
   if (shouldWeStoreLogs == false) {
     if (callback != undefined) {
@@ -32,14 +37,16 @@ exports.saveLog = function(logObj, userId, callback) {
   if (logObj == undefined) {
     console.log('Undefined log sent to server');
   }
-  // functions to write to DB: save to update; create to update
-  // To-do: fix this
+
   var log = mongoose.model('Log');
 
   logObj.userId = userId;
 
+  // Parameters to use when checking if a session has already started to be logged
+  // Prevents creating duplicate session logs
   findParams = {userId: userId, start:logObj.start, genes:logObj.genes, datasets:logObj.datasets};
 
+  // Determine if a session log has already been created. if not: create; else: update
   log.find(findParams, function (err, logs) {
     if (err) console.log('Could not find interaction logs.');
     if(logs.length == 0) {
