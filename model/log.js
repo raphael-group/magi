@@ -18,8 +18,17 @@ var LogSchema = new mongoose.Schema({
 
 mongoose.model('Log', LogSchema);
 
+var shouldWeStoreLogs = false;
+exports.enableLogging = function(state) {
+  shouldWeStoreLogs = state;
+}
 // TODO: send back post response
 exports.saveLog = function(logObj, userId, callback) {
+  if (shouldWeStoreLogs == false) {
+    if (callback != undefined) {
+      return callback();
+    }
+  }
   if (logObj == undefined) {
     console.log('Undefined log sent to server');
   }
@@ -32,9 +41,9 @@ exports.saveLog = function(logObj, userId, callback) {
   findParams = {userId: userId, start:logObj.start, genes:logObj.genes, datasets:logObj.datasets};
 
   log.find(findParams, function (err, logs) {
-    if (err) console.log('errrrror in logging');
+    if (err) console.log('Could not find interaction logs.');
     if(logs.length == 0) {
-      log.create(logObj, function(e, s) { if(err) console.log('Undefined log creation')});
+      log.create(logObj, function(e, s) { if(err) console.log('Undefined log creation') });
     } else {
       logs[0].end = logObj.end;
       logs[0].log = logObj.log;

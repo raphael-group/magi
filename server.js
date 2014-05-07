@@ -29,6 +29,9 @@ var user = require( './model/user' ),
     ppis = require( './model/ppis' ),
     log = require('./model/log');
 
+// Enable or disable interaction logging
+log.enableLogging(false);
+
 /**
  * Configuration
  */
