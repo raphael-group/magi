@@ -4,14 +4,14 @@
  */
 
 var express  = require('express'),
-	http     = require('http'),
-	path     = require('path'),
-	db       = require('./model/db'),
-	mongoose = require('mongoose'),
-	config   = require('./oauth2.js'),
-	passport = require('passport'),
+  http     = require('http'),
+  path     = require('path'),
+  db       = require('./model/db'),
+  mongoose = require('mongoose'),
+  config   = require('./oauth2.js'),
+  passport = require('passport'),
   jsdom    = require('jsdom'),
-	GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+  GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 var app = module.exports = express();
 
@@ -24,9 +24,10 @@ app.locals.webengageID = app.get('env') === 'production' ? '311c4301' : '~47b66a
 
 // Load models to register their schemas
 var user = require( './model/user' ),
-	database = require( './model/datasets' ),
-	domains = require( './model/domains' ),
-	ppis = require( './model/ppis' );
+    database = require( './model/datasets' ),
+    domains = require( './model/domains' ),
+    ppis = require( './model/ppis' ),
+    log = require('./model/log');
 
 /**
  * Configuration
@@ -35,7 +36,7 @@ var user = require( './model/user' ),
 // Serialize/Deserialize the user
 var User = mongoose.model( 'User' );
 passport.serializeUser(function(user, done) {
- 	done(null, user.googleId);
+  done(null, user.googleId);
 });
 
 passport.deserializeUser(function(id, done) {
@@ -65,19 +66,19 @@ passport.use(new GoogleStrategy({
   },
   function(token, tokenSecret, profile, done) {
     User.findOne({ googleId: profile.id }, function (err, user) {
-    	if (err) console.log( err );
-    	if (!user) var user = new User();
+      if (err) console.log( err );
+      if (!user) var user = new User();
 
-    	// Store the user's full name, and his/her first email
-		user.name     = profile.name.givenName + " " + profile.name.familyName;
-		user.email    = profile.emails[0].value;
-		user.googleId = profile.id;
+      // Store the user's full name, and his/her first email
+    user.name     = profile.name.givenName + " " + profile.name.familyName;
+    user.email    = profile.emails[0].value;
+    user.googleId = profile.id;
 
-		// Save/Update the user
-		user.save(function(err){
-			if (err) done(err, null);
-			else done(err, user);
-		});
+    // Save/Update the user
+    user.save(function(err){
+      if (err) done(err, null);
+      else done(err, user);
+    });
     });
   }
 ));
@@ -90,8 +91,8 @@ app.use(express.compress());
 app.use(express.logger('dev'));
 app.use(express.cookieParser());
 app.use(express.cookieSession({
-	secret: 'cgat_for_president!',
-	cookie: { maxAge: 60 * 60 * 1000 * 24 } // store for three days
+  secret: 'cgat_for_president!',
+  cookie: { maxAge: 60 * 60 * 1000 * 24 } // store for three days
 }));
 app.use(express.json());
 app.use(express.urlencoded());
@@ -155,16 +156,16 @@ app.get('/auth/google/returnTo', function(req, res){
 });
 
 app.get('/auth/google',
-	passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile',
+  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile',
                                             'https://www.googleapis.com/auth/userinfo.email'] }),
-	function(req, res){});
+  function(req, res){});
 
 app.get('/auth/google/callback',
-	passport.authenticate('google', { failureRedirect: '/' }), function(req, res) {
+  passport.authenticate('google', { failureRedirect: '/' }), function(req, res) {
     var redirectTo = req.session.returnTo || '/account';
     delete req.session.returnTo;
-		res.redirect(redirectTo);
-	}
+    res.redirect(redirectTo);
+  }
 );
 
 // Set up SEO routes
@@ -188,8 +189,8 @@ app.post('/saveLog', routes.saveLog);
 
 // Function that tests authentications
 function ensureAuthenticated(req, res, next) {
-	if (req.isAuthenticated()) { return next(); }
-	else{
+  if (req.isAuthenticated()) { return next(); }
+  else{
     req.session.returnTo = req.path;
     res.redirect('/login');
   }

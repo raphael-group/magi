@@ -28,7 +28,7 @@ exports.loadGenomeFromFile = function(filename, callback){
 
 	// Read in the file asynchronously
 	var data;
-	function loadGenomeFile(){	
+	function loadGenomeFile(){
 		var d = Q.defer();
 		fs.readFile(filename, 'utf-8', function (err, fileData) {
 			// Exit if there's an error, else callback

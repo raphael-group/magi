@@ -45,7 +45,7 @@ exports.index = function index(req, res){
 
 		initGroup( standardGroups, 'public' )
 
-		
+
 		var viewData = {
 			user: req.user,
 			groups: standardGroups,
@@ -117,7 +117,7 @@ exports.queryhandler = function queryhandler(req, res){
 		var User = mongoose.model( 'User' );
 		User.findById(req.user._id, function(err, user){
 			if (err) throw new Error(err);
-			
+
 			// Add the newest query, and then make sure the length is at most ten
 			user.queries.splice(0, 0, { datasets: checkedDatasets, genes: genes.split(",") })
 			user.queries = user.queries.slice(0, Math.min(10, user.queries.length));
@@ -130,7 +130,7 @@ exports.queryhandler = function queryhandler(req, res){
 			});
 		});
 	}
-	else{		
+	else{
 		res.redirect('/view?' + query);
 	}
 

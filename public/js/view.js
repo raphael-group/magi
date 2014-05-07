@@ -52,7 +52,7 @@ var defaultStyle = function(){
 	sty.colorSchemes.network["iRefIndex"] = "rgb(140, 91, 56)";
 	sty.colorSchemes.network["Multinet"] = "rgb(92, 128, 178)";
 	sty.colorSchemes.network["Community"] = "rgb(230, 189, 123)";
-	return sty; 
+	return sty;
 }
 
 // Hard-code the classes and names of mutations (TODO: more elegant way later)
@@ -174,13 +174,13 @@ d3.json(query, function(err, data){
             error: function(xhr) {
                 annotationStatus('Database error: ' + xhr.status);
             },
-            
+
             success: function(response) {
                 if(response.error) {
                     annotationStatus('Oops, something bad happened.', warningClasses);
                     return;
                 }
-                
+
                 // Log the status
                 annotationStatus(response.status, successClasses);
             }
@@ -312,13 +312,13 @@ d3.json(query, function(err, data){
             error: function(xhr) {
                 annotationStatus('Database error: ' + xhr.status);
             },
-            
+
             success: function(response) {
                 if(response.error) {
                     annotationStatus('Oops, something bad happened.', warningClasses);
                     return;
                 }
-                
+
                 // Log the status
                 annotationStatus(response.status, successClasses);
             }
@@ -376,7 +376,7 @@ d3.json(query, function(err, data){
 								}
 
 								row += "<td id='" + voteID + "'>" + downlink + "<span class='count'>" + score + "</span>" + uplink + "</td></tr>";
-									
+
 								// Append the row
 								tip += row;
 							});
@@ -450,11 +450,11 @@ d3.json(query, function(err, data){
 		var arr = $(this).val().split(","),
 			geneName = arr[0],
 			transcriptName = arr[1];
-	
+
 		// First remove any elements in the transcript container
 		transcript.selectAll("*").remove();
 
-		// Then add the new plot 
+		// Then add the new plot
 		transcript.datum(data.transcript_data[geneName][transcriptName]);
 		transcript.append("h5").text(geneName);
 		transcriptChart(transcript);
@@ -629,7 +629,7 @@ d3.json(query, function(err, data){
 
 	///////////////////////////////////////////////////////////////////////////
 	// Set up the cancers input, with abbreviations
-	
+
 	//	List of cancers with abbreviations from TCGA (http://goo.gl/2A3UuH) and ICGC (http://dcc.icgc.org/projects)
 	var abbrToCancer = data.abbrToCancer,
 		cancerToAbbr = {};
@@ -639,7 +639,7 @@ d3.json(query, function(err, data){
 	// Set up the bloodhound for the typeahead enginge
 	var cancerBloodhound = new Bloodhound({
 		datumTokenizer: function(data){
-			// For each datum, return an array of the value (cancers) and 
+			// For each datum, return an array of the value (cancers) and
 			// abbreviations broken up by whitespace
 			var cancerTokens = Bloodhound.tokenizers.whitespace(data.value),
 				abbrTokens = Bloodhound.tokenizers.whitespace(data.abbr)
@@ -812,13 +812,13 @@ d3.json(query, function(err, data){
             error: function(xhr) {
                 annotationStatus('Database error: ' + xhr.status);
             },
-            
+
             success: function(response) {
                 if(response.error) {
                     annotationStatus('Oops, something bad happened.', warningClasses);
                     return;
                 }
-                
+
                 // Log the status
                 annotationStatus(response.status, successClasses);
 
