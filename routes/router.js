@@ -5,8 +5,9 @@ var about = require( './about' ),
 	index = require( './index' ),
 	upload = require( './upload' ),
 	view = require( './view' ),
-	datasets = require("./datasets"),
-	annotations = require("./annotations");
+	datasets = require('./datasets'),
+	annotations = require('./annotations'),
+  log = require('./log');
 
 //*  Export the routes in each subrouter *//
 
@@ -53,3 +54,6 @@ exports.annotations.cancer = annotations.cancer;
 exports.annotations.save = annotations.save;
 exports.annotations.ppiVote = annotations.ppiVote;
 exports.annotations.mutationVote = annotations.mutationVote;
+
+// Session logs
+exports.saveLog = log.saveLog;

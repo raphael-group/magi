@@ -179,6 +179,8 @@ app.get('/sitemap.xml', function(req, res) {
 });
 
 
+// Session logging
+app.post('/saveLog', routes.saveLog);
 
 
 // redirect all others to the index (HTML5 history)
@@ -202,7 +204,11 @@ app.post('/saveSVG', function(req, res) {
   if(req.body['html'] != undefined) {
     res.send(req.body['html']);
   } else if (req.body['img'] != undefined) {
-    res.send(req.body['img']);
+    //res.send(req.body['img']);
+    res.writeHead(200, {'Content-Type': 'image/png' });
+    res.end(req.body['img'], 'binary');
+    res.send();
+    console.log(res);
   }
 });
 

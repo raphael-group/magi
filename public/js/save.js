@@ -213,9 +213,41 @@ var savePNG = function(divContainerId, saveFileName) {
   return w;
 }
 
+// Sends the SVG to the server and then back to initiate a download prompt
+var dlPNG = function(divContainerId, saveFileName) {
+  var svg = grabSVG(saveFileName).node(),
+      png = svgToPng(svg);
+
+  console.log(png);
+  png = btoa(png);
+  console.log(png);
+  console.log(jQuery.isPlainObject(png));
+  $.post('/saveSVG', {'img': png, 'fileName': saveFileName})
+     .done(function(png) {
+      console.log(png);
+
+      // When the post has returned, create a link in the browser to download the SVG
+      // Store the data and create a download link
+      var url = window.URL.createObjectURL(new Blob([png], { "type" : "image\/png" }));
+      var a = d3.select("body")
+          .append('a')
+          .attr("download", saveFileName)
+          .attr("href", url)
+          .style("display", "none");
+
+      // Activate the download through a click event
+      a.node().click();
+
+      // Garbage collection
+      setTimeout(function() {
+        window.URL.revokeObjectURL(url);
+      }, 10);
+    });
+}
+
 // When the "Download PNG" link is clicked, download the visualizations
 $('#downloadLinkPNG').click(function() {
-  downloadVisualizations(savePNG);
+  downloadVisualizations(dlPNG);
 });
 
 
