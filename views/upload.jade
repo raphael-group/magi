@@ -4,14 +4,16 @@ block body
         h3 Upload your mutation data.
         p(class="caption")
             | Query your own mutation data by uploading it to our servers.
-            | Provide a name, an optional group, and files containing the SNVs and/or CNAs, and samples in your dataset.
+            | Provide a name, an optional group, and files containing the SNVs, CNAs, or generic abberrations, and samples in your dataset.
+            | If your files contain samples from multiple datasets, CGAT will automatically create a group of these datasets that you can then
+            | query as a group or individually.
             | After uploading your data, you will be able to query it from the&nbsp;
             a(href="/") home page
             | . You can manage all your uploaded datasets from your&nbsp;
             a(href="/account") account page.
         form(method="post", action="/", role="form", id="data-upload-form")
             label
-                | Dataset name.
+                | Dataset name (e.g. cancer type).
             input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
             br
             label
@@ -43,7 +45,9 @@ block body
             input(type="file", id="testedSamples", name="testedSamples")
             br
             label
-                | Color (hex; initialized randomly).
+                | Color (hex;&nbsp;
+                a(onclick="randomColor(); return false;") initialize randomly
+                | )
             div
                 span(id="db-color", style="width:33px;height:33px;padding:2px;margin-right:5px;border:1px solid #eee;border-radius:8px;float:left")
                 input(type="text", id="color", name="color", class="form-control", placeholder="#XXXXXX", style="width:100px", maxlength="7")
@@ -54,7 +58,16 @@ block body
             div(id="status")
         hr
         h3 File formats
+        br
         | The input files for CGAT are all text (.txt) or tab-separated (.tsv) files.
+        br
+        br
+        a(name="colors")
+        div(id="colors")
+            h4 Cancer type abbreviations and colors
+            | CGAT recognizes a list of <a href="/abbreviations">cancer abbreviations</a> compied from TCGA and ICGC.
+            | In order to map your data to the CGAT color schemes and annotations, please use these abbreviations
+            | when labeling your dataset. You can always provide your own color to replace the CGAT default color.
         br
         br
         a(name="aberrations-format")
@@ -180,18 +193,20 @@ block body
         div(id="samples-format")
             h4 Sample file format.
             p(class="caption")
-                | The sample file is a text file (*.txt) that lists all the tested samples for a given dataset.
+                | The sample file is a text or tab-separated file (*.txt/*.tsv) that lists all the tested samples for a given dataset or group of datasets.
                 | These samples may or may not have SNVs or CNAs.
-                | Each row lists a single sample ID.
-                | All rows in the data file are included.
+                | Each row lists a single sample ID and (optionally) the dataset (cancer type) of the sample.
+                | 
 block belowTheFold
     script(src='components/jquery/dist/jquery.min.js').
     script(src='components/jquery-form/jquery.form.js')
     script(src="js/dataset-upload-control.js")
     script.
-        var color = '#' + Math.random().toString(16).substr(-6);
+        function randomColor(){
+            var color = '#' + Math.random().toString(16).substr(-6);
+            $('#db-color').css('background', color)
+            $("input#color").val(color);
+        }
         $("input#color").on("change", function(){
             $("span#db-color").css('background', $("input#color").val());
         });
-        $("input#color").val(color);
-        $("span#db-color").css('background', color);

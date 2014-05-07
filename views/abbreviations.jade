@@ -10,22 +10,12 @@ block body
 		br
 		table(class="table table-bordered table-striped", id="cancer-abbreviations")
 			tr
+				th Color
 				th Abbreviation
 				th Cancer
-block belowTheFold
-	script(src="/components/d3/d3.min.js")
-	script.
-		// Add the table of abbreviations to cancer types
-		d3.json("/data/abbrToCancer.json", function(abbrToCancer){
-			var tbl = d3.select("#cancer-abbreviations tbody"),
-				abbrs = Object.keys( abbrToCancer );
-			
-			console.log( abbrs )
-
-			var trs = tbl.selectAll(".abbr")
-				.data(abbrs).enter()
-				.append("tr");
-
-			trs.append("td").text(function(d){ return d; });
-			trs.append("td").text(function(d){ return abbrToCancer[d]; });
-		});
+			- for (var i in cancers)
+				- var d = cancers[i];
+				tr
+					td(style="background:#{d.color};width:30px;")
+					td #{d.abbr}
+					td #{d.cancer}

@@ -27,14 +27,6 @@ $(document).ready(function() {
             groupName = $(groupNameEl).val(),
             color = $(colorEl).val();
 
-        // Make sure the dataset is named
-        var datasetValidates = false;
-        if (dataset == ""){
-            status('Please name your dataset.', warningClasses);
-            return false;
-        }
-        else{ datasetValidates = true; }
-
         // Check if the user passed an SNV/CNA file
         if (!(cnaFile || snvFile || aberrationFile)){
             status('Please choose an aberration, SNV, and/or CNA file.', warningClasses);
@@ -100,14 +92,14 @@ $(document).ready(function() {
         // Make sure there's a valid hex color
         function isHexColor(c){ return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(c) }
         var colorValidates = true;
-        if (!isHexColor(color)){
+        if (color && !isHexColor(color)){
             colorValidates = false;
             status('Please enter a valid hex color.', warningClasses)
             return false;
         }
 
         // If everything checks out, submit the form
-        if (datasetValidates && aberrationFileValidates && snvFileValidates && cnaFileValidates && sampleFileValidates && colorValidates){
+        if (aberrationFileValidates && snvFileValidates && cnaFileValidates && sampleFileValidates && colorValidates){
             status('Uploading...', infoClasses);
 
             // Create a mini-form
