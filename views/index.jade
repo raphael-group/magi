@@ -21,12 +21,13 @@ block body
           a(href="#", id="about") About
         li
           a(href="#", id="instructions") Instructions
-      img(src="img/cgatTitle.svg", id="splash-logo")
+      div(style="text-align:center")
+        img(src="img/magiTitle.svg", id="splash-logo")
 
   a(name="input-chooser")
   div(class="container-index", id="input-chooser")
     ul(id="cgat-actions", class="nav nav-tabs nav-justified", style="")
-      li(style="background-color:#dff0d8;border-radius:4px")
+      li(id="activeAction")
         a(href="/") Query
       li
         a(href="/upload") Upload Mutation Data

@@ -33,7 +33,7 @@ div.indexTop ul li {
   margin-top:30px;
 }
 div.indexTop ul li a {
-  color: #679937;
+  color: #565975;
   font-size: 20px;
 }
 div.indexTop ul li a.loginBtn {
@@ -57,17 +57,25 @@ img#splash-logo{
   padding-top: 30px;
 }
 
+button#submit {
+  background: #9DA7D4;
+  border-color: #6A73B6;
+}
+button#submit:hover {
+  background: #6A73B6;
+}
 
 div#component-descriptions, div.container-index {
   margin: 0 auto;
   width: 800px;
 }
 div#header{
-  /*background: #333;*/
-  /*border-bottom: 1px solid #ccc;*/
   height: 35px;
   margin:0;
   padding:0 15px;
+}
+div#query{
+  border-color: #9DA7D4;
 }
 div#login{
   margin-top:6px;
@@ -139,9 +147,18 @@ img#transcriptSlice{
 }
 
 /* Query box */
-ul#cgat-actions li{border-color:#d6e9c6;}
-ul#cgat-actions li a{ color:#3c763d;font-weight:500;font-size:16px; }
-ul#cgat-actions li a:hover{ background-color:#dff0d8; }
+ul#cgat-actions li{
+  border-color:#d6e9c6;
+  -webkit-border-top-left-radius: 4px;
+  -webkit-border-top-right-radius: 4px;
+  -moz-border-radius-topleft: 4px;
+  -moz-border-radius-topright: 4px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+ul#cgat-actions li#activeAction{ background-color:#9DA7D4;}
+ul#cgat-actions li a{ color:#565975;font-weight:500;font-size:16px; }
+ul#cgat-actions li a:hover{ background-color:#9DA7D4; }
 
 /* Styling index page (choosing genes or datasets) */
 div#db-chooser{overflow-y:none;}
