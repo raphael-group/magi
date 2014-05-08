@@ -57,3 +57,4 @@ exports.annotations.mutationVote = annotations.mutationVote;
 
 // Session logs
 exports.saveLog = log.saveLog;
+exports.isLoggingEnabled = log.isLoggingEnabled;

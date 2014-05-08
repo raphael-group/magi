@@ -6,3 +6,7 @@ exports.saveLog = function(req, res) {
   Log.saveLog(req['body'], user_id);
   res.send();
 }
+
+exports.isLoggingEnabled = function(req, res) {
+  res.send(Log.isLoggingEnabled());
+}

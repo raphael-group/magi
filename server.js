@@ -184,6 +184,7 @@ app.get('/sitemap.xml', function(req, res) {
 
 // Session logging
 app.post('/saveLog', routes.saveLog);
+app.get('/logEnabled', routes.isLoggingEnabled);
 
 
 // redirect all others to the index (HTML5 history)

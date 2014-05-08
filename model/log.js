@@ -22,6 +22,10 @@ mongoose.model('Log', LogSchema);
 var shouldWeStoreLogs = false;
 exports.enableLogging = function(state) {
   shouldWeStoreLogs = state;
+  console.log('Server is logging interactions?:', state);
+}
+exports.isLoggingEnabled = function() {
+  return shouldWeStoreLogs;
 }
 
 // Update or create a document for a provided user's log

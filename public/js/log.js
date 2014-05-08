@@ -1,7 +1,8 @@
 // Functions for saving user interaction data
 // For use in user studies
 
-var sessionLogStart,
+var loggingEnabled = false,
+    sessionLogStart,
     interactionsLog;
 
 $(document).keydown(function(e) {
@@ -28,9 +29,20 @@ $(document).scroll(function(e) {
 $().ready(function () {
   interactionsLog = [];
   sessionLogStart = Date.now();
+  var enableLogs = $.get('/logEnabled')
+      .done(function(result) {
+        if(result == false || result == true) {
+          loggingEnabled = result;
+        } else {
+          loggingEnabled = false;
+        }
+      });
 });
 
 function addToLog(e, event) {
+  if (loggingEnabled == false) {
+    return;
+  }
   var x = e.pageX,
       y = e.pageY,
       time = Date.now();
@@ -38,6 +50,9 @@ function addToLog(e, event) {
 }
 
 function sendData() {
+  if (loggingEnabled == false) {
+    return;
+  }
   var end = Date.now(),
       start = sessionLogStart;
 
