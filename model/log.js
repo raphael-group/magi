@@ -54,8 +54,7 @@ exports.saveLog = function(logObj, userId, callback) {
     if(logs.length == 0) {
       log.create(logObj, function(e, s) { if(err) console.log('Undefined log creation') });
     } else {
-      logs[0].end = logObj.end;
-      logs[0].log = logObj.log;
+      log.update(findParams, { $set: { end: logObj.end, log: logObj.log }}, function(e, r) {});
     }
   });
   if (callback != undefined) {
