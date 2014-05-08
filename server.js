@@ -30,7 +30,7 @@ var user = require( './model/user' ),
     logPermission = require('./model/logPermission');
 
 // Enable or disable interaction logging
-log.enableLogging(false);
+log.enableLogging(true);
 
 /**
  * Configuration

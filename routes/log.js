@@ -26,6 +26,7 @@ exports.logConsent = function(req, res) {
   hasher.update(userId);
   var hash = hasher.digest('hex');
 
+  // Store the user's logging consent response
   LogPermission.find({userHash: hash}, function(err, entries) {
     if (err) console.log('Could not find userHash and logging enabling info.');
     if(entries.length == 0) {
@@ -51,11 +52,10 @@ exports.userGaveConsent = function(req, res) {
 
   LogPermission.find({userHash:hash}, function(err, entries) {
     if (err) res.send(false);
-    if(entries.length == 0) {
+    if(entries.length == 0) { // if the user hasn't filled out information, disable logging
       res.send(false);
-    } else {
+    } else { // if the user has filled out information, return the user's consent response
       var consentStatus = (entries[0].enable).toString();
-      console.log(hash, entries[0].enable);
       res.send(consentStatus);
     }
   });

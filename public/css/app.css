@@ -183,6 +183,9 @@ table tr.even td{ background:#fff;}
 table tr.odd td, table tr.odd th{ background:rgb(249, 249, 249);}
 
 input#consentLog{margin-right: 5px;}
+p#consentMoreInfo{cursor:pointer;font-style: italic; margin: 0 0 0 18px;}
+div#consentMoreInfoDiv{display:none; margin-left: 18px;}
+div#consentMoreInfoDiv hr{border-color: rgb(156, 204, 247); margin: 10px 0;}
 
 /* Acknowledgements page */
 div#acknowledgements img{ margin-right:25px;}

@@ -29,10 +29,16 @@ $(document).scroll(function(e) {
 $().ready(function () {
   interactionsLog = [];
   sessionLogStart = Date.now();
+  // Does the server enable logging?
   var enableLogs = $.get('/logEnabled')
       .done(function(result) {
-        if(result == false || result == true) {
-          loggingEnabled = result;
+        if(result == true) {
+          // Does the user consent?
+          $.post('/userGaveConsent')
+            .done(function(res) {
+              console.log(res, 'yeaaaah');
+              loggingEnabled = res == 'true' ? true : false;
+            });
         } else {
           loggingEnabled = false;
         }
