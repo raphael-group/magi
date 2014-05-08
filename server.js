@@ -26,7 +26,8 @@ var user = require( './model/user' ),
     database = require( './model/datasets' ),
     domains = require( './model/domains' ),
     ppis = require( './model/ppis' ),
-    log = require('./model/log');
+    log = require('./model/log'),
+    logPermission = require('./model/logPermission');
 
 // Enable or disable interaction logging
 log.enableLogging(false);
@@ -185,6 +186,8 @@ app.get('/sitemap.xml', function(req, res) {
 // Session logging
 app.post('/saveLog', routes.saveLog);
 app.get('/logEnabled', routes.isLoggingEnabled);
+app.post('/logConsent', routes.logConsent);
+app.post('/userGaveConsent', routes.userGaveConsent);
 
 
 // redirect all others to the index (HTML5 history)

@@ -1,7 +1,5 @@
-// Import required modules
 var mongoose = require( 'mongoose' );
 
-// Create session log schema and add it to Mongoose
 var LogSchema = new mongoose.Schema({
   annotations: Array, // annotation id for each annotation created
   start: Number, // start session date

@@ -1,5 +1,6 @@
 var mongoose = require( 'mongoose' ),
-    Log  = require( "../model/log" );
+    Log  = require( "../model/log" ),
+    crypto = require('crypto');
 
 exports.saveLog = function(req, res) {
   var user_id = req.user ? req.user._id : null;
@@ -9,4 +10,53 @@ exports.saveLog = function(req, res) {
 
 exports.isLoggingEnabled = function(req, res) {
   res.send(Log.isLoggingEnabled());
+}
+
+exports.logConsent = function(req, res) {
+  // TODO: error handling on client
+  if(req.user == undefined) {
+    res.send();
+    return;
+  }
+  var LogPermission = mongoose.model('LogPermission'),
+      enableState = req['body'].enable == 'true' ? true : false,
+      userId = req.user._id.toString(),
+      hasher = crypto.createHash('sha1');
+
+  hasher.update(userId);
+  var hash = hasher.digest('hex');
+
+  LogPermission.find({userHash: hash}, function(err, entries) {
+    if (err) console.log('Could not find userHash and logging enabling info.');
+    if(entries.length == 0) {
+      LogPermission.create({userHash: hash, enable:enableState}, function(e, s) {
+        if(e) console.log('Undefined log permission creation');
+      });
+    } else {
+      LogPermission.update({userHash: hash}, { $set: { enable: enableState }}, function(e, r) {});
+    }
+  });
+
+  res.send();
+}
+
+// Return false if logging consent is not given, true if is given
+exports.userGaveConsent = function(req, res) {
+  var LogPermission = mongoose.model('LogPermission'),
+      userId = req.user._id.toString(),
+      hasher = crypto.createHash('sha1');
+
+  hasher.update(userId);
+  var hash = hasher.digest('hex');
+
+  LogPermission.find({userHash:hash}, function(err, entries) {
+    if (err) res.send(false);
+    if(entries.length == 0) {
+      res.send(false);
+    } else {
+      var consentStatus = (entries[0].enable).toString();
+      console.log(hash, entries[0].enable);
+      res.send(consentStatus);
+    }
+  });
 }
