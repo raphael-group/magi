@@ -5,7 +5,7 @@ block body
         p(class="caption")
             | Query your own mutation data by uploading it to our servers.
             | Provide a name, an optional group, and files containing the SNVs, CNAs, or generic abberrations, and samples in your dataset.
-            | If your files contain samples from multiple datasets, CGAT will automatically create a group of these datasets that you can then
+            | If your files contain samples from multiple datasets, MAGI will automatically create a group of these datasets that you can then
             | query as a group or individually.
             | After uploading your data, you will be able to query it from the&nbsp;
             a(href="/") home page
@@ -59,15 +59,15 @@ block body
         hr
         h3 File formats
         br
-        | The input files for CGAT are all text (.txt) or tab-separated (.tsv) files.
+        | The input files for MAGI are all text (.txt) or tab-separated (.tsv) files.
         br
         br
         a(name="colors")
         div(id="colors")
             h4 Cancer type abbreviations and colors
-            | CGAT recognizes a list of <a href="/abbreviations">cancer abbreviations</a> compied from TCGA and ICGC.
-            | In order to map your data to the CGAT color schemes and annotations, please use these abbreviations
-            | when labeling your dataset. You can always provide your own color to replace the CGAT default color.
+            | MAGI recognizes a list of <a href="/abbreviations">cancer abbreviations</a> compied from TCGA and ICGC.
+            | In order to map your data to the MAGI color schemes and annotations, please use these abbreviations
+            | when labeling your dataset. You can always provide your own color to replace the MAGI default color.
         br
         br
         a(name="aberrations-format")
@@ -123,7 +123,7 @@ block body
                     td Mutation Type
                     td Missense_Mutation
                     td
-                        | Type of mutation that occurred. CGAT understands the following mutation types:
+                        | Type of mutation that occurred. MAGI understands the following mutation types:
                         ul
                             li Nonsense_Mutation
                             li Frame_Shift_Del
@@ -172,7 +172,7 @@ block body
                     td 3
                     td CNA type
                     td 
-                        | Type of CNA that occurred. CGAT understands the following CNA types:
+                        | Type of CNA that occurred. MAGI understands the following CNA types:
                         ul
                             li AMP
                             li DEL
