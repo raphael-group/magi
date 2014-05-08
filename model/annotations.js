@@ -17,12 +17,8 @@ var AnnotationSchema = new mongoose.Schema({
 mongoose.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
-exports.upsertAnnotation = function(query, pmid, comment, user_id, callback){
-	var Annotation = mongoose.model( 'Annotation' ),
-		Q = require( 'q' );
-
-	var d = Q.defer();
-
+exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
+	var Annotation = mongoose.model( 'Annotation' );
 	var support = {ref: pmid, user_id: user_id, comment: comment}
 	Annotation.findOneAndUpdate(
 		query,
@@ -37,14 +33,12 @@ exports.upsertAnnotation = function(query, pmid, comment, user_id, callback){
 				annotation.markModified('references');
 			}
 
-			annotation.save(function(err){
+			annotation.save(function(err, annotation){
 				if (err) throw new Error(err);
-				d.resolve();
+				callback(err, annotation);
 			});
 		}
 	);
-
-	return d.promise;
 }
 
 // Vote for a mutation

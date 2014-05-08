@@ -53,8 +53,7 @@ div#splash-txt{
 
 img#splash-logo{
   display: block;
-  margin: 0 auto 100px 0;
-  padding-top: 30px;
+  margin: 0 auto 50px 0;
 }
 
 button#submit {
@@ -141,7 +140,7 @@ img#transcriptSlice{
 }
 
 /* Query box */
-ul#cgat-actions li{
+ul#magi-actions li{
   border-color:#d6e9c6;
   -webkit-border-top-left-radius: 4px;
   -webkit-border-top-right-radius: 4px;
@@ -150,9 +149,9 @@ ul#cgat-actions li{
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
 }
-ul#cgat-actions li#activeAction{ background-color:#9DA7D4;}
-ul#cgat-actions li a{ color:#565975;font-weight:500;font-size:16px; }
-ul#cgat-actions li a:hover{ background-color:#9DA7D4; }
+ul#magi-actions li#activeAction{ background-color:#9DA7D4;}
+ul#magi-actions li a{ color:#565975;font-weight:500;font-size:16px; }
+ul#magi-actions li a:hover{ background-color:#9DA7D4; }
 
 /* Styling index page (choosing genes or datasets) */
 div#db-chooser{overflow-y:none;}

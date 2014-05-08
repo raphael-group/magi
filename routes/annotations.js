@@ -79,14 +79,12 @@ exports.save = function save(req, res){
 		    			position: position,
 		    			domain: domainName
 		    		};
-				Annotations.upsertAnnotation(query, support, comment, req.user._id + "", function(err){
-					if (err) throw new Error(err);
-				})
-				.then(function(){
-					res.send({ status: "Annotation saved successfully!" });
-				})
-				.fail(function(){
-					res.send({ error: "Annotation could not be parsed." });
+				Annotations.upsertAnnotation(query, support, comment, req.user._id + "", function(err, annotation){
+					if (err){
+						res.send({ error: "Annotation could not be parsed. " + err });
+						throw new Error(err);
+					}
+					res.send({ status: "Annotation saved successfully!", annotation: { _id: annotation._id } });
 				});
 	    	}
 	    }

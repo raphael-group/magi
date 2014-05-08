@@ -660,7 +660,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			loadMutationFile(cnas_file, "CNA", 1, function(err, datasetToCNALines){
 				loadMutationFile(aberration_file, "aberrations", 0, function(err, datasetToAberrationLines){
 					var funcs = datasets.map(function(datasetName){
-						console.log(datasetToColor[datasetName])
 						var samples = datasetToSamples[datasetName],
 							snvLines = datasetToSNVLines[datasetName],
 							cnaLines = datasetToCNALines[datasetName],

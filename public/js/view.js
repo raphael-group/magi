@@ -196,7 +196,8 @@ d3.json(query, function(err, data){
 		return function(d, i){
 			var mutationClass = mutationToClass[d.ty],
 				tip  = "<div class='m2-tooltip' id='" + d.gene + "-" + d.sample + "'>"
-			tip += "<span>Sample: " + d.sample.name + '<br />Type: ' + d.dataset + "<br/>" + "Mutation: " + mutationToName[d.ty] + "</span>";
+			tip += "<span>Sample: " + d.sample.name + '<br />Type: ' + d.dataset + "<br/>"
+			tip += "Mutation(s): " + d.mutTys.map(function(t){ return mutationToName[t] }).join("; ") + ".</span>";
 			if (annotations[d.gene] && annotations[d.gene][mutationClass]){
 				var cancers = Object.keys(annotations[d.gene][mutationClass]);
 				tip += "<br style='clear:both'/>Known mutations<div class='less-info'>"
@@ -829,7 +830,7 @@ d3.json(query, function(err, data){
 	                if (!annotations[gene]) annotations[gene] = {};
 	                if (!annotations[gene][mClass]) annotations[gene][mClass] = {};
 	                if (!annotations[gene][mClass][cancerTy]) annotations[gene][mClass][cancerTy] = [];
-					annotations[gene][mClass][cancerTy].push( {pmid: pmid, vote: null, score: 0} );
+					annotations[gene][mClass][cancerTy].push( {_id: response.annotation._id, pmid: pmid, vote: null, score: 0} );
 
 					m2Chart.addTooltips(generateAnnotations(annotations));
 				}
