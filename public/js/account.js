@@ -1,0 +1,3 @@
+$('#consentLog').on('change', function() {
+
+});
