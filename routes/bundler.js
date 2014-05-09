@@ -86,8 +86,15 @@ exports.viewData = function getViewData(req, res){
 
 					// Record the CNAs
 					if (G.cnas){
-						cna_browser_data[G.gene] = G.cnas;
-						cna_browser_data[G.gene].gene = G.gene;
+						if (!(G.gene in cna_browser_data)){
+							cna_browser_data[G.gene] = {
+								gene: G.gene,
+								neighbors: G.cnas.neighbors,
+								region: G.cnas.region,
+								segments: []
+							};
+						}
+						cna_browser_data[G.gene].segments = cna_browser_data[G.gene].segments.concat( G.cnas.segments );
 					}
 
 					// Load the mutated samples

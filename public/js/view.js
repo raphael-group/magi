@@ -17,8 +17,7 @@ $(document).ready(
 // * drawing the D3 visualizations
 // * adding tooltips
 // * adding annotations
-// * controlling the datasets shown
-
+// * controlling which datasets are visible
 function view(){
 	// Set up promise
 	var deferred = $.Deferred();
