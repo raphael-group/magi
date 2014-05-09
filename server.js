@@ -58,7 +58,7 @@ if (app.get('env') === 'development') {
 // production only
 if (app.get('env') === 'production') {
   // TODO
-  app.set('site url', 'http://cgat.cs.brown.edu/')
+  app.set('site url', 'http://magi.cs.brown.edu/')
 };
 
 // config passport to use Google OAuth2
@@ -94,7 +94,7 @@ app.use(express.compress());
 app.use(express.logger('dev'));
 app.use(express.cookieParser());
 app.use(express.cookieSession({
-  secret: 'cgat_for_president!',
+  secret: 'magi_for_president!',
   cookie: { maxAge: 60 * 60 * 1000 * 24 } // store for three days
 }));
 app.use(express.json());
