@@ -112,8 +112,11 @@ $(document).ready(function(){
 		params.style.height = 200;
 		d3.select("#gd3-cna-browser")
 			.style("border", "1px solid #eee")
+			.style("height", "300px")
+			.style("overflow-y", "scroll")
 			.datum(data.cna_browser)
 			.call(cna_browser(params))
+			.select("svg")
 
 	})
 
