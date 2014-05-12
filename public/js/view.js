@@ -18,6 +18,7 @@ $(document).ready(
 // * adding tooltips
 // * adding annotations
 // * controlling which datasets are visible
+var votePPI, voteMutation;
 function view(){
 	// Set up promise
 	var deferred = $.Deferred();
@@ -120,7 +121,6 @@ function view(){
 	///////////////////////////////////////////////////////////////////////////
 	// Get the data and initialize the view
 	function pmidLink(pmid){ return "<a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a>" }
-	var votePPI, voteMutation;
 	d3.json(query, function(err, data){
 		// Create each element's style by merging in the dataset colors and
 		// finding the width of each container
