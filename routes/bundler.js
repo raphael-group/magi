@@ -95,6 +95,23 @@ exports.viewData = function getViewData(req, res){
 							};
 						}
 						cna_browser_data[G.gene].segments = cna_browser_data[G.gene].segments.concat( G.cnas.segments );
+						
+						// Update the segment extent and neighbors to include any neighbors outside of the
+						// previous boundaries
+						var minSegX = G.cnas.region.minSegX,
+							maxSegX = G.cnas.region.maxSegX;
+						if (maxSegX > cna_browser_data[G.gene].region.maxSegX){
+							cna_browser_data[G.gene].neighbors = cna_browser_data[G.gene].neighbors.concat(
+								G.cnas.neighbors.filter(function(g){ return g.end > cna_browser_data[G.gene].region.maxSegX; })
+							);
+							cna_browser_data[G.gene].region.maxSegX = maxSegX;
+						}
+						if (minSegX < cna_browser_data[G.gene].region.minSegX){
+							cna_browser_data[G.gene].neighbors = cna_browser_data[G.gene].neighbors.concat(
+								G.cnas.neighbors.filter(function(g){ return g.start < cna_browser_data[G.gene].region.minSegX; })
+							);
+							cna_browser_data[G.gene].region.minSegX = minSegX;
+						}
 					}
 
 					// Load the mutated samples
