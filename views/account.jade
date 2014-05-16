@@ -13,27 +13,7 @@ block body
     | #{user.email}
     br
     br
-    div(class="col-md-12", style="padding:0")
-      div(class="attention col-md-6")
-        label
-          input(type="checkbox" id="consentLog")
-          | I want to improve MAGI by sending tool usage information.
-        p(id="consentMoreInfo") (More information)
-        div(id="consentMoreInfoDiv")
-          hr
-          p By agreeing to share your tool usage information you can help us improve your
-            | research experience.
-            | By understanding how researchers explore and analyze data, we can better build
-            | software features that are intuitive to use, and are targetted to solve your research
-            | problems.
-          p By providing consent to share your tool usage through the above form, MAGI will
-            | collect anonymized tool usage information. <em>Your identity and any uploaded data will
-            | stay anonymous.</em> The information we collect consists of how you
-            | interact with the tool, the pixel dimensions of MAGI, session time per query, genes
-            | queried, and anonymized dataset IDs. We also look at the number of annotation votes that
-            | are submitted and the number of annotations are made, but do not collect what
-            | annotations are voted on or created.
-    br
+
     - if (groups.length != 0)
       b Datasets
       a(href="/upload", style="float:right") Upload a new dataset.
@@ -67,6 +47,30 @@ block body
       | You have not uploaded any datasets. &nbsp;
       a(href="/upload") Upload your first dataset.
     hr
+    div(class="col-md-12", style="padding:0")
+      div(class="attention col-md-6")
+        label
+          input(type="checkbox" id="consentLog")
+          | I want to improve MAGI by sending tool usage information.
+        p(id="consentMoreInfo") (More information)
+        div(id="consentMoreInfoDiv")
+          hr
+          p By agreeing to share your tool usage information you can help us improve your
+            | research experience.
+            | By understanding how researchers explore and analyze data, we can better build
+            | software features that are intuitive to use, and are targetted to solve your research
+            | problems.
+          p By providing consent to share your tool usage through the above form, MAGI will
+            | collect anonymized tool usage information. <em>Your identity and any uploaded data will
+            | stay anonymous.</em> The information we collect consists of how you
+            | interact with the tool, the pixel dimensions of MAGI, session time per query, genes
+            | queried, and anonymized dataset IDs. We also look at the number of annotation votes that
+            | are submitted and the number of annotations are made, but do not collect what
+            | annotations are voted on or created.
+    br
+    br
+    hr
+    br
     div(id="additional-info", style="width:60%")
       h4 Tell us about yourself
       br
