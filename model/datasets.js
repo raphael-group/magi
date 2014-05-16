@@ -322,21 +322,23 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 						cnaSamples = cnas[g.name].segments,
 						segments = [];
 
-					for (var s in cnaSamples){
+					Object.keys(cnaSamples).forEach(function(s){
 						var segs = cnaSamples[s];
 						segments.push( {sample: s, segments: segs} );
-
-						for (var i = 0; i < segs.length; i++){
-							if (segs[i].start < minSegX) minSegX = segs[i].start;
-							if (segs[i].end > maxSegX) maxSegX = segs[i].end;
-						}
-					}
+						segs.forEach(function(seg){
+							minSegX = Math.min(minSegX, seg.start);
+							maxSegX = Math.max(maxSegX, seg.end);
+						});
+					});
 
 					// Add the gene's region information
 					cnas[g.name].region = { chr: g.chr, minSegX: minSegX, maxSegX: maxSegX };
 					cnas[g.name].segments = segments;
 
-					Genome.getGenesinRange(g.chr, g.start - 25000000, g.end + 25000000, function (err, neighbors){
+					// Find the gene's neighbors that are overlap the segments assigned to that gene
+					// (with a small boundary on either side)
+					var segWidthBoundary = Math.round(0.1 * (maxSegX - minSegX));
+					Genome.getGenesinRange(g.chr, minSegX - segWidthBoundary, maxSegX + segWidthBoundary, function (err, neighbors){
 						if(err) console.log(err);
 						cnas[g.name].neighbors = neighbors;
 						d2.resolve();
