@@ -185,32 +185,34 @@ exports.viewData = function getViewData(req, res){
 					});
 
 					PPIs.ppilist(genes, function(err, ppis){
-						PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-							var path   = require( 'path' ),
-								filepath = path.normalize(__dirname + '/../public/data/abbrToCancer.json');
-								
-							fs.readFile(filepath, 'utf8', function (err, abbrToCancer) {
-								if (err) {
-									console.log('Error: ' + err);
-									return;
-								}
+						PPIs.ppicomments(ppis, user_id, function(err, comments){
+							PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
+								var path   = require( 'path' ),
+									filepath = path.normalize(__dirname + '/../public/data/abbrToCancer.json');
+									
+								fs.readFile(filepath, 'utf8', function (err, abbrToCancer) {
+									if (err) {
+										console.log('Error: ' + err);
+										return;
+									}
 
-								// Package data into one object
-								var subnetwork_data = { edges: edges, nodes: nodes, refs: refs };
-								var pkg = 	{
-												abbrToCancer: JSON.parse(abbrToCancer),
-												subnetwork_data: subnetwork_data,
-												mutation_matrix: mutation_matrix,
-												transcript_data: transcript_data,
-												domainDBs: Object.keys(domainDBs),
-												cna_browser_data: cna_browser_data,
-												datasetColors: datasetColors,
-												annotations: annotations
-											};
+									// Package data into one object
+									var subnetwork_data = { edges: edges, nodes: nodes, refs: refs, comments: comments };
+									var pkg = 	{
+													abbrToCancer: JSON.parse(abbrToCancer),
+													subnetwork_data: subnetwork_data,
+													mutation_matrix: mutation_matrix,
+													transcript_data: transcript_data,
+													domainDBs: Object.keys(domainDBs),
+													cna_browser_data: cna_browser_data,
+													datasetColors: datasetColors,
+													annotations: annotations
+												};
 
-								// Send JSON response
-								res.json( pkg );
+									// Send JSON response
+									res.json( pkg );
 
+								});
 							});
 						});
 					});

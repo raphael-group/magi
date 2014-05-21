@@ -142,3 +142,27 @@ exports.ppiVote = function ppiVote(req, res){
     	res.send({ error: "You must be logged in to vote." });
     }
 }
+
+// Save a comment on a PPI
+exports.ppiComment = function ppiComment(req, res){
+	console.log("/comment/ppi")
+
+	// Only allow logged in users to vote
+	if (req.user){
+		// Load the posted form
+		var form = new formidable.IncomingForm({});
+	    form.parse(req, function(err, fields, files) {
+			// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
+			PPIs.comment(fields.source, fields.target, fields.network, fields.pmid, fields.comment, req.user._id + "")
+			.then(function(){
+				res.send({ status: "PPI comment saved successfully!" });
+			})
+			.fail(function(){
+				res.send({ error: "PPI comment could not be parsed." });
+			});
+    	});
+    }
+	else{
+    	res.send({ error: "You must be logged in to vote." });
+    }
+}
