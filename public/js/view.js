@@ -4,6 +4,7 @@
 // and then fade them in and the loading GIF out
 $(document).ready(
 	function(){
+
 		var promise = view();
 		promise.done(function(){
 			d3.select("div#loading").style("display", "none")
@@ -12,6 +13,20 @@ $(document).ready(
 		})
 	}
 );
+
+// Share link button event handler
+$('a#shareBtn').on('click', function(e) {
+		e.preventDefault();
+		$.post('share', {url:window.location.search})
+			.done(function(r) {
+				console.log(r);
+				console.log(window.location);
+				var path = window.location.origin + '/view?id=' + r;
+				$('a#shareBtn').css('display', 'none');
+				$('div#shareLinkBox').css('display', 'block');
+				$('div#share').append('<input type="text" name="shareLink" value="'+path+'" style="width:100%" readonly />')
+			});
+});
 
 // Master function for 
 // * drawing the D3 visualizations
@@ -685,7 +700,6 @@ function view(){
 		});
 
 		// Create a map of cancers to their abbreviations, and a list of all cancers
-		// 
 		function invertCancerTy(name){ return name in cancerToAbbr ? cancerToAbbr[name].toUpperCase()  : name; }
 		function getCancerTy(name){
 			var lowName = name.toLowerCase()

@@ -4,10 +4,12 @@ var mongoose = require( 'mongoose' ),
 	PPIs     = require( "../model/ppis" ),
 	Domains  = require( "../model/domains" ),
 	Annotations  = require( "../model/annotations" ),
+	QueryHash = require('../model/queryHash'),
 	fs = require('fs');
 
 exports.viewData = function getViewData(req, res){
 	// Parse query params
+	console.log(req.query);
 	var genes = req.query.genes.split(","),
 		dataset_ids = req.query.datasets.split(",");
 

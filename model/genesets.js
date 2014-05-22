@@ -21,7 +21,7 @@ exports.loadGeneSetsFromFile = function(filename, database, callback){
 
 	// Read in the file asynchronously
 	var data;
-	function loadGeneSetFile(){	
+	function loadGeneSetFile(){
 		var d = Q.defer();
 		fs.readFile(filename, 'utf-8', function (err, fileData) {
 			// Exit if there's an error, else callback

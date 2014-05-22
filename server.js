@@ -27,7 +27,8 @@ var user = require( './model/user' ),
     domains = require( './model/domains' ),
     ppis = require( './model/ppis' ),
     log = require('./model/log'),
-    logPermission = require('./model/logPermission');
+    logPermission = require('./model/logPermission'),
+    queryHash = require('./model/queryHash');
 
 // Enable or disable interaction logging
 log.enableLogging(false);
@@ -182,6 +183,8 @@ app.get('/sitemap.xml', function(req, res) {
     res.sendfile('seo/sitemap.xml');
 });
 
+// Save share hash URI
+app.post('/share', routes.saveShareURL);
 
 // Session logging
 app.post('/saveLog', routes.saveLog);

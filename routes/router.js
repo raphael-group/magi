@@ -7,7 +7,8 @@ var about = require( './about' ),
 	view = require( './view' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
-  log = require('./log');
+  log = require('./log'),
+  share = require('./share');
 
 //*  Export the routes in each subrouter *//
 
@@ -54,6 +55,9 @@ exports.annotations.cancer = annotations.cancer;
 exports.annotations.save = annotations.save;
 exports.annotations.ppiVote = annotations.ppiVote;
 exports.annotations.mutationVote = annotations.mutationVote;
+
+// Share link
+exports.saveShareURL = share.saveShareURL;
 
 // Session logs
 exports.saveLog = log.saveLog;
