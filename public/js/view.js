@@ -115,6 +115,15 @@ function view(){
 	    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 	}
 
+	// If the URL is a hash ID, query it directly, else look up the info
+	if(window.location.search.indexOf('id=') >= 0) {
+		console.log('hi');
+		console.log(window.location.search);
+		var query = '/data/bundle'+window.location.search,
+				genes = null,
+				datasets = null,
+				showDuplicates = null;
+	} else { // We need to process the URL to query it
 	var genes = getParameterByName("genes")
 		datasets = getParameterByName("datasets"),
 		showDuplicates = getParameterByName("showDuplicates") == "true",
@@ -127,11 +136,16 @@ function view(){
 		d3.select("#view")
 			.append("b")
 			.style("height", "80%")
-			.html("No data provided. Return to the <a href='/'>home page</a> to create a query.")
+			.html("<p>No data provided. Return to the <a href='/'>home page</a> to create a query.</p>")
+		d3.select('div#loading').remove();
+		d3.select('div#spinner').remove();
+		d3.select('div#view-page').style('opacity', '1');
 		throw { name: 'FatalError', message: 'No data provided' };
 	}
 
 	if (!genes || !datasets) noData();
+
+	} // end asdf
 
 	///////////////////////////////////////////////////////////////////////////
 	// Get the data and initialize the view
@@ -139,6 +153,15 @@ function view(){
 	d3.json(query, function(err, data){
 		// Create each element's style by merging in the dataset colors and
 		// finding the width of each container
+		if (genes == null) {
+			genes = data.genes;
+		}
+		if (datasets == null) {
+			datasets = data.datasets;
+		}
+		if (showDuplicates == null) {
+			showDuplicates = true; // TODO fix this hack
+		}
 		var style = { subnetwork: defaultStyle(), mutation_matrix: defaultStyle(),
 					  transcript: defaultStyle(), cnabrowser: defaultStyle() };
 		elements.forEach(function(e){
