@@ -33,7 +33,7 @@ $('a#shareBtn').on('click', function(e) {
 // * adding tooltips
 // * adding annotations
 // * controlling which datasets are visible
-var votePPI, voteMutation;
+var votePPI, voteMutation, commentPPI;
 function view(){
 	// Set up promise
 	var deferred = $.Deferred();
@@ -322,7 +322,8 @@ function view(){
 		// Add the subnetwork plot
 
 		// Initialize the hash of references to votes
-		var refs = data.subnetwork_data.refs;
+		var refs = data.subnetwork_data.refs,
+			comments = data.subnetwork_data.comments;
 
 		// Function for updating the tooltips when a user votes, and storing the
 		// resulting vote in the datbase
@@ -332,7 +333,8 @@ function view(){
 				voteID = [network, source, target, pmid].join("-"),
 				up = $("td#" + voteID + " a.upvote"),
 				down = $("td#" + voteID + " a.downvote"),
-				count = $("td#" + voteID + " span.count");
+				count = $("td#" + voteID + " span.count"),
+				comment = $("td#" + voteID + " span.comment");
 
 			// Update the arrows in the tooltip
 			if (direction == "down" || d.vote == "down") down.toggleClass("downvote-on");
@@ -348,6 +350,15 @@ function view(){
 				d.vote = d.vote == "down" ? null : "down";
 			}
 
+			// Show the comment box if the user has voted one way or the other
+			if (d.vote) comment.show();
+			// Otherwise delete any existing comment
+			else{
+				comments[source][target][network][pmid] = "";
+				comment.val("");
+				comment.hide();
+			}
+
 			// Finally, update the count
 			count.text(d.score);
 
@@ -358,7 +369,6 @@ function view(){
 	        formData.append( 'network', network );
 	        formData.append( 'pmid', pmid );
 	        formData.append( 'vote', direction );
-
 
 	        $.ajax({
 	            // Note: can't use JSON otherwise IE8 will pop open a dialog
@@ -387,6 +397,47 @@ function view(){
 
 		}
 
+		commentPPI = function (network, source, target, pmid){
+			// Extract the text of the comment
+			var voteID = [network, source, target, pmid].join("-"),
+				comment = comment = $("td#" + voteID + " span.comment input").val();
+
+			comments[source][target][network][pmid] = comment;
+
+			// Create a form to submit as an AJAX request to update the database
+	        var formData = new FormData();
+	        formData.append( 'source', source );
+	        formData.append( 'target', target );
+	        formData.append( 'network', network );
+	        formData.append( 'comment', comment );
+	        formData.append( 'pmid', pmid );
+
+	        $.ajax({
+	            // Note: can't use JSON otherwise IE8 will pop open a dialog
+	            // window trying to download the JSON as a file
+	            url: '/comment/ppi',
+	            data: formData,
+	            cache: false,
+	            contentType: false,
+	            processData: false,
+	            type: 'POST',
+
+	            error: function(xhr) {
+	                annotationStatus('Database error: ' + xhr.status);
+	            },
+
+	            success: function(response) {
+	                if(response.error) {
+	                    annotationStatus('Oops, something bad happened.', warningClasses);
+	                    return;
+	                }
+
+	                // Log the status
+	                annotationStatus(response.status, successClasses);
+	            }
+	        });
+
+		}
 		// Draw the subnetwork chart with tooltips onmouseover and
 		// preset annotations onclick
 		var subnetChart = subnetwork({style: style.subnetwork})
@@ -435,8 +486,11 @@ function view(){
 									else{
 										var uplink = "", downlink = "";
 									}
-
-									row += "<td id='" + voteID + "'>" + downlink + "<span class='count'>" + score + "</span>" + uplink + "</td></tr>";
+									var commentDisplay = upvoted || downvoted ? "display:inline;" : "display:none;",
+										comment = comments[source][target][n][pmid];
+									row += "<td id='" + voteID + "'>" + downlink + "<span class='count'>" + score + "</span>" + uplink;
+									row += "<br/><span class='comment' style='" + commentDisplay + "'><input type='text' class='form-control' placeholder='Comment' value='" + comment + "'>"
+									row += "<a class='saveComment' onclick='commentPPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\")'>Save</a></span></td></tr>";
 
 									// Append the row
 									tip += row;

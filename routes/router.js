@@ -54,6 +54,7 @@ exports.annotations.gene = annotations.gene;
 exports.annotations.cancer = annotations.cancer;
 exports.annotations.save = annotations.save;
 exports.annotations.ppiVote = annotations.ppiVote;
+exports.annotations.ppiComment = annotations.ppiComment;
 exports.annotations.mutationVote = annotations.mutationVote;
 
 // Share link

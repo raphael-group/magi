@@ -13,6 +13,17 @@ var PPISchema = new mongoose.Schema({
 
 mongoose.model( 'PPI', PPISchema );
 
+// Create PPI schema and add it to Mongoose
+var PPIVoteSchema = new mongoose.Schema({
+	user_id: { type: mongoose.Schema.Types.ObjectId, required: true},
+	ppi_id: { type: mongoose.Schema.Types.ObjectId, required: true},
+	pmid: String,
+	comment: String,
+	vote: String
+});
+
+mongoose.model( 'PPIVote', PPIVoteSchema );
+
 // A function for listing all the interactions for a particular gene
 exports.ppilist = function ppilist(genes, callback){
 	var PPI = mongoose.model( 'PPI' );
@@ -21,6 +32,45 @@ exports.ppilist = function ppilist(genes, callback){
   		else callback("", ppis);
 	})// end PPI.find
 }// end exports.ppilist
+
+// Create a dictionary of all the comments a user has made on a set of PPIs
+exports.ppicomments = function ppicomments(ppis, user_id, callback){
+	// Define the models
+	var PPI = mongoose.model( 'PPI' ),
+		PPIVote = mongoose.model( 'PPIVote' );
+
+	// Create a map of IDs to PPIs and initialize the dictionary of comments
+	// with blank comments for each PPI's references
+	var idToPPI = {},
+		comments = {};
+	ppis.forEach(function(ppi){
+		idToPPI[ppi._id] = ppi;
+		if (!(ppi.source in comments)) comments[ppi.source] = {};
+		if (!(ppi.target in comments[ppi.source])) comments[ppi.source][ppi.target] = {};
+		if (!(ppi.network in comments[ppi.source][ppi.target])) comments[ppi.source][ppi.target][ppi.network] = {};
+		ppi.references.forEach(function(ref){
+			comments[ppi.source][ppi.target][ppi.network][ref.pmid] = "";
+		})
+	});
+
+	// Find all the user's votes about these PPIs
+	var ppiIDs = ppis.map(function(ppi){ return ppi._id; });
+	PPIVote.find({user_id: user_id, ppi_id: {$in: ppiIDs} }, function (err, votes) {
+  		if(err) console.log(err);
+  		
+  		// Iterate through the votes
+  		votes.forEach(function(vote){
+  			if (vote.comment){
+  				ppi = idToPPI[vote.ppi_id];
+	  			comments[ppi.source][ppi.target][ppi.network][vote.pmid] = vote.comment;
+	  		}
+  		});
+
+  		// Execute the callback
+  		callback("", comments);
+
+	})// end PPIVote.find
+}// end exports.ppicomments
 
 // upsert an interaction
 exports.upsertInteraction = function(source, target, network, ref, comment, user_id, callback){
@@ -66,7 +116,8 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 // Record a user's vote for an interaction
 exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
 	// Set up the promise
-	var PPI = mongoose.model( 'PPI' );
+	var PPI = mongoose.model( 'PPI' ),
+		PPIVote = mongoose.model( 'PPIVote' ),
 		Q = require( 'q' ),
 		d = Q.defer();
 
@@ -84,6 +135,7 @@ exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
 		}
 
 		// Update the vote for the reference
+		var userVote;
 		ppi.references.forEach(function(ref){
 			if (ref.pmid == pmid){
 				var upIndex = ref.upvotes.indexOf( user_id ),
@@ -99,11 +151,58 @@ exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
 					if (upIndex != -1) ref.upvotes.splice(upIndex, 1);
 				}
 				ppi.markModified('references');
+				userVote = ref.upvotes.indexOf( user_id ) != -1 ? "up" : ref.downvotes.indexOf( user_id ) != -1 ? "down" : "none";
 			}
 		})
 
 		// Then save the PPI
 		ppi.save(function(err){
+			if (err) throw new Error(err);
+
+			// Update the user's vote
+			var query = { user_id: user_id, ppi_id: ppi._id, pmid: pmid };
+			if (userVote == "none"){
+				PPIVote.remove(query, function(err){
+					if (err) throw new Error(err);
+					d.resolve();
+				});
+			}
+			else{
+				PPIVote.update(query, { vote: vote }, {upsert: true}, function(err){
+					if (err) throw new Error(err);
+					d.resolve();
+				});
+			}			
+		});
+	});
+
+	return d.promise;
+}
+
+exports.comment = function ppiComment(source, target, network, pmid, comment, user_id){
+	// Set up the promise
+	var PPI = mongoose.model( 'PPI' ),
+		PPIVote = mongoose.model( 'PPIVote' ),
+		Q = require( 'q' ),
+		d = Q.defer();
+
+	//Create and execute the query
+	var query = {
+		source: {$in: [source, target]},
+		target: {$in: [source, target]},
+		network: network
+	};
+
+	PPI.findOne(query, function(err, ppi){
+		// Throw error and resolve if necessary
+		if (err){
+			throw new Error(err);
+			d.resolve();
+		}
+
+		// Update the user's comment on this particular interaction
+		var query = { user_id: user_id, ppi_id: ppi._id, pmid: pmid };
+		PPIVote.update(query, { comment: comment }, function(err){
 			if (err) throw new Error(err);
 			d.resolve();
 		});

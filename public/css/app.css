@@ -314,3 +314,7 @@ margin: 0;
 /* Up- and downvoting styles. */
 a.upvote, a.downvote { color: #fff; margin: 0px 5px 0px 5px; cursor:pointer; text-shadow: 0px 0px 0px #fff;}
 a.upvote.upvote-on, a.downvote.downvote-on {color: orange; text-shadow: 0px 0px 6px rgba(255,255,255,0.7);}
+span.comment input{ font-size:9pt;display:inline;width:80%;height:20px;}
+span.comment a{cursor:pointer;margin-left:3px;}
+
+
