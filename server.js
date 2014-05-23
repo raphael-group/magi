@@ -117,6 +117,7 @@ app.post('/', routes.queryhandler)
 
 // gd3 view
 app.get('/view', routes.view)
+app.get('/view/:id', routes.view)
 app.get('/data/bundle', routes.viewData)
 
 // Data-/gene set uploads

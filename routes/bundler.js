@@ -9,18 +9,14 @@ var mongoose = require( 'mongoose' ),
 
 exports.viewData = function getViewData(req, res){
 	// Parse query params
-	console.log(req.query);
 	if('id' in req.query) {
-		console.log('id:', req.query.id);
 		var QueryHash = mongoose.model('QueryHash'),
 				searchTerm = {queryHash: req.query.id};
-		console.log(searchTerm);
 
 		QueryHash.find(searchTerm, function(err, entries) {
 			if(entries.length == 0) {
       	res.send('');
 	    } else {
-	      console.log(entries[0]);
 	      var query = entries[0].query;
 	      if (query == undefined) {
 	      	res.send('');
@@ -31,8 +27,6 @@ exports.viewData = function getViewData(req, res){
 					}
 					var genes = getParameterByName(query,"genes").split(','),
 							dataset_ids = getParameterByName(query,"datasets").split(',');
-					console.log(genes);
-					console.log(dataset_ids);
 					completeViewData(genes, dataset_ids);
 	      }
 	    }

@@ -117,8 +117,6 @@ function view(){
 
 	// If the URL is a hash ID, query it directly, else look up the info
 	if(window.location.search.indexOf('id=') >= 0) {
-		console.log('hi');
-		console.log(window.location.search);
 		var query = '/data/bundle'+window.location.search,
 				genes = null,
 				datasets = null,
