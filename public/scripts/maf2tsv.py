@@ -105,6 +105,9 @@ def first_match( arr, names ):
     raise IndexError("Names %s not found" % str(names))
 
 def parse_indices( arr ):
+    # VERY IMPORTANT 
+    # MAKE SURE THAT TERMS ARE ALL LOWER CASE
+    
     hugo = ["hugo_symbol"]  # GENE NAME
     tumor = ["tumor_sample_barcode"]	# SAMPLE NAME
     classtype = ["variant_classification"]	# SILENT OR NOT
