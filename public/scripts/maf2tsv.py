@@ -4,8 +4,8 @@
 import re, sys, math, os, json
 
 # Hard-code locations of transcript annotations
-transcriptFile = dict(refseq="refseq_transcript_lengths.json",
-                      ensembl="ensembl_transcript_lengths.json")
+transcriptFile = dict(refseq="refseq_transcript_lengths_new.json",
+                      ensembl="ensembl_transcript_lengths_new.json")
 # Parse args
 def parse_args(input_list=None):
     # Parse arguments
@@ -107,7 +107,7 @@ def first_match( arr, names ):
 def parse_indices( arr ):
     # VERY IMPORTANT 
     # MAKE SURE THAT TERMS ARE ALL LOWER CASE
-    
+
     hugo = ["hugo_symbol"]  # GENE NAME
     tumor = ["tumor_sample_barcode"]	# SAMPLE NAME
     classtype = ["variant_classification"]	# SILENT OR NOT
@@ -115,9 +115,9 @@ def parse_indices( arr ):
     mutstat = ["mutation_status"] # FOR GERMLINE CHECKING
     mutty = ["variant_type"] # MUTATION TYPE
     loc = ["start_position"] # FOR POSITION OF MUTATION
-    codon = ["codon_change", "c_position"] # CODON
-    aachange = ["protein_change", "amino_acid_change", "aachange"] # Protein change
-    transcript_id = ["refseq_mrna_id", "transcript_name", "transcriptid"]
+    codon = ["codon_change", "c_position", "c_position_wu"] # CODON
+    aachange = ["protein_change", "amino_acid_change", "aachange", "amino_acid_change_wu"] # Protein change
+    transcript_id = ["refseq_mrna_id", "transcript_name", "transcript_name_wu", "transcriptid", "annotation_transcript"]
 
     header_terms = [hugo, tumor, classtype, mutty, validstat, mutstat,
                     loc, transcript_id, codon, aachange]
