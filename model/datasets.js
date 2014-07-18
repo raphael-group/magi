@@ -260,7 +260,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		function loadAberrations(){
 			aberrationLines.forEach(function(l){
 				// Extract the fields
-				var fields = l.split('\t'),
+				var fields = l.trim().split('\t'),
 					sample   = fields[0],
 					mutations = fields.slice(1, fields.length);
 
@@ -282,7 +282,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			// Parse the mutations into a hash from gene to transcripts' mutations
 			cnaLines.forEach(function(l){
 				// Extract the fields
-				var fields = l.split('\t'),
+				var fields = l.trim().split('\t'),
 					gene   = fields[0],
 					sample = fields[1],
 					cnaTy  = fields[2] == "AMP" ? "amp" : fields[2] == "DEL" ? "del" : "fus",
@@ -355,7 +355,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		function loadSNVs(){	
 			snvLines.forEach(function(l){
 				// Extract the fields
-				var fields = l.split('\t'),
+				var fields = l.trim().split('\t'),
 					gene       = fields[0],
 					sample     = fields[1],
 					transcript = fields[2],
@@ -575,7 +575,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					// Remove any previous MutGenes associated with the dataset
 					MutGene.remove({dataset_id: newDataset._id}, function(err){
 						if (err) throw new Error(err);
-		
+						console.log(mutGenes)
 						// Finally, create mutated genes
 						MutGene.create(mutGenes, function(err, res){
 							if (err) throw new Error(err);
@@ -629,7 +629,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 			lines.forEach(function(l){
 				// Parse the sample from the line
-				var sample = l.split("\t")[sampleIndex];
+				var sample = l.trim().split("\t")[sampleIndex];
 
 				// Skip lines that start with '#'
 				if (l.lastIndexOf('#', 0) === 0){ return; }
