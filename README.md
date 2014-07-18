@@ -10,7 +10,7 @@ The site consists of two pages:
 
 1. Clone the repository:
 
-        git clone https://<user>@bitbucket.org/raphaellab/gd3-server.git
+        git clone https://<user>@bitbucket.org/raphaellab/cgat.git
 
 2. Install required dependencies:
 

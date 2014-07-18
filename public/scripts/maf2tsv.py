@@ -4,8 +4,8 @@
 import re, sys, math, os, json
 
 # Hard-code locations of transcript annotations
-transcriptFile = dict(refseq="refseq_transcript_lengths.json",
-                      ensembl="ensembl_transcript_lengths.json")
+transcriptFile = dict(refseq="refseq_transcript_lengths_new.json",
+                      ensembl="ensembl_transcript_lengths_new.json")
 # Parse args
 def parse_args(input_list=None):
     # Parse arguments
@@ -105,6 +105,9 @@ def first_match( arr, names ):
     raise IndexError("Names %s not found" % str(names))
 
 def parse_indices( arr ):
+    # VERY IMPORTANT 
+    # MAKE SURE THAT TERMS ARE ALL LOWER CASE
+
     hugo = ["hugo_symbol"]  # GENE NAME
     tumor = ["tumor_sample_barcode"]	# SAMPLE NAME
     classtype = ["variant_classification"]	# SILENT OR NOT
@@ -112,9 +115,9 @@ def parse_indices( arr ):
     mutstat = ["mutation_status"] # FOR GERMLINE CHECKING
     mutty = ["variant_type"] # MUTATION TYPE
     loc = ["start_position"] # FOR POSITION OF MUTATION
-    codon = ["codon_change", "c_position"] # CODON
-    aachange = ["protein_change", "amino_acid_change", "aachange"] # Protein change
-    transcript_id = ["refseq_mrna_id", "transcript_name", "transcriptid"]
+    codon = ["codon_change", "c_position", "c_position_wu", "chromchange"] # CODON
+    aachange = ["protein_change", "amino_acid_change", "aachange", "amino_acid_change_wu"] # Protein change
+    transcript_id = ["refseq_mrna_id", "transcript_name", "transcript_name_wu", "transcriptid"]
 
     header_terms = [hugo, tumor, classtype, mutty, validstat, mutstat,
                     loc, transcript_id, codon, aachange]
@@ -124,12 +127,16 @@ def parse_indices( arr ):
 
 ## Determine the amino acid change given the variant type ##
 def amino_acid_change( aa_change, var_ty, var_class, codon ):
+    de_novo = re.compile('De_novo*')
     if aa_change not in ("N/A", ".", "NULL") and aa_change:
         if var_ty in ("SNP", "DNP", "TNP"):
-            if var_class in ("Missense_Mutation", "Nonsense_Mutation", "Nonstop_Mutation", "RNA"):
+            if var_class in ("Missense_Mutation", "Nonsense_Mutation", "RNA", "Translation_Start_Site"):
                 aao, aan, aaloc = snp_mutation(aa_change)
             elif var_class == "Splice_Site":
                 aao, aan, aaloc = splice_site_mutation(aa_change, codon)
+            #no longer available type in current MAF format skip.
+            elif de_novo.match(var_class) or var_class == '5\'Flank' or var_class == 'Read-through' or var_class == "Nonstop_Mutation":
+                return None, None, None
             else:
                 sys.stderr.write("New mutation effect can't be parsed: %s\n" % var_class)
                 exit(1)
@@ -190,7 +197,9 @@ def parse_maf( maf_file, transcripts ):
                     if aao and aan and loc:
                         mut = dict( sample=sample, ty=var_class, aao=aao,
                                     aan=aan, locus=loc)
-
+                        #deal with version issues
+                        if '.' in transcript:
+                            transcript = transcript.split('.')[0]
                         if transcript not in transcripts:
                             missing_transcripts.add( transcript )
                             transcript = NO_TRANSCRIPT
