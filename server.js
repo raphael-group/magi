@@ -219,7 +219,6 @@ app.post('/saveSVG', function(req, res) {
     res.writeHead(200, {'Content-Type': 'image/png' });
     res.end(req.body['img'], 'binary');
     res.send();
-    console.log(res);
   }
 });
 
