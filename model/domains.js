@@ -118,7 +118,6 @@ exports.addDomainsFromFile = function(filename, callback){
 					return d.promise;
 				})
 			);
-			return d.promise;
 		}
 
 		// Save all the domains simultaneously, and then resolve the promise
@@ -136,8 +135,8 @@ exports.addDomainsFromFile = function(filename, callback){
 						if (err) throw new Error(err);
 						defer.resolve();
 					})
-					return defer;
-				})).then(d.resolve);
+					return defer.promise;
+				})).then(function(){ d.resolve(); });
 			});
 			return d.promise;
 		});
