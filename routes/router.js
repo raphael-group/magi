@@ -1,7 +1,6 @@
 // Load the individual routes
 var about = require( './about' ),
 	auth = require( './auth' ),
-	bundler = require( './bundler' ),
 	index = require( './index' ),
 	upload = require( './upload' ),
 	view = require( './view' ),
@@ -25,9 +24,6 @@ exports.account = auth.account;
 exports.login  = auth.login;
 exports.logout  = auth.logout;
 exports.user = {update: auth.update};
-
-// Bundler routes
-exports.viewData = bundler.viewData;
 
 // Index routes
 exports.index = index.index;
