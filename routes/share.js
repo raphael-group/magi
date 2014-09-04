@@ -5,12 +5,11 @@ var mongoose = require( 'mongoose' ),
 
 exports.saveShareURL = function(req, res) {
   var url = req.body.url,
-      hasher = crypto.createHash('RIPEMD-64').update(url),
+      hasher = crypto.createHash('md5').update(url),
       hash = hasher.digest('hex');
 
   var QueryHash = mongoose.model('QueryHash');
 
-  console.log('created', {query: url, queryHash:hash});
   // Store hash if it doesn't exist
   QueryHash.find({query: url, queryHash:hash}, function(err, entries) {
     if (err) {
