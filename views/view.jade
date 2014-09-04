@@ -20,19 +20,19 @@ block body
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="cna", style="margin-right:5px;")
-                  | Copy number browser
+                  | CNA view
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="mutmatrix", style="margin-right:5px;")
-                  | Mutation matrix
+                  | Mutation matrix view
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="subnetwork", style="margin-right:5px;")
-                  | Subnetwork
+                  | Network view
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="transcript", style="margin-right:5px;")
-                  | Transcript annotation
+                  | Transcript view
             a(id="downloadLink", style="cursor:pointer")
               | &raquo; Download as SVG
             br
@@ -123,7 +123,7 @@ block body
             ul
               li
                 i
-                  b Network.&nbsp;
+                  b Network view.&nbsp;
                 | Shows the interactions among genes on the HINT, HPRD, or iRefIndex interaction networks.
                 | You can <b>toggle the interaction networks</b> shown by clicking on them in the legend,
                 | and you can <b>reposition the nodes </b>in the subnetwork for a better view by <b>dragging/dropping</b> them.
@@ -137,7 +137,7 @@ block body
                 | You can <b>zoom in on and drag the mutation matrix</b> by scrolling and/or clicking the figure with your mouse.
               li
                 i
-                  b Transcript annotation.&nbsp;
+                  b Transcript view.&nbsp;
                 | Shows the mutations in each REFSEQ transcript of each gene in the subnetwork.
                 | Mutations are colored by cancer type. Each symbol represents a distinct mutation type.
                 | Putatively inactivating mutations are shown below the transcript, and the remaining mutations are shown above the transcript.
@@ -145,7 +145,7 @@ block body
                 | You can <b>zoom in on and drag the transcript annotation</b> by scrolling and/or clicking the figure with your mouse.
               li
                 i
-                  b Copy number browser.&nbsp;
+                  b CNA view.&nbsp;
                 | Shows the copy number aberrations surrounding the selected gene (highlighted as red) on the chromosome.
                 | The topest panel shows genes (shown as blocks) distributed in the region.
                 | You can click and drag a window in this panel to zoom in and see the details in the middle and bottom panels.
@@ -170,32 +170,32 @@ block body
 
       div(class="half-page-view leftside")
           h3
-            | Subnetwork
+            | Network
             small(style="font-size:12px")
               | &nbsp;&nbsp;
-              a(id="printSubNet", title="Print subnetwork.")
+              a(id="printSubNet", title="Print network.")
                   span(class="glyphicon glyphicon-print")
           div(id="subnetwork")
 
       div(class="half-page-view rightside")
           h3
-            | Transcript annotation
+            | Transcript
             small
               | &nbsp;&nbsp;
-              a(id="printTrnAnt", title="Print copy number browser.")
+              a(id="printTrnAnt", title="Print transcript view.")
                   span(class="glyphicon glyphicon-print")
           select(class="form-control", id="transcript-plot-select")
           div(id="transcript-plot")
 
       hr(style="clear:both;margin:0px;")
 
-      //- Copy number browser
+      //- CNA view
       div
         h3
-          | Copy number browser
+          | Copy number aberrations
           small
             | &nbsp;&nbsp;
-            a(id="printCnaViz", title="Print copy number browser.")
+            a(id="printCnaViz", title="Print CNA view.")
                 span(class="glyphicon glyphicon-print")
 
         select(class="form-control", id="cna-browser-select")
