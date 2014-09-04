@@ -9,7 +9,11 @@ The site consists of two main pages:
 ## Dependencies
 
 * [Node.js](http://nodejs.org/) and [NPM](https://www.npmjs.org/) (generally included with Node.js).
-* [MongoDB](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/).
+* [MongoDB](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/). Make sure you can run `mongod` from your terminal. Some basic debugging tips are:
+   1. Make sure that you make a directory to store the database. The default is `/data/db`,
+      so you'll need to make that directory before running `mongod`.
+   2. Make sure that the `mongod`, `mongo`, etc. are in your `PATH`.
+
 
 ## Setup
 
@@ -23,12 +27,11 @@ The site consists of two main pages:
 
 3. Start MongoDB:
 
-        mongod
+        mongod &
 
 4. Start the server (default port 8000):
 
         node server.js
-
 
 5. Load data in the following order:
 
@@ -40,11 +43,3 @@ The site consists of two main pages:
    * Mutations (pancan-hotnet2 (regenerate_pancan_data.sh), tcga-gastric) -- loadDataset
 
 6. View the website at `http://localhost:8000/`.
-
-## Organization
-* `data/parsers`: Node.js scripts for loading TSV files into Mongo. To add data to the database, put TSV files containing mutation data, protein-protein interactions, and transcript domain locations in `data/` and load them using the parsers. 
-* `model/`: the models for the server. These scripts define the schemas for each document in Mongo, and also contain functions for loading data in TSV files into the database, and for making specific queries of the database.
-* `public/components`: contains all Bower components.
-* `public/js`: Javascript for the AngularJS app.
-* `public/js/gd3`: the gd3 visualization scripts.
-* `routes/`: implementation of all the routes the server provides.
