@@ -15,16 +15,12 @@ $(document).ready(
 );
 
 // Share link button event handler
-$('a#shareBtn').on('click', function(e) {
-		e.preventDefault();
-		$.post('/share', {url:window.location.search})
-			.done(function(r) {
-				var path = window.location.origin + '/view/' + r;
-				$('a#shareBtn').css('display', 'none');
-				$('div#shareLinkBox').css('display', 'block');
-				$('div#share').append('<input type="text" name="shareLink" value="' + path + '" style="width:100%" readonly />')
-			});
-});
+$('button#shareBtn').on('click', function(e) {
+	$.post('/share', {url: window.location.search})
+		.done(function(r) {
+			$('div#shareLinkBox input').val(window.location.origin + '/view/' + r);
+		});
+	});
 
 // Master function for 
 // * drawing the D3 visualizations

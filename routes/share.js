@@ -5,7 +5,7 @@ var mongoose = require( 'mongoose' ),
 
 exports.saveShareURL = function(req, res) {
   var url = req.body.url,
-      hasher = crypto.createHash('md5').update(url),
+      hasher = crypto.createHash('RIPEMD-64').update(url),
       hash = hasher.digest('hex');
 
   var QueryHash = mongoose.model('QueryHash');

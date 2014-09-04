@@ -1,0 +1,9 @@
+extends layout
+block body
+	div(style="width:50%;height:100%;margin:0px auto")
+		h3 401 Error: Attempted Unauthorized Access
+		div(class="alert alert-warning" role="alert")
+			- if (msg)
+				| #{msg}
+			- else
+				| Unknown authorization error.
