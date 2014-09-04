@@ -4,12 +4,9 @@ var mongoose = require( 'mongoose' ),
   crypto = require('crypto');
 
 exports.saveShareURL = function(req, res) {
-  console.log('Sharing is caring');
-  console.log(req.body.url);
   var url = req.body.url,
-      hasher = crypto.createHash('sha1').update(''),
+      hasher = crypto.createHash('md5').update(url),
       hash = hasher.digest('hex');
-  console.log(hash);
 
   var QueryHash = mongoose.model('QueryHash');
 

@@ -118,7 +118,6 @@ app.post('/', routes.queryhandler)
 // gd3 view
 app.get('/view', routes.view)
 app.get('/view/:id', routes.view)
-app.get('/data/bundle', routes.viewData)
 
 // Data-/gene set uploads
 app.post('/upload/geneset', routes.uploadGeneset)
@@ -151,6 +150,13 @@ app.get('/login', routes.login);
 app.get('/logout', routes.logout);
 app.get('/account', ensureAuthenticated, routes.account);
 app.post('/user/update', ensureAuthenticated, routes.user.update)
+
+// Render errors
+app.get("/401", function(req, res){
+  var msg = req.session.msg401;
+  req.session.msg401 = null;
+  res.render("401", {msg: msg});
+})
 
 // this route extracts the previous url (returnTo) and stores it in the session
 // so it will get rerouted on authentication
