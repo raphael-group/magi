@@ -575,7 +575,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					// Remove any previous MutGenes associated with the dataset
 					MutGene.remove({dataset_id: newDataset._id}, function(err){
 						if (err) throw new Error(err);
-						console.log(mutGenes)
+
 						// Finally, create mutated genes
 						MutGene.create(mutGenes, function(err, res){
 							if (err) throw new Error(err);

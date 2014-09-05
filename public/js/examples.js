@@ -11,11 +11,11 @@ $(document).ready(function(){
 	var exampleQueries = [
 		{	selector: "a#swi-snf-pan-can",
 			genes: ["ARID1A", "ARID1B", "ARID2", "PBRM1", "SMARCA4", "SMARCB1", "SMARCC1", "SMARCC2"],
-			dataset: "tcga pan-can"
+			dataset: "tcga pan-cancer"
 		},
 		{	selector: "a#cohesin-pan-can",
 			genes: ["STAG2", "STAG1", "SMC1A", "RAD21", "SMC3"],
-			dataset: "tcga pan-can"
+			dataset: "tcga pan-cancer"
 		},
 		{	selector: "a#pi3k-gbm",
 			genes: ["PIK3CA", "PTEN", "BRAF", "AKT1", "PIK3R1"],

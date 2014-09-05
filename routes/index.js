@@ -35,7 +35,7 @@ exports.index = function index(req, res){
 					datasetToCheckboxes.all.push( db.checkboxValue = toCheckboxValue(db._id, scope, db.title, groupName) );
 					if (scope == "public"){
 						datasetToCheckboxes[groupName].push( db.checkboxValue );
-						if (groupName == "tcga pan-can" && db.title == "GBM"){
+						if (groupName == "tcga pan-cancer" && db.title == "GBM"){
 							datasetToCheckboxes.gbm = [ db.checkboxValue ];
 						}
 					}
