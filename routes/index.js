@@ -88,6 +88,7 @@ exports.queryhandler = function queryhandler(req, res){
 	/* Extract datasets */
 	// Dataset checkboxes are prepended with 'db' to ensure no starts their
 	// dataset name with a non-letter (which would break HTML rules)
+	console.log(req.body)
 	if (req.body.multiselect instanceof Array){
 		var checkedDatasets = req.body.multiselect.filter(function(n){
 			return n.substr(0, 2) == 'db'

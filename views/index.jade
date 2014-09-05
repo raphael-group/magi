@@ -50,7 +50,7 @@ block body
             div(id="db-select", class="col-lg-6")
               h5 Datasets
               div(style="margin-top:3px" id="magi-datasets")
-                select(id="dataset-multiselect", class="multiselect", multiple="multiple")
+                select(id="dataset-multiselect", class="multiselect", name="multiselect", multiple="multiple")
                    -for (var i in groups)
                      -var group = groups[i];
                      -var groupName = group.name == "" ? "Other" : group.name;
