@@ -11,8 +11,5 @@
     "typeahead.js": "latest",
     "hogan": "latest",
     "bootstrap-multiselect": "latest"
-  },
-  "resolutions": {
-    "jquery": ">= 1.11.0"
   }
 }

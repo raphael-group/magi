@@ -1,29 +1,24 @@
 extends layout
-block header
-  div(class="container-fluid", id="header", role="navigation")
-    div(class="page-header")
-      div(id="login")
-        //- Ask the user to login or show his/her name
-        - if (user)
-          | Welcome, &nbsp;
-          a(href="/account") #{user.name}
-          | &nbsp; | &nbsp;
-          a(href="/logout") Logout
-        - else
-          a(href="/auth/Google") Login via Google
-block body
-  div(class="container")
-    div(class="indexTop")
-      ul
-        li
-          a(class="btn btn-default loginBtn", href="/auth/Google") Log in
-        li
-          a(href="#", id="about") About
-        li
-          a(href="#", id="instructions") Instructions
-      div(style="text-align:center")
-        img(src="img/magiTitle.svg", id="splash-logo")
 
+block body
+  div(class="banner")
+    div(class="container-fluid")
+      div(class="row")
+        div(class="col-md-8")
+          h1(class="bannerHeader") Welcome to MAGI
+          h4 A tool for Mutation Annotation and Genomic Interpretation
+          br
+          p MAGI is a tool for annotating, exploring, and analyzing gene sets that may be associated with cancer.
+          ul
+            li Point 1
+            li Point 2
+            li Point 3
+          br
+          a(type="button" class="pull-right btn btn-tour dropdown-toggle" href="#") Get the tour
+        div(class="col-md-4")
+          p Hi
+
+  br
   a(name="input-chooser")
   div(class="container-index", id="input-chooser")
     ul(id="magi-actions", class="nav nav-tabs nav-justified", style="")
@@ -285,7 +280,7 @@ block belowTheFold
       $('html,body').animate( {scrollTop: aTag.offset().top }, 'slow');
       setTimeout(function() {window.location.hash = aid;}, 300);
     }
-    $("a#instructions").on("click", function(){ scrollToAnchor("component-descriptions")});
+    $("a#nav-instructions").on("click", function(){ scrollToAnchor("component-descriptions")});
     $("a#about").on("click", function(){ scrollToAnchor("sec-about")});
     $("a#search").on("click", function(){ scrollToAnchor("input-chooser")});
     $("a#circle_cna").on("click", function(){ scrollToAnchor("cna-browser")});

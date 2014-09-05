@@ -43,7 +43,7 @@ exports.uploadDataset = function uploadDataset(req, res){
 				if (snv_file) fs.unlinkSync( snv_file );
 				if (cna_file) fs.unlinkSync( cna_file );
 				if (samples_file) fs.unlinkSync( samples_file );
-				
+
 				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to view your dataset." });
 			})
 			.fail(function(){

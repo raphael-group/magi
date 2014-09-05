@@ -1,74 +1,87 @@
 doctype html
 html
-	head
-		meta(charset='utf8')
-		link(rel="icon", type="image/png", href="img/favicon.png")
-		title MAGI
-		link(rel='stylesheet', href='/components/bootstrap/dist/css/bootstrap.min.css')
-		link(rel='stylesheet', href='/css/app.css')
-		link(rel='stylesheet', href='/css/elusive-webfont.css')
+  head
+    meta(charset='utf8')
+    link(rel="icon", type="image/png", href="img/favicon.png")
+    title MAGI
+    link(rel='stylesheet', href='/components/bootstrap/dist/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/css/app.css')
+    link(rel='stylesheet', href='/css/elusive-webfont.css')
 
-		script.
-			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    script.
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-			ga('create', 'UA-47916336-1', 'brown.edu');
-			ga('send', 'pageview');
+      ga('create', 'UA-47916336-1', 'brown.edu');
+      ga('send', 'pageview');
 
-	body()
-		block header
-			div(class="container-fluid", id="header", role="navigation")
-				div(class="page-header")
-					div(id="login")
-						//- Ask the user to login or show his/her name
-						- if (user)
-							| Welcome, &nbsp;
-							a(href="/account") #{user.name}
-							| &nbsp; | &nbsp;
-							a(href="/logout") Logout
-						- else
-							a(href="/auth/google/returnTo") Login via Google
-					h1
-						a(href="/")
-							img(src="/img/magiTop.svg", id="small-logo")
+  body()
+    block header
+      div(class="navbar navbar-default" role="navigation")
+        div(class="navbar-header")
+          button(type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+              data-target="#magi-navbar-collapse")
+            span(class="sr-only") Toggle navigation
+            span(class="icon-bar")
+            span(class="icon-bar")
+            span(class="icon-bar")
+          a(class="navbar-brand" href="#") MAGI
 
-		br
-		block body
+        div(class="collapse navbar-collapse" id="magi-navbar-collapse")
+          ul(class="nav navbar-nav")
+            li
+              a(href="#") Query
+            li
+              a(href="#" id="nav-instructions") Instructions
+            li
+              a(href="#") Support
+            li
+              a(href="#") Feedback
+          ul(class="nav navbar-nav navbar-right")
+            li
+              //- Ask the user to login or show his/her name
+              - if (user)
+                <span style="margin-right: 5px">Welcome, <a href="/account"> #{user.name} </a> | <a href="/logout"> Logout</a></span>
+              - else
+                a(href="/auth/google/returnTo")
+                  button(type="button" class="btn btn-default btn-xs") Login via Google
 
-		block footer
-			hr
-			div(id="footer", class="container")
-				p(class="col-lg-4 text-left") Updated: Sep 4th, 2014
-				p(class="col-lg-4 text-center") Copyright 2014. All rights reserved.
-				ul(id="more-info", class="col-lg-4 text-right")
-					li
-						a(href="/acknowledgements") Acknowledgements
-					li
-						a(href="/support") Support
-					li
-						a(href="#", id="give-feedback") Feedback
-				ul(id="even-more-info")
-					li
-						a(href="/abbreviations") Abbreviations
-					li
-						a(href="/contact") Contact
-					li
-						a(href="/privacy", target="_new") Privacy
-					li
-						a(href="/terms", target="_new") Terms
+    block body
 
+    block footer
+      hr
+      div(id="footer", class="container")
+        p(class="col-lg-4 text-left") Updated: Sep 4th, 2014
+        p(class="col-lg-4 text-center") Copyright 2014. All rights reserved.
+        ul(id="more-info", class="col-lg-4 text-right")
+          li
+            a(href="/acknowledgements") Acknowledgements
+          li
+            a(href="/support") Support
+          li
+            a(href="#", id="give-feedback") Feedback
+        ul(id="even-more-info")
+          li
+            a(href="/abbreviations") Abbreviations
+          li
+            a(href="/contact") Contact
+          li
+            a(href="/privacy", target="_new") Privacy
+          li
+            a(href="/terms", target="_new") Terms
+script(src='/components/bootstrap/dist/js/bootstrap.min.js')
 script(id="_webengage_script_tag" type="text/javascript").
-	var _weq = _weq || {};
-	_weq['webengage.licenseCode'] = '#{webengageID}';
-	_weq['webengage.widgetVersion'] = "4.0";
-	(function(d){
-		var _we = d.createElement('script');
-		_we.type = 'text/javascript';
-		_we.async = true;
-		_we.src = (d.location.protocol == 'https:' ? "https://ssl.widgets.webengage.com" : "http://cdn.widgets.webengage.com") + "/js/widget/webengage-min-v-4.0.js";
-		var _sNode = d.getElementById('_webengage_script_tag');
-		_sNode.parentNode.insertBefore(_we, _sNode);
-	})(document);
+  var _weq = _weq || {};
+  _weq['webengage.licenseCode'] = '#{webengageID}';
+  _weq['webengage.widgetVersion'] = "4.0";
+  (function(d){
+    var _we = d.createElement('script');
+    _we.type = 'text/javascript';
+    _we.async = true;
+    _we.src = (d.location.protocol == 'https:' ? "https://ssl.widgets.webengage.com" : "http://cdn.widgets.webengage.com") + "/js/widget/webengage-min-v-4.0.js";
+    var _sNode = d.getElementById('_webengage_script_tag');
+    _sNode.parentNode.insertBefore(_we, _sNode);
+  })(document);
 block belowTheFold
