@@ -10,6 +10,7 @@
     "d3-tip": "latest",
     "typeahead.js": "latest",
     "hogan": "latest",
-    "bootstrap-multiselect": "latest"
+    "bootstrap-multiselect": "latest",
+    "shepherd.js": "latest"
   }
 }

@@ -23,7 +23,7 @@ div.navbar {
   margin-bottom: 0;
 }
 ul.nav li a {
-  color: #ccc !important;
+  color: #ccc;
 }
 ul.nav li a:hover {
   color: #8cc63f !important;
@@ -360,5 +360,42 @@ a.upvote, a.downvote { color: #fff; margin: 0px 5px 0px 5px; cursor:pointer; tex
 a.upvote.upvote-on, a.downvote.downvote-on {color: orange; text-shadow: 0px 0px 6px rgba(255,255,255,0.7);}
 span.comment input{ font-size:9pt;display:inline;width:80%;height:20px;}
 span.comment a{cursor:pointer;margin-left:3px;}
+
+
+
+/* Shepherd.js */
+.shepherd-element.shepherd-theme-arrows.shepherd-transparent-text .shepherd-text {
+  color: #3b744f !important;
+}
+.shepherd-element.shepherd-theme-arrows .shepherd-content {
+  width: 400px !important;
+  max-width: 100%;
+}
+.shepherd-element.shepherd-theme-arrows .shepherd-content a {
+  color: inherit;
+}
+.shepherd-element.shepherd-theme-arrows .shepherd-content footer .shepherd-buttons li .shepherd-button {
+  background: #6b73b5 !important;
+}
+.shepherd-element.shepherd-theme-arrows .shepherd-content footer .shepherd-buttons li .shepherd-button-secondary {
+  background: #eee !important;
+  color: #aaa ! important;
+}
+
+.banner > *, .navbar > *, .container-index > * {
+/*  -webkit-transition: opacity 0.4s;
+  -moz-transition: opacity 0.4s;
+  -o-transition: opacity 0.4s;
+  transition: opacity 0.4s;
+  opacity: 0.3;*/
+}
+body:not(.shepherd-active) .banner > *,
+body:not(.shepherd-active) .navbar > *,
+body:not(.shepherd-active) .container-index > * {
+  opacity: 1;
+}
+.shepherd-target.shepherd-enabled {
+  opacity: 1 !important;
+}
 
 

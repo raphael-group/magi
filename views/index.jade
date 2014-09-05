@@ -23,18 +23,18 @@ block body
   div(class="container-index", id="input-chooser")
     ul(id="magi-actions", class="nav nav-tabs nav-justified", style="")
       li(id="activeAction")
-        a(href="/") Query
+        a(href="/" id="magi-tab-query") Query
       li
-        a(href="/upload") Upload Mutation Data
+        a(href="/upload" id="magi-tab-upload") Upload Mutation Data
       li
-        a(href="/datasets") View Dataset Summaries
+        a(href="/datasets" id="magi-tab-datasets") View Dataset Summaries
     div(id="query", class="panel-success panel", style="margin-top:-2px")
       div(class="panel-body")
         form(method="post", action="/", role="form", id="query-form")
           div(id="db-chooser", class="col-lg-12")
             div(id="db-select", class="col-lg-6")
               h5 Datasets
-              div(style="margin-top:3px")
+              div(style="margin-top:3px" id="magi-datasets")
                 select(id="dataset-multiselect", class="multiselect", multiple="multiple")
                    -for (var i in groups)
                      -var group = groups[i];
@@ -245,6 +245,7 @@ block body
 
 block belowTheFold
   link(rel="stylesheet", href="/components/bootstrap-multiselect/css/bootstrap-multiselect.css", type="text/css")
+  link(rel="stylesheet", href="/components/shepherd.js/css/shepherd-theme-arrows.css", type="text/css")
   script(src='/components/d3/d3.min.js')
   script(src='/components/jquery/dist/jquery.min.js')
   script(src='/components/jquery-form/jquery.form.js')
@@ -255,9 +256,75 @@ block belowTheFold
   script(src='components/gd3/dist/js/transcript-plot.js').
   script(src='components/gd3/dist/js/mutation-matrix.js').
   script(src='components/gd3/dist/js/subnetwork.js').
+  script(src='components/shepherd.js/shepherd.min.js').
   script(src='/js/query-control.js')
   script(src='/js/examples.js')
   script.
+    var tour;
+    tour = new Shepherd.Tour({
+      defaults: {
+        classes: 'shepherd-open shepherd-element shepherd-theme-arrows',
+        scrollTo: true
+      }
+    });
+    tour.addStep('query-step', {
+      text: 'Query a combination of public and private mutation data.',
+      attachTo: '#magi-tab-query top',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ],
+      scrollTo: true
+    });
+    tour.addStep('example-step', {
+      text: 'Upload your mutation data including SNVs and CNAs.',
+      attachTo: '#magi-tab-upload top',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ],
+      scrollTo: true
+    });
+    tour.addStep('dataset-summaries', {
+      text: 'Once you\'ve uploaded your own data, you can view a summary of each dataset here. ',
+      attachTo: '#magi-tab-datasets top',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+    tour.addStep('dataset-multiselect', {
+      text: 'Choose a combination of mutation datasets to query here. Toggle datasets on/off using the checkboxes.',
+      attachTo: '#magi-datasets bottom',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+    tour.addStep('gene-list', {
+      text: 'Enter a gene list of up to 25 gene symbols. MAGI will display all the mutations in these genes from the datasets you selected above.',
+      attachTo: '#genes-list bottom',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+    tour.addStep('submit', {
+      text: 'Once you\'ve entered a list of genes and selected a set of datasets, you submit your query here. MAGI will take you to another page to display the mutations.',
+      attachTo: '#submit top',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows',
+      buttons: [
+        { text: 'Finish', action: tour.next }
+      ]
+    });
+    $('.btn-tour').on('click', function() {
+        tour.start();
+    });
     //- Initialize the multiselect
     $(document).ready(function() {
       $('#dataset-multiselect').multiselect({
