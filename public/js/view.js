@@ -602,7 +602,7 @@ function view(){
       $('div#view').css('padding-top', $('div#control-panel').css('height'));
     } else {
       $('div#control-panel').css("width", "200px");
-      $('div#control-panel').css("right", "20px");
+      $('div#control-panel').css("right", "0px");
       $('div#view').css('margin-top', '0px');
     }
   }
