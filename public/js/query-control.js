@@ -13,7 +13,7 @@ $(document).ready(function() {
     $(formEl).on("submit", function(e){
         // Extract input data
         var geneList  = $(geneListEl).val(),
-            numDatasets = $('input[name=multiselect]:checked').length;
+            numDatasets = $('.multiselect :checked').length;
 
         // Make sure at least one gene is entered
         if (geneList == ""){
