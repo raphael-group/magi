@@ -1,7 +1,8 @@
 {
-  "name": "cgat",
+  "name": "magi",
   "version": "0.0.1",
   "dependencies": {
+    "jquery": "latest",
     "d3": "3.3.x",
     "bootstrap": "3.x",
     "jquery-form": "3.x",
