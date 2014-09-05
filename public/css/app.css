@@ -29,13 +29,14 @@ ul.nav li a:hover {
   color: #8cc63f !important;
 }
 .navbar-brand {
-  color: #8cc63f !important;
+  color: #6b73b5 !important;
   font-weight: bold;
 }
 
 div.banner {
   background:#545e8e;
   border-bottom: 2px solid #8cc63f;
+  box-shadow: 0px -8px 16px rgba(0,0,0,.3);
 }
 div.banner .container-fluid {
   background: #fff;

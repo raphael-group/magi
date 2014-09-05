@@ -14,9 +14,24 @@ block body
             li Point 2
             li Point 3
           br
-          a(type="button" class="pull-right btn btn-tour dropdown-toggle" href="#") Get the tour
+          a(type="button" class="btn btn-tour dropdown-toggle" href="#" style="margin-bottom:15px;") Get the tour
         div(class="col-md-4")
-          p Hi
+          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+            a(href="#", id="circle_cna")
+              img(src="img/circle_cna.png" style="width:100%;height:100%;")
+              | <br /> CNAs
+          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+            a(href="#", id="circle_mutmtx")
+              img(src="img/circle_mutmtx.png" style="width:100%;height:100%;")
+              | <br /> Mutation Matrices
+          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+            a(href="#", id="circle_subnet")
+              img(src="img/circle_subnet.png" style="width:100%;height:100%;")
+              | <br /> Networks
+          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+            a(href="#", id="circle_transcript")
+              img(src="img/circle_transcript.png" style="width:100%;height:100%;")
+              | <br /> Transcripts
 
   br
   a(name="input-chooser")
@@ -131,11 +146,11 @@ block body
         div
           a(href="#", id="circle_subnet")
             img(src="img/circle_subnet.png")
-            | <br /><br /> Subnetworks
+            | <br /><br /> Networks
         div
           a(href="#", id="circle_transcript")
             img(src="img/circle_transcript.png")
-            | <br /><br /> Transcript annotations
+            | <br /><br /> Transcripts
       br
       br
     a(name="component-descriptions")
