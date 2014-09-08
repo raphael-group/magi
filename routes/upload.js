@@ -31,9 +31,9 @@ exports.uploadDataset = function uploadDataset(req, res){
         // with name <outputPrefix>.tsv
         var outputPrefix = path.slice(0, -(MAF_EXT.length));
         args = ['--maf_file=' + path, 
-                // TODO: how to choose which?
-                '--transcript_db=' + 'refseq' or 'ensemble',
-                '-output_prefix=', outputPrefix
+                // TODO: how to choose which transcript db?
+                '--transcript_db=' + 'refseq', // 'ensemble',
+                '--output_prefix=', outputPrefix
                ];
 
         convert = childProcess.execFile(MAF2TSV_PATH, function(err, stdout,
@@ -53,7 +53,8 @@ exports.uploadDataset = function uploadDataset(req, res){
             console.log('Child process exited with exit code '+code);
         });
         
-        return outputPrefix + ".tsv";
+        return {'snvs' : outputPrefix + "-snvs.tsv",
+                'samples' : outputPrefix + "-samples.tsv"};
     };
     
     form.parse(req, function(err, fields, files) {
@@ -62,13 +63,8 @@ exports.uploadDataset = function uploadDataset(req, res){
     		group_name = fields.groupName,
     		color = fields.color;
 
-    	if (files.SNVs) {
-            snv_file = files.SNVs.path;
-            
-            // if the uploaded file is a MAF file, convert it 
-            if (snv_file.slice(-3) === MAF_EXT)
-                snv_file = convertMaf(snv_file);
-        } else snv_file = null;
+    	if (files.SNVs) snv_file = files.SNVs.path;
+        else snv_file = null;
 
     	if (files.CNAs) cna_file = files.CNAs.path;
     	else cna_file = null;
@@ -78,7 +74,19 @@ exports.uploadDataset = function uploadDataset(req, res){
 
     	if (files.testedSamples) samples_file = files.testedSamples.path;
     	else samples_file = null;
-
+        
+        // if the uploaded SNV file is a MAF file, convert it to TSV and 
+        // change the path of the samples file to the samples TSV output by the
+        // conversion script
+        // TODO: is it correct to assume that if the SNV file is MAF, there 
+        // is no samples file and that it's correct to overwrite the samples
+        // path?
+        if (snv_file && snv_file.slice(-3) === MAF_EXT) {
+            var newPaths = convertMaf(snv_file);
+            snv_file = newPaths['snvs'];
+            samples_file = newPaths['samples'];
+        }
+        
     	// Pass the files to the parsers
 		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file, false, color, req.user._id)
 			.then(function(){
