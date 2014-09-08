@@ -2,7 +2,11 @@
 var Dataset  = require( "../model/datasets" ),
 	formidable = require('formidable'),
 	fs = require('fs'),
-	path = require('path');
+	path = require('path'),
+        childProcess = require('child_process');
+
+var MAF_EXT = '.maf';
+var MAF2TSV_PATH = 'public/scripts/maf2tsv.py';
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
@@ -17,15 +21,43 @@ exports.uploadDataset = function uploadDataset(req, res){
 		uploadDir: path.normalize(__dirname + '/../tmp'),
 		keepExtensions: true
     });
-
+    
+    // given a path to a MAF file, call the converter script to create a TSV
+    // and return the path to newly created TSV
+    function convertMaf(path) {
+        convert = childProcess.execFile(MAF2TSV_PATH, function(err, stdout,
+                                                               stderr) {
+            if (err) throw new Error(err);
+            
+            console.log('Child Process STDOUT: ' + stdout);
+            console.log('Child Process STDERR: ' + stderr);
+        });
+        
+        // not sure if this is necessary since the callback has err
+        convert.on('error', function(err) {
+            console.log('Child processed error: ' + err);
+        });
+        
+        convert.on('exit', function (code) {
+            console.log('Child process exited with exit code '+code);
+        });
+        
+        // TODO: need to check how the python script names the new file
+        var newPath = path + ".tsv";
+        return newPath;
+    };
+    
     form.parse(req, function(err, fields, files) {
     	// Parse the form variables into shorter handles
     	var dataset = fields.dataset,
     		group_name = fields.groupName,
     		color = fields.color;
 
-    	if (files.SNVs) snv_file = files.SNVs.path;
-    	else snv_file = null;
+    	if (files.SNVs) {
+            snv_file = files.SNVs.path;
+            if (snv_file.slice(-3) === MAF_EXT)
+                snv_file = convertMaf(snv_file)
+        } else snv_file = null;
 
     	if (files.CNAs) cna_file = files.CNAs.path;
     	else cna_file = null;
