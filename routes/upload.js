@@ -5,6 +5,7 @@ var Dataset  = require( "../model/datasets" ),
 	path = require('path'),
         childProcess = require('child_process');
 
+// must include the '.' otherwise string slicing will be off by one
 var MAF_EXT = '.maf';
 var MAF2TSV_PATH = '../public/scripts/maf2tsv.py';
 
@@ -25,6 +26,16 @@ exports.uploadDataset = function uploadDataset(req, res){
     // given a path to a MAF file, call the converter script to create a TSV
     // and return the path to newly created TSV
     function convertMaf(path) {
+        // cut off the MAF extension
+        // this prefix will be used by the script to create a file
+        // with name <outputPrefix>.tsv
+        var outputPrefix = path.slice(0, -(MAF_EXT.length));
+        args = ['--maf_file=' + path, 
+                // TODO: how to choose which?
+                '--transcript_db=' + 'refseq' or 'ensemble',
+                '-output_prefix=', outputPrefix
+               ];
+
         convert = childProcess.execFile(MAF2TSV_PATH, function(err, stdout,
                                                                stderr) {
             if (err) throw new Error(err);
@@ -42,9 +53,7 @@ exports.uploadDataset = function uploadDataset(req, res){
             console.log('Child process exited with exit code '+code);
         });
         
-        // TODO: need to check how the python script names the new file
-        var newPath = path + ".tsv";
-        return newPath;
+        return outputPrefix + ".tsv";
     };
     
     form.parse(req, function(err, fields, files) {
