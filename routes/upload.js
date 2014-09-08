@@ -6,7 +6,7 @@ var Dataset  = require( "../model/datasets" ),
         childProcess = require('child_process');
 
 var MAF_EXT = '.maf';
-var MAF2TSV_PATH = 'public/scripts/maf2tsv.py';
+var MAF2TSV_PATH = '../public/scripts/maf2tsv.py';
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
@@ -55,8 +55,10 @@ exports.uploadDataset = function uploadDataset(req, res){
 
     	if (files.SNVs) {
             snv_file = files.SNVs.path;
+            
+            // if the uploaded file is a MAF file, convert it 
             if (snv_file.slice(-3) === MAF_EXT)
-                snv_file = convertMaf(snv_file)
+                snv_file = convertMaf(snv_file);
         } else snv_file = null;
 
     	if (files.CNAs) cna_file = files.CNAs.path;
