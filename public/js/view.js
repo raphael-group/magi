@@ -844,8 +844,8 @@ function view(){
 			comment = $(commentElement).val();
 
 		// Validate the PMID
-		if (pmid == "" || pmid.length != 8 || isNaN(parseFloat(pmid)) || !isFinite(pmid) ){
-			annotationStatus("Please enter at least one valid PMID (8-character number).", warningClasses);
+		if (pmid == "" || pmid.length < 7 || isNaN(parseFloat(pmid)) || !isFinite(pmid) ){
+			annotationStatus("Please enter at least one valid PMID (7- or 8-digit number).", warningClasses);
 			return false;
 		}
 
