@@ -8,10 +8,10 @@ GENE = "hg19_genes_list.json"
 
 def load_mutation_data( sample_file, cna_file, run_cancer):
     # Load sample and gene whitelists. Sample file is required for typing.
-    if run_cancer == "PANCAN":
-        sample2ty = dict([l.rstrip().split()[0], "PANCAN"] for l in open(sample_file))
-    else:
-        sample2ty = dict( l.rstrip().split() for l in open(sample_file) if l.rstrip().split()[1] == run_cancer)    
+    #if run_cancer == "PANCAN":
+    sample2ty = dict([l.rstrip().split()[0], "CANCER"] for l in open(sample_file))
+    #else:
+    #    sample2ty = dict( l.rstrip().split() for l in open(sample_file) if l.rstrip().split()[1] == run_cancer)    
     samples_with_mutation = set() # added by Hsin-Ta, output only samples with mutations
 
     # Load SNVs
@@ -103,7 +103,7 @@ def run(args):
     sample2ty, gene2cases, samples_with_mutation = load_mutation_data(args.sample_file, args.cna_file, args.run)
     n = len(samples_with_mutation)
      
-    print n, len(sample2ty), len(gene2cases)
+    #print n, len(sample2ty), len(gene2cases)
     # Create output directory
     output_dir = "%s/" % (args.output_dir)
     try: os.makedirs( output_dir )
