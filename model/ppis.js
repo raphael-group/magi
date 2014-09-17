@@ -1,5 +1,6 @@
 // Import required modules
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+    db = require('./db');
 
 // Create PPI schema and add it to Mongoose
 var PPISchema = new mongoose.Schema({
@@ -11,7 +12,7 @@ var PPISchema = new mongoose.Schema({
 	support: { type: Array, required: false}
 });
 
-mongoose.model( 'PPI', PPISchema );
+db.magi.model( 'PPI', PPISchema );
 
 // Create PPI schema and add it to Mongoose
 var PPIVoteSchema = new mongoose.Schema({

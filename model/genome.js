@@ -1,5 +1,6 @@
 // Import required modules
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+    db = require('./db');
 
 // Create PPI schema and add it to Mongoose
 var GeneSchema = new mongoose.Schema({
@@ -9,7 +10,7 @@ var GeneSchema = new mongoose.Schema({
 	name: String
 });
 
-mongoose.model( 'Gene', GeneSchema );
+db.magi.model( 'Gene', GeneSchema );
 
 exports.getGenesinRange = function(chr, start, end, callback){
 	var Gene = mongoose.model( 'Gene' );

@@ -1,5 +1,6 @@
 // Import required modules
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+		db = require('./db');
 
 // Create GeneSet schema and add it to Mongoose
 var AnnotationSchema = new mongoose.Schema({
@@ -14,7 +15,7 @@ var AnnotationSchema = new mongoose.Schema({
 	created_at: { type: Date, default: Date.now, required: true }	
 });
 
-mongoose.model( 'Annotation', AnnotationSchema );
+db.magi.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
 exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){

@@ -1,5 +1,6 @@
 // Import required modules
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+    db = require('./db');
 
 // Create domain schema and add it to Mongoose
 var DomainSchema = new mongoose.Schema({
@@ -13,8 +14,8 @@ var DomainDatasetSchema = new mongoose.Schema({
 	updated_at: { type: Date, default: Date.now, required: true }
 });
 
-mongoose.model( 'Domain', DomainSchema );
-mongoose.model( 'DomainDataset', DomainDatasetSchema );
+db.magi.model( 'Domain', DomainSchema );
+db.magi.model( 'DomainDataset', DomainDatasetSchema );
 
 // A function for listing all the interactions for a particular gene
 function domainlist(transcripts, callback){

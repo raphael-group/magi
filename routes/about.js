@@ -36,7 +36,7 @@ exports.abbreviations  = function privacy(req, res){
 	var	mongoose = require( 'mongoose' ),
 		Cancers  = require( "../model/cancers" ),
 		Cancer = mongoose.model( 'Cancer' );
-	
+
 	Cancer.find({}, function(err, cancers){
 		if (err) throw new Error(err);
 		res.render('abbreviations', {user: req.user, cancers: cancers });

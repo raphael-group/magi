@@ -1,5 +1,6 @@
 // Load required modules
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+    db = require('./db');
 
 // create a user model
 var UserSchema = new mongoose.Schema({
@@ -14,4 +15,4 @@ var UserSchema = new mongoose.Schema({
   queries: { type: Array, required: false, default: [] },
 });
 
-mongoose.model( 'User', UserSchema );
+db.magi.model( 'User', UserSchema );

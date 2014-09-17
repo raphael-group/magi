@@ -2,7 +2,8 @@
 var mongoose = require( 'mongoose' ),
 	Genome  = require( "./genome" ),
 	Cancers  = require( "./cancers" ),
-	GeneSets  = require( "./genesets" );
+	GeneSets  = require( "./genesets" ),
+  db = require('./db');
 
 // Create schemas to hold the SNVs
 var MutGeneSchema = new mongoose.Schema({
@@ -27,12 +28,12 @@ var DatasetSchema = new mongoose.Schema({
 	color: { type: String, required: true }
 });
 
-mongoose.model( 'Dataset', DatasetSchema );
-mongoose.model( 'MutGene', MutGeneSchema );
+db.magi.model( 'Dataset', DatasetSchema );
+db.magi.model( 'MutGene', MutGeneSchema );
 
 // List the datasets by group
 exports.datasetGroups = function datasetgroups(query, callback){
-	var Dataset = mongoose.model( 'Dataset' );
+	var Dataset = db.magi.model( 'Dataset' );
 
 	Dataset.aggregate(
 		{ $match: query },
@@ -57,7 +58,7 @@ exports.datasetGroups = function datasetgroups(query, callback){
 }
 
 exports.datasetlist = function datasetlist(dataset_ids, callback){
-	var Dataset = mongoose.model( 'Dataset' );
+	var Dataset = db.magi.model( 'Dataset' );
 	Dataset.find({_id: {$in: dataset_ids}}, callback);
 }
 

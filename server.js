@@ -38,7 +38,7 @@ log.enableLogging(false);
  */
 // passport
 // Serialize/Deserialize the user
-var User = mongoose.model( 'User' );
+var User = db.magi.model( 'User' );
 passport.serializeUser(function(user, done) {
   done(null, user.googleId);
 });
@@ -109,7 +109,7 @@ app.use(app.router);
 /**
  * Routes
  */
- var routes = require( './routes/router' );
+var routes = require( './routes/router' );
 
 // Index page and query handler
 app.get('/', routes.index);

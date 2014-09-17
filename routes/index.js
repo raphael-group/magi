@@ -3,7 +3,8 @@ var mongoose = require('mongoose'),
 	formidable = require('formidable'),
 	fs = require('fs'),
 	path = require('path'),
-	Dataset  = require( "../model/datasets" );
+	Dataset  = require( "../model/datasets" ),
+	db = require('../model/db');
 
 // Renders home page
 exports.index = function index(req, res){
@@ -52,7 +53,7 @@ exports.index = function index(req, res){
 			datasetToCheckboxes: datasetToCheckboxes,
 			recentQueries: []
 		};
-
+		console.log('cp reached');
 		// Load the user's datasets (if necessary)
 		if (req.user){
 			Dataset.datasetGroups({user_id: req.user._id}, function(err, userGroups){
@@ -64,7 +65,7 @@ exports.index = function index(req, res){
 				viewData.groups = viewData.groups.concat(userGroups);
 
 				// Load the user's recent queries
-				var User = mongoose.model( 'User' );
+				var User = db.magi.model( 'User' );
 				User.findById(req.user._id, function(err, user){
 					if (err) throw new Error(err);
 					viewData.recentQueries = user.queries ? user.queries : [];
