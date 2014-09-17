@@ -44,7 +44,6 @@ exports.view  = function view(req, res){
 	}
 
 	function completeViewData(genes, dataset_ids) {
-		console.log('completeViewData');
 		// Force the user ID to be a string to make finding it in arrays easy
 		var logged_in = req.user,
 			user_id = logged_in ? req.user._id + "" : undefined;
@@ -86,19 +85,15 @@ exports.view  = function view(req, res){
 			var typeToSamples = {};
 			datasets.forEach(function(d){ typeToSamples[d.title] = d.samples;  });
 
-			console.log('before mutGenesList');
 			Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
-				console.log('in mutGenesList cb');
 				// Create a list of all the transcripts in the mutated genes
 				var transcripts = [];
 				mutGenes.forEach(function(G){
 					for (var t in G.snvs) transcripts.push( t );
 				});
 
-				console.log('c');
 				// Load all the transcripts' domains
 				Domains.domainlist(transcripts, function(err, domains){
-					console.log('in domainlist cb');
 					// Create a map of transcripts to domains, and record
 					// all the domain DBs included for these gene sets
 					var transcript2domains = {},
@@ -126,7 +121,7 @@ exports.view  = function view(req, res){
 						transcript_data[genes[i]] = {};
 						M[genes[i]] = {};
 					}
-					console.log('cp');
+
 					// Iterate through each dataset
 					for (var i = 0; i < mutGenes.length; i++){
 						// Parse dataset values into short variable handles
@@ -189,7 +184,7 @@ exports.view  = function view(req, res){
 							trsData.mutations = updatedMutations;
 						}
 					}
-					console.log('cp!');
+
 					// Load the annotations for each gene
 					var Annotation = db.magi.model( 'Annotation' );
 					Annotation.find({gene: {$in: genes}}, function(err, support){

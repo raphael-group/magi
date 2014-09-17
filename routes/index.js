@@ -53,7 +53,6 @@ exports.index = function index(req, res){
 			datasetToCheckboxes: datasetToCheckboxes,
 			recentQueries: []
 		};
-		console.log('cp reached');
 		// Load the user's datasets (if necessary)
 		if (req.user){
 			Dataset.datasetGroups({user_id: req.user._id}, function(err, userGroups){
