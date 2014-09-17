@@ -111,11 +111,11 @@ exports.queryhandler = function queryhandler(req, res){
 
 	// Make query string
 	var querystring = require( 'querystring' ),
-		query = querystring.stringify( {genes: genes, datasets: datasets.join(","), showDuplicates: showDuplicates == "on" } );
+			query = querystring.stringify( {genes: genes, datasets: datasets.join(","), showDuplicates: showDuplicates == "on" } );
 
 	// If there is a user, save the query to the most recent queries for the user
 	if (req.user){
-		var User = mongoose.model( 'User' );
+		var User = db.magi.model( 'User' );
 		User.findById(req.user._id, function(err, user){
 			if (err) throw new Error(err);
 

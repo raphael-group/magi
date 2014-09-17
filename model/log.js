@@ -1,4 +1,5 @@
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+    db = require('./db');
 
 var LogSchema = new mongoose.Schema({
   annotations: Array, // annotation id for each annotation created
@@ -15,7 +16,7 @@ var LogSchema = new mongoose.Schema({
 });
 
 // Register the Schema with mongoose
-mongoose.model('Log', LogSchema);
+db.logDB.model('Log', LogSchema);
 
 var shouldWeStoreLogs = false;
 exports.enableLogging = function(state) {
@@ -40,7 +41,7 @@ exports.saveLog = function(logObj, userId, callback) {
     console.log('Undefined log sent to server');
   }
 
-  var log = mongoose.model('Log');
+  var log = db.logDB.model('Log');
 
   logObj.userId = userId;
 

@@ -16,7 +16,7 @@ db.magi.model( 'Cancer', CancerSchema );
 exports.loadCancersFromFile = function(filename, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
-		Cancer = mongoose.model( 'Cancer' ),
+		Cancer = db.magi.model( 'Cancer' ),
 		Q  = require( 'q' );
 
 	// Read in the file asynchronously

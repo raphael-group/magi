@@ -13,7 +13,7 @@ var GeneSchema = new mongoose.Schema({
 db.magi.model( 'Gene', GeneSchema );
 
 exports.getGenesinRange = function(chr, start, end, callback){
-	var Gene = mongoose.model( 'Gene' );
+	var Gene = db.magi.model( 'Gene' );
 	Gene.find({chr: chr, start: { $gt: start }, end: {$lt: end} }, function (err, neighbors) {
   		if(err) console.log(err);
   		else callback("", neighbors);
@@ -24,7 +24,7 @@ exports.getGenesinRange = function(chr, start, end, callback){
 exports.loadGenomeFromFile = function(filename, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
-		Gene = mongoose.model( 'Gene' ),
+		Gene = db.magi.model( 'Gene' ),
 		Q = require( 'q' );
 
 	// Read in the file asynchronously

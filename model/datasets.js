@@ -64,8 +64,8 @@ exports.datasetlist = function datasetlist(dataset_ids, callback){
 
 exports.removeDataset = function removeDataset(query, callback){
 	// Load the modules
-	var Dataset = mongoose.model( 'Dataset' ),
-		MutGene = mongoose.model( 'MutGene' );
+	var Dataset = magi.db.model( 'Dataset' ),
+		MutGene = magi.db.model( 'MutGene' );
 
 	// Remove the dataset, then remove all mutgenes from that dataset
 	Dataset.remove(query, function(err){
@@ -85,7 +85,7 @@ exports.removeDataset = function removeDataset(query, callback){
 
 // A function for listing all the SNVs for a set of genes
 exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
-	var MutGene = mongoose.model( 'MutGene' ),
+	var MutGene = db.magi.model( 'MutGene' ),
 		query = { gene: {$in: genes}, dataset_id: {$in: dataset_ids} };
 
 	MutGene.find(query, function(err, mutGenes){
@@ -104,9 +104,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 									  aberration_file, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
-		Dataset = mongoose.model( 'Dataset' ),
-		MutGene = mongoose.model( 'MutGene' ),
-		Cancer = mongoose.model( 'Cancer' ),
+		Dataset = db.magi.model( 'Dataset' ),
+		MutGene = db.magi.model( 'MutGene' ),
+		Cancer = db.magi.model( 'Cancer' ),
 		domain  = require( "./domains" ),
 		Q       = require( 'q' );
 
@@ -310,7 +310,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			});
 
 			// Load locations of each gene and find their neighbors 
-			var Gene = mongoose.model( 'Gene' );
+			var Gene = db.magi.model( 'Gene' );
 			Gene.find({name: {$in: Object.keys(cnas)}}, function (err, genes){
 				if (err) throw new Error(err);
 	
@@ -479,7 +479,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				return numMutatedSamples(mutatedSamples);
 			}
 
-			var GeneSet = mongoose.model( 'GeneSet' );
+			var GeneSet = db.magi.model( 'GeneSet' );
 			GeneSet.find({}, function(err, genesets){
 				// Throw err if necessary
 				if (err) throw new Error(err);

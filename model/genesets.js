@@ -17,7 +17,7 @@ db.magi.model( 'GeneSet', GeneSetSchema );
 exports.loadGeneSetsFromFile = function(filename, database, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
-		GeneSet = mongoose.model( 'GeneSet' ),
+		GeneSet = db.magi.model( 'GeneSet' ),
 		Q  = require( 'q' );
 
 	// Read in the file asynchronously

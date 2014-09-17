@@ -19,7 +19,7 @@ db.magi.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
 exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
-	var Annotation = mongoose.model( 'Annotation' );
+	var Annotation = db.magi.model( 'Annotation' );
 	var support = {ref: pmid, user_id: user_id, comment: comment}
 	Annotation.findOneAndUpdate(
 		query,
@@ -45,7 +45,7 @@ exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
 // Vote for a mutation
 exports.vote = function mutationVote(fields, user_id){
 	// Set up the promise
-	var Annotation = mongoose.model( 'Annotation' );
+	var Annotation = db.magi.model( 'Annotation' );
 		Q = require( 'q' ),
 		d = Q.defer();
 
@@ -92,7 +92,7 @@ exports.vote = function mutationVote(fields, user_id){
 exports.loadAnnotationsFromFile = function(filename, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
-		Annotation = mongoose.model( 'Annotation' ),
+		Annotation = db.magi.model( 'Annotation' ),
 		Q  = require( 'q' );
 
 	// Read in the file asynchronously
