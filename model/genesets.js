@@ -1,6 +1,6 @@
 // Import required modules
 var mongoose = require( 'mongoose' ),
-    db = require('./db');
+    Database = require('./db');
 
 // Create GeneSet schema and add it to Mongoose
 var GeneSetSchema = new mongoose.Schema({
@@ -11,13 +11,13 @@ var GeneSetSchema = new mongoose.Schema({
 	created_at: { type: Date, default: Date.now, required: true }	
 });
 
-db.magi.model( 'GeneSet', GeneSetSchema );
+Database.magi.model( 'GeneSet', GeneSetSchema );
 
 // Loads gene sets into the database
 exports.loadGeneSetsFromFile = function(filename, database, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
-		GeneSet = db.magi.model( 'GeneSet' ),
+		GeneSet = Database.magi.model( 'GeneSet' ),
 		Q  = require( 'q' );
 
 	// Read in the file asynchronously

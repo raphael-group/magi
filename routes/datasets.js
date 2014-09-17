@@ -46,7 +46,7 @@ exports.view = function view(req, res){
 	var dbID = req.params.datasetID || "";
 
 	// Retrieve the dataset
-	var MongoDataset = db.magi.model( 'Dataset' );
+	var MongoDataset = Database.magi.model( 'Dataset' );
 	MongoDataset.findById(dbID, function(err, db){
 		// Throw error (if necessary)
 		if (err){

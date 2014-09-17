@@ -6,7 +6,6 @@ var Dataset  = require( "../model/datasets" ),
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
-	console.log('upload')
 	res.render('upload', {user: req.user});
 }
 

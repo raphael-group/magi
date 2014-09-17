@@ -7,14 +7,14 @@ var mongoose = require( 'mongoose' ),
 	Annotations  = require( "../model/annotations" ),
 	QueryHash = require('../model/queryHash'),
 	fs = require('fs'),
-	db = require('../model/db');
+	Database = require('../model/db');
 
 exports.view  = function view(req, res){
 	console.log('view');
 
 	// Parse query params
 	if(req.params.id) {
-		var QueryHash = db.magi.model('QueryHash'),
+		var QueryHash = Database.magi.model('QueryHash'),
 				searchTerm = {queryHash: req.params.id};
 
 		QueryHash.find(searchTerm, function(err, entries) {
@@ -186,7 +186,7 @@ exports.view  = function view(req, res){
 					}
 
 					// Load the annotations for each gene
-					var Annotation = db.magi.model( 'Annotation' );
+					var Annotation = Database.magi.model( 'Annotation' );
 					Annotation.find({gene: {$in: genes}}, function(err, support){
 						// Throw error if necessary
 						if (err) throw new Error(err);

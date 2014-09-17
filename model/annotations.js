@@ -1,6 +1,6 @@
 // Import required modules
 var mongoose = require( 'mongoose' ),
-		db = require('./db');
+		Database = require('./db');
 
 // Create GeneSet schema and add it to Mongoose
 var AnnotationSchema = new mongoose.Schema({
@@ -15,11 +15,11 @@ var AnnotationSchema = new mongoose.Schema({
 	created_at: { type: Date, default: Date.now, required: true }	
 });
 
-db.magi.model( 'Annotation', AnnotationSchema );
+Database.magi.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
 exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
-	var Annotation = db.magi.model( 'Annotation' );
+	var Annotation = Database.magi.model( 'Annotation' );
 	var support = {ref: pmid, user_id: user_id, comment: comment}
 	Annotation.findOneAndUpdate(
 		query,
@@ -45,7 +45,7 @@ exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
 // Vote for a mutation
 exports.vote = function mutationVote(fields, user_id){
 	// Set up the promise
-	var Annotation = db.magi.model( 'Annotation' );
+	var Annotation = Database.magi.model( 'Annotation' );
 		Q = require( 'q' ),
 		d = Q.defer();
 
@@ -92,7 +92,7 @@ exports.vote = function mutationVote(fields, user_id){
 exports.loadAnnotationsFromFile = function(filename, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
-		Annotation = db.magi.model( 'Annotation' ),
+		Annotation = Database.magi.model( 'Annotation' ),
 		Q  = require( 'q' );
 
 	// Read in the file asynchronously

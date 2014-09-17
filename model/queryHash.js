@@ -1,5 +1,5 @@
 var mongoose = require( 'mongoose' ),
-    db = require('./db');
+    Database = require('./db');
 
 var QueryHashSchema = new mongoose.Schema({
   queryHash: String, // sha1 hash for each user
@@ -7,4 +7,4 @@ var QueryHashSchema = new mongoose.Schema({
 });
 
 // Register the Schema with mongoose
-db.magi.model('QueryHash', QueryHashSchema);
+Database.magi.model('QueryHash', QueryHashSchema);

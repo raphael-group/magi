@@ -4,7 +4,7 @@ var mongoose = require('mongoose'),
 	fs = require('fs'),
 	path = require('path'),
 	Dataset  = require( "../model/datasets" ),
-	db = require('../model/db');
+	Database = require('../model/db');
 
 // Renders home page
 exports.index = function index(req, res){
@@ -64,7 +64,7 @@ exports.index = function index(req, res){
 				viewData.groups = viewData.groups.concat(userGroups);
 
 				// Load the user's recent queries
-				var User = db.magi.model( 'User' );
+				var User = Database.magi.model( 'User' );
 				User.findById(req.user._id, function(err, user){
 					if (err) throw new Error(err);
 					viewData.recentQueries = user.queries ? user.queries : [];
@@ -114,7 +114,7 @@ exports.queryhandler = function queryhandler(req, res){
 
 	// If there is a user, save the query to the most recent queries for the user
 	if (req.user){
-		var User = db.magi.model( 'User' );
+		var User = Database.magi.model( 'User' );
 		User.findById(req.user._id, function(err, user){
 			if (err) throw new Error(err);
 

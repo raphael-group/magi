@@ -1,7 +1,7 @@
 // Load models
 var mongoose = require( 'mongoose' ),
   QueryHash = require('../model/queryHash'),
-  db = require('../model/db'),
+  Database = require('../model/db'),
   crypto = require('crypto');
 
 exports.saveShareURL = function(req, res) {
@@ -9,7 +9,7 @@ exports.saveShareURL = function(req, res) {
       hasher = crypto.createHash('md5').update(url),
       hash = hasher.digest('hex');
 
-  var QueryHash = db.magi.model('QueryHash');
+  var QueryHash = Database.magi.model('QueryHash');
 
   // Store hash if it doesn't exist
   QueryHash.find({query: url, queryHash:hash}, function(err, entries) {

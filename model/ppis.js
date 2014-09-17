@@ -1,6 +1,6 @@
 // Import required modules
 var mongoose = require( 'mongoose' ),
-    db = require('./db');
+    Database = require('./db');
 
 // Create PPI schema and add it to Mongoose
 var PPISchema = new mongoose.Schema({
@@ -12,7 +12,7 @@ var PPISchema = new mongoose.Schema({
 	support: { type: Array, required: false}
 });
 
-db.magi.model( 'PPI', PPISchema );
+Database.magi.model( 'PPI', PPISchema );
 
 // Create PPI schema and add it to Mongoose
 var PPIVoteSchema = new mongoose.Schema({
@@ -23,11 +23,11 @@ var PPIVoteSchema = new mongoose.Schema({
 	vote: String
 });
 
-db.magi.model( 'PPIVote', PPIVoteSchema );
+Database.magi.model( 'PPIVote', PPIVoteSchema );
 
 // A function for listing all the interactions for a particular gene
 exports.ppilist = function ppilist(genes, callback){
-	var PPI = db.magi.model( 'PPI' );
+	var PPI = Database.magi.model( 'PPI' );
 	PPI.find({source: { $in: genes }, target: { $in: genes } }, function (err, ppis) {
   		if(err) console.log(err);
   		else callback("", ppis);
@@ -37,8 +37,8 @@ exports.ppilist = function ppilist(genes, callback){
 // Create a dictionary of all the comments a user has made on a set of PPIs
 exports.ppicomments = function ppicomments(ppis, user_id, callback){
 	// Define the models
-	var PPI = db.magi.model( 'PPI' ),
-		PPIVote = db.magi.model( 'PPIVote' );
+	var PPI = Database.magi.model( 'PPI' ),
+		PPIVote = Database.magi.model( 'PPIVote' );
 
 	// Create a map of IDs to PPIs and initialize the dictionary of comments
 	// with blank comments for each PPI's references
@@ -75,7 +75,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 
 // upsert an interaction
 exports.upsertInteraction = function(source, target, network, ref, comment, user_id, callback){
-	var PPI = db.magi.model( 'PPI' );
+	var PPI = Database.magi.model( 'PPI' );
 		Q = require( 'q' );
 
 	var d = Q.defer();
@@ -117,8 +117,8 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 // Record a user's vote for an interaction
 exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
 	// Set up the promise
-	var PPI = db.magi.model( 'PPI' ),
-		PPIVote = db.magi.model( 'PPIVote' ),
+	var PPI = Database.magi.model( 'PPI' ),
+		PPIVote = Database.magi.model( 'PPIVote' ),
 		Q = require( 'q' ),
 		d = Q.defer();
 
@@ -182,8 +182,8 @@ exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
 
 exports.comment = function ppiComment(source, target, network, pmid, comment, user_id){
 	// Set up the promise
-	var PPI = db.magi.model( 'PPI' ),
-		PPIVote = db.magi.model( 'PPIVote' ),
+	var PPI = Database.magi.model( 'PPI' ),
+		PPIVote = Database.magi.model( 'PPIVote' ),
 		Q = require( 'q' ),
 		d = Q.defer();
 
@@ -280,7 +280,7 @@ exports.formatPPIs = function formatPPIs(ppis, user_id, callback){
 exports.insertNetworkFromFile = function(filename, callback){
 	// Load required modules
 	var fs = require( 'fs' )
-		PPI = db.magi.model( 'PPI' ),
+		PPI = Database.magi.model( 'PPI' ),
 		Q  = require( 'q' );
 
 	// Read in the file asynchronously

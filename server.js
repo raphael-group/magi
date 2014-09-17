@@ -5,7 +5,7 @@
 var express  = require('express'),
   http     = require('http'),
   path     = require('path'),
-  db       = require('./model/db'),
+  Database       = require('./model/db'),
   mongoose = require('mongoose'),
   config   = require('./oauth2.js'),
   passport = require('passport'),
@@ -38,7 +38,7 @@ log.enableLogging(false);
  */
 // passport
 // Serialize/Deserialize the user
-var User = db.magi.model( 'User' );
+var User = Database.magi.model( 'User' );
 passport.serializeUser(function(user, done) {
   done(null, user.googleId);
 });
