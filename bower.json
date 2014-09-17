@@ -6,7 +6,7 @@
     "d3": "3.3.x",
     "bootstrap": "3.x",
     "jquery-form": "3.x",
-    "gd3": "git://github.com/mdml/gd3.git",
+    "gd3": "latest",
     "DataTables": "latest",
     "d3-tip": "latest",
     "typeahead.js": "latest",
