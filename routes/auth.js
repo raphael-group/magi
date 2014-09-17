@@ -1,10 +1,11 @@
 // Load required modules
 var mongoose = require('mongoose'),
-	Dataset = require( "../model/datasets" );
+	Dataset = require( "../model/datasets" ),
+	db = require('../model/db');
 
 // Renders account information, including the user's uploaded datasets
 exports.account = function(req, res){
-	var User = mongoose.model( 'User' );
+	var User = db.magi.model( 'User' );
 	User.findOne({ googleId: req.session.passport.user}, function(err, user) {
 		if(err) console.log(err);
 		else {
@@ -23,7 +24,7 @@ exports.account = function(req, res){
 // Update user
 exports.update = function(req, res){
 	// Load the posted form
-	var User = mongoose.model( 'User' );
+	var User = db.magi.model( 'User' );
 
 	// Construct the query
 	var update = {
