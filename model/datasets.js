@@ -101,7 +101,7 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 
 // Loads a SNVs into the database
 exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
-									  aberration_file, cancers_file, is_standard, color, user_id){
+									  aberration_file, cancer_input, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = mongoose.model( 'Dataset' ),
@@ -141,7 +141,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	}
 
 	// Load a mapping of dataset names to cancer abbreviations
-	function loadCancerMappingFile(){
+	function createCancerMapping(){
 		// Quick check to ensure all datasets map to a defined cancer _id
 		// after this function has executed
 		function ensureAllDatasetsMapToCancer(){
@@ -156,7 +156,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		// Set up promise and either load the cancer file or map each
 		// dataset to itself
 		var d = Q.defer();
-		if (!cancers_file){
+		if (!cancer_input){
 			// Map each dataset to the lower case version of itself
 			datasets.forEach(function(d){
 				datasetToCancer[d] = abbrevToId[d.toLowerCase()];
@@ -167,16 +167,21 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			d.resolve();
 		}
 		else{
-			fs.readFile(cancers_file, 'utf-8', function (err, data) {
-				// Exit if there's an error
-				if (err) throw new Error(err);
-
-				// Load the lines, but skip the header (the first line)
-				lines = data.trim().split('\n');
-				lines.forEach(function(l){
-					var arr = l.split("\t");
-					datasetToCancer[arr[0]] = abbrevToId[arr[1].toLowerCase()];
-				});
+			fs.readFile(cancer_input, 'utf-8', function (err, data) {
+				// If the input was not file path we assume it was a cancer type
+				if (err){
+					datasets.forEach(function(d){
+						datasetToCancer[d] = abbrevToId[cancer_input.toLowerCase()];
+					});
+				}
+				else{
+					// Load the lines, but skip the header (the first line)
+					lines = data.trim().split('\n');
+					lines.forEach(function(l){
+						var arr = l.split("\t");
+						datasetToCancer[arr[0]] = abbrevToId[arr[1].toLowerCase()];
+					});
+				}
 				ensureAllDatasetsMapToCancer();
 
 				// Resolve the promise
@@ -737,6 +742,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		return d.promise;
 	}
 	
-	return loadCancers().then( loadSampleFile ).then( loadCancerMappingFile ).then( splitDatasets );
+	return loadCancers().then( loadSampleFile ).then( createCancerMapping ).then( splitDatasets );
 
 }
