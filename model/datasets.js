@@ -19,6 +19,7 @@ var DatasetSchema = new mongoose.Schema({
 	title: { type: String, required: true },
 	samples: { type: [String], required: true },
 	group: { type: String, required: false},
+	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
@@ -100,7 +101,7 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 
 // Loads a SNVs into the database
 exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
-									  aberration_file, is_standard, color, user_id){
+									  aberration_file, cancers_file, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = mongoose.model( 'Dataset' ),
@@ -116,15 +117,72 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	}
 
 	// Load the cancer types, their abbreviations, and their colors
-	var datasetToColor = {};
+	var datasetToColor = {},
+		datasetToCancerName = {},
+		datasetToCancer = {},
+		abbrevToId = {},
+		cancerToId = {};
+
 	function loadCancers(){
 		var d = Q.defer();
 		Cancer.find({}, function(err, cancers){
 			if (err) throw new Error(err);
-			cancers.forEach(function(c){ datasetToColor[c.abbr] = c.color; });
+			cancers.forEach(function(c){
+				datasetToColor[c.abbr] = c.color;
+				if (c.abbr){
+					abbrevToId[c.abbr.toLowerCase()] = c._id;
+					cancerToId[c.cancer.toLowerCase()] = c._id;
+				}
+			});
 			d.resolve();
 		});
 
+		return d.promise;
+	}
+
+	// Load a mapping of dataset names to cancer abbreviations
+	function loadCancerMappingFile(){
+		// Quick check to ensure all datasets map to a defined cancer _id
+		// after this function has executed
+		function ensureAllDatasetsMapToCancer(){
+			datasets.forEach(function(db){
+				if (!datasetToCancer[db]){
+					console.log("Unknown cancer type: " + db);
+					process.exit(1);
+				}
+			});
+		}
+
+		// Set up promise and either load the cancer file or map each
+		// dataset to itself
+		var d = Q.defer();
+		if (!cancers_file){
+			// Map each dataset to the lower case version of itself
+			datasets.forEach(function(d){
+				datasetToCancer[d] = abbrevToId[d.toLowerCase()];
+			});
+			ensureAllDatasetsMapToCancer();
+
+			// Resolve the promise
+			d.resolve();
+		}
+		else{
+			fs.readFile(cancers_file, 'utf-8', function (err, data) {
+				// Exit if there's an error
+				if (err) throw new Error(err);
+
+				// Load the lines, but skip the header (the first line)
+				lines = data.trim().split('\n');
+				lines.forEach(function(l){
+					var arr = l.split("\t");
+					datasetToCancer[arr[0]] = abbrevToId[arr[1].toLowerCase()];
+				});
+				ensureAllDatasetsMapToCancer();
+
+				// Resolve the promise
+				d.resolve();
+			});
+		}
 		return d.promise;
 	}
 
@@ -209,8 +267,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				datasetToColor[datasets[0].toLowerCase()] = color;
 			}
 
-			// Assign random colors to datasets without them
+			// Make sure every dataset is mapped to a cancer and color
 			datasets.forEach(function(db){
+				// Assign random colors to datasets without them
 				if (!(db in datasetToColor)){
 					if (!(db.toLowerCase() in datasetToColor)){
 						datasetToColor[db] = '#' + Math.floor(Math.random()*16777215).toString(16);
@@ -557,7 +616,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					summary: summary,
 					is_standard: is_standard,
 					user_id: user_id,
-					color: datasetToColor[datasetName]
+					color: datasetToColor[datasetName],
+					cancer_id: datasetToCancer[datasetName]
 				};
 
 			if (user_id) query.user_id = user_id;
@@ -677,6 +737,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		return d.promise;
 	}
 	
-	return loadCancers().then( loadSampleFile ).then( splitDatasets )
+	return loadCancers().then( loadSampleFile ).then( loadCancerMappingFile ).then( splitDatasets );
 
 }
