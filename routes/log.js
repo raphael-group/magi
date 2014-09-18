@@ -3,6 +3,19 @@ var mongoose = require( 'mongoose' ),
     Database = require('../model/db')
     crypto = require('crypto');
 
+
+exports.extendLog = function(req,res) {
+  var user_id = req.user ? req.user._id : null;
+  Log.extendLog(req['body'], user_id);
+  res.send();
+}
+
+exports.startLog = function(req,res) {
+  var user_id = req.user ? req.user._id : null;
+  Log.startLog(req['body'], user_id);
+  res.send();
+}
+
 exports.saveLog = function(req, res) {
   var user_id = req.user ? req.user._id : null;
   Log.saveLog(req['body'], user_id);

@@ -2,21 +2,67 @@ var mongoose = require( 'mongoose' ),
     Database = require('./db');
 
 var LogSchema = new mongoose.Schema({
-  annotations: Array, // annotation id for each annotation created
-  start: Number, // start session date
-  end: Number, // end session date
   userId: mongoose.Schema.Types.ObjectId,
-  height: Number, // height of app
-  width: Number, // width of app
-  log: Object,
-  genes: Array,
-  datasets: Array, // array of datasets: {name:'', uploaded:true/false}
+  sessionId: String,
+  log: Array,
+
+  documentSize: Array,
+  windowSize: Array,
+  vizSizes: Array,
+  vizLocations: Array,
+
+
+  genes: [String],
+  datasets: [String],
   showDuplicates: String,
-  vizSizes: Array
+
+  annotations: Array
 });
 
 // Register the Schema with mongoose
 Database.logDB.model('Log', LogSchema);
+
+exports.startLog = function(logObj, userId) {
+  if (logObj == undefined) return;
+  // Get user information
+  var sessionId = logObj.sessionId || null;
+
+  var barebone = {
+    // User Information
+    userId: userId,
+    sessionId: sessionId,
+    log: [],
+
+    // Size Information
+    documentSize: [logObj.documentSize],
+    windowSize: [logObj.windowSize],
+    vizSizes: [logObj.vizSizes],
+    vizLocations: [logObj.vizLocations],
+
+    // Query Information
+    genes: logObj.genes,
+    datasets: logObj.datasets,
+    showDuplicates: logObj.showDuplicates
+  };
+
+  // Create the log
+  var log = Database.logDB.model('Log');
+  log.create(barebone, function(e, s) {
+    if(e) {
+      console.log('Undefined log creation');
+      console.log(e);
+    }
+  });
+}
+
+exports.extendLog = function(newInfo, userId) {
+  var sessionId = logObj.sessionId || null;
+
+  var documentSize = newInfo.documentSize,
+      windowSize = newInfo.windowSize,
+      vizSizes = newInfo.vizSizes,
+      vizLocations = newInfo.vizLocations
+}
 
 var shouldWeStoreLogs = false;
 exports.enableLogging = function(state) {

@@ -2,8 +2,8 @@
 // For use in user studies
 
 var loggingEnabled = false,
-    sessionLogStart,
-    interactionsLog;
+    MAGI_sessionLogStart,
+    MAGI_interactionsLog = [];
 
 $(document).keydown(function(e) {
   if(e.ctrlKey || e.metaKey) {
@@ -28,14 +28,56 @@ $(document).scroll(function(e) {
 
 $().ready(function () {
   interactionsLog = [];
-  sessionLogStart = Date.now();
+  MAGI_sessionLogStart = Date.now();
   // Does the server enable logging?
   $.post('/userGaveConsent')
     .done(function(res) {
       loggingEnabled = res;
-      console.log('loggingEnabled', loggingEnabled);
+      if(loggingEnabled) startLog();
     });
 });
+
+function startLog() {
+  var documentSize = {width:$(document).width(), height:$(document).height()},
+      windowSize = {width:$(window).width(), height:$(window).height()},
+      vizSizes = {},
+      vizLocs = {};
+
+  // Get size and locations of visualizations
+  vizSizes.mutmtx = {width:$('div#mutation-matrix').width(), height:$('div#mutation-matrix').height()};
+  vizLocs.mutmtx = $('div#mutation-matrix').offset();
+  vizSizes.subnet = {width:$('div#subnetwork').width(), height:$('div#subnetwork').height()};
+  vizLocs.subnet = $('div#subnetwork').offset();
+  vizSizes.trnant = {width:$('div#transcript-plot').width(), height:$('div#transcript-plot').height()};
+  vizLocs.trnant = $('div#transcript-plot').offset();
+  vizSizes.cnaviz = {width:$('div#cna-browser').width(), height:$('div#cna-browser').height()};
+  vizLocs.cnaviz = $('div#cna-browser').offset();
+
+  // Get query information from address bar
+  var pathTkns = window.location.search.split('&'),
+      genes = pathTkns[0].replace('?genes=','').split('%2C'),
+      datasets = pathTkns[1].replace('datasets=','').split('%2C'),
+      showDuplicates = pathTkns[2].replace('showDuplicates=','');
+
+  var now = MAGI_sessionLogStart;
+  documentSize.time = now;
+  windowSize.time = now;
+  vizSizes.time = now;
+  vizLocs.time = now;
+
+  var log = {
+    sessionId: now,
+    documentSize: documentSize,
+    windowSize: windowSize,
+    vizSizes: vizSizes,
+    vizLocations: vizLocs,
+    genes: genes,
+    datasets: datasets,
+    showDuplicates: showDuplicates
+  };
+
+  $.post('/startLog', log);
+}
 
 function addToLog(e, event) {
   if (loggingEnabled == false) {
@@ -52,7 +94,7 @@ function sendData() {
     return;
   }
   var end = Date.now(),
-      start = sessionLogStart;
+      start = MAGI_sessionLogStart;
 
   var height = $(window).height(),
       width = $(window).width();
@@ -80,6 +122,5 @@ function sendData() {
     width: width,
     vizSizes: vizSizes
   };
-  console.log(log);
-  //$.post('/saveLog', log);
+  $.post('/saveLog', log);
 }
