@@ -703,7 +703,9 @@ function view(){
 
 	//	List of cancers with abbreviations from TCGA (http://goo.gl/2A3UuH) and ICGC (http://dcc.icgc.org/projects)
 	var abbrToCancer = data.abbrToCancer,
+		datasetToCancer = data.datasetToCancer,
 		cancerToAbbr = {};
+
 	Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; })
 	cancers = Object.keys(cancerToAbbr);
 
@@ -735,6 +737,7 @@ function view(){
 	// Create a map of cancers to their abbreviations, and a list of all cancers
 	function invertCancerTy(name){ return name in cancerToAbbr ? cancerToAbbr[name].toUpperCase()  : name; }
 	function getCancerTy(name){
+		return datasetToCancer[name];
 		var lowName = name.toLowerCase()
 		return lowName in abbrToCancer ? abbrToCancer[lowName] : name;
 	}

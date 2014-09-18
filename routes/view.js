@@ -6,6 +6,7 @@ var mongoose = require( 'mongoose' ),
 	Domains  = require( "../model/domains" ),
 	Annotations  = require( "../model/annotations" ),
 	QueryHash = require('../model/queryHash'),
+	Cancers  = require( "../model/cancers" ),
 	fs = require('fs');
 
 exports.view  = function view(req, res){
@@ -229,19 +230,28 @@ exports.view  = function view(req, res){
 						PPIs.ppilist(genes, function(err, ppis){
 							PPIs.ppicomments(ppis, user_id, function(err, comments){
 								PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-									var path   = require( 'path' ),
-										filepath = path.normalize(__dirname + '/../public/data/abbrToCancer.json');
+									var Cancer = mongoose.model( 'Cancer' );
 
-									fs.readFile(filepath, 'utf8', function (err, abbrToCancer) {
-										if (err) {
-											console.log('Error: ' + err);
-											return;
-										}
+									Cancer.find({}, function(err, cancers){
+										if (err) throw new Error(err);
+										
+										// Create a mapping of dataset titles to cancer names
+										var cancerIdToName = {},
+											abbrToCancer = {},
+											datasetToCancer = {};
+										cancers.forEach(function(c){
+											cancerIdToName[c._id] = c.cancer;
+											if (c.abbr) abbrToCancer[c.abbr] = c.cancer;
+										});
+										datasets.forEach(function(d){
+											datasetToCancer[d.title] = cancerIdToName[d.cancer_id];
+										});
 
 										// Package data into one object
 										var subnetwork_data = { edges: edges, nodes: nodes, refs: refs, comments: comments };
 										var pkg = 	{
-														abbrToCancer: JSON.parse(abbrToCancer),
+														abbrToCancer: abbrToCancer,
+														datasetToCancer: datasetToCancer,
 														subnetwork_data: subnetwork_data,
 														mutation_matrix: mutation_matrix,
 														transcript_data: transcript_data,
