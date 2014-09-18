@@ -3,20 +3,33 @@
 
 var loggingEnabled = false,
     MAGI_sessionLogStart,
-    MAGI_interactionsLog = [];
+    MAGI_interactionsLog = [],
+    MAGI_resizes = {
+      documentSize: [],
+      windowSize: [],
+      vizSizes: [],
+      vizLocations: []
+    };
+
+$(window).resize(function() {
+  var s = getSizes();
+  MAGI_resizes.documentSize.push(s.documentSize);
+  MAGI_resizes.windowSize.push(s.windowSize);
+  MAGI_resizes.vizSizes.push(s.vizSizes);
+  MAGI_resizes.vizLocations.push(s.vizLocations);
+});
 
 $(document).keydown(function(e) {
   if(e.ctrlKey || e.metaKey) {
-    //sendData();
     extendLogEvents();
-    console.log('extend event');
   }
 });
 
 $(document).mousemove(function(e) {
   addToLog(e, 'm');
   if(e.pageX <= 0 || e.pageY <= 0) {
-    sendData();
+    console.log('outside');
+    extendLogEvents();
   }
 });
 
@@ -38,6 +51,37 @@ $().ready(function () {
       if(loggingEnabled) startLog();
     });
 });
+
+
+function getSizes() {
+  var time = Date.now();
+  var documentSize = {width:$(document).width(), height:$(document).height()},
+      windowSize = {width:$(window).width(), height:$(window).height()},
+      vizSizes = {},
+      vizLocs = {};
+
+  // Get size and locations of visualizations
+  vizSizes.mutmtx = {width:$('div#mutation-matrix').width(), height:$('div#mutation-matrix').height()};
+  vizLocs.mutmtx = $('div#mutation-matrix').offset();
+  vizSizes.subnet = {width:$('div#subnetwork').width(), height:$('div#subnetwork').height()};
+  vizLocs.subnet = $('div#subnetwork').offset();
+  vizSizes.trnant = {width:$('div#transcript-plot').width(), height:$('div#transcript-plot').height()};
+  vizLocs.trnant = $('div#transcript-plot').offset();
+  vizSizes.cnaviz = {width:$('div#cna-browser').width(), height:$('div#cna-browser').height()};
+  vizLocs.cnaviz = $('div#cna-browser').offset();
+
+  documentSize.time = time;
+  windowSize.time = time;
+  vizSizes.time = time;
+  vizLocs.time = time;
+
+  return {
+    documentSize:documentSize,
+    windowSize:windowSize,
+    vizSizes:vizSizes,
+    vizLocations:vizLocs
+  };
+}
 
 function startLog() {
   var documentSize = {width:$(document).width(), height:$(document).height()},
@@ -84,6 +128,11 @@ function extendLogEvents() {
   var log = {};
   log.sessionId = MAGI_sessionLogStart;
   log.log = MAGI_interactionsLog;
+  log.documentSize = MAGI_resizes.documentSize;
+  log.windowSize = MAGI_resizes.windowSize;
+  log.vizSizes = MAGI_resizes.vizSizes;
+  log.vizLocations = MAGI_resizes.vizLocations;
+  console.log(log);
   $.post('/extendLog', log);
   MAGI_interactionsLog = [];
 }

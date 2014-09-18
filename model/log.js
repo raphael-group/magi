@@ -63,7 +63,7 @@ exports.extendLog = function(newInfo, userId) {
       vizSizes = newInfo.vizSizes,
       vizLocations = newInfo.vizLocations,
       annotations = newInfo.annotations,
-      log = newInfo.log;
+      logExtension = newInfo.log;
 
   var log = Database.logDB.model('Log'),
       query = {userId: userId, sessionId: sessionId};
@@ -72,8 +72,26 @@ exports.extendLog = function(newInfo, userId) {
       console.log('Could not find interaction logs. Lookup:', userId, sessionId);
     } else {
       var l = logs[0];
-      l.log.push('testtttt');
-      l.markModified('log');
+      if (logExtension) {
+        l.log.push.apply(l.log, logExtension);
+        l.markModified('log');
+      }
+      if (documentSize) {
+        l.documentSize.push.apply(l.documentSize, documentSize);
+        l.markModified('documentSize');
+      }
+      if (windowSize) {
+        l.windowSize.push.apply(l.windowSize, windowSize);
+        l.markModified('windowSize');
+      }
+      if (vizSizes) {
+        l.vizSizes.push.apply(l.vizSizes, vizSizes);
+        l.markModified('vizSizes');
+      }
+      if (vizLocations) {
+        l.vizLocations.push.apply(l.vizLocations, vizLocations);
+        l.markModified('vizLocations');
+      }
       l.save();
       console.log('extended Log!');
     }
