@@ -114,22 +114,6 @@ block body
       div(id="share")
         //- Button trigger modal
         button(id="shareBtn", class="btn btn-primary btn-md", data-toggle="modal", data-target="#myModal") Share
-        //- Modal
-        div(class="modal fade", id="myModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
-          div(class="modal-dialog")
-            div(class="modal-content")
-              div(class="modal-header")
-                button(type="button", class="close", data-dismiss="modal")
-                  span(aria-hidden="true") &times;
-                  span(class="sr-only") Close
-                h5(class="modal-title", id="myModalLabel") Share this view
-              div(class="modal-body")
-                | Copy the link below and share it with your colleages or collaborators.
-                | Anyone with the link can now view this page.
-                div(id="shareLinkBox")
-                  input(class="form-control", type="text", name="shareLink", value="", style="width:100%", readonly)
-
-        //- a(href="#" id="shareBtn" class="btn btn-default btn-xs" role="button") Share
 
     div(id="instructions")
       div(class="panel panel-default")
@@ -220,8 +204,7 @@ block body
 
         select(class="form-control", id="cna-browser-select")
         div(id="cna-browser")
-  //- div
-  //-   h1(id="saveTest") Save
+
 
   script(type="text/javascript").
     var data = !{JSON.stringify(data)},
@@ -234,6 +217,21 @@ block body
   - else
     script(type="text/javascript").
       var user = undefined;
+
+  //- Keep modal outside of the rest so it can't be in the background
+  div(class="modal fade", id="myModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+    div(class="modal-dialog")
+      div(class="modal-content")
+        div(class="modal-header")
+          button(type="button", class="close", data-dismiss="modal")
+            span(aria-hidden="true") &times;
+            span(class="sr-only") Close
+          h5(class="modal-title", id="myModalLabel") Share this view
+        div(class="modal-body")
+          | Copy the link below and share it with your colleages or collaborators.
+          | Anyone with the link can now view this page.
+          div(id="shareLinkBox")
+            input(class="form-control", type="text", name="shareLink", value="", style="width:100%", readonly)
 
 block belowTheFold
       script(src='/components/jquery/dist/jquery.min.js').
