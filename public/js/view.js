@@ -640,13 +640,12 @@ function view(){
 		.style("padding", "5px")
 			.append("h5")
 			.attr("class", "panel-title")
-			.attr("data-toggle", "collapse")
-			.attr("data-parent", "#accordion")
-			.attr("href", "#collapseDataset")
+			.attr("id", "datasetLink")
 			.style("cursor", "pointer")
 			.style("font-size", "14px")
 			.style("width", "100%")
 			.text("Datasets");
+	bootstrapToggle({link: "dataset", target: "Dataset"});
 
 	datasetHeading.append("span")
 		.style("float", "right")
