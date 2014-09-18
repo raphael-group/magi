@@ -56,12 +56,28 @@ exports.startLog = function(logObj, userId) {
 }
 
 exports.extendLog = function(newInfo, userId) {
-  var sessionId = logObj.sessionId || null;
+  var sessionId = newInfo.sessionId || null;
 
   var documentSize = newInfo.documentSize,
       windowSize = newInfo.windowSize,
       vizSizes = newInfo.vizSizes,
-      vizLocations = newInfo.vizLocations
+      vizLocations = newInfo.vizLocations,
+      annotations = newInfo.annotations,
+      log = newInfo.log;
+
+  var log = Database.logDB.model('Log'),
+      query = {userId: userId, sessionId: sessionId};
+  log.find(query, function(err, logs) {
+    if (err || logs.length == 0) {
+      console.log('Could not find interaction logs. Lookup:', userId, sessionId);
+    } else {
+      var l = logs[0];
+      l.log.push('testtttt');
+      l.markModified('log');
+      l.save();
+      console.log('extended Log!');
+    }
+  });
 }
 
 var shouldWeStoreLogs = false;

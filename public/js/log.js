@@ -7,7 +7,9 @@ var loggingEnabled = false,
 
 $(document).keydown(function(e) {
   if(e.ctrlKey || e.metaKey) {
-    sendData();
+    //sendData();
+    extendLogEvents();
+    console.log('extend event');
   }
 });
 
@@ -78,6 +80,13 @@ function startLog() {
 
   $.post('/startLog', log);
 }
+function extendLogEvents() {
+  var log = {};
+  log.sessionId = MAGI_sessionLogStart;
+  log.log = MAGI_interactionsLog;
+  $.post('/extendLog', log);
+  MAGI_interactionsLog = [];
+}
 
 function addToLog(e, event) {
   if (loggingEnabled == false) {
@@ -86,7 +95,7 @@ function addToLog(e, event) {
   var x = e.pageX,
       y = e.pageY,
       time = Date.now();
-  interactionsLog.push({x:x, y:y, t:time, e:event});
+  MAGI_interactionsLog.push({x:x, y:y, t:time, e:event});
 }
 
 function sendData() {
