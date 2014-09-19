@@ -39,6 +39,7 @@ exports.abbreviations  = function privacy(req, res){
 	
 	Cancer.find({}, function(err, cancers){
 		if (err) throw new Error(err);
+		cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
 		res.render('abbreviations', {user: req.user, cancers: cancers });
 	});
 }

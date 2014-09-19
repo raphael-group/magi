@@ -13,8 +13,25 @@ block body
             | . You can manage all your uploaded datasets from your&nbsp;
             a(href="/account") account page.
         form(method="post", action="/", role="form", id="data-upload-form")
+            label 
+                | Cancer type (
+                a(href="/abbreviations") full list
+                | )
+            
+            br
+            | Choose one:
+            select(class="form-control", id="cancer")
+                optgroup(label="TCGA & ICGC")
+                - for (var i in tcga_icgc_cancers)
+                    option(value="#{tcga_icgc_cancers[i].abbr}") #{tcga_icgc_cancers[i].cancer} (#{tcga_icgc_cancers[i].abbr.toUpperCase()})
+                optgroup(label="User-defined")
+                - for (var i in user_cancers )
+                    option(value="#{user_cancers[i].abbr}") #{user_cancers[i].cancer} (#{user_cancers[i].abbr.toUpperCase()})
+            | or upload a file of cancer types (this will be given precedence)
+            input(type="file", id="cancers", name="cancers")
+            br
             label
-                | Dataset name (e.g. cancer type).
+                | Dataset name (can be same as cancer type).
             input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
             br
             label
@@ -203,11 +220,28 @@ block belowTheFold
     script(src='components/jquery-form/jquery.form.js')
     script(src="js/dataset-upload-control.js")
     script.
-        function randomColor(){
-            var color = '#' + Math.random().toString(16).substr(-6);
+        //- Make a map of cancer abbreviations to colors
+        var user_cancers = !{JSON.stringify(user_cancers)},
+            tcga_icgc_cancers = !{JSON.stringify(tcga_icgc_cancers)}
+            cancerToColor = {};
+        user_cancers.forEach(function(c){ cancerToColor[c.abbr] = c.color; });
+        tcga_icgc_cancers.forEach(function(c){ cancerToColor[c.abbr] = c.color; });
+        //- Set the color chooser to the given color
+        function setColor(color){
             $('#db-color').css('background', color)
             $("input#color").val(color);
         }
+        //- Give the user a random color
+        function randomColor(){
+            setColor('#' + Math.random().toString(16).substr(-6));
+        }
+        //- Update the color as the user changes the color input
         $("input#color").on("change", function(){
             $("span#db-color").css('background', $("input#color").val());
         });
+        //- Update the color chooser when the user changes the cancer type
+        $("select#cancer").on("change", function(){
+            setColor(cancerToColor[$("select#cancer").val()]);
+        });
+        //- Initialize color with the first cancer
+        setColor(cancerToColor[$("select#cancer").val()]);

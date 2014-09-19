@@ -1,13 +1,24 @@
 // Load required modules
-var Dataset  = require( "../model/datasets" ),
+var mongoose = require( 'mongoose' ),
+	Dataset  = require( "../model/datasets" ),
 	formidable = require('formidable'),
 	fs = require('fs'),
+	Cancers  = require( "../model/cancers" ),
 	path = require('path');
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
 	console.log('upload')
-	res.render('upload', {user: req.user});
+	var Cancer = mongoose.model( 'Cancer' );
+	Cancer.find({}, function(err, cancers){
+		if (err) throw new Error(err);
+		else{
+			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
+			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_standard; }),
+				user_cancers = cancers.filter(function(d){ return !d.is_standard; });
+			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
+		}
+	});
 }
 
 // Parse the user's dataset upload

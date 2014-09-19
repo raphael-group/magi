@@ -4,15 +4,16 @@ var mongoose = require( 'mongoose' );
 // Create GeneSet schema and add it to Mongoose
 var CancerSchema = new mongoose.Schema({
 	cancer: { type: String, required: true},
-	abbr: { type: String, required: false},
+	abbr: { type: String, required: true},
 	color: { type: String, required: true },
-	created_at: { type: Date, default: Date.now, required: true }
+	created_at: { type: Date, default: Date.now, required: true },
+	is_standard: { type: Boolean, default: false, required: false }
 });
 
 mongoose.model( 'Cancer', CancerSchema );
 
 // Loads annotations into the database
-exports.loadCancersFromFile = function(filename, callback){
+exports.loadCancersFromFile = function(filename, is_standard, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
 		Cancer = mongoose.model( 'Cancer' ),
@@ -43,7 +44,8 @@ exports.loadCancersFromFile = function(filename, callback){
 				cancer = {
 					cancer: fields[0],
 					abbr: fields[1],
-					color: fields[2]
+					color: fields[2],
+					is_standard: is_standard
 				}
 			cancers.push( cancer );
 		});
