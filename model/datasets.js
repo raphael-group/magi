@@ -191,16 +191,17 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					});
 				}
 				else{
+					console.log("HELLO!")
 					// Load the lines, but skip the header (the first line)
 					lines = data.trim().split('\n');
 					lines.forEach(function(l){
 						var arr = l.split("\t");
 						datasetToCancer[arr[0]] = abbrevToId[arr[1].toLowerCase()];
 						if (color){
-							datasetToColor[d] = color;
+							datasetToColor[arr[0]] = color;
 						}
 						else{
-							datasetToColor[d] = datasetToColor[arr[1].toLowerCase()];
+							datasetToColor[arr[0]] = datasetToColor[arr[1].toLowerCase()];
 						}
 					});
 				}
