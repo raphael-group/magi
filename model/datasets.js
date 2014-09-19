@@ -718,8 +718,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	function splitDatasets(){
 		// Set up promise
 		var d = Q.defer();
-		console.log(datasetToColor)
-		process.exit(1)
 
 		loadMutationFile(snvs_file, "SNV", 1, function(err, datasetToSNVLines){
 			loadMutationFile(cnas_file, "CNA", 1, function(err, datasetToCNALines){
