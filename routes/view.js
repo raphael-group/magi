@@ -6,9 +6,10 @@ var mongoose = require( 'mongoose' ),
 	Domains  = require( "../model/domains" ),
 	Annotations  = require( "../model/annotations" ),
 	QueryHash = require('../model/queryHash'),
-	fs = require('fs'),
 	Database = require('../model/db'),
-	Cancers  = require( "../model/cancers" );
+	Cancers  = require( "../model/cancers" ),
+	fs = require('fs');
+
 
 exports.view  = function view(req, res){
 	console.log('view');
@@ -236,13 +237,14 @@ exports.view  = function view(req, res){
 						PPIs.ppilist(genes, function(err, ppis){
 							PPIs.ppicomments(ppis, user_id, function(err, comments){
 								PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-									var Cancer = mongoose.model( 'Cancer' );
+									var Cancer = Database.magi.model( 'Cancer' );
 
 									console.log('bonjour!!!');
 									Cancer.find({}, function(err, cancers){
 										if (err) throw new Error(err);
 
 										console.log('inside Cancer');
+
 										// Create a mapping of dataset titles to cancer names
 										var cancerIdToName = {},
 											abbrToCancer = {},
