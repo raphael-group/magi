@@ -7,9 +7,8 @@ var mongoose = require( 'mongoose' ),
 	Annotations  = require( "../model/annotations" ),
 	QueryHash = require('../model/queryHash'),
 	fs = require('fs'),
-	Database = require('../model/db');
-	Cancers  = require( "../model/cancers" ),
-	fs = require('fs');
+	Database = require('../model/db'),
+	Cancers  = require( "../model/cancers" );
 
 exports.view  = function view(req, res){
 	console.log('view');
@@ -243,6 +242,7 @@ exports.view  = function view(req, res){
 									Cancer.find({}, function(err, cancers){
 										if (err) throw new Error(err);
 
+										console.log('inside Cancer');
 										// Create a mapping of dataset titles to cancer names
 										var cancerIdToName = {},
 											abbrToCancer = {},
