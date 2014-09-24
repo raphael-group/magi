@@ -2,7 +2,8 @@
 var mongoose = require( 'mongoose' ),
 	Genome  = require( "./genome" ),
 	Cancers  = require( "./cancers" ),
-	GeneSets  = require( "./genesets" );
+	GeneSets  = require( "./genesets" ),
+  Database = require('./db');
 
 // Create schemas to hold the SNVs
 var MutGeneSchema = new mongoose.Schema({
@@ -28,12 +29,12 @@ var DatasetSchema = new mongoose.Schema({
 	color: { type: String, required: true }
 });
 
-mongoose.model( 'Dataset', DatasetSchema );
-mongoose.model( 'MutGene', MutGeneSchema );
+Database.magi.model( 'Dataset', DatasetSchema );
+Database.magi.model( 'MutGene', MutGeneSchema );
 
 // List the datasets by group
 exports.datasetGroups = function datasetgroups(query, callback){
-	var Dataset = mongoose.model( 'Dataset' );
+	var Dataset = Database.magi.model( 'Dataset' );
 
 	Dataset.aggregate(
 		{ $match: query },
@@ -58,14 +59,14 @@ exports.datasetGroups = function datasetgroups(query, callback){
 }
 
 exports.datasetlist = function datasetlist(dataset_ids, callback){
-	var Dataset = mongoose.model( 'Dataset' );
+	var Dataset = Database.magi.model( 'Dataset' );
 	Dataset.find({_id: {$in: dataset_ids}}, callback);
 }
 
 exports.removeDataset = function removeDataset(query, callback){
 	// Load the modules
-	var Dataset = mongoose.model( 'Dataset' ),
-		MutGene = mongoose.model( 'MutGene' );
+	var Dataset = magi.db.model( 'Dataset' ),
+		MutGene = magi.db.model( 'MutGene' );
 
 	// Remove the dataset, then remove all mutgenes from that dataset
 	Dataset.remove(query, function(err){
@@ -85,7 +86,7 @@ exports.removeDataset = function removeDataset(query, callback){
 
 // A function for listing all the SNVs for a set of genes
 exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
-	var MutGene = mongoose.model( 'MutGene' ),
+	var MutGene = Database.magi.model( 'MutGene' ),
 		query = { gene: {$in: genes}, dataset_id: {$in: dataset_ids} };
 
 	MutGene.find(query, function(err, mutGenes){
@@ -104,9 +105,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 									  aberration_file, cancer_input, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
-		Dataset = mongoose.model( 'Dataset' ),
-		MutGene = mongoose.model( 'MutGene' ),
-		Cancer = mongoose.model( 'Cancer' ),
+		Dataset = Database.magi.model( 'Dataset' ),
+		MutGene = Database.magi.model( 'MutGene' ),
+		Cancer = Database.magi.model( 'Cancer' ),
 		domain  = require( "./domains" ),
 		Q       = require( 'q' );
 
@@ -369,7 +370,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			});
 
 			// Load locations of each gene and find their neighbors 
-			var Gene = mongoose.model( 'Gene' );
+			var Gene = Database.magi.model( 'Gene' );
 			Gene.find({name: {$in: Object.keys(cnas)}}, function (err, genes){
 				if (err) throw new Error(err);
 	
@@ -538,7 +539,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				return numMutatedSamples(mutatedSamples);
 			}
 
-			var GeneSet = mongoose.model( 'GeneSet' );
+			var GeneSet = Database.magi.model( 'GeneSet' );
 			GeneSet.find({}, function(err, genesets){
 				// Throw err if necessary
 				if (err) throw new Error(err);

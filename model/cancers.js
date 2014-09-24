@@ -1,5 +1,6 @@
 // Import required modules
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+    Database = require('./db');
 
 // Create GeneSet schema and add it to Mongoose
 var CancerSchema = new mongoose.Schema({
@@ -9,18 +10,18 @@ var CancerSchema = new mongoose.Schema({
 	created_at: { type: Date, default: Date.now, required: true }
 });
 
-mongoose.model( 'Cancer', CancerSchema );
+Database.magi.model( 'Cancer', CancerSchema );
 
 // Loads annotations into the database
 exports.loadCancersFromFile = function(filename, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
-		Cancer = mongoose.model( 'Cancer' ),
+		Cancer = Database.magi.model( 'Cancer' ),
 		Q  = require( 'q' );
 
 	// Read in the file asynchronously
 	var data;
-	function loadCancerFile(){	
+	function loadCancerFile(){
 		var d = Q.defer();
 		fs.readFile(filename, 'utf-8', function (err, fileData) {
 			// Exit if there's an error, else callback
