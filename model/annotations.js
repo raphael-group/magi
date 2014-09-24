@@ -12,7 +12,7 @@ var AnnotationSchema = new mongoose.Schema({
 	mutation_type: { type: String, required: false},
 	references: { type: Array, required: true },
 	support: { type: Array, required: true},
-	created_at: { type: Date, default: Date.now, required: true }	
+	created_at: { type: Date, default: Date.now, required: true }
 });
 
 Database.magi.model( 'Annotation', AnnotationSchema );
