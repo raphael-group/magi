@@ -23,15 +23,15 @@ exports.view  = function view(req, res){
 			if(entries.length == 0) {
 				req.session.msg401 = "Fatal error: bad query.";
 				res.redirect("401");
-		    } else {
-		    	var query = entries[0].query;
-	      		if (query == undefined) {
+	    } else {
+	    	var query = entries[0].query;
+      	if (query == undefined) {
 					req.session.msg401 = "Fatal error: bad query.";
 					res.redirect("401");
-	      		} else { // parse the query and extract the gene names and datasets
-	      			function getParameterByName(str,name) {
-	      				var match = RegExp('[?&]' + name + '=([^&]*)').exec(str);
-	      				return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+    		} else { // parse the query and extract the gene names and datasets
+    			function getParameterByName(str,name) {
+	    				var match = RegExp('[?&]' + name + '=([^&]*)').exec(str);
+	    				return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 					}
 					var genes = getParameterByName(query,"genes").split(','),
 						dataset_ids = getParameterByName(query,"datasets").split(',');
@@ -87,6 +87,7 @@ exports.view  = function view(req, res){
 			var typeToSamples = {};
 			datasets.forEach(function(d){ typeToSamples[d.title] = d.samples;  });
 
+			console.log('hola');
 			Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
 				// Create a list of all the transcripts in the mutated genes
 				var transcripts = [];
@@ -106,6 +107,8 @@ exports.view  = function view(req, res){
 							domainDBs[n] = true;
 						})
 					});
+
+					console.log('bonjour');
 
 					// Create empty Objects to store transcript/mutation matrix data
 					var M = {},
@@ -186,7 +189,7 @@ exports.view  = function view(req, res){
 							trsData.mutations = updatedMutations;
 						}
 					}
-
+					console.log('bounjour!');
 					// Load the annotations for each gene
 					var Annotation = Database.magi.model( 'Annotation' );
 					Annotation.find({gene: {$in: genes}}, function(err, support){
@@ -230,11 +233,13 @@ exports.view  = function view(req, res){
 							}
 						});
 
+						console.log('bonjour!!')
 						PPIs.ppilist(genes, function(err, ppis){
 							PPIs.ppicomments(ppis, user_id, function(err, comments){
 								PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
 									var Cancer = mongoose.model( 'Cancer' );
 
+									console.log('bonjour!!!');
 									Cancer.find({}, function(err, cancers){
 										if (err) throw new Error(err);
 
