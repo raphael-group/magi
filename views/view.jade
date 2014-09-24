@@ -10,7 +10,7 @@ block body
       div(id="controls")
       div(id="saveBox" class="panel panel-default" style="padding:0px")
         div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", data-toggle="collapse", data-parent="#accordion", href="#collapseSave", style="cursor:pointer;font-size:14px;")
+          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="saveLink")
             | Download options
             span(style="float:right") [+]
 
@@ -44,7 +44,7 @@ block body
 
       div(id="annotation" class="panel panel-default", style="padding:0px;")
         div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", data-toggle="collapse", data-parent="#accordion", href="#collapseAnnotation", style="cursor:pointer;font-size:14px;")
+          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotateLink")
             | Annotate
             span(style="float:right") [+]
 
@@ -61,6 +61,8 @@ block body
                   option(value="Amp") is amplified in
                   option(value="Del") is deleted in
                   option(value="SNV") is mutated in
+                  option(value="Expression") is expressed (over/under) in
+                  option(value="Methylation") is methylated (hypo/hyper) in
                   option(value="interact") interacts with
                 br
                 div(id="inputs", style="display:none")
@@ -112,27 +114,11 @@ block body
       div(id="share")
         //- Button trigger modal
         button(id="shareBtn", class="btn btn-primary btn-md", data-toggle="modal", data-target="#myModal") Share
-        //- Modal
-        div(class="modal fade", id="myModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
-          div(class="modal-dialog")
-            div(class="modal-content")
-              div(class="modal-header")
-                button(type="button", class="close", data-dismiss="modal")
-                  span(aria-hidden="true") &times;
-                  span(class="sr-only") Close
-                h5(class="modal-title", id="myModalLabel") Share this view
-              div(class="modal-body")
-                | Copy the link below and share it with your colleages or collaborators.
-                | Anyone with the link can now view this page.
-                div(id="shareLinkBox")
-                  input(class="form-control", type="text", name="shareLink", value="", style="width:100%", readonly)
-
-        //- a(href="#" id="shareBtn" class="btn btn-default btn-xs" role="button") Share
 
     div(id="instructions")
       div(class="panel panel-default")
         div(class="panel-heading")
-          h4(class="panel-title", data-toggle="collapse", data-parent="#accordion", href="#collapseOne", style="cursor:pointer")
+          h4(class="panel-title", data-toggle="collapse", data-target="#collapseOne", style="cursor:pointer", id="instructionsLink")
             | INSTRUCTIONS
             span(style="float:right") [+]
 
@@ -218,8 +204,7 @@ block body
 
         select(class="form-control", id="cna-browser-select")
         div(id="cna-browser")
-  //- div
-  //-   h1(id="saveTest") Save
+
 
   script(type="text/javascript").
     var data = !{JSON.stringify(data)},
@@ -233,10 +218,25 @@ block body
     script(type="text/javascript").
       var user = undefined;
 
+  //- Keep modal outside of the rest so it can't be in the background
+  div(class="modal fade", id="myModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+    div(class="modal-dialog")
+      div(class="modal-content")
+        div(class="modal-header")
+          button(type="button", class="close", data-dismiss="modal")
+            span(aria-hidden="true") &times;
+            span(class="sr-only") Close
+          h5(class="modal-title", id="myModalLabel") Share this view
+        div(class="modal-body")
+          | Copy the link below and share it with your colleages or collaborators.
+          | Anyone with the link can now view this page.
+          div(id="shareLinkBox")
+            input(class="form-control", type="text", name="shareLink", value="", style="width:100%", readonly)
+
 block belowTheFold
       script(src='/components/jquery/dist/jquery.min.js').
-      script(src='/components/d3/d3.min.js').
       script(src='/components/bootstrap/dist/js/bootstrap.min.js').
+      script(src='/components/d3/d3.min.js').
       script(src='/components/d3-tip/index.js').
       script(src='/components/hogan/web/builds/2.0.0/hogan-2.0.0.min.js').
       //- script(src="/components/gd3/dist/js/gd3.min.js")
@@ -263,3 +263,15 @@ block belowTheFold
             }
           });
         });
+        //- Set up bootstrap toggling
+        var linksWithToggles = [{link: "instructions", target: "One"},
+                                {link: "save", target: "Save"},
+                                {link: "annotate", target: "Annotation"}];
+        function bootstrapToggle(d){
+          $("#" + d.link + "Link").click(function(e){
+              e.preventDefault();
+              e.stopPropagation();// prevent the default anchor functionality
+              $("#collapse" + d.target).collapse('toggle');
+            });
+        }
+        linksWithToggles.forEach(bootstrapToggle);

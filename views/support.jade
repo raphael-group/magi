@@ -17,7 +17,10 @@ block body
 		a(href="https://wiki.nci.nih.gov/display/TCGA/Mutation+Annotation+Format+(MAF)+Specification", target="_new") TCGA MAF format
 		| &nbsp;into the&nbsp;
 		a(href="/upload#snv-format") SNV TSV format used by MAGI
-		| . If you develop your own script(s) to generate TSV data for MAGI that you don't mind sharing, please feel free to&nbsp;
+		| , and a script that will convert data in&nbsp;
+		a(href="ftp://ftp.broadinstitute.org/pub/genepattern/modules_public_server_doc/GISTIC2.pdf") GISTIC2 format
+		| &nbsp;into the TSV format used by MAGI. If you develop your own script(s) to generate TSV data for MAGI
+		| that you don't mind sharing, please feel free to&nbsp;
 		a(href="/contact") contact us
 		| &nbsp;and we'll be happy to post it here for anyone to use.
 		br
@@ -33,4 +36,14 @@ block body
 				a(href="/scripts/ensembl_transcript_lengths.json") ENSEMBL transcript lengths
 			li
 				a(href="/scripts/refseq_transcript_lengths.json") RefSeq transcript lengths
+
+		h4 GISTIC2 Parser
+		b Script:&nbsp;
+		a(href="/scripts/gistic2tsv.py") gistic2tsv.py
+		br
+		b Required files:&nbsp;
+		| The GISTIC2 parser requires a JSON file that maps genes to their genome locations:
+		ul
+			li
+				a(href="/scripts/hg19_genes_list.json") HG19 gene list
 
