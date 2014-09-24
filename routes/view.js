@@ -233,11 +233,11 @@ exports.view  = function view(req, res){
 						PPIs.ppilist(genes, function(err, ppis){
 							PPIs.ppicomments(ppis, user_id, function(err, comments){
 								PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-									var Cancer = mongoose.model( 'Cancer' );
+									var Cancer = Database.magi.model( 'Cancer' );
 
 									Cancer.find({}, function(err, cancers){
 										if (err) throw new Error(err);
-										
+
 										// Create a mapping of dataset titles to cancer names
 										var cancerIdToName = {},
 											abbrToCancer = {},
