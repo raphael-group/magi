@@ -20,6 +20,7 @@ var DatasetSchema = new mongoose.Schema({
 	title: { type: String, required: true },
 	samples: { type: [String], required: true },
 	group: { type: String, required: false},
+	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
@@ -101,7 +102,7 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 
 // Loads a SNVs into the database
 exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
-									  aberration_file, is_standard, color, user_id){
+									  aberration_file, cancer_input, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = Database.magi.model( 'Dataset' ),
@@ -117,15 +118,99 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	}
 
 	// Load the cancer types, their abbreviations, and their colors
-	var datasetToColor = {};
+	var datasetToColor = {},
+		datasetToCancerName = {},
+		datasetToCancer = {},
+		abbrevToId = {},
+		cancerToId = {};
+
 	function loadCancers(){
 		var d = Q.defer();
 		Cancer.find({}, function(err, cancers){
 			if (err) throw new Error(err);
-			cancers.forEach(function(c){ datasetToColor[c.abbr] = c.color; });
+			cancers.forEach(function(c){
+				datasetToColor[c.abbr] = c.color;
+				if (c.abbr){
+					abbrevToId[c.abbr.toLowerCase()] = c._id;
+					cancerToId[c.cancer.toLowerCase()] = c._id;
+				}
+			});
 			d.resolve();
 		});
 
+		return d.promise;
+	}
+
+	// Load a mapping of dataset names to cancer abbreviations
+	function createCancerMapping(){
+		// Quick check to ensure all datasets map to a defined cancer _id
+		// after this function has executed
+		function ensureAllDatasetsMapToCancer(){
+			datasets.forEach(function(db){
+				if (!datasetToCancer[db]){
+					console.log("Unknown cancer type: " + db);
+					process.exit(1);
+				}
+			});
+		}
+
+		// Set up promise and either load the cancer file or map each
+		// dataset to itself
+		var d = Q.defer();
+		if (!cancer_input){
+			// Map each dataset to the lower case version of itself
+			datasets.forEach(function(d){
+				var dbLowName = d.toLowerCase();
+				datasetToCancer[d] = abbrevToId[dbLowName];
+				if (color){
+					datasetToColor[d] = color;
+				}
+				else if (!(dbLowName in datasetToColor)){
+					datasetToColor[d] = '#' + Math.floor(Math.random()*16777215).toString(16);
+				}
+				else{
+					datasetToColor[d] = datasetToColor[dbLowName];
+				}
+			});
+			ensureAllDatasetsMapToCancer();
+
+			// Resolve the promise
+			d.resolve();
+		}
+		else{
+			fs.readFile(cancer_input, 'utf-8', function (err, data) {
+				// If the input was not file path we assume it was a cancer type
+				if (err){
+					datasets.forEach(function(d){
+						datasetToCancer[d] = abbrevToId[cancer_input.toLowerCase()];
+						if (color){
+							datasetToColor[d] = color;
+						}
+						else{
+							datasetToColor[d] = datasetToColor[cancer_input.toLowerCase()];
+						}
+					});
+				}
+				else{
+					// Load the lines, but skip the header (the first line)
+					lines = data.trim().split('\n');
+					lines.forEach(function(l){
+						var arr = l.split("\t");
+						datasetToCancer[arr[0]] = abbrevToId[arr[1].toLowerCase()];
+						if (color){
+							datasetToColor[d] = color;
+						}
+						else{
+							datasetToColor[d] = datasetToColor[arr[1].toLowerCase()];
+						}
+					});
+				}
+				ensureAllDatasetsMapToCancer();
+
+				// Resolve the promise
+				d.resolve();
+			});
+		}
 		return d.promise;
 	}
 
@@ -143,19 +228,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		// Return if no sample file was provided
 		if (!samples_file){
 			givenSampleList = false;
-
-			// Set the color to the given color if provided
-			if (color){
-				datasetToColor[dataset] = color;
-			}
-			// Otherwise use the default color for this cancer type
-			else if (dataset.toLowerCase() in datasetToColor){
-				datasetToColor[dataset] = datasetToColor[dataset.toLowerCase()];
-			}
-			// If neither work, assign a random color
-			else{
-				datasetToColor[dataset] = '#' + Math.floor(Math.random()*16777215).toString(16);
-			}
 
 			// Exit if a dataset wasn't provided since we need some sort of name
 			if (!dataset){
@@ -209,18 +281,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			else if (datasets.length == 1 && color){
 				datasetToColor[datasets[0].toLowerCase()] = color;
 			}
-
-			// Assign random colors to datasets without them
-			datasets.forEach(function(db){
-				if (!(db in datasetToColor)){
-					if (!(db.toLowerCase() in datasetToColor)){
-						datasetToColor[db] = '#' + Math.floor(Math.random()*16777215).toString(16);
-					}
-					else{
-						datasetToColor[db] = datasetToColor[db.toLowerCase()];
-					}
-				}
-			});
 
 			// Resolve the promise
 			d.resolve();
@@ -558,7 +618,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					summary: summary,
 					is_standard: is_standard,
 					user_id: user_id,
-					color: datasetToColor[datasetName]
+					color: datasetToColor[datasetName],
+					cancer_id: datasetToCancer[datasetName]
 				};
 
 			if (user_id) query.user_id = user_id;
@@ -678,6 +739,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		return d.promise;
 	}
 	
-	return loadCancers().then( loadSampleFile ).then( splitDatasets )
+	return loadCancers().then( loadSampleFile ).then( createCancerMapping ).then( splitDatasets );
 
 }

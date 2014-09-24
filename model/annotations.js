@@ -19,8 +19,9 @@ Database.magi.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
 exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
-	var Annotation = Database.magi.model( 'Annotation' );
-	var support = {ref: pmid, user_id: user_id, comment: comment}
+	var Annotation = mongoose.model( 'Annotation' );
+	var support = {ref: pmid, user_id: user_id, comment: comment};
+
 	Annotation.findOneAndUpdate(
 		query,
 		{$push: {support: support}},
@@ -118,7 +119,7 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 			process.exit(1);
 		}
 
-		// Create objects to represent each interaction
+		// Create objects to represent each annotation
 		var annotations = [];
 		for (var i = 1; i < lines.length; i++){
 			// Parse the line
@@ -127,17 +128,24 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 					gene: fields[0],
 					cancer: fields[1],
 					mutation_class: fields[2],
-					support: fields.slice(3, fields.length)
+					pmid: fields[3],
+					comment: fields.length > 4 ? fields[4] : null
 				}
 
 			annotations.push( support );
 		}
 		console.log( "Loaded " + annotations.length + " annotations." )
 
-		// Save all the interactions
+		// Save all the annotations
 		return Q.allSettled( annotations.map(function(A){
 			var d = Q.defer();
-			Annotation.create(A, function(err){
+			var query = {
+					gene: A.gene,
+					cancer: A.cancer,
+					mutation_class: A.mutation_class,
+				};
+
+			exports.upsertAnnotation(query, A.pmid, A.comment, null, function(err, annotation){
 				if (err) throw new Error(err);
 				d.resolve();
 			})
