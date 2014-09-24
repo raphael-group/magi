@@ -18,7 +18,7 @@ var AnnotationSchema = new mongoose.Schema({
 Database.magi.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
-exports.upsertAnnotation = function upsertAnnotation(query, pmid, comment, user_id, callback ){
+exports.upsertAnnotation = function (query, pmid, comment, user_id, callback ){
 	var Annotation = mongoose.model( 'Annotation' );
 	var support = {ref: pmid, user_id: user_id, comment: comment};
 
