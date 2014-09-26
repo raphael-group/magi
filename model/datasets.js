@@ -73,7 +73,7 @@ exports.removeDataset = function removeDataset(query, callback){
 		// Throw an error if it occurred
 		if (err) throw new Error(err);
 
-		// Otherwise, remove all mutgenes with 
+		// Otherwise, remove all mutgenes with
 		MutGene.remove({dataset_id: query.dataset_id}, function(err){
 			// Throw an error if it occurred
 			if (err) throw new Error(err);

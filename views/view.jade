@@ -115,6 +115,9 @@ block body
         //- Button trigger modal
         button(id="shareBtn", class="btn btn-primary btn-md", data-toggle="modal", data-target="#myModal") Share
 
+    div(style="margin-left: 20px;")
+      input(id="magiConsentViewToggle", style="display:inline-block;margin-right:5px", type="checkbox")
+      p(style="display:inline-block") I do not want to improve the development of MAGI by sending usage information. <a href="" style="color:rgb(100,100,100)">(Read More)</a>
     div(id="instructions")
       div(class="panel panel-default")
         div(class="panel-heading")
@@ -247,6 +250,7 @@ block belowTheFold
       script(src='components/shepherd.js/shepherd.min.js').
       script(src='/js/save.js').
       script(src='/js/view.js').
+      script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
       script(src='/js/log.js').
       script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
       //- Define behavior for the scroll panel to stick to the top of the window

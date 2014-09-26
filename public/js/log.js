@@ -12,6 +12,10 @@ var loggingEnabled = false,
       vizLocations: []
     };
 
+$('#magiConsentViewToggle').change(function() {
+  console.log('toggle');
+})
+
 $(document).keydown(function(e) {
   if(e.ctrlKey || e.metaKey) {
     extendLogEvents();
@@ -31,6 +35,13 @@ $(document).click(function(e) {
 
 $(document).scroll(function(e) {
   addToLog(e, 's');
+});
+$(document).on('mousewheel', function(e) {
+  var evt = e.originalEvent,
+      velocity = evt.detail || evt.wheelDelta,
+      logText = velocity >= 0 ? 'w+'+velocity : 'w'+velocity;
+
+  addToLog(e, logText);
 });
 
 
