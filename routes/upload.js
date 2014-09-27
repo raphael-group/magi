@@ -52,8 +52,10 @@ exports.uploadDataset = function uploadDataset(req, res){
             console.log('Child process exited with exit code '+code);
         });
         
-        return {'snvs' : outputPrefix + "-snvs.tsv",
-                'samples' : outputPrefix + "-samples.tsv"};
+        var paths = {'snvs' : outputPrefix + "-snvs.tsv",
+                     'samples' : outputPrefix + "-samples.tsv"};
+        console.log(paths);
+        return paths;
     };
     
     form.parse(req, function(err, fields, files) {
