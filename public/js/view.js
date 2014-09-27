@@ -602,7 +602,7 @@ function view(){
       $('div#view').css('padding-top', $('div#control-panel').css('height'));
     } else {
       $('div#control-panel').css("width", "200px");
-      $('div#control-panel').css("right", "20px");
+      $('div#control-panel').css("right", "0px");
       $('div#view').css('margin-top', '0px');
     }
   }
@@ -640,13 +640,12 @@ function view(){
 		.style("padding", "5px")
 			.append("h5")
 			.attr("class", "panel-title")
-			.attr("data-toggle", "collapse")
-			.attr("data-parent", "#accordion")
-			.attr("href", "#collapseDataset")
+			.attr("id", "datasetLink")
 			.style("cursor", "pointer")
 			.style("font-size", "14px")
 			.style("width", "100%")
 			.text("Datasets");
+	bootstrapToggle({link: "dataset", target: "Dataset"});
 
 	datasetHeading.append("span")
 		.style("float", "right")
@@ -703,7 +702,9 @@ function view(){
 
 	//	List of cancers with abbreviations from TCGA (http://goo.gl/2A3UuH) and ICGC (http://dcc.icgc.org/projects)
 	var abbrToCancer = data.abbrToCancer,
+		datasetToCancer = data.datasetToCancer,
 		cancerToAbbr = {};
+
 	Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; })
 	cancers = Object.keys(cancerToAbbr);
 
@@ -735,6 +736,7 @@ function view(){
 	// Create a map of cancers to their abbreviations, and a list of all cancers
 	function invertCancerTy(name){ return name in cancerToAbbr ? cancerToAbbr[name].toUpperCase()  : name; }
 	function getCancerTy(name){
+		return datasetToCancer[name];
 		var lowName = name.toLowerCase()
 		return lowName in abbrToCancer ? abbrToCancer[lowName] : name;
 	}
@@ -844,8 +846,8 @@ function view(){
 			comment = $(commentElement).val();
 
 		// Validate the PMID
-		if (pmid == "" || pmid.length != 8 || isNaN(parseFloat(pmid)) || !isFinite(pmid) ){
-			annotationStatus("Please enter at least one valid PMID (8-character number).", warningClasses);
+		if (pmid == "" || pmid.length < 7 || isNaN(parseFloat(pmid)) || !isFinite(pmid) ){
+			annotationStatus("Please enter at least one valid PMID (7- or 8-digit number).", warningClasses);
 			return false;
 		}
 

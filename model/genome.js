@@ -1,5 +1,6 @@
 // Import required modules
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+    Database = require('./db');
 
 // Create PPI schema and add it to Mongoose
 var GeneSchema = new mongoose.Schema({
@@ -9,10 +10,10 @@ var GeneSchema = new mongoose.Schema({
 	name: String
 });
 
-mongoose.model( 'Gene', GeneSchema );
+Database.magi.model( 'Gene', GeneSchema );
 
 exports.getGenesinRange = function(chr, start, end, callback){
-	var Gene = mongoose.model( 'Gene' );
+	var Gene = Database.magi.model( 'Gene' );
 	Gene.find({chr: chr, start: { $gt: start }, end: {$lt: end} }, function (err, neighbors) {
   		if(err) console.log(err);
   		else callback("", neighbors);
@@ -23,7 +24,7 @@ exports.getGenesinRange = function(chr, start, end, callback){
 exports.loadGenomeFromFile = function(filename, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
-		Gene = mongoose.model( 'Gene' ),
+		Gene = Database.magi.model( 'Gene' ),
 		Q = require( 'q' );
 
 	// Read in the file asynchronously

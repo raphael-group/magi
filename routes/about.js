@@ -34,9 +34,10 @@ exports.abbreviations  = function privacy(req, res){
 
 	// Load the abbreviations from the database
 	var	mongoose = require( 'mongoose' ),
-		Cancers  = require( "../model/cancers" ),
-		Cancer = mongoose.model( 'Cancer' );
-	
+		Cancers  = require( "../model/cancers" );
+		Database = require('../model/db'),
+		Cancer = Database.magi.model( 'Cancer' );
+
 	Cancer.find({}, function(err, cancers){
 		if (err) throw new Error(err);
 		res.render('abbreviations', {user: req.user, cancers: cancers });

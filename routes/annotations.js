@@ -2,7 +2,8 @@
 var	mongoose = require( 'mongoose' ),
 	formidable = require('formidable'),
 	Annotations  = require( "../model/annotations" ),
-	PPIs = require( "../model/ppis" );
+	PPIs = require( "../model/ppis" ),
+	Database = require('../model/db');
 
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
@@ -10,7 +11,7 @@ exports.gene = function gene(req, res){
 
 	// Parse params
 	var gene = req.params.gene || "",
-		Annotation = mongoose.model( 'Annotation' );
+		Annotation = Database.magi.model( 'Annotation' );
 
 	Annotation.find({gene: gene}, function(err, annotations){
 		// Throw error (if necessary)
@@ -27,7 +28,7 @@ exports.cancer = function cancer(req, res){
 
 	// Parse params
 	var cancer = req.params.cancer.split("-").join(" ") || "",
-		Annotation = mongoose.model( 'Annotation' );
+		Annotation = Database.magi.model( 'Annotation' );
 
 	Annotation.find({cancer: { $regex : new RegExp('^' + cancer + '$', 'i') }}, function(err, annotations){
 		// Throw error (if necessary)
@@ -40,7 +41,7 @@ exports.cancer = function cancer(req, res){
 
 exports.save = function save(req, res){
 	console.log("/save/annotation")
-	
+
 	// Load the posted form
 	var form = new formidable.IncomingForm({});
 

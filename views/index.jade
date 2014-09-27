@@ -1,5 +1,4 @@
 extends layout
-
 block body
   div(class="banner")
     div(class="container-fluid")
@@ -10,10 +9,14 @@ block body
           br
           p MAGI is a tool for annotating, exploring, and analyzing gene sets that may be associated with cancer.
           ul
-            li Point 1
-            li Point 2
-            li Point 3
-          br
+            li View mutations in and interactions among sets of genes.
+            li
+              a(href="/upload") Upload your mutation data
+              | &nbsp;to view in combination with&nbsp;
+              a(href="http://www.nature.com/tcga/", target="_new") TCGA Pan-Cancer data
+              |.
+
+            li Collaboratively annotate mutations and interactions while exploring your data.
           a(type="button" class="btn btn-tour dropdown-toggle" href="#" style="margin-bottom:15px;") Get the tour
         div(class="col-md-4")
           div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")

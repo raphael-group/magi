@@ -80,29 +80,30 @@ block body
 		//- Run the script to create the mutations plot
 		script(src='/components/d3/d3.min.js').
 		script(src='/components/jquery/dist/jquery.min.js').
-		script(src='/components/DataTables/media/js/jquery.dataTables.js').
 		script(src='/components/bootstrap/dist/js/bootstrap.min.js').
 		script(src='/components/d3-tip/index.js').
 		script(src="/js/mutations-plot.js").
+		script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
 		script(src='/js/dataTableWrapper.js').
 		script(type='text/javascript').
+			//- Note: for some reason we cannot wrap the code below in a $(document).ready()
+			//- as that seems to break the DataTables.
 			//- Add the mutations plot with the axes selectors
 			var data = !{JSON.stringify(db.summary.mutation_plot_data)};
+			//- Make the most mutated gene and gene set tables sortable as a DataTable
 			var plot = d3.select("div#mutations-plot")
 				.append("div")
 				.datum(data);
 			var mutationPlot = mutation_plot();
 			mutationPlot( plot );
 			mutationPlot.addAxesSelectors();
-			//- Make the most mutated gene and gene set tables sortable as a DataTable
-			$(document).ready(function(){
-				addDataTable({
-					tableID: "#mutated-gene-table",
-					aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, null ]
-				});
-				addDataTable({
-					tableID: "#mutated-pathway-table",
-					aaSorting: [[3, "desc"]],
-					aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "desc", "asc" ] }, null, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, null]
-				});
+			//- Convert the tables into DataTables
+			addDataTable({
+				tableID: "#mutated-gene-table",
+				aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, null ]
+			});
+			addDataTable({
+				tableID: "#mutated-pathway-table",
+				aaSorting: [[3, "desc"]],
+				aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "desc", "asc" ] }, null, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, null]
 			});

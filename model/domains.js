@@ -1,5 +1,6 @@
 // Import required modules
-var mongoose = require( 'mongoose' );
+var mongoose = require( 'mongoose' ),
+    Database = require('./db');
 
 // Create domain schema and add it to Mongoose
 var DomainSchema = new mongoose.Schema({
@@ -13,12 +14,12 @@ var DomainDatasetSchema = new mongoose.Schema({
 	updated_at: { type: Date, default: Date.now, required: true }
 });
 
-mongoose.model( 'Domain', DomainSchema );
-mongoose.model( 'DomainDataset', DomainDatasetSchema );
+Database.magi.model( 'Domain', DomainSchema );
+Database.magi.model( 'DomainDataset', DomainDatasetSchema );
 
 // A function for listing all the interactions for a particular gene
 function domainlist(transcripts, callback){
-	var Domain = mongoose.model( 'Domain' );
+	var Domain = Database.magi.model( 'Domain' );
 	Domain.find({ transcript: { $in: transcripts } }, function (err, domains) {
   		if(err) console.log(err);
   		else callback("", domains);
@@ -29,7 +30,7 @@ exports.domainlist = domainlist;
 
 // A function for listing all the domain database names
 function domainDBList(callback){
-	var DomainDB = mongoose.model( 'DomainDataset' );
+	var DomainDB = Database.magi.model( 'DomainDataset' );
 	DomainDB.find({}, 'name', function(err, res){
 		if (err) throw new Errror(err);
 		callback("", res.map(function(r){ return r.name; }));
@@ -106,7 +107,7 @@ exports.addDomainsFromFile = function(filename, callback){
 		}
 
 		// Save the domain datasets
-		var DomainDB = mongoose.model( 'DomainDataset' );
+		var DomainDB = Database.magi.model( 'DomainDataset' );
 		function saveDomainDBs(){
 			return Q.allSettled(domainDBs.map(function(db){
 					var d = Q.defer(),
@@ -121,7 +122,7 @@ exports.addDomainsFromFile = function(filename, callback){
 		}
 
 		// Save all the domains simultaneously, and then resolve the promise
-		var Domain = mongoose.model( 'Domain' );
+		var Domain = Database.magi.model( 'Domain' );
 
 		return saveDomainDBs().then(function(){
 			var d = Q.defer();

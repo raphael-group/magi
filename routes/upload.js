@@ -11,7 +11,6 @@ var MAF2TSV_PATH = '../public/scripts/maf2tsv.py';
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
-	console.log('upload')
 	res.render('upload', {user: req.user});
 }
 
