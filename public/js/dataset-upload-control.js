@@ -14,6 +14,12 @@ $(document).ready(function() {
         warningClasses = 'alert alert-warning',
         successClasses = 'alert alert-success';
 
+    $('.uploadSelectorOption').click(function(e) {
+        e.preventDefault();
+        $('.uploadSelectorOption').css('background', 'none');
+        $(this).css('background', '#ccc');
+    });
+
     // Perform validation on the form when it is submitted
     $(formEl).submit(function(e){
         e.preventDefault();
@@ -112,7 +118,7 @@ $(document).ready(function() {
                 data.append( 'CNAs', cnaFile );
             if (sampleFile)
                 data.append( 'testedSamples', sampleFile );
-            
+
             data.append( 'dataset', dataset );
             data.append( 'groupName', groupName );
             data.append( 'color', color );

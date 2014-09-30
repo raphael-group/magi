@@ -3,6 +3,50 @@ block body
     br
     div(class="container", id="upload")
         h3 Upload your mutation data.
+        br
+        div(class="row")
+            h4 Step 1: Pick a name
+            br
+        div(class="row")
+            div(class="col-sm-4")
+                label
+                    | Dataset name (e.g. cancer type).
+                input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
+            div(class="col-sm-4")
+                label
+                    | Group name (optional).
+                input(type="text", id="groupName", name="groupName", class="form-control", placeholder="Enter group name (optional).")
+        br
+        hr
+        br
+        div(class="row")
+            h4 Step 2: Select data to upload
+            br
+        div(class="row")
+            div(class="col-sm-2")
+                h4 Datatypes
+                ul(class="nav nav-stacked uploadSelectorOptions")
+                    li <a data-selector-type="SNV" class="uploadSelectorOption" href="#">SNVs</a>
+                    li <a data-selector-type="CNV" class="uploadSelectorOption" href="#">CNAs</a>
+                    li <a data-selector-type="Expression" class="uploadSelectorOption" href="#">Expression</a>
+                    li <a data-selector-type="Methylation" class="uploadSelectorOption" href="#">Methylation</a>
+                    li <a data-selector-type="Subtype" class="uploadSelectorOption" href="#">Subtypes</a>
+            div(class="col-sm-10 uploadDataSelectArea")
+                div(class="snvUploadSelector")
+                    label
+                        | Single nucleotide variants (
+                        a(href="/upload#snvs-format") format
+                        | ).
+                    input(type="file", id="SNVs", name="SNVs")
+                div(class="cnvUploadSelector")
+                    label
+                        | Copy number variants (
+                        a(href="/upload#cnas-format") format
+                        | ).
+                    input(type="file", id="CNAs", name="CNAs")
+        br
+        br
+        hr
         p(class="caption")
             | Query your own mutation data by uploading it to our servers.
             | Provide a name, an optional group, and files containing the SNVs, CNAs, or generic abberrations, and samples in your dataset.
