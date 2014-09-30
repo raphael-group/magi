@@ -44,11 +44,11 @@ block body
                     p The columns whose names are starred are required.
                         | Missing data should be replaced with <code>--</code>.
                     hr
-                    h5 Format Example
-                    code PIK3CA TCGA-FD-A3B6    ENST00000263967 1068    545 Missense_Mutation   E   Q<br />
-                    code STAG1 TCGA-B0-4700    --  --  --  -- -- --
+                    h5 Format example
+                    code PIK3CA&#9;TCGA-FD-A3B6&#9;ENST00000263967&#9;1068&#9;545&#9;Missense_Mutation&#9;E&#9;Q<br />
+                    code STAG1&#9;TCGA-B0-4700&#9;--&#9;--&#9;--&#9;--&#9;--&#9;--
                     hr
-                    h5 Format Description
+                    h5 Format description
                     table(class="table table-bordered table-striped")
                         tr
                             th Column
@@ -112,12 +112,70 @@ block body
                         a(href="/upload#cnas-format") format
                         | ).
                     input(type="file", id="CNAs", name="CNAs")
+                    br
+                    p <strong>The CNA file is a tab-separated file (*.tsv)</strong> that includes all CNAs for a dataset.
+                        | Each row contains the data for a single copy number segment that occurs in one gene in one particular sample.
+                    p The columns whose names are starred are required.
+                    hr
+                    h5 Format example
+                    code PIK3CA&#9;TCGA-FD-A3B6&#9;AMP&#9;29843973&#9;30327089<br />
+                    code AKT1&#9;TCGA-06-0327 X&#9;--&#9;--&#9;--
+                    hr
+                    h5 Format description
+                    table(class="table table-bordered table-striped")
+                        tr
+                            th Column
+                            th Name (*=required)
+                            th Example
+                            th Description
+                        tr
+                            td 1
+                            td Gene*
+                            td PIK3CA
+                            td Gene name.
+                        tr
+                            td 2
+                            td Sample*
+                            td TCGA-FD-A3B6
+                            td Sample ID.
+                        tr
+                            td 3
+                            td CNA type
+                            td 
+                                | Type of CNA that occurred. MAGI understands the following CNA types:
+                                ul
+                                    li AMP
+                                    li DEL
+
+                            td Copy number type.
+                        tr
+                            td 4
+                            td Left
+                            td 29843973
+                            td Left start-point of segment.
+                        tr
+                            td 5
+                            td Right
+                            td 30327089
+                            td Right end-point of segment.
                 div(class="selectorViewOption expressionUploadSelector")
                     h4 expression stub
+                    hr
+                    h5 Format example
+                    hr
+                    h5 Format description
                 div(class="selectorViewOption methylationUploadSelector")
                     h4 methylation stub
+                    hr
+                    h5 Format example
+                    hr
+                    h5 Format description
                 div(class="selectorViewOption subtypeUploadSelector")
                     h4 subtype stub
+                    hr
+                    h5 Format example
+                    hr
+                    h5 Format description
         br
         br
         hr

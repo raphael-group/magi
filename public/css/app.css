@@ -99,7 +99,8 @@ div.indexTop ul li a.loginBtn {
 div.uploadDataSelectArea {
   border: 1px solid #ccc;
   border-radius: 10px 0 0 10px;
-  min-height: 100px;
+  height: 500px;
+  min-height: 500px;
   max-height: 500px;
   padding: 5px 10px;
   -webkit-box-shadow: inset 0px 0px 4px 1px rgba(0,0,0,0.75);
