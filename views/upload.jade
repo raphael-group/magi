@@ -26,24 +26,98 @@ block body
             div(class="col-sm-2")
                 h4 Datatypes
                 ul(class="nav nav-stacked uploadSelectorOptions")
-                    li <a data-selector-type="SNV" class="uploadSelectorOption" href="#">SNVs</a>
-                    li <a data-selector-type="CNV" class="uploadSelectorOption" href="#">CNAs</a>
+                    li <a data-selector-type="SNV" class="uploadSelectorOption defaultUploadSelectorOption" href="#">SNVs</a>
+                    li <a data-selector-type="CNA" class="uploadSelectorOption" href="#">CNAs</a>
                     li <a data-selector-type="Expression" class="uploadSelectorOption" href="#">Expression</a>
                     li <a data-selector-type="Methylation" class="uploadSelectorOption" href="#">Methylation</a>
                     li <a data-selector-type="Subtype" class="uploadSelectorOption" href="#">Subtypes</a>
             div(class="col-sm-10 uploadDataSelectArea")
-                div(class="snvUploadSelector")
+                div(class="selectorViewOption snvUploadSelector")
                     label
                         | Single nucleotide variants (
                         a(href="/upload#snvs-format") format
                         | ).
                     input(type="file", id="SNVs", name="SNVs")
-                div(class="cnvUploadSelector")
+                    br
+                    p <strong>The SNV file is a tab-separated file (*.tsv)</strong> that includes all SNVs for a dataset.
+                        | Each row contains the data for a single SNV that occurs in one gene in one particular sample.
+                    p The columns whose names are starred are required.
+                        | Missing data should be replaced with <code>--</code>.
+                    hr
+                    h5 Format Example
+                    code PIK3CA TCGA-FD-A3B6    ENST00000263967 1068    545 Missense_Mutation   E   Q<br />
+                    code STAG1 TCGA-B0-4700    --  --  --  -- -- --
+                    hr
+                    h5 Format Description
+                    table(class="table table-bordered table-striped")
+                        tr
+                            th Column
+                            th Name (*=required)
+                            th Example
+                            th Description
+                        tr
+                            td 1
+                            td Gene*
+                            td PIK3CA
+                            td Gene name.
+                        tr
+                            td 2
+                            td Sample*
+                            td TCGA-FD-A3B6
+                            td Sample ID.
+                        tr
+                            td 3
+                            td Transcript
+                            td ENST00000263967
+                            td Transcript ID (RefSeq/ENSEMBL).
+                        tr
+                            td 4
+                            td Transcript Length
+                            td 1068
+                            td Length of transcript.
+                        tr
+                            td 5
+                            td Locus
+                            td 545
+                            td Position in transcript at which SNV occurred.
+                        tr
+                            td 6
+                            td Mutation Type
+                            td Missense_Mutation
+                            td
+                                | Type of mutation that occurred. MAGI understands the following mutation types:
+                                ul
+                                    li Nonsense_Mutation
+                                    li Frame_Shift_Del
+                                    li Frame_Shift_Ins
+                                    li Missense_Mutation
+                                    li Splice_Site
+                                    li In_Frame_Del
+                                    li In_Frame_Ins
+                        tr
+                            td 7
+                            td Original &nbsp;
+                                abbr(title="Amino Acid") AA
+                            td E
+                            td The amino acid at the locus before the variant occurred.
+                        tr
+                            td 8
+                            td New &nbsp;
+                                abbr(title="Amino Acid") AA
+                            td Q
+                            td The amino acid at the locus after the variant occurred.
+                div(class="selectorViewOption cnvUploadSelector")
                     label
                         | Copy number variants (
                         a(href="/upload#cnas-format") format
                         | ).
                     input(type="file", id="CNAs", name="CNAs")
+                div(class="selectorViewOption expressionUploadSelector")
+                    h4 expression stub
+                div(class="selectorViewOption methylationUploadSelector")
+                    h4 methylation stub
+                div(class="selectorViewOption subtypeUploadSelector")
+                    h4 subtype stub
         br
         br
         hr

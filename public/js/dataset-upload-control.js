@@ -14,10 +14,38 @@ $(document).ready(function() {
         warningClasses = 'alert alert-warning',
         successClasses = 'alert alert-success';
 
+    // Load default upload state
+    $('.uploadSelectorOption').each(function() {
+        if($(this).hasClass('defaultUploadSelectorOption')) {
+            $(this).css('background', '#ccc');
+        }
+    });
+    $('.selectorViewOption').each(function() {
+        if($(this).hasClass('snvUploadSelector') == false) {
+            $(this).css('visibility','hidden').css('display','none');
+        }
+    });
+
+    // Change viewable DIV on menu click
     $('.uploadSelectorOption').click(function(e) {
         e.preventDefault();
         $('.uploadSelectorOption').css('background', 'none');
         $(this).css('background', '#ccc');
+        var uploadSelectType = $(this).attr('data-selector-type'),
+            selectorArea = '';
+        if(uploadSelectType == 'CNA') {
+            selectorArea = '.cnvUploadSelector';
+        } else if (uploadSelectType == 'SNV') {
+            selectorArea = '.snvUploadSelector';
+        } else if (uploadSelectType == 'Expression') {
+            selectorArea = '.expressionUploadSelector';
+        } else if (uploadSelectType == 'Methylation') {
+            selectorArea = '.methylationUploadSelector';
+        } else if (uploadSelectType == 'Subtype') {
+            selectorArea = '.subtypeUploadSelector';
+        }
+        $('.selectorViewOption').css('visibility','hidden').css('display','none');
+        $(selectorArea).css('visibility', 'visible').css('display', 'block');
     });
 
     // Perform validation on the form when it is submitted
