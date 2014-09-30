@@ -5,13 +5,21 @@ block body
         h3 Upload your mutation data.
         br
         div(class="row")
-            h4 Step 1: Pick a name
+            h4 Step 1: Pick a name and color
             br
         div(class="row")
             div(class="col-sm-4")
                 label
                     | Dataset name (e.g. cancer type).
                 input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
+            div(class="col-sm-4")
+                label
+                | <strong>Color</strong> (hex;&nbsp;
+                a(onclick="randomColor(); return false;") initialize randomly
+                | )
+                div(style="margin-top:5px")
+                    span(id="db-color", style="width:33px;height:33px;padding:2px;margin-right:5px;border:1px solid #eee;border-radius:8px;float:left")
+                    input(type="text", id="color", name="color", class="form-control", placeholder="#XXXXXX", style="width:100px", maxlength="7")
             div(class="col-sm-4")
                 label
                     | Group name (optional).
@@ -264,63 +272,7 @@ block body
                 | The table below shows an example row.
                 | The columns whose names are starred are required.
                 | Missing data should be replaced with '--'.
-            table(class="table table-bordered table-striped")
-                tr
-                    th Column
-                    th Name (*=required)
-                    th Example
-                    th Description
-                tr
-                    td 1
-                    td Gene*
-                    td PIK3CA
-                    td Gene name.
-                tr
-                    td 2
-                    td Sample*
-                    td TCGA-FD-A3B6
-                    td Sample ID.
-                tr
-                    td 3
-                    td Transcript
-                    td ENST00000263967
-                    td Transcript ID (RefSeq/ENSEMBL).
-                tr
-                    td 4
-                    td Transcript Length
-                    td 1068
-                    td Length of transcript.
-                tr
-                    td 5
-                    td Locus
-                    td 545
-                    td Position in transcript at which SNV occurred.
-                tr
-                    td 6
-                    td Mutation Type
-                    td Missense_Mutation
-                    td
-                        | Type of mutation that occurred. MAGI understands the following mutation types:
-                        ul
-                            li Nonsense_Mutation
-                            li Frame_Shift_Del
-                            li Frame_Shift_Ins
-                            li Missense_Mutation
-                            li Splice_Site
-                            li In_Frame_Del
-                            li In_Frame_Ins
-                tr
-                    td 7
-                    td Original &nbsp;
-                        abbr(title="Amino Acid") AA
-                    td E
-                    td The amino acid at the locus before the variant occurred.
-                tr
-                    td 8
-                    td New &nbsp;
-                        abbr(title="Amino Acid") AA
-                    td Q
-                    td The amino acid at the locus after the variant occurred.
+            
         a(name="cnas-format")
         div(id="cnas-format")
             h4 Copy number aberration (CNA) file format.
@@ -329,42 +281,7 @@ block body
                 | Each row contains the data for a single copy number segment that occurs in one gene in one particular sample.
                 | The table below shows an example row.
                 | The columns whose names are starred are required.
-            table(class="table table-bordered table-striped")
-                tr
-                    th Column
-                    th Name (*=required)
-                    th Example
-                    th Description
-                tr
-                    td 1
-                    td Gene*
-                    td PIK3CA
-                    td Gene name.
-                tr
-                    td 2
-                    td Sample*
-                    td TCGA-FD-A3B6
-                    td Sample ID.
-                tr
-                    td 3
-                    td CNA type
-                    td 
-                        | Type of CNA that occurred. MAGI understands the following CNA types:
-                        ul
-                            li AMP
-                            li DEL
 
-                    td Copy number type.
-                tr
-                    td 4
-                    td Left
-                    td 29843973
-                    td Left start-point of segment.
-                tr
-                    td 5
-                    td Right
-                    td 30327089
-                    td Right end-point of segment.
 
         a(name="samples-format")
         div(id="samples-format")
