@@ -6,14 +6,17 @@ var mongoose = require( 'mongoose' ),
 	Domains  = require( "../model/domains" ),
 	Annotations  = require( "../model/annotations" ),
 	QueryHash = require('../model/queryHash'),
+	Database = require('../model/db'),
 	Cancers  = require( "../model/cancers" ),
 	fs = require('fs');
 
+
 exports.view  = function view(req, res){
 	console.log('view');
+
 	// Parse query params
 	if(req.params.id) {
-		var QueryHash = mongoose.model('QueryHash'),
+		var QueryHash = Database.magi.model('QueryHash'),
 				searchTerm = {queryHash: req.params.id};
 
 		QueryHash.find(searchTerm, function(err, entries) {
@@ -109,7 +112,7 @@ exports.view  = function view(req, res){
 						transcript_data = {}
 						sampleToTypes = {},
 						// CNA samples don't need IDs like the mutation matrix
-						cnaSampleToTypes = {}, 
+						cnaSampleToTypes = {},
 						cna_browser_data = {},
 						// make a list of mutated samples with their unique IDs
 						seenSample = {},
@@ -185,7 +188,7 @@ exports.view  = function view(req, res){
 					}
 
 					// Load the annotations for each gene
-					var Annotation = mongoose.model( 'Annotation' );
+					var Annotation = Database.magi.model( 'Annotation' );
 					Annotation.find({gene: {$in: genes}}, function(err, support){
 						// Throw error if necessary
 						if (err) throw new Error(err);
@@ -230,11 +233,11 @@ exports.view  = function view(req, res){
 						PPIs.ppilist(genes, function(err, ppis){
 							PPIs.ppicomments(ppis, user_id, function(err, comments){
 								PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-									var Cancer = mongoose.model( 'Cancer' );
+									var Cancer = Database.magi.model( 'Cancer' );
 
 									Cancer.find({}, function(err, cancers){
 										if (err) throw new Error(err);
-										
+
 										// Create a mapping of dataset titles to cancer names
 										var cancerIdToName = {},
 											abbrToCancer = {},

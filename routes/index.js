@@ -3,7 +3,8 @@ var mongoose = require('mongoose'),
 	formidable = require('formidable'),
 	fs = require('fs'),
 	path = require('path'),
-	Dataset  = require( "../model/datasets" );
+	Dataset  = require( "../model/datasets" ),
+	Database = require('../model/db');
 
 // Renders home page
 exports.index = function index(req, res){
@@ -52,7 +53,6 @@ exports.index = function index(req, res){
 			datasetToCheckboxes: datasetToCheckboxes,
 			recentQueries: []
 		};
-
 		// Load the user's datasets (if necessary)
 		if (req.user){
 			Dataset.datasetGroups({user_id: req.user._id}, function(err, userGroups){
@@ -64,7 +64,7 @@ exports.index = function index(req, res){
 				viewData.groups = viewData.groups.concat(userGroups);
 
 				// Load the user's recent queries
-				var User = mongoose.model( 'User' );
+				var User = Database.magi.model( 'User' );
 				User.findById(req.user._id, function(err, user){
 					if (err) throw new Error(err);
 					viewData.recentQueries = user.queries ? user.queries : [];
@@ -110,11 +110,11 @@ exports.queryhandler = function queryhandler(req, res){
 
 	// Make query string
 	var querystring = require( 'querystring' ),
-		query = querystring.stringify( {genes: genes, datasets: datasets.join(","), showDuplicates: showDuplicates == "on" } );
+			query = querystring.stringify( {genes: genes, datasets: datasets.join(","), showDuplicates: showDuplicates == "on" } );
 
 	// If there is a user, save the query to the most recent queries for the user
 	if (req.user){
-		var User = mongoose.model( 'User' );
+		var User = Database.magi.model( 'User' );
 		User.findById(req.user._id, function(err, user){
 			if (err) throw new Error(err);
 

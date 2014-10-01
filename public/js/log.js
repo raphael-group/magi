@@ -30,19 +30,11 @@ $().ready(function () {
   interactionsLog = [];
   sessionLogStart = Date.now();
   // Does the server enable logging?
-  var enableLogs = $.get('/logEnabled')
-      .done(function(result) {
-        if(result == true) {
-          // Does the user consent?
-          $.post('/userGaveConsent')
-            .done(function(res) {
-              console.log(res, 'yeaaaah');
-              loggingEnabled = res == 'true' ? true : false;
-            });
-        } else {
-          loggingEnabled = false;
-        }
-      });
+  $.post('/userGaveConsent')
+    .done(function(res) {
+      loggingEnabled = res;
+      console.log('loggingEnabled', loggingEnabled);
+    });
 });
 
 function addToLog(e, event) {
@@ -88,5 +80,6 @@ function sendData() {
     width: width,
     vizSizes: vizSizes
   };
-  $.post('/saveLog', log);
+  console.log(log);
+  //$.post('/saveLog', log);
 }

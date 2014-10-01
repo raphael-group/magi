@@ -1,5 +1,6 @@
 var mongoose = require( 'mongoose' ),
     Log  = require( "../model/log" ),
+    Database = require('../model/db')
     crypto = require('crypto');
 
 exports.saveLog = function(req, res) {
@@ -18,7 +19,7 @@ exports.logConsent = function(req, res) {
     res.send();
     return;
   }
-  var LogPermission = mongoose.model('LogPermission'),
+  var LogPermission = Database.logDB.model('LogPermission'),
       enableState = req['body'].enable == 'true' ? true : false,
       userId = req.user._id.toString(),
       hasher = crypto.createHash('sha1');
@@ -43,7 +44,7 @@ exports.logConsent = function(req, res) {
 
 // Return false if logging consent is not given, true if is given
 exports.userGaveConsent = function(req, res) {
-  var LogPermission = mongoose.model('LogPermission'),
+  var LogPermission = Database.logDB.model('LogPermission'),
       userId = req.user._id.toString(),
       hasher = crypto.createHash('sha1');
 
@@ -52,6 +53,8 @@ exports.userGaveConsent = function(req, res) {
 
   LogPermission.find({userHash:hash}, function(err, entries) {
     if (err) res.send(false);
+    console.log(hash, 'log?');
+    console.log(entries);
     if(entries.length == 0) { // if the user hasn't filled out information, disable logging
       res.send(false);
     } else { // if the user has filled out information, return the user's consent response
