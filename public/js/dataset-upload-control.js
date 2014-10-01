@@ -1,3 +1,13 @@
+function validateData(dataset,color,groupName, snvFile, cnaFile, aberrationFile, sampleTypesFile) {
+    console.log(dataset);
+    console.log(color);
+    console.log(groupName);
+    console.log(snvFile);
+    console.log(cnaFile);
+    console.log(aberrationFile);
+    console.log(sampleTypesFile);
+}
+
 // Form control for when the user is formatting his/her query
 $(document).ready(function() {
     // Globals for this UI
@@ -70,6 +80,11 @@ $(document).ready(function() {
             file = uploadPath.split(/[\\]+/).pop();
         $('.uploadSummarySampleTypes').text(file);
     });
+    $('#DataMatrix').change(function() {
+        var uploadPath = $(this).val(),
+            file = uploadPath.split(/[\\]+/).pop();
+        $('.uploadSummaryDataMatrix').text(file);
+    })
 
     // Change viewable DIV on menu click
     $('.uploadSelectorOption').click(function(e) {
@@ -88,11 +103,27 @@ $(document).ready(function() {
             selectorArea = '.methylationUploadSelector';
         } else if (uploadSelectType == 'SampleType') {
             selectorArea = '.sampleTypeUploadSelector';
+        } else if (uploadSelectType == 'DataMatrix') {
+            selectorArea = '.dataMatrixUploadSelector';
         }
         $('.selectorViewOption').css('visibility','hidden').css('display','none');
         $(selectorArea).css('visibility', 'visible').css('display', 'block');
     });
 
+    $('#submit').click(function(e) {
+        e.preventDefault();
+
+        var dataset  = $(datasetNameEl).val(),
+            color = $('#color').val(),
+            groupName = $('#groupName').val(),
+
+            snvFile = $('#SNVs')[0].files[0],
+            cnaFile = $('#CNAs')[0].files[0],
+            aberrationFile = $('#OtherAberrations')[0].files[0],
+            sampleTypesFile = $('#SampleTypes')[0].files[0];
+
+        
+    });
     // Perform validation on the form when it is submitted
     $(formEl).submit(function(e){
         e.preventDefault();
