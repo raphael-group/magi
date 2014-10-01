@@ -1,15 +1,107 @@
-function validateData(dataset,color,groupName, snvFile, cnaFile, aberrationFile, sampleTypesFile) {
-    console.log(dataset);
-    console.log(color);
-    console.log(groupName);
-    console.log(snvFile);
-    console.log(cnaFile);
-    console.log(aberrationFile);
-    console.log(sampleTypesFile);
-}
-
 // Form control for when the user is formatting his/her query
 $(document).ready(function() {
+
+function status(msg, classes) {
+    $("#status").attr('class', classes);
+    $('#status').html(msg);
+}
+
+function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleTypesFile, snvFile) {
+    // If everything checks out, submit the form
+    status('Uploading...', infoClasses);
+
+    // Create a mini-form
+    var data = new FormData();
+    if (aberrationFile) data.append( 'Aberrations', aberrationFile );
+    if (cnaFile) data.append( 'CNAs', cnaFile );
+    if (dataMatrixFile) data.append( 'DataMatrix', dataMatrixFile);
+    if (sampleTypesFile) data.append( 'SampleTypes', sampleTypesFile);
+    if (snvFile) data.append( 'SNVs', snvFile );
+
+    data.append( 'dataset', dataset );
+    data.append( 'groupName', groupName );
+    data.append( 'color', color );
+
+    // Submit an AJAX-ified form
+    $.ajax({
+        // Note: can't use JSON otherwise IE8 will pop open a dialog
+        // window trying to download the JSON as a file
+        url: '/upload/dataset',
+        data: data,
+        cache: false,
+        contentType: false,
+        processData: false,
+        type: 'POST',
+
+        error: function(xhr) {
+            status('File upload error: ' + xhr.status);
+        },
+
+        success: function(response) {
+            if(response.error) {
+                status('File upload: Oops, something bad happened.', warningClasses);
+                return;
+            }
+            console.log(response);
+            status(response.status, successClasses);
+        }
+    });
+}
+
+function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleTypesFile, snvFile) {
+    // Verify if a file meets MAGI requirements, error if not
+    function verifyFile(file, fileName) {
+        if (file && file.size > 10000000){
+            status(fileName+' file is too large. Please upload a smaller aberration file.', warningClasses);
+            return false;
+        }
+        else if(file && file.type != 'text/plain' && file.type != 'text/tab-separated-values'){
+            status(fileName+' file upload: only text and tsv files are allowed.', warningClasses);
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    // True if color HEX code is valid
+    function isHexColor(c) {
+        return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(c)
+    }
+
+    // If no dataset name is given, return false
+    if (!dataset) {
+        status('Please enter a valid dataset name', warningClasses);
+        return false;
+    }
+
+    // Check if provided color is valid
+    if (color && !isHexColor(color)){
+        colorValidates = false;
+        status('Please enter a valid hex color.', warningClasses);
+        return false;
+    }
+
+    // Check if the user passed an SNV/CNA file
+    if (!(cnaFile || snvFile || aberrationFile || dataMatrixFile)){
+        status('Please choose an aberration, SNV, and/or CNA file.', warningClasses);
+        return false;
+    }
+
+    var files = [
+        {f: aberrationFile, n:'Aberration'},
+        {f: cnaFile, n:'CNA'},
+        {f: dataMatrixFile, n:'Data Matrix'},
+        {f: sampleTypesFile, n:'Sample Types'},
+        {f: snvFile, n:'SNV'}
+    ];
+
+    // Verify only if files are empty or valid file
+    var verifications = files.map(function(file) { return verifyFile(file.f, file.n); }),
+        isVerified = verifications.reduce(function(prev,now) { return prev && now; });
+
+    return isVerified;
+}
     // Globals for this UI
     var formEl = "#data-upload-form"
         datasetNameEl = "#dataset",
@@ -84,7 +176,7 @@ $(document).ready(function() {
         var uploadPath = $(this).val(),
             file = uploadPath.split(/[\\]+/).pop();
         $('.uploadSummaryDataMatrix').text(file);
-    })
+    });
 
     // Change viewable DIV on menu click
     $('.uploadSelectorOption').click(function(e) {
@@ -117,13 +209,26 @@ $(document).ready(function() {
             color = $('#color').val(),
             groupName = $('#groupName').val(),
 
-            snvFile = $('#SNVs')[0].files[0],
-            cnaFile = $('#CNAs')[0].files[0],
             aberrationFile = $('#OtherAberrations')[0].files[0],
-            sampleTypesFile = $('#SampleTypes')[0].files[0];
+            cnaFile = $('#CNAs')[0].files[0],
+            dataMatrixFile = $('#DataMatrix')[0].files[0],
+            sampleTypesFile = $('#SampleTypes')[0].files[0],
+            snvFile = $('#SNVs')[0].files[0];
 
-        
+        // Validate data
+        var isDataValid = validateData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile);
+        if (isDataValid == false) {
+            status('Oops. Something went wrong. Please try uploading again.', warningClasses);
+            return
+        }
+        submitData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile);
     });
+
+
+
+
+
+
     // Perform validation on the form when it is submitted
     $(formEl).submit(function(e){
         e.preventDefault();
@@ -254,9 +359,4 @@ $(document).ready(function() {
         }
         return false;
     });
-
-    function status(msg, classes) {
-        $("#status").attr('class', classes);
-        $('#status').html(msg);
-    }
 });
