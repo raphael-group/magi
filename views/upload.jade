@@ -38,14 +38,16 @@ block body
         div(class="row")
             h4 Step 2: Select data to upload
             br
+            p MAGI will allow you to upload whatever data you want, so long as your data adheres to one of our supported formats (see below). For example,
+                | both <em>methylation and expression data can be uploaded as &ldquo;Other Aberrations.&rdquo;</em>
+            br
         div(class="row")
             div(class="col-sm-2")
                 h4 Datatypes
                 ul(class="nav nav-stacked uploadSelectorOptions")
                     li <a data-selector-type="SNV" class="uploadSelectorOption defaultUploadSelectorOption" href="#">SNVs</a>
                     li <a data-selector-type="CNA" class="uploadSelectorOption" href="#">CNAs</a>
-                    li <a data-selector-type="Expression" class="uploadSelectorOption" href="#">Expression</a>
-                    li <a data-selector-type="Methylation" class="uploadSelectorOption" href="#">Methylation</a>
+                    li <a data-selector-type="OtherAberration" class="uploadSelectorOption" href="#">Other Aberrations</a>
                     li <a data-selector-type="Subtype" class="uploadSelectorOption" href="#">Subtypes</a>
             div(class="col-sm-8 uploadDataSelectArea")
                 div(class="selectorViewOption snvUploadSelector")
@@ -170,18 +172,58 @@ block body
                             td Right
                             td 30327089
                             td Right end-point of segment.
-                div(class="selectorViewOption expressionUploadSelector")
-                    h4 expression stub
+                div(class="selectorViewOption otherAberrationUploadSelector")
+                    h4 Other Aberrations
+                    p &ldquo;Other Aberrations&rdquo; can be any data, such as <strong>Expression
+                        | </strong> or <strong>Methylation</strong> data. <strong>The &ldquo;Other
+                        | Aberrations&rdquo; file is a tab-separated file (*.tsv)</strong> that
+                        | contains a matrix.
+                    p The first row should contain sample ID. Each row after
+                        | contains a row of the aberration matrix, where the first column is a gene
+                        | name, and each column after is a value that corresponds to a value sample.
                     hr
                     h5 Format example
+                    code &#9;TCGA-BL-A0C8-01A-11R-A10U-07&#9;TCGA-BL-A13I-01A-11R-A13Y-07<br />
+                    code A1BG&#9;-2.533269&#9;0.106731<br />
+                    code A2M 1.03    1.02
                     hr
                     h5 Format description
-                div(class="selectorViewOption methylationUploadSelector")
-                    h4 methylation stub
-                    hr
-                    h5 Format example
-                    hr
-                    h5 Format description
+                    br
+                    p Header (row 1)
+                    table(class="table table-bordered table-striped")
+                        tr
+                            th Column
+                            th Name (*=required)
+                            th Example
+                            th Description
+                        tr
+                            td 1
+                            td Nothing*
+                            td N/A
+                            td The first column should be empty
+                        tr
+                            td >1
+                            td Sample ID*
+                            td TCGA-BL-A0C8-01A-11R-A10U-07
+                            td Sample ID Name
+                    p Matrix (rows > 1)
+                    table(class="table table-bordered table-striped")
+                        tr
+                            th Column
+                            th Name (*=required)
+                            th Example
+                            th Description
+                        tr
+                            td 1
+                            td Gene*
+                            td PIK3CA
+                            td Gene name.
+                        tr
+                            td >1
+                            td Value*
+                            td 0.106731
+                            td A value that corresponds to a gene/sample pair
+
                 div(class="selectorViewOption subtypeUploadSelector")
                     h4 subtype stub
                     hr
@@ -201,12 +243,10 @@ block body
                 br
                 dl
                     dt SNV
-                    dd placeholder
+                    dd(class="uploadSummarySNV") &nbsp;
                     dt CNA
-                    dd placeholder
-                    dt Expression
-                    dd placeholder
-                    dt Methylation
+                    dd(class="uploadSummaryCNA") &nbsp;
+                    dt Expression / Methylation
                     dd placeholder
                     dt Subtypes
                     dd placeholder
@@ -297,7 +337,7 @@ block body
                 | The table below shows an example row.
                 | The columns whose names are starred are required.
                 | Missing data should be replaced with '--'.
-            
+
         a(name="cnas-format")
         div(id="cnas-format")
             h4 Copy number aberration (CNA) file format.

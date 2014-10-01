@@ -49,6 +49,18 @@ $(document).ready(function() {
         $('.uploadSummaryDatasetColorHex').text($('#color').val());
     });
 
+    // Sync the summary bar with upload file changes
+    $('#SNVs').change(function() {
+        var uploadPath = $(this).val(),
+            file = uploadPath.split(/[\\]+/).pop();
+        $('.uploadSummarySNV').text(file);
+    });
+    $('#CNAs').change(function() {
+        var uploadPath = $(this).val(),
+            file = uploadPath.split(/[\\]+/).pop();
+        $('.uploadSummaryCNA').text(file);
+    })
+
     // Change viewable DIV on menu click
     $('.uploadSelectorOption').click(function(e) {
         e.preventDefault();
@@ -60,8 +72,8 @@ $(document).ready(function() {
             selectorArea = '.cnvUploadSelector';
         } else if (uploadSelectType == 'SNV') {
             selectorArea = '.snvUploadSelector';
-        } else if (uploadSelectType == 'Expression') {
-            selectorArea = '.expressionUploadSelector';
+        } else if (uploadSelectType == 'OtherAberration') {
+            selectorArea = '.otherAberrationUploadSelector';
         } else if (uploadSelectType == 'Methylation') {
             selectorArea = '.methylationUploadSelector';
         } else if (uploadSelectType == 'Subtype') {
