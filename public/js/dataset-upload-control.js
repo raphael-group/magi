@@ -65,6 +65,11 @@ $(document).ready(function() {
             file = uploadPath.split(/[\\]+/).pop();
         $('.uploadSummaryOtherAbberation').text(file);
     });
+    $('#SampleTypes').change(function() {
+        var uploadPath = $(this).val(),
+            file = uploadPath.split(/[\\]+/).pop();
+        $('.uploadSummarySampleTypes').text(file);
+    });
 
     // Change viewable DIV on menu click
     $('.uploadSelectorOption').click(function(e) {
@@ -81,8 +86,8 @@ $(document).ready(function() {
             selectorArea = '.otherAberrationUploadSelector';
         } else if (uploadSelectType == 'Methylation') {
             selectorArea = '.methylationUploadSelector';
-        } else if (uploadSelectType == 'Subtype') {
-            selectorArea = '.subtypeUploadSelector';
+        } else if (uploadSelectType == 'SampleType') {
+            selectorArea = '.sampleTypeUploadSelector';
         }
         $('.selectorViewOption').css('visibility','hidden').css('display','none');
         $(selectorArea).css('visibility', 'visible').css('display', 'block');
@@ -173,7 +178,7 @@ $(document).ready(function() {
         }
 
         // If everything checks out, submit the form
-        if (aberrationFileValidates && snvFileValidates && cnaFileValidates && sampleFileValidates && colorValidates){
+        if (aberrationFileValidates && snvFileValidates && cnaFileValidates && sampleFileValidates && colorValidates) {
             status('Uploading...', infoClasses);
 
             // Create a mini-form

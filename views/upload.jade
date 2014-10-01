@@ -48,7 +48,7 @@ block body
                     li <a data-selector-type="SNV" class="uploadSelectorOption defaultUploadSelectorOption" href="#">SNVs</a>
                     li <a data-selector-type="CNA" class="uploadSelectorOption" href="#">CNAs</a>
                     li <a data-selector-type="OtherAberration" class="uploadSelectorOption" href="#">Other Aberrations</a>
-                    li <a data-selector-type="Subtype" class="uploadSelectorOption" href="#">Subtypes</a>
+                    li <a data-selector-type="SampleType" class="uploadSelectorOption" href="#">Sample Types</a>
             div(class="col-sm-8 uploadDataSelectArea")
                 div(class="selectorViewOption snvUploadSelector")
                     h4 Single nucleotide variants
@@ -227,12 +227,36 @@ block body
                             td 0.106731
                             td A value that corresponds to a gene/sample pair
 
-                div(class="selectorViewOption subtypeUploadSelector")
-                    h4 subtype stub
+                div(class="selectorViewOption sampleTypeUploadSelector")
+                    h4 Sample Types
+                    br
+                    input(type="file", id="SampleTypes", name="SampleTypes")
+                    br
+                    p <strong>The Sample Types file is a tab-separated file (*.tsv)</strong> that
+                        | includes all samples and their corresponding types for a dataset. Each row
+                        | contains the data for a single sample.
                     hr
                     h5 Format example
+                    code TCGA-A7-A0CE&#9;BRCA<br />
+                    code TCGA-43-6647&#9;LUSC
                     hr
                     h5 Format description
+                    table(class="table table-bordered table-striped")
+                        tr
+                            th Column
+                            th Name (*=required)
+                            th Example
+                            th Description
+                        tr
+                            td 1
+                            td Sample ID*
+                            td TCGA-A7-A0CE
+                            td Sample ID
+                        tr
+                            td 2
+                            td Type
+                            td BRCA
+                            td The cancer type of a sample
             div(class="col-sm-2")
                 h4 Dataset Name
                 p(class="uploadSummaryDatasetName") &nbsp;
@@ -251,114 +275,14 @@ block body
                     dd(class="uploadSummaryCNA") &nbsp;
                     dt Expression / Methylation
                     dd(class="uploadSummaryOtherAbberation") &nbsp;
-                    dt Subtypes
-                    dd placeholder
+                    dt Sample Types
+                    dd(class="uploadSummarySampleTypes") &nbsp;
         br
-        hr
-        p(class="caption")
-            | Query your own mutation data by uploading it to our servers.
-            | Provide a name, an optional group, and files containing the SNVs, CNAs, or generic abberrations, and samples in your dataset.
-            | If your files contain samples from multiple datasets, MAGI will automatically create a group of these datasets that you can then
-            | query as a group or individually.
-            | After uploading your data, you will be able to query it from the&nbsp;
-            a(href="/") home page
-            | . You can manage all your uploaded datasets from your&nbsp;
-            a(href="/account") account page.
-        form(method="post", action="/", role="form", id="data-upload-form")
-            label
-                | Dataset name (e.g. cancer type).
-            input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
-            br
-            label
-                | Group name (optional).
-            input(type="text", id="groupName", name="groupName", class="form-control", placeholder="Enter group name (optional).")
-            br
-            label
-                | Single nucleotide variants (
-                a(href="/upload#snvs-format") format
-                | ).
-            input(type="file", id="SNVs", name="SNVs")
-            br
-            label
-                | Copy number variants (
-                a(href="/upload#cnas-format") format
-                | ).
-            input(type="file", id="CNAs", name="CNAs")
-            br
-            label
-                | Generic aberration matrix (
-                a(href="/upload#aberrations-format") format
-                | ).
-            input(type="file", id="aberrations", name="aberrations")
-            br
-            label
-                | Tested samples (optional,&nbsp;
-                a(href="/upload#samples-format") format
-                | ).
-            input(type="file", id="testedSamples", name="testedSamples")
-            br
-            label
-                | Color (hex;&nbsp;
-                a(onclick="randomColor(); return false;") initialize randomly
-                | )
-            div
-                span(id="db-color", style="width:33px;height:33px;padding:2px;margin-right:5px;border:1px solid #eee;border-radius:8px;float:left")
-                input(type="text", id="color", name="color", class="form-control", placeholder="#XXXXXX", style="width:100px", maxlength="7")
-            br
-            button(type="submit", id="submit", class="btn btn-default") Upload
-            br
-            br
-            div(id="status")
-        hr
-        h3 File formats
-        br
-        | The input files for MAGI are all text (.txt) or tab-separated (.tsv) files.
-        br
-        br
-        a(name="colors")
-        div(id="colors")
-            h4 Cancer type abbreviations and colors
-            | MAGI recognizes a list of <a href="/abbreviations">cancer abbreviations</a> compied from TCGA and ICGC.
-            | In order to map your data to the MAGI color schemes and annotations, please use these abbreviations
-            | when labeling your dataset. You can always provide your own color to replace the MAGI default color.
-        br
-        br
-        a(name="aberrations-format")
-        div(id="aberrations-format")
-            h4 Generic aberrations file format.
-            p(class="caption")
-                | The generic aberrations file is a tab-separated file (*.tsv) that includes aberrations of an unspecified type for a dataset.
-                | Each row lists a sample ID in the first column, and a list of genes with aberrations in that sample in the remaining columns.
-        br
-        br
-        a(name="snvs-format")
-        div(id="snvs-format")
-            h4 Single nucleotide variant (SNV) file format.
-            p(class="caption")
-                | The SNV file is a tab-separated file (*.tsv) that includes all SNVs for a dataset.
-                | Each row contains the data for a single SNV that occurs in one gene in one particular sample.
-                | The table below shows an example row.
-                | The columns whose names are starred are required.
-                | Missing data should be replaced with '--'.
+        div(class="row")
+            div(class="text-center")
+                button(class="btn btn-default" id="submit") Upload Data
+                div(id="status")
 
-        a(name="cnas-format")
-        div(id="cnas-format")
-            h4 Copy number aberration (CNA) file format.
-            p(class="caption")
-                | The CNA file is a tab-separated file (*.tsv) that includes all CNAs for a dataset.
-                | Each row contains the data for a single copy number segment that occurs in one gene in one particular sample.
-                | The table below shows an example row.
-                | The columns whose names are starred are required.
-
-
-        a(name="samples-format")
-        div(id="samples-format")
-            h4 Sample file format.
-            p(class="caption")
-                | The sample file is a text or tab-separated file (*.txt/*.tsv) that lists all the tested samples for a given dataset or group of datasets.
-                | These samples may or may not have SNVs or CNAs.
-                | Each row lists a single sample ID and (optionally) the dataset (cancer type) of the sample.
-                | 
 block belowTheFold
     script(src='components/jquery/dist/jquery.min.js').
     script(src='components/jquery-form/jquery.form.js')
