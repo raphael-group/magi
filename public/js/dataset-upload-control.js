@@ -60,6 +60,11 @@ $(document).ready(function() {
             file = uploadPath.split(/[\\]+/).pop();
         $('.uploadSummaryCNA').text(file);
     })
+    $('#OtherAberrations').change(function() {
+        var uploadPath = $(this).val(),
+            file = uploadPath.split(/[\\]+/).pop();
+        $('.uploadSummaryOtherAbberation').text(file);
+    });
 
     // Change viewable DIV on menu click
     $('.uploadSelectorOption').click(function(e) {
