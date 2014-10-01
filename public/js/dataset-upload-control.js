@@ -26,6 +26,29 @@ $(document).ready(function() {
         }
     });
 
+    // Sync the summary bar with text fields
+    $('#dataset').on('change', function() {
+        $('.uploadSummaryDatasetName').text($(this).val());
+    });
+    $('#groupName').on('change', function() {
+        $('.uploadSummaryGroupName').text($('#groupName').val());
+        if( $(this).val() == '') {
+            $('.uploadSummaryGroupName').css('visibility','hidden').css('display','none');
+            $('.uploadSummaryGroupNameHeader').css('visibility','hidden').css('display','none');
+        } else {
+            $('.uploadSummaryGroupName').css('visibility','visible').css('display','block');
+            $('.uploadSummaryGroupNameHeader').css('visibility','visible').css('display','block');
+        }
+    });
+    $('#color').on('change', function() {
+        $('.uploadSummaryDatasetColor').css('background', $('#color').val());
+        $('.uploadSummaryDatasetColorHex').text($('#color').val());
+    });
+    $('#randomColor').click(function() {
+        $('.uploadSummaryDatasetColor').css('background', $('#color').val());
+        $('.uploadSummaryDatasetColorHex').text($('#color').val());
+    });
+
     // Change viewable DIV on menu click
     $('.uploadSelectorOption').click(function(e) {
         e.preventDefault();

@@ -2,7 +2,15 @@ extends layout
 block body
     br
     div(class="container", id="upload")
-        h3 Upload your mutation data.
+        div(class="row")
+            h3 Upload your mutation data.
+            br
+        div(class="row")
+            div(class="col-sm-12")
+                p To upload data and find out more about each data type MAGI supports (e.g., format),
+                    | click the corresponding data types in Step 2. The input files for MAGI are all
+                    | text (.txt) or tab-separated (.tsv) files.
+        hr
         br
         div(class="row")
             h4 Step 1: Pick a name and color
@@ -12,10 +20,10 @@ block body
                 label
                     | Dataset name (e.g. cancer type).
                 input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
-            div(class="col-sm-4")
+            div(class="col-sm-4 noselect")
                 label
                 | <strong>Color</strong> (hex;&nbsp;
-                a(onclick="randomColor(); return false;") initialize randomly
+                a(onclick="randomColor(); return false;" id="randomColor") initialize randomly
                 | )
                 div(style="margin-top:5px")
                     span(id="db-color", style="width:33px;height:33px;padding:2px;margin-right:5px;border:1px solid #eee;border-radius:8px;float:left")
@@ -39,12 +47,10 @@ block body
                     li <a data-selector-type="Expression" class="uploadSelectorOption" href="#">Expression</a>
                     li <a data-selector-type="Methylation" class="uploadSelectorOption" href="#">Methylation</a>
                     li <a data-selector-type="Subtype" class="uploadSelectorOption" href="#">Subtypes</a>
-            div(class="col-sm-10 uploadDataSelectArea")
+            div(class="col-sm-8 uploadDataSelectArea")
                 div(class="selectorViewOption snvUploadSelector")
-                    label
-                        | Single nucleotide variants (
-                        a(href="/upload#snvs-format") format
-                        | ).
+                    h4 Single nucleotide variants
+                    br
                     input(type="file", id="SNVs", name="SNVs")
                     br
                     p <strong>The SNV file is a tab-separated file (*.tsv)</strong> that includes all SNVs for a dataset.
@@ -115,10 +121,8 @@ block body
                             td Q
                             td The amino acid at the locus after the variant occurred.
                 div(class="selectorViewOption cnvUploadSelector")
-                    label
-                        | Copy number variants (
-                        a(href="/upload#cnas-format") format
-                        | ).
+                    h4 Copy number variants
+                    br
                     input(type="file", id="CNAs", name="CNAs")
                     br
                     p <strong>The CNA file is a tab-separated file (*.tsv)</strong> that includes all CNAs for a dataset.
@@ -184,7 +188,28 @@ block body
                     h5 Format example
                     hr
                     h5 Format description
-        br
+            div(class="col-sm-2")
+                h4 Dataset Name
+                p(class="uploadSummaryDatasetName") &nbsp;
+                h4 Color
+                span(class="uploadSummaryDatasetColor" style="width:33px;height:33px;padding:2px;margin:5px 5px 0 0;border:1px solid #eee;border-radius:8px;display:block")
+                p(class="uploadSummaryDatasetColorHex") &nbsp;
+                h4(class="uploadSummaryGroupNameHeader") Group Name
+                p(class="uploadSummaryGroupName") &nbsp;
+                hr
+                h4 Selected Files
+                br
+                dl
+                    dt SNV
+                    dd placeholder
+                    dt CNA
+                    dd placeholder
+                    dt Expression
+                    dd placeholder
+                    dt Methylation
+                    dd placeholder
+                    dt Subtypes
+                    dd placeholder
         br
         hr
         p(class="caption")
