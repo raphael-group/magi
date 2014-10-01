@@ -19,6 +19,7 @@ var MutGeneSchema = new mongoose.Schema({
 var DatasetSchema = new mongoose.Schema({
 	title: { type: String, required: true },
 	samples: { type: [String], required: true },
+	sample_annotations : { type : {}, required: false },
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
@@ -95,6 +96,61 @@ exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
 	});// end MutGene.find
 
 }// end exports.mutGenesList
+
+exports.addSampleAnnotations = function(dataset, group, name, annotations_file, user_id, callback){
+	// Load required modules
+	var fs      = require( 'fs' ),
+		Dataset = Database.magi.model( 'Dataset' );
+
+	// Make sure that either/both an SNV and CNA file were provided
+	if (!(dataset && name && annotations_file)){
+		console.log("addSampleAnnotationsFromFile: dataset, name, and annotations_file are required")
+		process.exit(1);
+	}
+
+	// Set up promise, and data structures
+	var sampleToAnnotation = {};
+
+	fs.readFile(annotations_file, 'utf-8', function (err, data) {
+		// Exit if there's an error
+		if (err) throw new Error(err);
+
+		// Load the lines, but skip the header (the first line)
+		lines = data.trim().split('\n');
+		lines.forEach(function(s){
+			if (s.lastIndexOf('#', 0) === 0){ return; }
+			var arr = s.split("\t");
+			if (arr.length == 1) arr.push(null);
+			sampleToAnnotation[arr[0]] = arr[1];
+		});
+
+		// Retrieve the dataset in question (if it exists), and add the new sample annotations
+		var query = { title: dataset, group: group };
+		if (user_id) query.user_id = user_id;
+		else query.is_standard = true;
+
+		// Find the dataset 
+		Dataset.findOne(query, function(err, dataset){
+			if (err){
+				console.log("[error] addSampleAnnotationsFromFile: dataset not found.")
+				throw new Error(err);
+			}
+			else{
+				dataset.samples.forEach(function(s){
+					if (!dataset.sample_annotations[s])
+						dataset.sample_annotations[s] = {};
+					if (sampleToAnnotation[s])
+						dataset.sample_annotations[s][name] = sampleToAnnotation[s];
+					else
+						dataset.sample_annotations[s][name] = null;
+				});
+			}
+			delete dataset._id;
+			dataset.markModified("sample_annotations");
+			dataset.save(callback);
+		});
+	});
+}
 
 // List of inactivating mutation types
 var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
