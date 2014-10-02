@@ -7,7 +7,7 @@ block body
 			p
 				| MAGI includes 44 cancer types and abbreviations from TCGA and ICGC.
 				| MAGI requires each dataset to be assigned to a particular cancer type,
-				| so if you don't see the cancer type for your dataset here, you can&nbsp;
+				| so if you don't see the cancer type for your dataset here, you can
 				| <em>add your own</em> using the form on the right.
 			ul
 				li
@@ -16,7 +16,7 @@ block body
 					a(href="#user") User-defined cancer types
 		div(class="col-sm-6", style="border:1px dotted #eee;padding:5px")
 			h4 Add a new cancer type
-			form(action="/upload/cancer", method="post")
+			form(action="/upload/cancer", method="post", id="add-cancer-type")
 				div(class="col-sm-12")
 					label Name (case-sensitive).
 					input(type="text", id="name", name="name", class="form-control", placeholder="Enter cancer name.")
@@ -24,7 +24,7 @@ block body
 				br
 				div(class="col-sm-6")
 					label Abbreviation.
-					input(type="text", id="abbr", name="abbr", class="form-control", placeholder="Enter abbreviation.")
+					input(type="text", id="abbr", name="abbr", maxlength=6, class="form-control", placeholder="Enter abbreviation (3-6 characters).")
 				div(class="col-sm-6")
 					label <strong>Color</strong> (hex;&nbsp;
 						a(onclick="randomColor(); return false;" id="randomColor") initialize randomly
@@ -34,6 +34,7 @@ block body
 						input(type="text", id="color", name="color", class="form-control", placeholder="#XXXXXX", style="width:100px", maxlength="7")
 			div(class="col-sm-12")
 				button(class="btn btn-default" id="submit") Submit
+				div(id="status") #{upload_error}
 		hr(style="clear:both;margin:10px")
 		a(name="tcga-icgc")
 		h3 TCGA/ICGC cancer types
@@ -63,17 +64,5 @@ block body
 					td #{d.abbr}
 					td #{d.cancer}
 block belowTheFold
-	script.
-		//- Set the color chooser to the given color
-		function setColor(color){
-			$('#db-color').css('background', color)
-			$("input#color").val(color);
-		}
-		//- Give the user a random color
-		function randomColor(){
-			setColor('#' + Math.random().toString(16).substr(-6));
-		}
-		//- Update the color as the user changes the color input
-		$("input#color").on("change", function(){
-			$("span#db-color").css('background', $("input#color").val());
-		});
+	script(src='components/jquery/dist/jquery.min.js').
+	script(src='js/cancer-upload.js').

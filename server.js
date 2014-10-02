@@ -124,6 +124,7 @@ app.post('/upload/geneset', routes.uploadGeneset)
 app.get('/upload', ensureAuthenticated, routes.upload)
 app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset)
 app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
+app.post('/upload/cancer', routes.uploadCancer)
 
 // Dataset views
 app.get('/datasets', routes.datasets.index);

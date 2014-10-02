@@ -100,23 +100,18 @@ exports.deleteDataset = function deleteDataset(req, res){
 }
 
 // Parse the user's dataset upload
-exports.uploadDataset = function uploadDataset(req, res){
+exports.uploadCancer = function uploadDataset(req, res){
 	console.log('upload/cancer')
 	var Cancer = Database.magi.model( 'Cancer' );
 
 	// Load the posted form
-	var form = new formidable.IncomingForm({
-		uploadDir: path.normalize(__dirname + '/../tmp'),
-		keepExtensions: true
-    });
+	var name  = req.body.name,
+		abbr  = req.body.abbr,
+		color = req.body.color;
 
-	form.parse(req, function(err, fields, files) {
-		// Parse the form variables into shorter handles
-		var name = fields.name,
-			group_name = fields.abbr,
-			color = fields.color;
-
-		//
-
-    });
+	// Create the cancer
+	Cancer.create({name: name, abbr: abbr, color: color}, function(err, cancer){
+		if (err) throw new Error(err);
+		res.redirect("/cancers");
+	});
 }
