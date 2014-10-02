@@ -268,6 +268,7 @@ function view(){
 					.addMutationLegend()
 					.addSortingMenu()
 					.addTooltips(generateAnnotations(annotations))
+          .addSampleAnnotations(data.sampleAnnotations)
 					.addOnClick(function(d, i){
 						var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
 						setAnnotation(d.gene, mutClass, d.dataset, {});

@@ -119,15 +119,14 @@ $('#submit').click(function(e) {
         cnaFile = $('#CNAs')[0].files[0],
         dataMatrixFile = $('#DataMatrix')[0].files[0],
         sampleTypesFile = $('#SampleTypes')[0].files[0],
-        snvFile = $('#SNVs')[0].files[0],
-        cancerMappingFile = $('#cancers')[0].files[0];
+        snvFile = $('#SNVs')[0].files[0];
 
     // Validate data
-    var isDataValid = validateData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile, cancerMappingFile);
+    var isDataValid = validateData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile);
     // If validation fails, we don't need to post an error, since that will be
     // posted as part of the validateDate call itself
     if (isDataValid == false) return;
-    submitData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile, cancerMappingFile);
+    submitData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile);
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +138,7 @@ function status(msg, classes) {
 }
 
 function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile,
-                    sampleTypesFile, snvFile, cancerMappingFile) {
+                    sampleTypesFile, snvFile) {
     // If everything checks out, submit the form
     status('Uploading...', infoClasses);
 
@@ -150,7 +149,6 @@ function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatr
     if (dataMatrixFile) data.append( 'DataMatrix', dataMatrixFile);
     if (sampleTypesFile) data.append( 'SampleTypes', sampleTypesFile);
     if (snvFile) data.append( 'SNVs', snvFile );
-    if (cancerMappingFile) data.append('cancerMapping', cancerMappingFile);
 
     data.append( 'dataset', dataset );
     data.append( 'groupName', groupName );
@@ -183,11 +181,11 @@ function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatr
     });
 }
 
-function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleTypesFile, snvFile, cancerMappingFile) {
+function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleTypesFile, snvFile) {
     // Verify if a file meets MAGI requirements, error if not
     function verifyFile(file, fileName) {
         if (file && file.size > 100000000){
-            status(fileName+' file is too large. Please upload a smaller aberration file.', warningClasses);
+            status(fileName+' file is too large. Please upload a smaller file.', warningClasses);
             return false;
         }
         else if(file && file.type != 'text/plain' && file.type != 'text/tab-separated-values'){
@@ -246,7 +244,6 @@ function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMa
         {f: dataMatrixFile, n:'Data Matrix'},
         {f: sampleTypesFile, n:'Sample Types'},
         {f: snvFile, n:'SNV'},
-        {f: cancerMappingFile, n:'Cancer Mapping'}
     ];
 
     // Verify only if files are empty or valid file

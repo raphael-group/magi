@@ -146,7 +146,21 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 }// end createHeatmap
 
 exports.createSampleAnnotationObject = function(datasets){
-	var obj = { categories: [], sampleToAnnotations: {}};
+	function assignColor(str){
+		function hashCode(str) {
+		  var hash = 0, i, chr, len;
+		  if (str.length == 0) return hash;
+		  for (i = 0, len = str.length; i < len; i++) {
+		    chr   = str.charCodeAt(i);
+		    hash  = ((hash << 5) - hash) + chr;
+		    hash |= 0; // Convert to 32bit integer
+		  }
+		  return hash;
+		}
+	  return '#' + hashCode(str).toString(16).substr(-6);
+	}
+
+	var obj = { categories: [], sampleToAnnotations: {}, annotationToColor: {}};
 	datasets.forEach(function(d){
 		if (!d.sample_annotations) return;
 		var categories = Object.keys(d.sample_annotations[d.samples[0]]);
@@ -155,15 +169,23 @@ exports.createSampleAnnotationObject = function(datasets){
 		});
 	});
 	if (obj.categories.length == 0) return {};
+	var annotationTypes = {}
 	datasets.forEach(function(d){
 		d.samples.forEach(function(s){
 			obj.sampleToAnnotations[s] = [];
 			obj.categories.forEach(function(c){
 				if (!d.sample_annotations) obj.sampleToAnnotations[s].push(null);
 				else obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
+				annotationTypes[d.sample_annotations[s][c]] = null;
 			});
 		});
 	});
+	var annotationCategories = Object.keys(annotationTypes),
+			annotationToColor = {};
+	annotationCategories.forEach(function(c) {
+		annotationToColor[c] = assignColor(c);
+	});
+	obj.annotationToColor = annotationToColor;
 	return obj;
 }
 
