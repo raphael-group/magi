@@ -100,7 +100,7 @@ exports.deleteDataset = function deleteDataset(req, res){
 }
 
 // Parse the user's dataset upload
-exports.uploadCancer = function uploadDataset(req, res){
+exports.uploadCancer = function uploadCancer(req, res){
 	console.log('upload/cancer')
 	var Cancer = Database.magi.model( 'Cancer' );
 
