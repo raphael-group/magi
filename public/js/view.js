@@ -51,7 +51,8 @@ function view(){
 		transcriptDomainElement = "div#annotation div#transcript-domain",
 		transcriptPositionElement = "div#annotation div#transcript-position",
 		commentElement = "div#annotation textarea#comment",
-		submitElement = "div#annotation button#submit";
+		submitElement = "div#annotation button#submit",
+    heatmapElement = 'div#heatmap';
 
 	// Select each element for easy access later
 	var m2 = d3.select(m2Element),
@@ -544,6 +545,13 @@ function view(){
 		transcriptChart(transcript);
 		transcriptChart.filterDatasets(datasetToInclude);
 	}
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Add a CNA browser selector to choose the genes
+  var heatmapChart = d3.select(heatmapElement)
+                  .datum(data.heatmap)
+                  .call(heatmap().addYLabels().addXLabels().addLegend());
+
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes

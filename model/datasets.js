@@ -112,7 +112,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 	// Construct the DataMatrixRow query
 	var DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
 		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
-	
+
 	DataMatrixRow.find(query, function(err, rows){
 		if (err) throw new Error(err);
 		// Return an empty object if there is no data matrix for these genes/datasets
@@ -129,7 +129,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 			// Create a mapping of genes -> dataset_ids -> data matrix rows
 			genes.forEach(function(g){ geneToDatasetToRow[g] = {}; });
 			rows.forEach(function(r){ geneToDatasetToRow[r.gene][r.dataset_id] = r; });
-			
+
 			// Iterate over the genes and datasets to construct the unified heatmap
 			genes.forEach(function(g, i){
 				datasets.forEach(function(d, j){

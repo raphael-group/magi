@@ -193,6 +193,13 @@ block body
 
       hr(style="clear:both;margin:0px;")
 
+      //- Heatmap view
+      div
+        h3 Heatmap
+        div(id="heatmap")
+
+      hr(style="margin:0px;")
+
       //- CNA view
       div
         h3
@@ -244,6 +251,7 @@ block belowTheFold
       script(src='/components/gd3/dist/js/transcript-plot.js').
       script(src='/components/gd3/dist/js/mutation-matrix.js').
       script(src='/components/gd3/dist/js/subnetwork.js').
+      script(src='/components/gd3/dist/js/heatmap.js').
       script(src='components/shepherd.js/shepherd.min.js').
       script(src='/js/save.js').
       script(src='/js/view.js').
