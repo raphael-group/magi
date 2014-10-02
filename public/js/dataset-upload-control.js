@@ -8,7 +8,8 @@ var formEl = "#data-upload-form"
     cnaFileEl = "#CNAs",
     aberrationFileEl = "#aberrations",
     sampleFileEl = "#testedSamples",
-    colorEl = "#color";
+    colorEl = "#color",
+    multiDatasetEl = "input#multi-dataset";
 
 var infoClasses  = 'alert alert-info',
     warningClasses = 'alert alert-warning',
@@ -184,7 +185,6 @@ function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMa
     // Verify if a file meets MAGI requirements, error if not
     function verifyFile(file, fileName) {
         if (file && file.size > 100000000){
-            console.log(file.size);
             status(fileName+' file is too large. Please upload a smaller file.', warningClasses);
             return false;
         }
@@ -203,8 +203,25 @@ function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMa
     }
 
     // If no dataset name is given, return false
-    if (!groupName && !dataset) {
-        status('Please enter a valid dataset name, or a group name if this is multiple datasets.', warningClasses);
+    var isMulti = $(multiDatasetEl).is(":checked");
+    if (!isMulti && !dataset) {
+        status('Please enter a valid dataset name.', warningClasses);
+        return false;
+    }
+
+    // Check the other conditions for multiple datasets
+    if (isMulti && !groupName){
+        status('Please enter a valid group name, since you are uploading multiple datasets.', warningClasses);
+        return false;
+    }
+
+    if (isMulti && !sampleTypesFile){
+        status('Please choose a sample types file. This is required for uploading multiple datasets simultaneously.', warningClasses);
+        return false;
+    }
+
+    if (isMulti && !cancerMappingFile){
+        status('Please choose a cancer mapping file. This is required for uploading multiple datasets simultaneously.', warningClasses);
         return false;
     }
 

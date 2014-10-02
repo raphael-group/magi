@@ -51,7 +51,7 @@ exports.uploadDataset = function uploadDataset(req, res){
     	if (files.aberrations) aberration_file = files.aberrations.path;
     	else aberration_file = null;
 
-    	if (files.testedSamples) samples_file = files.testedSamples.path;
+    	if (files.SampleTypes) samples_file = files.SampleTypes.path;
     	else samples_file = null;
 
     	if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
@@ -105,18 +105,13 @@ exports.uploadCancer = function uploadCancer(req, res){
 	var Cancer = Database.magi.model( 'Cancer' );
 
 	// Load the posted form
-	var form = new formidable.IncomingForm({
-		uploadDir: path.normalize(__dirname + '/../tmp'),
-		keepExtensions: true
-    });
+	var name  = req.body.name,
+		abbr  = req.body.abbr,
+		color = req.body.color;
 
-	form.parse(req, function(err, fields, files) {
-		// Parse the form variables into shorter handles
-		var name = fields.name,
-			group_name = fields.abbr,
-			color = fields.color;
-
-		//
-
-    });
+	// Create the cancer
+	Cancer.create({name: name, abbr: abbr, color: color}, function(err, cancer){
+		if (err) throw new Error(err);
+		res.redirect("/cancers");
+	});
 }

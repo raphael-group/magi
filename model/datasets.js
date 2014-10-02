@@ -772,7 +772,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				if (g in snvs) Gene.snvs = snvs[g];
 				if (g in cnas) Gene.cnas = cnas[g];
-				
+
 				mutGenes.push( Gene );
 			}
 
@@ -792,8 +792,14 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					data_matrix_samples: dataMatrixColHeaders
 				};
 
+			// Include the user_id if it was provided
 			if (user_id) query.user_id = user_id;
 
+			// Use the data matrix samples if no other data was provided
+			if (newDataset.samples.length == 0 && newDataset.data_matrix_samples){
+				console.log("HELLO")
+				newDataset.samples = newDataset.data_matrix_samples;
+			}
 
 			// Find the dataset 
 			Dataset.remove(query, function(err){
@@ -801,7 +807,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				Dataset.create( newDataset, function(err, newDataset){
 					if (err) throw new Error(err);
-					
+
 					// Create the data matrix, and map it to the dataset
 					var DataMatrixRows = Database.magi.model( 'DataMatrixRow' );
 					var rows = Object.keys(geneToDataRow).map(function(g){
