@@ -51,7 +51,7 @@ exports.uploadDataset = function uploadDataset(req, res){
     	if (files.aberrations) aberration_file = files.aberrations.path;
     	else aberration_file = null;
 
-    	if (files.testedSamples) samples_file = files.testedSamples.path;
+    	if (files.SampleTypes) samples_file = files.SampleTypes.path;
     	else samples_file = null;
 
     	if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
