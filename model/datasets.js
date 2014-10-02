@@ -3,7 +3,7 @@ var mongoose = require( 'mongoose' ),
 	Genome  = require( "./genome" ),
 	Cancers  = require( "./cancers" ),
 	GeneSets  = require( "./genesets" ),
-  Database = require('./db');
+	Database = require('./db');
 
 // Create schemas to hold the SNVs
 var MutGeneSchema = new mongoose.Schema({
@@ -19,9 +19,11 @@ var MutGeneSchema = new mongoose.Schema({
 var DatasetSchema = new mongoose.Schema({
 	title: { type: String, required: true },
 	samples: { type: [String], required: true },
+	sample_annotations : { type : {}, required: true },
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
+	data_matrix_samples: { type : Array, required: false },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
@@ -29,8 +31,18 @@ var DatasetSchema = new mongoose.Schema({
 	color: { type: String, required: true }
 });
 
+// Create schemas to hold a data matrix
+var DataMatrixRowSchema = new mongoose.Schema({
+	gene: {type: Array, required: true},
+	dataset_id: {type: mongoose.Schema.Types.ObjectId, required: true},
+	row: {type: Array, required: true},
+	updated_at: { type: Date, default: Date.now, required: true }
+});
+
+
 Database.magi.model( 'Dataset', DatasetSchema );
 Database.magi.model( 'MutGene', MutGeneSchema );
+Database.magi.model( 'DataMatrixRow', DataMatrixRowSchema );
 
 // List the datasets by group
 exports.datasetGroups = function datasetgroups(query, callback){
@@ -96,13 +108,128 @@ exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
 
 }// end exports.mutGenesList
 
+exports.createHeatmap = function createHeatmap(genes, datasets, callback){
+	// Construct the DataMatrixRow query
+	var DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
+		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
+	
+	DataMatrixRow.find(query, function(err, rows){
+		if (err) throw new Error(err);
+		// Return an empty object if there is no data matrix for these genes/datasets
+		else if (rows.length == 0){ callback("", {}); }
+		// Construct the union of the data matrices from each dataset
+		else{
+			// Heatmap: array of objects
+			// - x = row names
+			// - ys = column names
+			// - cell = number
+			var heatmap = {xs: genes, ys: [], cells: []},
+				geneToDatasetToRow = {};
+
+			// Create a mapping of genes -> dataset_ids -> data matrix rows
+			genes.forEach(function(g){ geneToDatasetToRow[g] = {}; });
+			rows.forEach(function(r){ geneToDatasetToRow[r.gene][r.dataset_id] = r; });
+			
+			// Iterate over the genes and datasets to construct the unified heatmap
+			genes.forEach(function(g, i){
+				datasets.forEach(function(d, j){
+					geneToDatasetToRow[g][d._id].row.forEach(function(n){
+						heatmap.cells.push({x: g, y: d.data_matrix_samples[j] });
+					});
+					if (i ==0) Array.prototype.push.apply(heatmap.ys, d.data_matrix_samples);
+				});
+			});
+
+			callback("", heatmap);
+		}
+	});// end DataMatrixRow.find
+}// end createHeatmap
+
+exports.createSampleAnnotationObject = function(datasets){
+	var obj = { categories: [], sampleToAnnotations: {}};
+	datasets.forEach(function(d){
+		if (!d.sample_annotations) return;
+		var categories = Object.keys(d.sample_annotations[d.samples[0]]);
+		categories.forEach(function(c){
+			if (obj.categories.indexOf(c) == -1) obj.categories.push(c);
+		});
+	});
+	if (obj.categories.length == 0) return {};
+	datasets.forEach(function(d){
+		d.samples.forEach(function(s){
+			obj.sampleToAnnotations[s] = [];
+			obj.categories.forEach(function(c){
+				if (!d.sample_annotations) obj.sampleToAnnotations[s].push(null);
+				else obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
+			});
+		});
+	});
+	return obj;
+}
+
+exports.addSampleAnnotations = function(dataset, group, name, annotations_file, user_id, callback){
+	// Load required modules
+	var fs      = require( 'fs' ),
+		Dataset = Database.magi.model( 'Dataset' );
+
+	// Make sure that either/both an SNV and CNA file were provided
+	if (!(dataset && name && annotations_file)){
+		console.log("addSampleAnnotationsFromFile: dataset, name, and annotations_file are required")
+		process.exit(1);
+	}
+
+	// Set up promise, and data structures
+	var sampleToAnnotation = {};
+
+	fs.readFile(annotations_file, 'utf-8', function (err, data) {
+		// Exit if there's an error
+		if (err) throw new Error(err);
+
+		// Load the lines, but skip the header (the first line)
+		lines = data.trim().split('\n');
+		lines.forEach(function(s){
+			if (s.lastIndexOf('#', 0) === 0){ return; }
+			var arr = s.split("\t");
+			if (arr.length == 1) arr.push(null);
+			sampleToAnnotation[arr[0]] = arr[1];
+		});
+
+		// Retrieve the dataset in question (if it exists), and add the new sample annotations
+		var query = { title: dataset, group: group };
+		if (user_id) query.user_id = user_id;
+		else query.is_standard = true;
+
+		// Find the dataset 
+		Dataset.findOne(query, function(err, dataset){
+			if (err){
+				console.log("[error] addSampleAnnotationsFromFile: dataset not found.")
+				throw new Error(err);
+			}
+			else{
+				if (!dataset.sample_annotations) dataset.sample_annotations = {};
+				dataset.samples.forEach(function(s){
+					if (!dataset.sample_annotations[s])
+						dataset.sample_annotations[s] = {};
+					if (sampleToAnnotation[s])
+						dataset.sample_annotations[s][name] = sampleToAnnotation[s];
+					else
+						dataset.sample_annotations[s][name] = null;
+				});
+			}
+			dataset.markModified("sample_annotations");
+			dataset.save(callback);
+		});
+	});
+}
+
 // List of inactivating mutation types
 var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 				   "splice_site", "frame_shift_del"];
 
 // Loads a SNVs into the database
 exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
-									  aberration_file, cancer_input, is_standard, color, user_id){
+									  aberration_file, data_matrix_file,
+									  cancer_input, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = Database.magi.model( 'Dataset' ),
@@ -112,8 +239,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		Q       = require( 'q' );
 
 	// Make sure that either/both an SNV and CNA file were provided
-	if (!(snvs_file || cnas_file || aberration_file)){
-		console.log("addDatasetFromFile: at least one of the SNV, CNA, or aberration files are *required*.")
+	if (!(snvs_file || cnas_file || aberration_file || data_matrix_file)){
+		console.log("addDatasetFromFile: at least one of the SNV, CNA, data matrix, or aberration files are *required*.")
 		process.exit(1);
 	}
 
@@ -290,7 +417,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		return d.promise;
 	}
 
-	function loadDataset(datasetName, samples, cnaLines, snvLines, aberrationLines){
+	function loadDataset(datasetName, samples, cnaLines, snvLines, aberrationLines, matrixLines){
 
 		// Define globals to store the mutations
 		var snvs = {},
@@ -298,7 +425,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			mutGenes = {},
 			mutSamples = {},
 			summary = {},
-			mutationTypes = [];
+			mutationTypes = [],
+			dataMatrixColHeaders = {},
+			geneToDataRow = {};
 
 		function recordMutation(gene, sample, mutClass){
 			// Make sure the gene is initialized in both data structures
@@ -331,6 +460,21 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					recordMutation(gene, sample, mutClass);
 				});
 			});
+		}
+
+		function loadDataMatrix(){
+			// Parse the header
+			var arr = matrixLines[0].split("\t");
+			dataMatrixColHeaders = arr.slice(1, arr.length);
+
+			matrixLines.slice(1, matrixLines.length).forEach(function(l){
+				// Extract the fields
+				var fields = l.trim().split('\t'),
+					gene = fields[0],
+					scores = fields.slice(1, fields.length).map(function(n){ return n*1.; });
+					geneToDataRow[gene] = scores;
+			});
+
 		}
 
 		function loadCNAs(){
@@ -613,16 +757,19 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				newDataset  = {
 					title: datasetName,
 					samples: samples, // samples from input sample list
+					sample_annotations: {}, // empty by default
 					group: group_name,
 					updated_at: Date.now(),
 					summary: summary,
 					is_standard: is_standard,
 					user_id: user_id,
 					color: datasetToColor[datasetName],
-					cancer_id: datasetToCancer[datasetName]
+					cancer_id: datasetToCancer[datasetName],
+					data_matrix_samples: dataMatrixColHeaders
 				};
 
 			if (user_id) query.user_id = user_id;
+
 
 			// Find the dataset 
 			Dataset.remove(query, function(err){
@@ -630,18 +777,28 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				Dataset.create( newDataset, function(err, newDataset){
 					if (err) throw new Error(err);
+					
+					// Create the data matrix, and map it to the dataset
+					var DataMatrixRows = Database.magi.model( 'DataMatrixRow' );
+					var rows = Object.keys(geneToDataRow).map(function(g){
+						return {gene: g, dataset_id: newDataset._id, row: geneToDataRow[g], updated_at: Date.now() };
+					});
 
-					// Update the MutGene data to include the dataset ID
-					mutGenes.forEach(function(g){ g.dataset_id = newDataset._id; })
-
-					// Remove any previous MutGenes associated with the dataset
-					MutGene.remove({dataset_id: newDataset._id}, function(err){
+					DataMatrixRows.create(rows, function(err, M){
 						if (err) throw new Error(err);
 
-						// Finally, create mutated genes
-						MutGene.create(mutGenes, function(err, res){
+						// Update the MutGene data to include the dataset ID
+						mutGenes.forEach(function(g){ g.dataset_id = newDataset._id; })
+
+						// Remove any previous MutGenes associated with the dataset
+						MutGene.remove({dataset_id: newDataset._id}, function(err){
 							if (err) throw new Error(err);
-							d.resolve();		
+
+							// Finally, create mutated genes
+							MutGene.create(mutGenes, function(err, res){
+								if (err) throw new Error(err);
+								d.resolve();		
+							});
 						});
 					});
 				});
@@ -654,10 +811,88 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		// Load the synchronous aberrations and SNVs
 		loadAberrations();
 		loadSNVs();
+		loadDataMatrix();
 
 		// Then load the CNAs, compute the summary, and create the dataset
 		return loadCNAs().then( computeSummary ).then( createDataset );
 
+	}
+
+	function loadMatrix(filepath, fileType, sampleIndex, callback){
+		var datasetToLines = {};
+		datasets.forEach(function(db){
+			datasetToLines[db] = [];
+			if (!givenSampleList && !(db in datasetToSamples)){
+				datasetToSamples[db] = [];
+			}
+		});
+
+		// Return an empty array for each dataset if a filepath wasn't provided
+		if (!filepath){
+			callback("", datasetToLines);
+			return;
+		}
+
+		fs.readFile(filepath, 'utf-8', function (err, data) {
+			// Exit if there's an error, else callback
+			if (err) throw new Error(err);
+
+			// Load the lines, but skip the header (the first line)
+			var lines = data.trim().split('\n');
+
+			// Make sure there're some lines in the file
+			if (lines.length <= 1){
+				console.log("Empty " + fileType + " file (requires header). Exiting.")
+				process.exit(1);
+			}
+			
+			// Parse the header line
+			var arr = lines[0].trim().split("\t"),
+				header = arr.slice(1, arr.length),
+				dbToIndices = {};
+
+			if (givenSampleList){
+				datasets.forEach(function(db){
+					dbToIndices[db] = [];
+					datasetToLines[db].push("");
+				});
+				Object.keys(sampleToDataset).forEach(function(s){
+					var i = header.indexOf(s);
+					if (i != -1){
+						dbToIndices[sampleToDataset[s]].push(i+1);
+						datasetToLines[sampleToDataset[s]][0] += "\t" + s;
+					}
+				});
+			}
+			else{
+				dbToIndices[dataset] = [];
+				datasetToLines[dataset].push("");
+				var i = 1; //start at one since the first column is the gene
+				header.forEach(function(s){
+					dbToIndices[dataset].push(i);
+					datasetToLines[sampleToDataset[s]][0] += "\t" + s;
+					i += 1;
+				})
+			}
+
+			lines.slice(1, lines.length).forEach(function(l){
+				// Skip lines that start with '#'
+				if (l.lastIndexOf('#', 0) === 0){ return; }
+				
+				var arr = l.trim().split("\t");
+
+				datasets.forEach(function(db){
+					var newArr = [arr[0]];
+					dbToIndices[db].forEach(function(i){
+						newArr.push(arr[i]);
+					});
+					datasetToLines[db].push( newArr.join("\t") );
+				});
+			});
+
+			// Execute the callback
+			callback("", datasetToLines);
+		});
 	}
 
 	function loadMutationFile(filepath, fileType, sampleIndex, callback){
@@ -723,16 +958,19 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		loadMutationFile(snvs_file, "SNV", 1, function(err, datasetToSNVLines){
 			loadMutationFile(cnas_file, "CNA", 1, function(err, datasetToCNALines){
 				loadMutationFile(aberration_file, "aberrations", 0, function(err, datasetToAberrationLines){
-					var funcs = datasets.map(function(datasetName){
-						var samples = datasetToSamples[datasetName],
-							snvLines = datasetToSNVLines[datasetName],
-							cnaLines = datasetToCNALines[datasetName],
-							aberrationLines = datasetToAberrationLines[datasetName];
+					loadMatrix(data_matrix_file, "matrix", 0, function(err, datasetToMatrixLines){
+						var funcs = datasets.map(function(datasetName){
+							var samples = datasetToSamples[datasetName],
+								snvLines = datasetToSNVLines[datasetName],
+								cnaLines = datasetToCNALines[datasetName],
+								aberrationLines = datasetToAberrationLines[datasetName],
+								matrixLines = datasetToMatrixLines[datasetName];
 
-							return function(){ return loadDataset( datasetName, samples, cnaLines, snvLines, aberrationLines ) };
+								return function(){ return loadDataset( datasetName, samples, cnaLines, snvLines, aberrationLines, matrixLines ) };
+						});
+						funcs.push( function(){ d.resolve(); } )
+						return funcs.slice(1, funcs.length).reduce(Q.when, Q(funcs[0]()))
 					});
-					funcs.push( function(){ d.resolve(); } )
-					return funcs.slice(1, funcs.length).reduce(Q.when, Q(funcs[0]()))
 				});
 			});	
 		});
