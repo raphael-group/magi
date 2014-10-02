@@ -45,7 +45,9 @@ exports.logConsent = function(req, res) {
 // Return false if logging consent is not given, true if is given
 exports.userGaveConsent = function(req, res) {
   var LogPermission = Database.logDB.model('LogPermission'),
-      userId = req.user._id.toString(),
+      user = req.user || {},
+      userId = user._id || 'undefined',
+      userIdStr = userId.toString(),
       hasher = crypto.createHash('sha1');
 
   hasher.update(userId);
