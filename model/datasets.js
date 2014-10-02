@@ -445,7 +445,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			}
 
 			// Record the gene as being mutated in the given sample
-			mutGenes[gene].mutated_samples[sample] = true;		
+			mutGenes[gene].mutated_samples[sample] = true;
 		}
 
 		function loadAberrations(){
@@ -464,6 +464,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		}
 
 		function loadDataMatrix(){
+			if (matrixLines.length == 0) return;
+
 			// Parse the header
 			var arr = matrixLines[0].split("\t");
 			dataMatrixColHeaders = arr.slice(1, arr.length);
@@ -475,7 +477,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					scores = fields.slice(1, fields.length).map(function(n){ return n*1.; });
 					geneToDataRow[gene] = scores;
 			});
-
 		}
 
 		function loadCNAs(){
@@ -749,7 +750,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				if (g in snvs) Gene.snvs = snvs[g];
 				if (g in cnas) Gene.cnas = cnas[g];
-				
+
 				mutGenes.push( Gene );
 			}
 
@@ -769,8 +770,14 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					data_matrix_samples: dataMatrixColHeaders
 				};
 
+			// Include the user_id if it was provided
 			if (user_id) query.user_id = user_id;
 
+			// Use the data matrix samples if no other data was provided
+			if (newDataset.samples.length == 0 && newDataset.data_matrix_samples){
+				console.log("HELLO")
+				newDataset.samples = newDataset.data_matrix_samples;
+			}
 
 			// Find the dataset 
 			Dataset.remove(query, function(err){
@@ -778,7 +785,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 				Dataset.create( newDataset, function(err, newDataset){
 					if (err) throw new Error(err);
-					
+
 					// Create the data matrix, and map it to the dataset
 					var DataMatrixRows = Database.magi.model( 'DataMatrixRow' );
 					var rows = Object.keys(geneToDataRow).map(function(g){
@@ -846,7 +853,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				console.log("Empty " + fileType + " file (requires header). Exiting.")
 				process.exit(1);
 			}
-			
+
 			// Parse the header line
 			var arr = lines[0].trim().split("\t"),
 				header = arr.slice(1, arr.length),
@@ -871,7 +878,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				var i = 1; //start at one since the first column is the gene
 				header.forEach(function(s){
 					dbToIndices[dataset].push(i);
-					datasetToLines[sampleToDataset[s]][0] += "\t" + s;
+					datasetToLines[dataset][0] += "\t" + s;
 					i += 1;
 				})
 			}
@@ -879,7 +886,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			lines.slice(1, lines.length).forEach(function(l){
 				// Skip lines that start with '#'
 				if (l.lastIndexOf('#', 0) === 0){ return; }
-				
+
 				var arr = l.trim().split("\t");
 
 				datasets.forEach(function(db){

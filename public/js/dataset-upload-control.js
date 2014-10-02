@@ -8,7 +8,8 @@ var formEl = "#data-upload-form"
     cnaFileEl = "#CNAs",
     aberrationFileEl = "#aberrations",
     sampleFileEl = "#testedSamples",
-    colorEl = "#color";
+    colorEl = "#color",
+    multiDatasetEl = "input#multi-dataset";
 
 var infoClasses  = 'alert alert-info',
     warningClasses = 'alert alert-warning',
@@ -48,12 +49,12 @@ $('#randomColor').click(function() {
     $('.uploadSummaryDatasetColor').css('background', $('#color').val());
     $('.uploadSummaryDatasetColorHex').text($('#color').val());
 });
-$('.uploadSummaryCancerType').text($('#cancer').val());
+$('.uploadSummaryCancerType').text($('#cancer').val().toUpperCase());
 $('#cancer').on('change', function() {
-    $('.uploadSummaryCancerType').text($(this).val());
+    $('.uploadSummaryCancerType').text($(this).val().toUpperCase());
 });
 $('#cancers').on('change', function() {
-    $('.uploadSummaryCancerType').text($(this).val());
+    $('.uploadSummaryCancerType').text($(this).val().toUpperCase());
 });
 
 // Sync the summary bar with upload file changes
@@ -123,10 +124,9 @@ $('#submit').click(function(e) {
 
     // Validate data
     var isDataValid = validateData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile, cancerMappingFile);
-    if (isDataValid == false) {
-        status('Oops. Something went wrong. Please try uploading again.', warningClasses);
-        return
-    }
+    // If validation fails, we don't need to post an error, since that will be
+    // posted as part of the validateDate call itself
+    if (isDataValid == false) return;
     submitData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile, cancerMappingFile);
 });
 
@@ -186,7 +186,7 @@ function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatr
 function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleTypesFile, snvFile, cancerMappingFile) {
     // Verify if a file meets MAGI requirements, error if not
     function verifyFile(file, fileName) {
-        if (file && file.size > 10000000){
+        if (file && file.size > 100000000){
             status(fileName+' file is too large. Please upload a smaller aberration file.', warningClasses);
             return false;
         }
@@ -205,8 +205,25 @@ function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMa
     }
 
     // If no dataset name is given, return false
-    if (!dataset) {
-        status('Please enter a valid dataset name', warningClasses);
+    var isMulti = $(multiDatasetEl).is(":checked");
+    if (!isMulti && !dataset) {
+        status('Please enter a valid dataset name.', warningClasses);
+        return false;
+    }
+
+    // Check the other conditions for multiple datasets
+    if (isMulti && !groupName){
+        status('Please enter a valid group name, since you are uploading multiple datasets.', warningClasses);
+        return false;
+    }
+
+    if (isMulti && !sampleTypesFile){
+        status('Please choose a sample types file. This is required for uploading multiple datasets simultaneously.', warningClasses);
+        return false;
+    }
+
+    if (isMulti && !cancerMappingFile){
+        status('Please choose a cancer mapping file. This is required for uploading multiple datasets simultaneously.', warningClasses);
         return false;
     }
 

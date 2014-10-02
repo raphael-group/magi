@@ -122,6 +122,8 @@ div.cnvUploadSelector {
   display: none;
 }
 
+div.multi-dataset{display:none;}
+
 div#sec-about{
   margin-top: 100px;
 }

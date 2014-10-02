@@ -124,6 +124,7 @@ app.post('/upload/geneset', routes.uploadGeneset)
 app.get('/upload', ensureAuthenticated, routes.upload)
 app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset)
 app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
+app.post('/upload/cancer', routes.uploadCancer)
 
 // Dataset views
 app.get('/datasets', routes.datasets.index);
@@ -143,7 +144,7 @@ app.get('/contact', routes.contact)
 app.get('/support', routes.support)
 app.get('/privacy', routes.privacy)
 app.get('/acknowledgements', routes.acknowledgements)
-app.get('/abbreviations', routes.abbreviations)
+app.get('/cancers', routes.cancers)
 
 // set up the authentication routes
 app.get('/login', routes.login);

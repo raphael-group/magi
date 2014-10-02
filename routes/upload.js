@@ -51,7 +51,7 @@ exports.uploadDataset = function uploadDataset(req, res){
     	if (files.aberrations) aberration_file = files.aberrations.path;
     	else aberration_file = null;
 
-    	if (files.testedSamples) samples_file = files.testedSamples.path;
+    	if (files.SampleTypes) samples_file = files.SampleTypes.path;
     	else samples_file = null;
 
     	if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
@@ -67,6 +67,7 @@ exports.uploadDataset = function uploadDataset(req, res){
 				if (samples_file) fs.unlinkSync( samples_file );
 				if (aberration_file) fs.unlinkSync( aberration_file );
 				if (cancer_file) fs.unlinkSync(cancer_file);
+				if (data_matrix_file) fs.unlinkSync(data_matrix_file);
 
 				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to view your dataset." });
 			})
@@ -96,4 +97,21 @@ exports.deleteDataset = function deleteDataset(req, res){
 	})
 
 
+}
+
+// Parse the user's dataset upload
+exports.uploadCancer = function uploadDataset(req, res){
+	console.log('upload/cancer')
+	var Cancer = Database.magi.model( 'Cancer' );
+
+	// Load the posted form
+	var name  = req.body.name,
+		abbr  = req.body.abbr,
+		color = req.body.color;
+
+	// Create the cancer
+	Cancer.create({name: name, abbr: abbr, color: color}, function(err, cancer){
+		if (err) throw new Error(err);
+		res.redirect("/cancers");
+	});
 }

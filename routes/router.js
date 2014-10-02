@@ -17,7 +17,7 @@ exports.contact = about.contact;
 exports.support = about.support;
 exports.privacy = about.privacy;
 exports.acknowledgements = about.acknowledgements;
-exports.abbreviations = about.abbreviations;
+exports.cancers = about.cancers;
 
 // Authentication routes
 exports.account = auth.account;
@@ -34,6 +34,7 @@ exports.uploadGeneset = index.uploadGeneset;
 exports.upload = upload.upload;
 exports.uploadDataset = upload.uploadDataset;
 exports.deleteDataset = upload.deleteDataset;
+exports.uploadCancer = upload.uploadCancer;
 
 // Routes for the main view
 exports.view       = view.view;

@@ -17,20 +17,22 @@ block body
             br
         div(class="row")
             div(class="col-sm-3")
-                label
-                    | Cancer type (
-                    a(href="/abbreviations") full list
-                    | )
-                br
-                select(class="form-control", id="cancer")
-                    optgroup(label="TCGA & ICGC")
-                    - for (var i in tcga_icgc_cancers)
-                        option(value="#{tcga_icgc_cancers[i].abbr}") #{tcga_icgc_cancers[i].cancer} (#{tcga_icgc_cancers[i].abbr.toUpperCase()})
-                    optgroup(label="User-defined")
-                    - for (var i in user_cancers )
-                        option(value="#{user_cancers[i].abbr}") #{user_cancers[i].cancer} (#{user_cancers[i].abbr.toUpperCase()})
-                | or upload a file of cancer types (this will be given precedence)
-                input(type="file", id="cancers", name="cancers")
+                div(class="single-dataset")
+                    label
+                        | Cancer type (
+                        a(href="/cancers") full list or add another
+                        | )
+                    br
+                    select(class="form-control", id="cancer")
+                        optgroup(label="TCGA & ICGC")
+                        - for (var i in tcga_icgc_cancers)
+                            option(value="#{tcga_icgc_cancers[i].abbr}") #{tcga_icgc_cancers[i].cancer} (#{tcga_icgc_cancers[i].abbr.toUpperCase()})
+                        optgroup(label="User-defined")
+                        - for (var i in user_cancers )
+                            option(value="#{user_cancers[i].abbr}") #{user_cancers[i].cancer} (#{user_cancers[i].abbr.toUpperCase()})
+                div(class="multi-dataset")
+                    label Dataset-to-cancer mapping (TSV)
+                    input(type="file", id="cancers", name="cancers")
             div(class="col-sm-3")
                 label
                     | Dataset name (e.g. cancer type).
@@ -51,6 +53,11 @@ block body
         hr
         br
         div(class="row")
+            div(style="float:right;")
+                input(type="checkbox", id="multi-dataset")
+                | &nbsp;
+                label I want to upload multiple datasets simultaneously
+
             h4 Step 2: Select data to upload
             br
             p MAGI will allow you to upload whatever data you want, so long as your data adheres to one of our supported formats (see below). For example,
@@ -224,9 +231,15 @@ block body
                     br
                     input(type="file", id="SampleTypes", name="SampleTypes")
                     br
-                    p <strong>The Sample Types file is a tab-separated file (*.tsv)</strong> that
+                    p(class="single-dataset")
+                        | <strong>The Sample Types file is a tab-separated file (*.tsv)</strong> that
                         | includes all samples and their corresponding types for a dataset. Each row
                         | contains the data for a single sample.
+                    p(class="multi-dataset")
+                        | <strong>The Sample Types file is a tab-separated file (*.tsv)</strong> that
+                        | is a mapping of samples to datasets. Each row in the file contains a sample
+                        | and a dataset. When uploading <b>multiple datasets</b> the sample type file
+                        | <b>is required</b>.
                     hr
                     h5 Format example
                     code TCGA-A7-A0CE&#9;BRCA<br />
@@ -364,3 +377,17 @@ block belowTheFold
         });
         //- Initialize color with the first cancer
         setColor(cancerToColor[$("select#cancer").val()]);
+        //- Show/hide fields based on whether the user is trying to
+        //- upload one or more datasets
+        $("input#multi-dataset").click(function(){
+            if ($("input#multi-dataset").is(':checked')){
+                $(".multi-dataset").show();
+                $(".single-dataset").hide();
+                $("input#dataset").attr("disabled", true);
+            }
+            else{
+                $(".single-dataset").show();
+                $(".multi-dataset").hide();
+                $("input#dataset").attr("disabled", false);
+            }
+        });
