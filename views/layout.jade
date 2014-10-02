@@ -42,11 +42,15 @@ html
               a(href="/support") Support
             li
               a(href="#" id="give-feedback") Feedback
-          ul(class="nav navbar-nav navbar-right", style="margin-top:13px;color:grey")
+          ul(class="nav navbar-nav navbar-right", style="color:grey")
             li
               //- Ask the user to login or show his/her name
               - if (user)
-                <span style="margin-right: 5px">Welcome, <a href="/account"> #{user.name} </a> | <a href="/logout"> Logout</a></span>
+                div(style="padding-top:14px;margin-right:5px")
+                  | Welcome,&nbsp;
+                  a(href="/account") #{user.name}
+                  | &nbsp;|&nbsp;
+                  a(href="/logout") Logout
               - else
                 a(href="/auth/google/returnTo")
                   button(type="button" class="btn btn-default btn-xs") Login via Google
