@@ -1,6 +1,7 @@
 // Load required modules
 var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
+	Database = require('../model/db'),
 	formidable = require('formidable'),
 	fs = require('fs'),
 	Cancers  = require( "../model/cancers" ),
@@ -9,7 +10,7 @@ var mongoose = require( 'mongoose' ),
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
 	console.log('upload')
-	var Cancer = mongoose.model( 'Cancer' );
+	var Cancer = Database.magi.model( 'Cancer' );
 	Cancer.find({}, function(err, cancers){
 		if (err) throw new Error(err);
 		else{
