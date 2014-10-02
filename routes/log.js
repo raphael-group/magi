@@ -21,10 +21,12 @@ exports.logConsent = function(req, res) {
   }
   var LogPermission = Database.logDB.model('LogPermission'),
       enableState = req['body'].enable == 'true' ? true : false,
-      userId = req.user._id.toString(),
+      user = req.user || {},
+      userId = user._id || 'undefined',
+      userIdStr = userId.toString(),
       hasher = crypto.createHash('sha1');
 
-  hasher.update(userId);
+  hasher.update(userIdStr);
   var hash = hasher.digest('hex');
 
   // Store the user's logging consent response
@@ -50,7 +52,7 @@ exports.userGaveConsent = function(req, res) {
       userIdStr = userId.toString(),
       hasher = crypto.createHash('sha1');
 
-  hasher.update(userId);
+  hasher.update(userIdStr);
   var hash = hasher.digest('hex');
 
   LogPermission.find({userHash:hash}, function(err, entries) {
