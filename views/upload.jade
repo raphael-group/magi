@@ -17,11 +17,10 @@ block body
             br
         div(class="row")
             div(class="col-sm-3")
-                label 
+                label
                     | Cancer type (
                     a(href="/abbreviations") full list
                     | )
-
                 br
                 select(class="form-control", id="cancer")
                     optgroup(label="TCGA & ICGC")
@@ -308,6 +307,8 @@ block body
             div(class="col-sm-2")
                 h4 Dataset Name
                 p(class="uploadSummaryDatasetName") &nbsp;
+                h4 Cancer Type
+                p(class="uploadSummaryCancerType") &nbsp;
                 h4 Color
                 span(class="uploadSummaryDatasetColor" style="width:33px;height:33px;padding:2px;margin:5px 5px 0 0;border:1px solid #eee;border-radius:8px;display:block")
                 p(class="uploadSummaryDatasetColorHex") &nbsp;

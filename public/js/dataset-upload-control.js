@@ -48,6 +48,13 @@ $('#randomColor').click(function() {
     $('.uploadSummaryDatasetColor').css('background', $('#color').val());
     $('.uploadSummaryDatasetColorHex').text($('#color').val());
 });
+$('.uploadSummaryCancerType').text($('#cancer').val());
+$('#cancer').on('change', function() {
+    $('.uploadSummaryCancerType').text($(this).val());
+});
+$('#cancers').on('change', function() {
+    $('.uploadSummaryCancerType').text($(this).val());
+});
 
 // Sync the summary bar with upload file changes
 $('#SNVs').change(function() {
@@ -111,15 +118,16 @@ $('#submit').click(function(e) {
         cnaFile = $('#CNAs')[0].files[0],
         dataMatrixFile = $('#DataMatrix')[0].files[0],
         sampleTypesFile = $('#SampleTypes')[0].files[0],
-        snvFile = $('#SNVs')[0].files[0];
+        snvFile = $('#SNVs')[0].files[0],
+        cancerMappingFile = $('#cancers')[0].files[0];
 
     // Validate data
-    var isDataValid = validateData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile);
+    var isDataValid = validateData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile, cancerMappingFile);
     if (isDataValid == false) {
         status('Oops. Something went wrong. Please try uploading again.', warningClasses);
         return
     }
-    submitData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile);
+    submitData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile, cancerMappingFile);
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,7 +139,7 @@ function status(msg, classes) {
 }
 
 function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile,
-                    sampleTypesFile, snvFile) {
+                    sampleTypesFile, snvFile, cancerMappingFile) {
     // If everything checks out, submit the form
     status('Uploading...', infoClasses);
 
@@ -142,10 +150,12 @@ function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatr
     if (dataMatrixFile) data.append( 'DataMatrix', dataMatrixFile);
     if (sampleTypesFile) data.append( 'SampleTypes', sampleTypesFile);
     if (snvFile) data.append( 'SNVs', snvFile );
+    if (cancerMappingFile) data.append('cancerMapping', cancerMappingFile);
 
     data.append( 'dataset', dataset );
     data.append( 'groupName', groupName );
     data.append( 'color', color );
+    data.append('cancer', $('#cancer').val());
 
     // Submit an AJAX-ified form
     $.ajax({
@@ -173,7 +183,7 @@ function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatr
     });
 }
 
-function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleTypesFile, snvFile) {
+function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleTypesFile, snvFile, cancerMappingFile) {
     // Verify if a file meets MAGI requirements, error if not
     function verifyFile(file, fileName) {
         if (file && file.size > 10000000){
@@ -218,7 +228,8 @@ function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMa
         {f: cnaFile, n:'CNA'},
         {f: dataMatrixFile, n:'Data Matrix'},
         {f: sampleTypesFile, n:'Sample Types'},
-        {f: snvFile, n:'SNV'}
+        {f: snvFile, n:'SNV'},
+        {f: cancerMappingFile, n:'Cancer Mapping'}
     ];
 
     // Verify only if files are empty or valid file
