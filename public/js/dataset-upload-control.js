@@ -48,6 +48,13 @@ $('#randomColor').click(function() {
     $('.uploadSummaryDatasetColor').css('background', $('#color').val());
     $('.uploadSummaryDatasetColorHex').text($('#color').val());
 });
+$('.uploadSummaryCancerType').text($('#cancer').val());
+$('#cancer').on('change', function() {
+    $('.uploadSummaryCancerType').text($(this).val());
+});
+$('#cancers').on('change', function() {
+    $('.uploadSummaryCancerType').text($(this).val());
+});
 
 // Sync the summary bar with upload file changes
 $('#SNVs').change(function() {
