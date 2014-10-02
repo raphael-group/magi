@@ -54,9 +54,12 @@ exports.uploadDataset = function uploadDataset(req, res){
     	if (files.testedSamples) samples_file = files.testedSamples.path;
     	else samples_file = null;
 
+    	if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
+    	else data_matrix_file = null;
+
     	// Pass the files to the parsers
 		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
-								   cancer_input, false, color, req.user._id)
+								   data_matrix_file, cancer_input, false, color, req.user._id)
 			.then(function(){
 		    	// Once the parsers have finished, destroy the tmp files
 				if (snv_file) fs.unlinkSync( snv_file );
