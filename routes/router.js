@@ -17,7 +17,7 @@ exports.contact = about.contact;
 exports.support = about.support;
 exports.privacy = about.privacy;
 exports.acknowledgements = about.acknowledgements;
-exports.abbreviations = about.abbreviations;
+exports.cancers = about.cancers;
 
 // Authentication routes
 exports.account = auth.account;

@@ -19,7 +19,7 @@ block body
             div(class="col-sm-3")
                 label
                     | Cancer type (
-                    a(href="/abbreviations") full list
+                    a(href="/cancers") full list or add another
                     | )
                 br
                 select(class="form-control", id="cancer")
@@ -29,8 +29,8 @@ block body
                     optgroup(label="User-defined")
                     - for (var i in user_cancers )
                         option(value="#{user_cancers[i].abbr}") #{user_cancers[i].cancer} (#{user_cancers[i].abbr.toUpperCase()})
-                | or upload a file of cancer types (this will be given precedence)
-                input(type="file", id="cancers", name="cancers")
+                //- | or upload a file of cancer types (this will be given precedence)
+                //- input(type="file", id="cancers", name="cancers")
             div(class="col-sm-3")
                 label
                     | Dataset name (e.g. cancer type).

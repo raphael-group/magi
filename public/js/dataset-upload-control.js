@@ -48,12 +48,12 @@ $('#randomColor').click(function() {
     $('.uploadSummaryDatasetColor').css('background', $('#color').val());
     $('.uploadSummaryDatasetColorHex').text($('#color').val());
 });
-$('.uploadSummaryCancerType').text($('#cancer').val());
+$('.uploadSummaryCancerType').text($('#cancer').val().toUpperCase());
 $('#cancer').on('change', function() {
-    $('.uploadSummaryCancerType').text($(this).val());
+    $('.uploadSummaryCancerType').text($(this).val().toUpperCase());
 });
 $('#cancers').on('change', function() {
-    $('.uploadSummaryCancerType').text($(this).val());
+    $('.uploadSummaryCancerType').text($(this).val().toUpperCase());
 });
 
 // Sync the summary bar with upload file changes
@@ -123,10 +123,9 @@ $('#submit').click(function(e) {
 
     // Validate data
     var isDataValid = validateData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile, cancerMappingFile);
-    if (isDataValid == false) {
-        status('Oops. Something went wrong. Please try uploading again.', warningClasses);
-        return
-    }
+    // If validation fails, we don't need to post an error, since that will be
+    // posted as part of the validateDate call itself
+    if (isDataValid == false) return;
     submitData(dataset,color,groupName,aberrationFile,cnaFile,dataMatrixFile,sampleTypesFile,snvFile, cancerMappingFile);
 });
 
@@ -205,8 +204,8 @@ function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMa
     }
 
     // If no dataset name is given, return false
-    if (!dataset) {
-        status('Please enter a valid dataset name', warningClasses);
+    if (!groupName && !dataset) {
+        status('Please enter a valid dataset name, or a group name if this is multiple datasets.', warningClasses);
         return false;
     }
 

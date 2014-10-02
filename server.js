@@ -143,7 +143,7 @@ app.get('/contact', routes.contact)
 app.get('/support', routes.support)
 app.get('/privacy', routes.privacy)
 app.get('/acknowledgements', routes.acknowledgements)
-app.get('/abbreviations', routes.abbreviations)
+app.get('/cancers', routes.cancers)
 
 // set up the authentication routes
 app.get('/login', routes.login);

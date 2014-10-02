@@ -54,9 +54,12 @@ exports.uploadDataset = function uploadDataset(req, res){
     	if (files.testedSamples) samples_file = files.testedSamples.path;
     	else samples_file = null;
 
+    	if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
+    	else data_matrix_file = null;
+
     	// Pass the files to the parsers
 		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
-								   cancer_input, false, color, req.user._id)
+								   data_matrix_file, cancer_input, false, color, req.user._id)
 			.then(function(){
 		    	// Once the parsers have finished, destroy the tmp files
 				if (snv_file) fs.unlinkSync( snv_file );
@@ -64,6 +67,7 @@ exports.uploadDataset = function uploadDataset(req, res){
 				if (samples_file) fs.unlinkSync( samples_file );
 				if (aberration_file) fs.unlinkSync( aberration_file );
 				if (cancer_file) fs.unlinkSync(cancer_file);
+				if (data_matrix_file) fs.unlinkSync(data_matrix_file);
 
 				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to view your dataset." });
 			})
@@ -93,4 +97,26 @@ exports.deleteDataset = function deleteDataset(req, res){
 	})
 
 
+}
+
+// Parse the user's dataset upload
+exports.uploadDataset = function uploadDataset(req, res){
+	console.log('upload/cancer')
+	var Cancer = Database.magi.model( 'Cancer' );
+
+	// Load the posted form
+	var form = new formidable.IncomingForm({
+		uploadDir: path.normalize(__dirname + '/../tmp'),
+		keepExtensions: true
+    });
+
+	form.parse(req, function(err, fields, files) {
+		// Parse the form variables into shorter handles
+		var name = fields.name,
+			group_name = fields.abbr,
+			color = fields.color;
+
+		//
+
+    });
 }
