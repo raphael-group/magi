@@ -1,12 +1,25 @@
 // Load required modules
-var Dataset  = require( "../model/datasets" ),
+var mongoose = require( 'mongoose' ),
+	Dataset  = require( "../model/datasets" ),
+	Database = require('../model/db'),
 	formidable = require('formidable'),
 	fs = require('fs'),
+	Cancers  = require( "../model/cancers" ),
 	path = require('path');
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
-	res.render('upload', {user: req.user});
+	console.log('upload')
+	var Cancer = Database.magi.model( 'Cancer' );
+	Cancer.find({}, function(err, cancers){
+		if (err) throw new Error(err);
+		else{
+			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
+			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_standard; }),
+				user_cancers = cancers.filter(function(d){ return !d.is_standard; });
+			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
+		}
+	});
 }
 
 // Parse the user's dataset upload
@@ -21,7 +34,13 @@ exports.uploadDataset = function uploadDataset(req, res){
     	// Parse the form variables into shorter handles
     	var dataset = fields.dataset,
     		group_name = fields.groupName,
+    		cancer = fields.cancer,
     		color = fields.color;
+
+    	if (files.cancerMapping) cancer_file = files.cancerMapping.path;
+    	else cancer_file = null;
+
+    	var cancer_input = cancer_file ? cancer_file : cancer;
 
     	if (files.SNVs) snv_file = files.SNVs.path;
     	else snv_file = null;
@@ -36,12 +55,15 @@ exports.uploadDataset = function uploadDataset(req, res){
     	else samples_file = null;
 
     	// Pass the files to the parsers
-		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file, false, color, req.user._id)
+		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
+								   cancer_input, false, color, req.user._id)
 			.then(function(){
 		    	// Once the parsers have finished, destroy the tmp files
 				if (snv_file) fs.unlinkSync( snv_file );
 				if (cna_file) fs.unlinkSync( cna_file );
 				if (samples_file) fs.unlinkSync( samples_file );
+				if (aberration_file) fs.unlinkSync( aberration_file );
+				if (cancer_file) fs.unlinkSync(cancer_file);
 
 				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to view your dataset." });
 			})

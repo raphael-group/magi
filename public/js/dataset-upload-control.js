@@ -1,6 +1,5 @@
 // Form control for when the user is formatting his/her query
 $(document).ready(function() {
-
 // Globals for this UI
 var formEl = "#data-upload-form"
     datasetNameEl = "#dataset",
@@ -131,7 +130,8 @@ function status(msg, classes) {
     $('#status').html(msg);
 }
 
-function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleTypesFile, snvFile) {
+function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile,
+                    sampleTypesFile, snvFile) {
     // If everything checks out, submit the form
     status('Uploading...', infoClasses);
 
@@ -209,7 +209,7 @@ function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMa
 
     // Check if the user passed an SNV/CNA file
     if (!(cnaFile || snvFile || aberrationFile || dataMatrixFile)){
-        status('Please choose an aberration, SNV, and/or CNA file.', warningClasses);
+        status('Please choose an aberration, data matrix, SNV, and/or CNA file.', warningClasses);
         return false;
     }
 
