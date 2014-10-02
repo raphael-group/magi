@@ -230,45 +230,52 @@ exports.view  = function view(req, res){
 							}
 						});
 
-						PPIs.ppilist(genes, function(err, ppis){
-							PPIs.ppicomments(ppis, user_id, function(err, comments){
-								PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-									var Cancer = Database.magi.model( 'Cancer' );
+						Dataset.createHeatmap(genes, datasets, function(err, heatmap){
+							if (err) throw new Error(err);
+							var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets);
+							console.log(sampleAnnotations)
+							PPIs.ppilist(genes, function(err, ppis){
+								PPIs.ppicomments(ppis, user_id, function(err, comments){
+									PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
+										var Cancer = Database.magi.model( 'Cancer' );
 
-									Cancer.find({}, function(err, cancers){
-										if (err) throw new Error(err);
+										Cancer.find({}, function(err, cancers){
+											if (err) throw new Error(err);
 
-										// Create a mapping of dataset titles to cancer names
-										var cancerIdToName = {},
-											abbrToCancer = {},
-											datasetToCancer = {};
-										cancers.forEach(function(c){
-											cancerIdToName[c._id] = c.cancer;
-											if (c.abbr) abbrToCancer[c.abbr] = c.cancer;
+											// Create a mapping of dataset titles to cancer names
+											var cancerIdToName = {},
+												abbrToCancer = {},
+												datasetToCancer = {};
+											cancers.forEach(function(c){
+												cancerIdToName[c._id] = c.cancer;
+												if (c.abbr) abbrToCancer[c.abbr] = c.cancer;
+											});
+											datasets.forEach(function(d){
+												datasetToCancer[d.title] = cancerIdToName[d.cancer_id];
+											});
+
+											// Package data into one object
+											var subnetwork_data = { edges: edges, nodes: nodes, refs: refs, comments: comments };
+											var pkg = 	{
+															abbrToCancer: abbrToCancer,
+															datasetToCancer: datasetToCancer,
+															subnetwork_data: subnetwork_data,
+															mutation_matrix: mutation_matrix,
+															transcript_data: transcript_data,
+															domainDBs: Object.keys(domainDBs),
+															cna_browser_data: cna_browser_data,
+															datasetColors: datasetColors,
+															annotations: annotations,
+															genes: genes,
+															dataset_ids: dataset_ids,
+															heatmap: heatmap,
+															sampleAnnotations: sampleAnnotations
+														};
+
+											// Render view
+											res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user });
+
 										});
-										datasets.forEach(function(d){
-											datasetToCancer[d.title] = cancerIdToName[d.cancer_id];
-										});
-
-										// Package data into one object
-										var subnetwork_data = { edges: edges, nodes: nodes, refs: refs, comments: comments };
-										var pkg = 	{
-														abbrToCancer: abbrToCancer,
-														datasetToCancer: datasetToCancer,
-														subnetwork_data: subnetwork_data,
-														mutation_matrix: mutation_matrix,
-														transcript_data: transcript_data,
-														domainDBs: Object.keys(domainDBs),
-														cna_browser_data: cna_browser_data,
-														datasetColors: datasetColors,
-														annotations: annotations,
-														genes: genes,
-														dataset_ids: dataset_ids
-													};
-
-										// Render view
-										res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user });
-
 									});
 								});
 							});

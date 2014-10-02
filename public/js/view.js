@@ -113,6 +113,9 @@ function view(){
 	var genes = data.genes,
 		datasets = data.datasets;
 
+	console.log(data.heatmap);
+	console.log(data.sampleAnnotations);
+
 	if (showDuplicates == null) {
 		showDuplicates = true; // TODO fix this hack
 	}

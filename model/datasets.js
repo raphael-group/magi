@@ -3,7 +3,6 @@ var mongoose = require( 'mongoose' ),
 	Genome  = require( "./genome" ),
 	Cancers  = require( "./cancers" ),
 	GeneSets  = require( "./genesets" ),
-	DataMatrix  = require( "./dataMatrix" ),
 	Database = require('./db');
 
 // Create schemas to hold the SNVs
@@ -20,7 +19,7 @@ var MutGeneSchema = new mongoose.Schema({
 var DatasetSchema = new mongoose.Schema({
 	title: { type: String, required: true },
 	samples: { type: [String], required: true },
-	sample_annotations : { type : {}, required: false },
+	sample_annotations : { type : {}, required: true },
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
@@ -32,8 +31,18 @@ var DatasetSchema = new mongoose.Schema({
 	color: { type: String, required: true }
 });
 
+// Create schemas to hold a data matrix
+var DataMatrixRowSchema = new mongoose.Schema({
+	gene: {type: Array, required: true},
+	dataset_id: {type: mongoose.Schema.Types.ObjectId, required: true},
+	row: {type: Array, required: true},
+	updated_at: { type: Date, default: Date.now, required: true }
+});
+
+
 Database.magi.model( 'Dataset', DatasetSchema );
 Database.magi.model( 'MutGene', MutGeneSchema );
+Database.magi.model( 'DataMatrixRow', DataMatrixRowSchema );
 
 // List the datasets by group
 exports.datasetGroups = function datasetgroups(query, callback){
@@ -99,6 +108,65 @@ exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
 
 }// end exports.mutGenesList
 
+exports.createHeatmap = function createHeatmap(genes, datasets, callback){
+	// Construct the DataMatrixRow query
+	var DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
+		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
+	
+	DataMatrixRow.find(query, function(err, rows){
+		if (err) throw new Error(err);
+		// Return an empty object if there is no data matrix for these genes/datasets
+		else if (rows.length == 0){ callback("", {}); }
+		// Construct the union of the data matrices from each dataset
+		else{
+			// Heatmap: array of objects
+			// - x = row names
+			// - ys = column names
+			// - cell = number
+			var heatmap = {xs: genes, ys: [], cells: []},
+				geneToDatasetToRow = {};
+
+			// Create a mapping of genes -> dataset_ids -> data matrix rows
+			genes.forEach(function(g){ geneToDatasetToRow[g] = {}; });
+			rows.forEach(function(r){ geneToDatasetToRow[r.gene][r.dataset_id] = r; });
+			
+			// Iterate over the genes and datasets to construct the unified heatmap
+			genes.forEach(function(g, i){
+				datasets.forEach(function(d, j){
+					geneToDatasetToRow[g][d._id].row.forEach(function(n){
+						heatmap.cells.push({x: g, y: d.data_matrix_samples[j] });
+					});
+					if (i ==0) Array.prototype.push.apply(heatmap.ys, d.data_matrix_samples);
+				});
+			});
+
+			callback("", heatmap);
+		}
+	});// end DataMatrixRow.find
+}// end createHeatmap
+
+exports.createSampleAnnotationObject = function(datasets){
+	var obj = { categories: [], sampleToAnnotations: {}};
+	datasets.forEach(function(d){
+		if (!d.sample_annotations) return;
+		var categories = Object.keys(d.sample_annotations[d.samples[0]]);
+		categories.forEach(function(c){
+			if (obj.categories.indexOf(c) == -1) obj.categories.push(c);
+		});
+	});
+	if (obj.categories.length == 0) return {};
+	datasets.forEach(function(d){
+		d.samples.forEach(function(s){
+			obj.sampleToAnnotations[s] = [];
+			obj.categories.forEach(function(c){
+				if (!d.sample_annotations) obj.sampleToAnnotations[s].push(null);
+				else obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
+			});
+		});
+	});
+	return obj;
+}
+
 exports.addSampleAnnotations = function(dataset, group, name, annotations_file, user_id, callback){
 	// Load required modules
 	var fs      = require( 'fs' ),
@@ -138,6 +206,7 @@ exports.addSampleAnnotations = function(dataset, group, name, annotations_file, 
 				throw new Error(err);
 			}
 			else{
+				if (!dataset.sample_annotations) dataset.sample_annotations = {};
 				dataset.samples.forEach(function(s){
 					if (!dataset.sample_annotations[s])
 						dataset.sample_annotations[s] = {};
@@ -147,7 +216,6 @@ exports.addSampleAnnotations = function(dataset, group, name, annotations_file, 
 						dataset.sample_annotations[s][name] = null;
 				});
 			}
-			delete dataset._id;
 			dataset.markModified("sample_annotations");
 			dataset.save(callback);
 		});
@@ -689,6 +757,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				newDataset  = {
 					title: datasetName,
 					samples: samples, // samples from input sample list
+					sample_annotations: {}, // empty by default
 					group: group_name,
 					updated_at: Date.now(),
 					summary: summary,
