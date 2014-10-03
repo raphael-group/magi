@@ -136,6 +136,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 					var samples = d.data_matrix_samples;
 					samples.forEach(function(sample, s) {
 						geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
+							if(sample == 'TCGA-AB-2972') console.log(n);
 							heatmap.cells.push({x: g, y: sample, value:n });
 						});
 						// where does this go? (below line)
