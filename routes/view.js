@@ -233,7 +233,6 @@ exports.view  = function view(req, res){
 						Dataset.createHeatmap(genes, datasets, function(err, heatmap){
 							if (err) throw new Error(err);
 							var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets);
-							console.log(sampleAnnotations)
 							PPIs.ppilist(genes, function(err, ppis){
 								PPIs.ppicomments(ppis, user_id, function(err, comments){
 									PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
