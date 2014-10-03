@@ -123,7 +123,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 			// - x = row names
 			// - ys = column names
 			// - cell = number
-			var heatmap = {xs: genes, ys: [], cells: []},
+			var heatmap = {xs: [], ys: genes, cells: []},
 				geneToDatasetToRow = {};
 
 			// Create a mapping of genes -> dataset_ids -> data matrix rows
@@ -133,17 +133,12 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 			// Iterate over the genes and datasets to construct the unified heatmap
 			genes.forEach(function(g, i){
 				datasets.forEach(function(d, j){
-					var samples = d.data_matrix_samples;
-					samples.forEach(function(sample, s) {
-						geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
-							heatmap.cells.push({x: g, y: sample, value:n });
-						});
-						// where does this go? (below line)
-						if (i ==0) Array.prototype.push.apply(heatmap.ys, d.data_matrix_samples);
+					geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
+						heatmap.cells.push({x: d.data_matrix_samples[k], y: g, value: n });
 					});
+					if (i ==0) Array.prototype.push.apply(heatmap.xs, d.data_matrix_samples);
 				});
 			});
-
 			callback("", heatmap);
 		}
 	});// end DataMatrixRow.find
