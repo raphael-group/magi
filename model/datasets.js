@@ -175,8 +175,10 @@ exports.createSampleAnnotationObject = function(datasets){
 			obj.sampleToAnnotations[s] = [];
 			obj.categories.forEach(function(c){
 				if (!d.sample_annotations) obj.sampleToAnnotations[s].push(null);
-				else obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
-				annotationTypes[d.sample_annotations[s][c]] = null;
+				else{
+					obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
+					annotationTypes[d.sample_annotations[s][c]] = null;
+				}
 			});
 		});
 	});
