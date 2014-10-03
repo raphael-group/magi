@@ -252,8 +252,8 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 
 // Loads a SNVs into the database
 exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
-									  aberration_file, data_matrix_file,
-									  cancer_input, is_standard, color, user_id){
+									  aberration_file, data_matrix_file, cancer_input,
+									  annotation_color_file, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = Database.magi.model( 'Dataset' ),
@@ -369,9 +369,15 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	var datasets = [],
 		givenSampleList = true,
 		sampleToDataset = {},
-		datasetToSamples = {};
+		datasetToSamples = {},
+		sampleToAnnotations = {};
 
-	// Read in the sample file asynchronously
+	// Read in the sample file asynchronously.
+	// The sample file comes in the following form
+	// Sample\tDataset\tAnnotation1\tAnnotation2...
+	// It can come either with any number of columns,
+	// but column 1 is always required and column 2 is required
+	// if there's a column 3, etc.
 	function loadSampleFile(){
 		// Set up promise
 		var d = Q.defer();
@@ -396,16 +402,32 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			// Exit if there's an error
 			if (err) throw new Error(err);
 
-			// Load the lines, but skip the header (the first line)
-			lines = data.trim().split('\n');
-			var sampleNames = {};
+			// Load the lines, ignoring any that start with '#'
+			var lines = data.trim().split('\n').filter(function(l){
+				return !(l.lastIndexOf('#', 0) === 0);
+			});
 
-			lines.forEach(function(s){
+			// If there are more than 2 columns, then annotation categories
+			// make column headers 3+
+			var header = lines[0].split('\t');
+			if (header.length > 2) var categories = header.slice(2, header.length);
+			else var categories = [];
+
+			// Parse each line
+			var sampleNames = {};
+			lines.slice(1, lines.length).forEach(function(s){
 				var arr = s.split("\t");
 				if (arr.length > 1){
-					sampleToDataset[arr[0]] = arr[1];
+					// Sample is always stored in column 1, dataset is always stored in column 2
+					sampleToDataset[arr[0]] = arr[1]; 
 					if (!(arr[1] in datasetToSamples)) datasetToSamples[arr[1]] = [];
 					datasetToSamples[arr[1]].push( arr[0] );
+
+					// Then add any annotations there may be
+					if (categories.length > 0){
+						sampleToAnnotations[arr[0]] = {};
+						categories.forEach(function(c, i){ sampleToAnnotations[arr[0]][c] = arr[2+i]; });
+					}
 				}
 				else if(!dataset){
 					console.log("No dataset name was provided so you must include the dataset in the sample mapping file.");
@@ -786,7 +808,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				newDataset  = {
 					title: datasetName,
 					samples: samples, // samples from input sample list
-					sample_annotations: {}, // empty by default
+					sample_annotations: sampleToAnnotations,
 					group: group_name,
 					updated_at: Date.now(),
 					summary: summary,
@@ -802,10 +824,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 			// Use the data matrix samples if no other data was provided
 			if (newDataset.samples.length == 0 && newDataset.data_matrix_samples){
-				console.log("HELLO")
 				newDataset.samples = newDataset.data_matrix_samples;
 			}
-
+			console.log("HELLO")
 			// Find the dataset 
 			Dataset.remove(query, function(err){
 				if (err) throw new Error(err);
