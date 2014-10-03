@@ -343,7 +343,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					});
 				}
 				else{
-					console.log("HELLO!")
 					// Load the lines, but skip the header (the first line)
 					lines = data.trim().split('\n');
 					lines.forEach(function(l){
@@ -407,6 +406,10 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					sampleToDataset[arr[0]] = arr[1];
 					if (!(arr[1] in datasetToSamples)) datasetToSamples[arr[1]] = [];
 					datasetToSamples[arr[1]].push( arr[0] );
+				}
+				else if(!dataset){
+					console.log("No dataset name was provided so you must include the dataset in the sample mapping file.");
+					process.exit(1);
 				}
 				sampleNames[arr[0]] = true;
 			});
@@ -599,7 +602,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				// Create the mutation
 				var mut = { sample: sample, dataset: sampleToDataset[sample], locus: locus,
 				            aan: aan, aao: aao, ty: mutTy };
-				
+
 				// Append the mutation to the list of mutations in the
 				// current gene
 				if (mutTy && mutTy != '--'){
@@ -610,9 +613,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 						if (!(transcript in snvs[gene])){
 							// Create a new null transcript, including the relevant domains
 							var transcript_info = { mutations: [], length: length * 1 };
-							snvs[gene][transcript] = transcript_info;				
+							snvs[gene][transcript] = transcript_info;
 						}
-				
+
 						snvs[gene][transcript].mutations.push( mut );
 					}
 
@@ -725,7 +728,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 						snvs: numMutations(S.genes, "snvs"),
 						inactivating: numMutations(S.genes, "inactivating"),
 					};
-					
+
 					// Find the top 5 most mutated genes
 					var mutatedGenes = S.genes.filter(function(g){
 						return mutGenes[g] ? numMutatedSamples(mutGenes[g].mutated_samples) > 0 : false;
@@ -829,7 +832,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 							// Finally, create mutated genes
 							MutGene.create(mutGenes, function(err, res){
 								if (err) throw new Error(err);
-								d.resolve();		
+								d.resolve();
 							});
 						});
 					});
@@ -1008,7 +1011,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		});
 		return d.promise;
 	}
-	
+
 	return loadCancers().then( loadSampleFile ).then( createCancerMapping ).then( splitDatasets );
 
 }

@@ -35,7 +35,7 @@ block body
                     input(type="file", id="cancers", name="cancers")
             div(class="col-sm-3")
                 label
-                    | Dataset name (e.g. cancer type).
+                    | Dataset name (e.g. cancer type)
                 input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
             div(class="col-sm-3 noselect")
                 label
@@ -45,7 +45,7 @@ block body
                 div(style="margin-top:5px")
                     span(id="db-color", style="width:33px;height:33px;padding:2px;margin-right:5px;border:1px solid #eee;border-radius:8px;float:left")
                     input(type="text", id="color", name="color", class="form-control", placeholder="#XXXXXX", style="width:100px", maxlength="7")
-            div(class="col-sm-3")
+            div(class="col-sm-3", id="groupNameContainer")
                 label
                     | Group name (optional).
                 input(type="text", id="groupName", name="groupName", class="form-control", placeholder="Enter group name (optional).")
@@ -318,13 +318,14 @@ block body
                             td 0.106731
                             td A value that corresponds to a gene/sample pair
             div(class="col-sm-2")
-                h4 Dataset Name
-                p(class="uploadSummaryDatasetName") &nbsp;
-                h4 Cancer Type
+                h4(class="single-dataset") Dataset Name
+                p(class="uploadSummaryDatasetName single-dataset") &nbsp;
+                h4(class="single-dataset") Cancer Type
+                h4(class="multi-dataset") Cancer Type File
                 p(class="uploadSummaryCancerType") &nbsp;
-                h4 Color
-                span(class="uploadSummaryDatasetColor" style="width:33px;height:33px;padding:2px;margin:5px 5px 0 0;border:1px solid #eee;border-radius:8px;display:block")
-                p(class="uploadSummaryDatasetColorHex") &nbsp;
+                h4(class="single-dataset") Color
+                span(class="uploadSummaryDatasetColor single-dataset" style="width:33px;height:33px;padding:2px;margin:5px 5px 0 0;border:1px solid #eee;border-radius:8px;display:block")
+                p(class="uploadSummaryDatasetColorHex single-dataset") &nbsp;
                 h4(class="uploadSummaryGroupNameHeader") Group Name
                 p(class="uploadSummaryGroupName") &nbsp;
                 hr
@@ -345,6 +346,8 @@ block body
         div(class="row")
             div(class="text-center")
                 button(class="btn btn-default" id="submit") Upload Data
+                br
+                br
                 div(id="status")
 
 block belowTheFold
@@ -384,10 +387,16 @@ block belowTheFold
                 $(".multi-dataset").show();
                 $(".single-dataset").hide();
                 $("input#dataset").attr("disabled", true);
+                $("input#color").attr("disabled", true);
+                $("div#groupNameContainer label").text("Group name");
+                $("div#groupNameContainer input").attr("placeholder", "Enter group name.");
             }
             else{
                 $(".single-dataset").show();
                 $(".multi-dataset").hide();
                 $("input#dataset").attr("disabled", false);
+                $("input#color").attr("disabled", false);
+                $("div#groupNameContainer label").text("Group name (optional)");
+                $("div#groupNameContainer input").attr("placeholder", "Enter group name (optional).");
             }
         });
