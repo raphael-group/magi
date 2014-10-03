@@ -133,6 +133,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 			// Iterate over the genes and datasets to construct the unified heatmap
 			genes.forEach(function(g, i){
 				datasets.forEach(function(d, j){
+					if (!(d._id in geneToDatasetToRow[g])) return;
 					geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
 						heatmap.cells.push({x: d.data_matrix_samples[k], y: g, value: n });
 					});
