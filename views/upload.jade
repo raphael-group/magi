@@ -71,7 +71,7 @@ block body
                     li <a data-selector-type="CNA" class="uploadSelectorOption" href="#">CNAs</a>
                     li <a data-selector-type="OtherAberration" class="uploadSelectorOption" href="#">Other Aberrations</a>
                     li <a data-selector-type="DataMatrix" class="uploadSelectorOption" href="#">Data Matrix</a>
-                    li <a data-selector-type="SampleType" class="uploadSelectorOption" href="#">Sample Types</a>
+                    li <a data-selector-type="SampleAnnotations" class="uploadSelectorOption" href="#">Sample Annotations</a>
             div(class="col-sm-8 uploadDataSelectArea")
                 div(class="selectorViewOption snvUploadSelector")
                     h4 Single nucleotide variants
@@ -226,24 +226,49 @@ block body
                             td Gene Name*
                             td PIK3CA
                             td Aberrated genes
-                div(class="selectorViewOption sampleTypeUploadSelector")
-                    h4 Sample Types
+                div(class="selectorViewOption sampleAnnotationsUploadSelector")
+                    h4 Sample Annotations
                     br
-                    input(type="file", id="SampleTypes", name="SampleTypes")
+                    label Sample Annotations
+                    input(type="file", id="SampleAnnotations", name="SampleAnnotations")
+                    label Annotation Color Mapping
+                    input(type="file", id="AnnotationColors", name="AnnotationColors")
                     br
                     p(class="single-dataset")
-                        | <strong>The Sample Types file is a tab-separated file (*.tsv)</strong> that
-                        | includes all samples and their corresponding types for a dataset. Each row
-                        | contains the data for a single sample.
+                        | <strong>The Sample Annotations file is a tab-separated file (*.tsv)</strong>
+                        | lists the IDs of the samples in a dataset, as well as optional annotations.
+                        | Each row contains the data for a single sample. The first column lists the
+                        | sample ID, the second column lists the dataset (required when including more
+                        | than one column), and any remaining columns list additional annotations.
+                        | The first row <em>is a header</em>, with the names of each column. The names of
+                        | the annotation columns (3+) will be used as the name of the annotation
+                        | category (e.g. <code>expression subtype</code>).
+                        br
+                        | We also support uploading an Annotation Colors file, which is a tab-separated
+                        | file where each row contains the color mapping for a different sample annotation.
+                        | The first column in the file is the category of the annotation (e.g.
+                        | <code>expression subtype</code>), the second column is the name of the annotation
+                        | (e.g. <code>Basal-like breast</code>), and the third column is a hex color.
                     p(class="multi-dataset")
-                        | <strong>The Sample Types file is a tab-separated file (*.tsv)</strong> that
-                        | is a mapping of samples to datasets. Each row in the file contains a sample
-                        | and a dataset. When uploading <b>multiple datasets</b> the sample type file
-                        | <b>is required</b>.
+                        | <strong>The Sample Annotations file is a tab-separated file (*.tsv)</strong>
+                        | lists the IDs of the samples in a dataset, as well as optional annotations.
+                        | Each row contains the data for a single sample. The first column lists the
+                        | sample ID, the second column lists the dataset (<b>required when uploading
+                        | multiple datasets</b>), and any remaining columns list additional annotations.
+                        | The first row <em>is a header</em>, with the names of each column. The names of
+                        | the annotation columns (3+) will be used as the name of the annotation
+                        | category (e.g. <code>expression subtype</code>).
+                        br
+                        | We also support uploading an Annotation Colors file, which is a tab-separated
+                        | file where each row contains the color mapping for a different sample annotation.
+                        | The first column in the file is the category of the annotation (e.g.
+                        | <code>expression subtype</code>), the second column is the name of the annotation
+                        | (e.g. <code>Basal-like breast</code>), and the third column is a hex color.
                     hr
                     h5 Format example
-                    code TCGA-A7-A0CE&#9;BRCA<br />
-                    code TCGA-43-6647&#9;LUSC
+                    code Sample ID&#9;Dataset&#9;Expression subtype
+                    code TCGA-A7-A0CE&#9;BRCA&#9;Basal-like breast<br />
+                    code TCGA-43-6647&#9;LUSC&#9;Squamous
                     hr
                     h5 Format description
                     table(class="table table-bordered table-striped")
@@ -259,9 +284,14 @@ block body
                             td Sample ID
                         tr
                             td 2
-                            td Type
+                            td Dataset
                             td BRCA
-                            td The cancer type of a sample
+                            td The dataset containing that sample
+                        tr
+                            td 3+
+                            td Annotation
+                            td Basal-like breast
+                            td Annotation for the sample (categorical or numeric)
                 div(class="selectorViewOption dataMatrixUploadSelector")
                     h4 Data Matrix
                     br
@@ -340,8 +370,11 @@ block body
                     dd(class="uploadSummaryOtherAbberation") &nbsp;
                     dt Data Matrix
                     dd(class="uploadSummaryDataMatrix") &nbsp;
-                    dt Sample Types
-                    dd(class="uploadSummarySampleTypes") &nbsp;
+                    dt Sample Annotations
+                    dd(class="uploadSummarySampleAnnotations") &nbsp;
+                    dt Annotation Color Mapping
+                    dd(class="uploadSummaryAnnotationColors") &nbsp;
+
         br
         div(class="row")
             div(class="text-center")
