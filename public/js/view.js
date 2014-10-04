@@ -52,7 +52,7 @@ function view(){
 		transcriptPositionElement = "div#annotation div#transcript-position",
 		commentElement = "div#annotation textarea#comment",
 		submitElement = "div#annotation button#submit",
-    heatmapElement = 'div#heatmap';
+	heatmapElement = 'div#heatmap';
 
 	// Select each element for easy access later
 	var m2 = d3.select(m2Element),
@@ -124,9 +124,9 @@ function view(){
 	elements.forEach(function(e){
 		style[e.name].width = $(e.el).width();
 		if (data.datasetColors){
-            Object.keys(data.datasetColors).forEach(function(name){
-              style[e.name].colorSchemes.sampleType[name] = data.datasetColors[name];
-            });
+			Object.keys(data.datasetColors).forEach(function(name){
+			  style[e.name].colorSchemes.sampleType[name] = data.datasetColors[name];
+			});
 		}
 	});
 
@@ -172,36 +172,36 @@ function view(){
 		count.text(d.score);
 
 		// Create a form to submit as an AJAX request to update the database
-        var formData = new FormData();
-        formData.append( '_id', annotationID );
-        formData.append( 'pmid', pmid );
-        formData.append( 'vote', direction );
+		var formData = new FormData();
+		formData.append( '_id', annotationID );
+		formData.append( 'pmid', pmid );
+		formData.append( 'vote', direction );
 
 
-        $.ajax({
-            // Note: can't use JSON otherwise IE8 will pop open a dialog
-            // window trying to download the JSON as a file
-            url: '/vote/mutation',
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false,
-            type: 'POST',
+		$.ajax({
+			// Note: can't use JSON otherwise IE8 will pop open a dialog
+			// window trying to download the JSON as a file
+			url: '/vote/mutation',
+			data: formData,
+			cache: false,
+			contentType: false,
+			processData: false,
+			type: 'POST',
 
-            error: function(xhr) {
-                annotationStatus('Database error: ' + xhr.status);
-            },
+			error: function(xhr) {
+				annotationStatus('Database error: ' + xhr.status);
+			},
 
-            success: function(response) {
-                if(response.error) {
-                    annotationStatus('Oops, something bad happened.', warningClasses);
-                    return;
-                }
+			success: function(response) {
+				if(response.error) {
+					annotationStatus('Oops, something bad happened.', warningClasses);
+					return;
+				}
 
-                // Log the status
-                annotationStatus(response.status, successClasses);
-            }
-        });
+				// Log the status
+				annotationStatus(response.status, successClasses);
+			}
+		});
 
 	}
 
@@ -260,13 +260,14 @@ function view(){
 	}
 
 	// Add the mutation matrix
+	console.log(data.sampleAnnotations)
 	var annotations = data.annotations;
 	var m2Chart = mutation_matrix({style: style.mutation_matrix})
 					.addCoverage()
 					.addMutationLegend()
 					.addSortingMenu()
 					.addTooltips(generateAnnotations(annotations))
-          .addSampleAnnotations(data.sampleAnnotations)
+		  .addSampleAnnotations(data.sampleAnnotations)
 					.addOnClick(function(d, i){
 						var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
 						setAnnotation(d.gene, mutClass, d.dataset, {});
@@ -321,37 +322,37 @@ function view(){
 		count.text(d.score);
 
 		// Create a form to submit as an AJAX request to update the database
-        var formData = new FormData();
-        formData.append( 'source', source );
-        formData.append( 'target', target );
-        formData.append( 'network', network );
-        formData.append( 'pmid', pmid );
-        formData.append( 'vote', direction );
+		var formData = new FormData();
+		formData.append( 'source', source );
+		formData.append( 'target', target );
+		formData.append( 'network', network );
+		formData.append( 'pmid', pmid );
+		formData.append( 'vote', direction );
 
-        $.ajax({
-            // Note: can't use JSON otherwise IE8 will pop open a dialog
-            // window trying to download the JSON as a file
-            url: '/vote/ppi',
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false,
-            type: 'POST',
+		$.ajax({
+			// Note: can't use JSON otherwise IE8 will pop open a dialog
+			// window trying to download the JSON as a file
+			url: '/vote/ppi',
+			data: formData,
+			cache: false,
+			contentType: false,
+			processData: false,
+			type: 'POST',
 
-            error: function(xhr) {
-                annotationStatus('Database error: ' + xhr.status);
-            },
+			error: function(xhr) {
+				annotationStatus('Database error: ' + xhr.status);
+			},
 
-            success: function(response) {
-                if(response.error) {
-                    annotationStatus('Oops, something bad happened.', warningClasses);
-                    return;
-                }
+			success: function(response) {
+				if(response.error) {
+					annotationStatus('Oops, something bad happened.', warningClasses);
+					return;
+				}
 
-                // Log the status
-                annotationStatus(response.status, successClasses);
-            }
-        });
+				// Log the status
+				annotationStatus(response.status, successClasses);
+			}
+		});
 
 	}
 
@@ -363,45 +364,45 @@ function view(){
 		comments[source][target][network][pmid] = comment;
 
 		// Create a form to submit as an AJAX request to update the database
-        var formData = new FormData();
-        formData.append( 'source', source );
-        formData.append( 'target', target );
-        formData.append( 'network', network );
-        formData.append( 'comment', comment );
-        formData.append( 'pmid', pmid );
+		var formData = new FormData();
+		formData.append( 'source', source );
+		formData.append( 'target', target );
+		formData.append( 'network', network );
+		formData.append( 'comment', comment );
+		formData.append( 'pmid', pmid );
 
-        $.ajax({
-            // Note: can't use JSON otherwise IE8 will pop open a dialog
-            // window trying to download the JSON as a file
-            url: '/comment/ppi',
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false,
-            type: 'POST',
+		$.ajax({
+			// Note: can't use JSON otherwise IE8 will pop open a dialog
+			// window trying to download the JSON as a file
+			url: '/comment/ppi',
+			data: formData,
+			cache: false,
+			contentType: false,
+			processData: false,
+			type: 'POST',
 
-            error: function(xhr) {
-                annotationStatus('Database error: ' + xhr.status);
-            },
+			error: function(xhr) {
+				annotationStatus('Database error: ' + xhr.status);
+			},
 
-            success: function(response) {
-                if(response.error) {
-                    annotationStatus('Oops, something bad happened.', warningClasses);
-                    return;
-                }
+			success: function(response) {
+				if(response.error) {
+					annotationStatus('Oops, something bad happened.', warningClasses);
+					return;
+				}
 
-                // Log the status
-                annotationStatus(response.status, successClasses);
-            }
-        });
+				// Log the status
+				annotationStatus(response.status, successClasses);
+			}
+		});
 
 	}
 	// Draw the subnetwork chart with tooltips onmouseover and
 	// preset annotations onclick
 	var subnetChart = subnetwork({style: style.subnetwork})
-                	.addNetworkLegend()
-                	.addGradientLegend()
-                	.addTooltips(function(d, activeNetworks){
+					.addNetworkLegend()
+					.addGradientLegend()
+					.addTooltips(function(d, activeNetworks){
 						// Sort the names to ensure source/target are always in the same order
 						// (since we have an undirected graph)
 						var sortedNames = [d.source.name, d.target.name].sort(),
@@ -456,10 +457,10 @@ function view(){
 						});
 
 						return tip + "</table>\n</div>\n";
-                	})
-                	.addOnClick(function(d, i, el){
-                		setAnnotation(d.source.name, "interact", d.target.name, {} );
-                	});
+					})
+					.addOnClick(function(d, i, el){
+						setAnnotation(d.source.name, "interact", d.target.name, {} );
+					});
 
 	subnet.datum(data.subnetwork_data);
 	subnetChart(subnet);
@@ -494,13 +495,13 @@ function view(){
 	// Set the default params for the transcript plot
 	var transcriptParams = { style: style.transcript, domainDB: data.domainDBs[0] },
 		transcriptChart = transcript_plot(transcriptParams)
-	              		.addLegend()
-	              		.addVerticalPanning()
-	              		.addTooltips(function(d, i){
-	              			return d.sample + '<br />Type: ' + d.dataset + "<br/>"
-	              				   + d.ty.replace(/_/g, ' ') + '<br />'
-	              				   + d.locus + ': ' + d.aao + '>' + d.aan;
-	              		})
+						.addLegend()
+						.addVerticalPanning()
+						.addTooltips(function(d, i){
+							return d.sample + '<br />Type: ' + d.dataset + "<br/>"
+								   + d.ty.replace(/_/g, ' ') + '<br />'
+								   + d.locus + ': ' + d.aao + '>' + d.aan;
+						})
 						.addOnClickMutations(function(d, i){
 							var fields = {
 								transcript_mutation: true,
@@ -543,19 +544,25 @@ function view(){
 		transcriptChart.filterDatasets(datasetToInclude);
 	}
 
-  ///////////////////////////////////////////////////////////////////////////
-  // Add a CNA browser selector to choose the genes
-  var heatmapStyle = {
-    width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])
-  };
-  var heatmapChart = d3.select(heatmapElement)
-                  .datum(data.heatmap)
-                  .call(heatmap({style:heatmapStyle})
-                      .addYLabels()
-                      .addXLabels()
-                      .addLegend(true)
-                  );
+	///////////////////////////////////////////////////////////////////////////
+	// Add a CNA browser selector to choose the genes
+	var heatmapStyle = {
+		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])
+	};
 
+	// Only render the heatmap at all if there is data for it
+	if (data.heatmap.cells){
+		var heatmapChart = d3.select(heatmapElement)
+				  .datum(data.heatmap)
+				  .call(heatmap({style:heatmapStyle})
+					  .addYLabels()
+					  .addXLabels()
+					  .addLegend(true)
+				  );
+	}
+	else{
+		$(heatmapElement).parent().hide();
+	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes
@@ -611,39 +618,39 @@ function view(){
 	// Update the control panel
 
   function resizeControlPanel() {
-    var viewportWidth = $(window).width();
-    if(viewportWidth < 600) {
-      $('div#control-panel').css("width", viewportWidth+"px");
-      $('div#control-panel').css("right", "0px");
-      $('div#view').css('padding-top', $('div#control-panel').css('height'));
-    } else {
-      $('div#control-panel').css("width", "200px");
-      $('div#control-panel').css("right", "0px");
-      $('div#view').css('margin-top', '0px');
-    }
+	var viewportWidth = $(window).width();
+	if(viewportWidth < 600) {
+	  $('div#control-panel').css("width", viewportWidth+"px");
+	  $('div#control-panel').css("right", "0px");
+	  $('div#view').css('padding-top', $('div#control-panel').css('height'));
+	} else {
+	  $('div#control-panel').css("width", "200px");
+	  $('div#control-panel').css("right", "0px");
+	  $('div#view').css('margin-top', '0px');
+	}
   }
 
   $(window).resize(function () {
-    resizeControlPanel();
+	resizeControlPanel();
   });
 
   $(function() {
-    resizeControlPanel();
+	resizeControlPanel();
   });
 
   $('span#hideControlPanel').click(function(e) {
-    if($('div#controls').css('display') == 'block') {
-      $('div#controls').css('display', 'none');
-      $('div#saveBox').css('display', 'none');
-      $('div#annotation').css('display', 'none');
-    } else {
-      $('div#controls').css('display', 'block');
-      $('div#saveBox').css('display', 'block');
-      $('div#annotation').css('display', 'block');
-    }
-    if($(window).width() < 600) {
-      $('div#view').css('padding-top', $('div#control-panel').css('height'));
-    }
+	if($('div#controls').css('display') == 'block') {
+	  $('div#controls').css('display', 'none');
+	  $('div#saveBox').css('display', 'none');
+	  $('div#annotation').css('display', 'none');
+	} else {
+	  $('div#controls').css('display', 'block');
+	  $('div#saveBox').css('display', 'block');
+	  $('div#annotation').css('display', 'block');
+	}
+	if($(window).width() < 600) {
+	  $('div#view').css('padding-top', $('div#control-panel').css('height'));
+	}
   });
 
 	var datasetsPanel = controls.append("div")
@@ -745,7 +752,7 @@ function view(){
 		  displayKey: 'value',
 		  source: cancerBloodhound.ttAdapter(),
 		  templates:{
-		  	suggestion: function(data){ return templ.render(data); }
+			suggestion: function(data){ return templ.render(data); }
 		  }
 	});
 
@@ -844,9 +851,9 @@ function view(){
 	annotatedGene.on("change", updateInteraction);
 
 	// Define the submit request
-    var infoClasses  = 'alert alert-info',
-    	warningClasses = 'alert alert-warning',
-    	successClasses = 'alert alert-success';
+	var infoClasses  = 'alert alert-info',
+		warningClasses = 'alert alert-warning',
+		successClasses = 'alert alert-success';
 
 	$("div#annotation form#annotation-form").on("submit", function(e){
 		// Reset the messages
@@ -877,66 +884,66 @@ function view(){
 		}
 
 		// If the entries validate, create a mini-form and then submit via Ajax
-        var formData = new FormData();
-        formData.append( 'support', pmid );
-        formData.append( 'gene', gene );
-        formData.append( 'interaction', interactionClass );
-        formData.append( 'interactor', interactorName );
-        formData.append( 'position', position );
-        formData.append( 'mutationType', mutationType );
-        formData.append( 'domainName', domainName );
-        formData.append( 'comment', comment );
+		var formData = new FormData();
+		formData.append( 'support', pmid );
+		formData.append( 'gene', gene );
+		formData.append( 'interaction', interactionClass );
+		formData.append( 'interactor', interactorName );
+		formData.append( 'position', position );
+		formData.append( 'mutationType', mutationType );
+		formData.append( 'domainName', domainName );
+		formData.append( 'comment', comment );
 
-        $.ajax({
-            // Note: can't use JSON otherwise IE8 will pop open a dialog
-            // window trying to download the JSON as a file
-            url: '/save/annotation',
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false,
-            type: 'POST',
+		$.ajax({
+			// Note: can't use JSON otherwise IE8 will pop open a dialog
+			// window trying to download the JSON as a file
+			url: '/save/annotation',
+			data: formData,
+			cache: false,
+			contentType: false,
+			processData: false,
+			type: 'POST',
 
-            error: function(xhr) {
-                annotationStatus('Database error: ' + xhr.status);
-            },
+			error: function(xhr) {
+				annotationStatus('Database error: ' + xhr.status);
+			},
 
-            success: function(response) {
-                if(response.error) {
-                    annotationStatus('Oops, something bad happened.', warningClasses);
-                    return;
-                }
+			success: function(response) {
+				if(response.error) {
+					annotationStatus('Oops, something bad happened.', warningClasses);
+					return;
+				}
 
-                // Log the status
-                annotationStatus(response.status, successClasses);
+				// Log the status
+				annotationStatus(response.status, successClasses);
 
-                // Add the data to the current annotations
-                if (interactionClass != "interact"){
-                	var cancerTy = interactorName,
-                		mClass = interactionClass;
-	                if (!annotations[gene]) annotations[gene] = {};
-	                if (!annotations[gene][mClass]) annotations[gene][mClass] = {};
-	                if (!annotations[gene][mClass][cancerTy]) annotations[gene][mClass][cancerTy] = [];
+				// Add the data to the current annotations
+				if (interactionClass != "interact"){
+					var cancerTy = interactorName,
+						mClass = interactionClass;
+					if (!annotations[gene]) annotations[gene] = {};
+					if (!annotations[gene][mClass]) annotations[gene][mClass] = {};
+					if (!annotations[gene][mClass][cancerTy]) annotations[gene][mClass][cancerTy] = [];
 					annotations[gene][mClass][cancerTy].push( {_id: response.annotation._id, pmid: pmid, vote: null, score: 0} );
 
 					m2Chart.addTooltips(generateAnnotations(annotations));
 				}
 
-                // Reset the form
+				// Reset the form
 				resetAnnotation();
-            }
-        });
+			}
+		});
 
-        // Return false because we don't actually want the form to submit
-        return false;
+		// Return false because we don't actually want the form to submit
+		return false;
 
 	});
 
-    function annotationStatus(msg, classes) {
-        $("#annotationStatus").attr('class', classes);
-        $('#annotationStatus').html(msg);
-    }
+	function annotationStatus(msg, classes) {
+		$("#annotationStatus").attr('class', classes);
+		$('#annotationStatus').html(msg);
+	}
 
-    deferred.resolve();
-    return deferred.promise()
+	deferred.resolve();
+	return deferred.promise()
 }

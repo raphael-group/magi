@@ -57,8 +57,6 @@ exports.userGaveConsent = function(req, res) {
 
   LogPermission.find({userHash:hash}, function(err, entries) {
     if (err) res.send(false);
-    console.log(hash, 'log?');
-    console.log(entries);
     if(entries.length == 0) { // if the user hasn't filled out information, disable logging
       res.send(false);
     } else { // if the user has filled out information, return the user's consent response
