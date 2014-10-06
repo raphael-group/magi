@@ -146,6 +146,18 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 }// end createHeatmap
 
 exports.createSampleAnnotationObject = function(datasets){
+	// http://stackoverflow.com/questions/9229645
+	function uniq(a) {
+    var prims = {"boolean":{}, "number":{}, "string":{}}, objs = [];
+
+    return a.filter(function(item) {
+      var type = typeof item;
+      if(type in prims)
+          return prims[type].hasOwnProperty(item) ? false : (prims[type][item] = true);
+      else
+          return objs.indexOf(item) >= 0 ? false : objs.push(item);
+    });
+	}
 	function assignColor(str){
 		function hashCode(str) {
 		  var hash = 0, i, chr, len;
@@ -173,13 +185,18 @@ exports.createSampleAnnotationObject = function(datasets){
 	datasets.forEach(function(d){
 		d.samples.forEach(function(s){
 			obj.sampleToAnnotations[s] = [];
+			var categories = [];
 			obj.categories.forEach(function(c){
 				if (!d.sample_annotations) obj.sampleToAnnotations[s].push(null);
 				else{
 					obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
 					annotationTypes[d.sample_annotations[s][c]] = null;
 				}
+				categories.push(c);
 			});
+			categories = uniq(categories);
+			console.log(categories)
+			obj.categories = categories;
 		});
 	});
 	var annotationCategories = Object.keys(annotationTypes),
