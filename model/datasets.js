@@ -147,6 +147,32 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 }// end createHeatmap
 
 exports.createSampleAnnotationObject = function(datasets){
+	// http://stackoverflow.com/questions/9229645
+	function uniq(a) {
+    var prims = {"boolean":{}, "number":{}, "string":{}}, objs = [];
+
+    return a.filter(function(item) {
+      var type = typeof item;
+      if(type in prims)
+          return prims[type].hasOwnProperty(item) ? false : (prims[type][item] = true);
+      else
+          return objs.indexOf(item) >= 0 ? false : objs.push(item);
+    });
+	}
+	function assignColor(str){
+		function hashCode(str) {
+		  var hash = 0, i, chr, len;
+		  if (str.length == 0) return hash;
+		  for (i = 0, len = str.length; i < len; i++) {
+		    chr   = str.charCodeAt(i);
+		    hash  = ((hash << 5) - hash) + chr;
+		    hash |= 0; // Convert to 32bit integer
+		  }
+		  return hash;
+		}
+	  return '#' + hashCode(str).toString(16).substr(-6);
+	}
+
 	// Initialize the object that will hold all the data required to add sample annotations
 	// to the mutation matrix
 	var obj = { categories: [], sampleToAnnotations: {}, annotationToColor: {}};
@@ -176,6 +202,7 @@ exports.createSampleAnnotationObject = function(datasets){
 		d.samples.forEach(function(s){
 			// The annotations for a given sample are stored in a list
 			obj.sampleToAnnotations[s] = [];
+			var categories = [];
 			obj.categories.forEach(function(c){
 				// If the sample doesn't have this type of annotation, we still need
 				// to record something since the annotations are stored as a list
@@ -184,7 +211,11 @@ exports.createSampleAnnotationObject = function(datasets){
 					obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
 					annotationTypes[d.sample_annotations[s][c]] = null;
 				}
+				categories.push(c);
 			});
+			categories = uniq(categories);
+			console.log(categories)
+			obj.categories = categories;
 		});
 	});
 	return obj;
