@@ -6,13 +6,15 @@
 
 var SAVEJS_CONST = {
   CNA_VIZ: 0,
-  MUT_MTX: 1,
-  SUB_NET: 2,
-  TRN_ANT: 3
+  HMP_VIZ: 1,
+  MUT_MTX: 2,
+  SUB_NET: 3,
+  TRN_ANT: 4,
 };
 
 var SAVEJS_FNAMES = {
   CNA_VIZ: 'cna.svg',
+  HMP_VIZ: 'heatmap.svg',
   MUT_MTX: 'mutation-matrix.svg',
   SUB_NET: 'subnetwork.svg',
   TRN_ANT: 'transcript-annotation.svg'
@@ -39,7 +41,8 @@ function downloadVisualizations(saveFn) {
   var vizSelected = saveCheckboxes[SAVEJS_CONST.CNA_VIZ].checked == true
       || saveCheckboxes[SAVEJS_CONST.TRN_ANT].checked == true
       || saveCheckboxes[SAVEJS_CONST.SUB_NET].checked == true
-      || saveCheckboxes[SAVEJS_CONST.MUT_MTX].checked == true;
+      || saveCheckboxes[SAVEJS_CONST.MUT_MTX].checked == true
+      || saveCheckboxes[SAVEJS_CONST.HMP_VIZ].checked == true;
 
   if (vizSelected == false) {
     checkMessage.style('display', 'block');
@@ -60,6 +63,9 @@ function downloadVisualizations(saveFn) {
   if (saveCheckboxes[SAVEJS_CONST.MUT_MTX].checked == true) {
     saveFn('mutation-matrix', SAVEJS_FNAMES.MUT_MTX);
   }
+  if (saveCheckboxes[SAVEJS_CONST.HMP_VIZ].checked == true) {
+    saveFn('heatmap', SAVEJS_FNAMES.HMP_VIZ);
+  }
 }
 
 
@@ -76,6 +82,8 @@ function grabSVG(saveFileName) {
     svg = d3.select('div#transcript-plot svg');
   } else if (saveFileName == SAVEJS_FNAMES.CNA_VIZ) {
     svg = d3.select('div#cna-browser svg#cna-browser');
+  } else if (saveFileName == SAVEJS_FNAMES.HMP_VIZ) {
+    svg = d3.select('div#heatmap svg#figure')
   } else {
     console.log('error: unexpected save filename in grabSVG()');
     return;
@@ -269,6 +277,9 @@ function printVisualization(viz) {
   if (viz == SAVEJS_CONST.TRN_ANT) {
     saveSVG('transcript-plot', SAVEJS_FNAMES.TRN_ANT).print();
   }
+  if (viz == SAVEJS_CONST.HMP_VIZ) {
+    saveSVG('heatmap', SAVEJS_FNAMES.HMP_VIZ).print();
+  }
 }
 
 $('#printCnaViz').click(function(e) {
@@ -287,4 +298,8 @@ $('#printSubNet').click(function(e) {
 $('#printTrnAnt').click(function(e) {
   e.preventDefault();
   printVisualization(SAVEJS_CONST.TRN_ANT);
+});
+$('#printHmpViz').click(function(e) {
+  e.preventDefault();
+  printVisualization(SAVEJS_CONST.HMP_VIZ);
 });

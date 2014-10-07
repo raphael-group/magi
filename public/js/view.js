@@ -114,9 +114,6 @@ function view(){
 	var genes = data.genes,
 		datasets = data.datasets;
 
-	console.log(data.heatmap);
-	console.log(data.sampleAnnotations);
-
 	if (showDuplicates == null) {
 		showDuplicates = true; // TODO fix this hack
 	}
@@ -548,9 +545,16 @@ function view(){
 
   ///////////////////////////////////////////////////////////////////////////
   // Add a CNA browser selector to choose the genes
+  var heatmapStyle = {
+    width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])
+  };
   var heatmapChart = d3.select(heatmapElement)
                   .datum(data.heatmap)
-                  .call(heatmap().addYLabels().addXLabels().addLegend());
+                  .call(heatmap({style:heatmapStyle})
+                      .addYLabels()
+                      .addXLabels()
+                      .addLegend(true)
+                  );
 
 
 	///////////////////////////////////////////////////////////////////////////
