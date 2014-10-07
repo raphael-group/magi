@@ -20,6 +20,7 @@ var DatasetSchema = new mongoose.Schema({
 	title: { type: String, required: true },
 	samples: { type: [String], required: true },
 	sample_annotations : { type : {}, required: true },
+	annotation_colors : { type : {}, required: true },
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
@@ -146,34 +147,38 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 }// end createHeatmap
 
 exports.createSampleAnnotationObject = function(datasets){
-	function assignColor(str){
-		function hashCode(str) {
-		  var hash = 0, i, chr, len;
-		  if (str.length == 0) return hash;
-		  for (i = 0, len = str.length; i < len; i++) {
-		    chr   = str.charCodeAt(i);
-		    hash  = ((hash << 5) - hash) + chr;
-		    hash |= 0; // Convert to 32bit integer
-		  }
-		  return hash;
-		}
-	  return '#' + hashCode(str).toString(16).substr(-6);
-	}
-
+	// Initialize the object that will hold all the data required to add sample annotations
+	// to the mutation matrix
 	var obj = { categories: [], sampleToAnnotations: {}, annotationToColor: {}};
+
+	// Iterate through the datasets to make a list of all categories, and define a color
+	// mapping for the annotations
 	datasets.forEach(function(d){
+		// Skip datasets without sample annotations
 		if (!d.sample_annotations) return;
+
+		// Extract the categories and define a color mapping for them
 		var categories = Object.keys(d.sample_annotations[d.samples[0]]);
 		categories.forEach(function(c){
 			if (obj.categories.indexOf(c) == -1) obj.categories.push(c);
+			if (c in d.annotation_colors){
+				Object.keys(d.annotation_colors[c]).forEach(function(s){
+					obj.annotationToColor[s] = d.annotation_colors[c][s];
+				});
+			}
 		});
 	});
 	if (obj.categories.length == 0) return {};
+
+	// Now construct the annotations, one for each sample
 	var annotationTypes = {}
 	datasets.forEach(function(d){
 		d.samples.forEach(function(s){
+			// The annotations for a given sample are stored in a list
 			obj.sampleToAnnotations[s] = [];
 			obj.categories.forEach(function(c){
+				// If the sample doesn't have this type of annotation, we still need
+				// to record something since the annotations are stored as a list
 				if (!d.sample_annotations) obj.sampleToAnnotations[s].push(null);
 				else{
 					obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
@@ -182,68 +187,7 @@ exports.createSampleAnnotationObject = function(datasets){
 			});
 		});
 	});
-	var annotationCategories = Object.keys(annotationTypes),
-			annotationToColor = {};
-	annotationCategories.forEach(function(c) {
-		annotationToColor[c] = assignColor(c);
-	});
-	obj.annotationToColor = annotationToColor;
 	return obj;
-}
-
-exports.addSampleAnnotations = function(dataset, group, name, annotations_file, user_id, callback){
-	// Load required modules
-	var fs      = require( 'fs' ),
-		Dataset = Database.magi.model( 'Dataset' );
-
-	// Make sure that either/both an SNV and CNA file were provided
-	if (!(dataset && name && annotations_file)){
-		console.log("addSampleAnnotationsFromFile: dataset, name, and annotations_file are required")
-		process.exit(1);
-	}
-
-	// Set up promise, and data structures
-	var sampleToAnnotation = {};
-
-	fs.readFile(annotations_file, 'utf-8', function (err, data) {
-		// Exit if there's an error
-		if (err) throw new Error(err);
-
-		// Load the lines, but skip the header (the first line)
-		lines = data.trim().split('\n');
-		lines.forEach(function(s){
-			if (s.lastIndexOf('#', 0) === 0){ return; }
-			var arr = s.split("\t");
-			if (arr.length == 1) arr.push(null);
-			sampleToAnnotation[arr[0]] = arr[1];
-		});
-
-		// Retrieve the dataset in question (if it exists), and add the new sample annotations
-		var query = { title: dataset, group: group };
-		if (user_id) query.user_id = user_id;
-		else query.is_standard = true;
-
-		// Find the dataset 
-		Dataset.findOne(query, function(err, dataset){
-			if (err){
-				console.log("[error] addSampleAnnotationsFromFile: dataset not found.")
-				throw new Error(err);
-			}
-			else{
-				if (!dataset.sample_annotations) dataset.sample_annotations = {};
-				dataset.samples.forEach(function(s){
-					if (!dataset.sample_annotations[s])
-						dataset.sample_annotations[s] = {};
-					if (sampleToAnnotation[s])
-						dataset.sample_annotations[s][name] = sampleToAnnotation[s];
-					else
-						dataset.sample_annotations[s][name] = null;
-				});
-			}
-			dataset.markModified("sample_annotations");
-			dataset.save(callback);
-		});
-	});
 }
 
 // List of inactivating mutation types
@@ -252,7 +196,7 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 
 // Loads a SNVs into the database
 exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
-									  aberration_file, data_matrix_file,
+									  aberration_file, data_matrix_file, annotation_color_file,
 									  cancer_input, is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
@@ -343,7 +287,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					});
 				}
 				else{
-					console.log("HELLO!")
 					// Load the lines, but skip the header (the first line)
 					lines = data.trim().split('\n');
 					lines.forEach(function(l){
@@ -370,9 +313,16 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 	var datasets = [],
 		givenSampleList = true,
 		sampleToDataset = {},
-		datasetToSamples = {};
+		datasetToSamples = {},
+		sampleToAnnotations = {},
+		annotationToColor = {};
 
-	// Read in the sample file asynchronously
+	// Read in the sample file asynchronously.
+	// The sample file comes in the following form
+	// Sample\tDataset\tAnnotation1\tAnnotation2...
+	// It can come either with any number of columns,
+	// but column 1 is always required and column 2 is required
+	// if there's a column 3, etc.
 	function loadSampleFile(){
 		// Set up promise
 		var d = Q.defer();
@@ -397,16 +347,36 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			// Exit if there's an error
 			if (err) throw new Error(err);
 
-			// Load the lines, but skip the header (the first line)
-			lines = data.trim().split('\n');
-			var sampleNames = {};
+			// Load the lines, ignoring any that start with '#'
+			var lines = data.trim().split('\n').filter(function(l){
+				return !(l.lastIndexOf('#', 0) === 0);
+			});
 
-			lines.forEach(function(s){
+			// If there are more than 2 columns, then annotation categories
+			// make column headers 3+
+			var header = lines[0].split('\t');
+			if (header.length > 2) var categories = header.slice(2, header.length);
+			else var categories = [];
+
+			// Parse each line
+			var sampleNames = {};
+			lines.slice(1, lines.length).forEach(function(s){
 				var arr = s.split("\t");
 				if (arr.length > 1){
-					sampleToDataset[arr[0]] = arr[1];
+					// Sample is always stored in column 1, dataset is always stored in column 2
+					sampleToDataset[arr[0]] = arr[1]; 
 					if (!(arr[1] in datasetToSamples)) datasetToSamples[arr[1]] = [];
 					datasetToSamples[arr[1]].push( arr[0] );
+
+					// Then add any annotations there may be
+					if (categories.length > 0){
+						sampleToAnnotations[arr[0]] = {};
+						categories.forEach(function(c, i){ sampleToAnnotations[arr[0]][c] = arr[2+i]; });
+					}
+				}
+				else if(!dataset){
+					console.log("No dataset name was provided so you must include the dataset in the sample mapping file.");
+					process.exit(1);
 				}
 				sampleNames[arr[0]] = true;
 			});
@@ -439,6 +409,40 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 		});
 
+		return d.promise;
+	}
+
+	function loadAnnotationColorFile(){
+		var d = Q.defer();
+		// Return if no sample file was provided
+		if (!annotation_color_file){
+			d.resolve();
+			return d.promise;
+		}
+
+		fs.readFile(annotation_color_file, 'utf-8', function (err, data) {
+			// Exit if there's an error
+			if (err) throw new Error(err);
+
+			// Load the lines, ignoring any that start with '#'
+			var lines = data.trim().split('\n').filter(function(l){
+				return !(l.lastIndexOf('#', 0) === 0);
+			});
+
+			lines.forEach(function(l){
+				var arr = l.split("\t");
+				if (arr.length != 3){
+					console.log("Each line in the annotationToColor file must be three tab-separated columns.")
+					process.exit(1);
+				}
+				var category = arr[0],
+					annotation = arr[1],
+					color = arr[2];
+				if (!(category in annotationToColor)) annotationToColor[category] = {};
+				annotationToColor[category][annotation] = color;
+			});
+			d.resolve();
+		});
 		return d.promise;
 	}
 
@@ -543,7 +547,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			var Gene = Database.magi.model( 'Gene' );
 			Gene.find({name: {$in: Object.keys(cnas)}}, function (err, genes){
 				if (err) throw new Error(err);
-	
+
 				Q.allSettled( genes.map(function(g){
 					var d2 = Q.defer();
 
@@ -583,7 +587,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 
 		// Read in the SNVs file asynchronously
-		function loadSNVs(){	
+		function loadSNVs(){
 			snvLines.forEach(function(l){
 				// Extract the fields
 				var fields = l.trim().split('\t'),
@@ -599,7 +603,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				// Create the mutation
 				var mut = { sample: sample, dataset: sampleToDataset[sample], locus: locus,
 				            aan: aan, aao: aao, ty: mutTy };
-				
+
 				// Append the mutation to the list of mutations in the
 				// current gene
 				if (mutTy && mutTy != '--'){
@@ -610,9 +614,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 						if (!(transcript in snvs[gene])){
 							// Create a new null transcript, including the relevant domains
 							var transcript_info = { mutations: [], length: length * 1 };
-							snvs[gene][transcript] = transcript_info;				
+							snvs[gene][transcript] = transcript_info;
 						}
-				
+
 						snvs[gene][transcript].mutations.push( mut );
 					}
 
@@ -725,7 +729,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 						snvs: numMutations(S.genes, "snvs"),
 						inactivating: numMutations(S.genes, "inactivating"),
 					};
-					
+
 					// Find the top 5 most mutated genes
 					var mutatedGenes = S.genes.filter(function(g){
 						return mutGenes[g] ? numMutatedSamples(mutGenes[g].mutated_samples) > 0 : false;
@@ -783,7 +787,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				newDataset  = {
 					title: datasetName,
 					samples: samples, // samples from input sample list
-					sample_annotations: {}, // empty by default
+					sample_annotations: sampleToAnnotations,
+					annotation_colors: annotationToColor,
 					group: group_name,
 					updated_at: Date.now(),
 					summary: summary,
@@ -799,11 +804,10 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 			// Use the data matrix samples if no other data was provided
 			if (newDataset.samples.length == 0 && newDataset.data_matrix_samples){
-				console.log("HELLO")
 				newDataset.samples = newDataset.data_matrix_samples;
 			}
 
-			// Find the dataset 
+			// Find the dataset
 			Dataset.remove(query, function(err){
 				if (err) throw new Error(err);
 
@@ -829,7 +833,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 							// Finally, create mutated genes
 							MutGene.create(mutGenes, function(err, res){
 								if (err) throw new Error(err);
-								d.resolve();		
+								d.resolve();
 							});
 						});
 					});
@@ -1008,7 +1012,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 		});
 		return d.promise;
 	}
-	
-	return loadCancers().then( loadSampleFile ).then( createCancerMapping ).then( splitDatasets );
+
+	return loadCancers().then( loadSampleFile ).then( loadAnnotationColorFile).then( createCancerMapping ).then( splitDatasets );
 
 }

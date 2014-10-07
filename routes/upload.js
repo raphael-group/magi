@@ -37,7 +37,7 @@ exports.uploadDataset = function uploadDataset(req, res){
     		cancer = fields.cancer,
     		color = fields.color;
 
-    	if (files.cancerMapping) cancer_file = files.cancerMapping.path;
+    	if (files.CancerMapping) cancer_file = files.CancerMapping.path;
     	else cancer_file = null;
 
     	var cancer_input = cancer_file ? cancer_file : cancer;
@@ -51,23 +51,28 @@ exports.uploadDataset = function uploadDataset(req, res){
     	if (files.aberrations) aberration_file = files.aberrations.path;
     	else aberration_file = null;
 
-    	if (files.SampleTypes) samples_file = files.SampleTypes.path;
+    	if (files.SampleAnnotations) samples_file = files.SampleAnnotations.path;
     	else samples_file = null;
+
+    	if (files.AnnotationColors) annotation_colors_file = files.AnnotationColors.path;
+    	else annotation_colors_file = null;
 
     	if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
     	else data_matrix_file = null;
 
     	// Pass the files to the parsers
 		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
-								   data_matrix_file, cancer_input, false, color, req.user._id)
+								   data_matrix_file, annotation_colors_file, cancer_input,
+								   false, color, req.user._id)
 			.then(function(){
 		    	// Once the parsers have finished, destroy the tmp files
 				if (snv_file) fs.unlinkSync( snv_file );
 				if (cna_file) fs.unlinkSync( cna_file );
 				if (samples_file) fs.unlinkSync( samples_file );
+				if (annotation_colors_file) fs.unlinkSync( annotation_colors_file );
 				if (aberration_file) fs.unlinkSync( aberration_file );
-				if (cancer_file) fs.unlinkSync(cancer_file);
-				if (data_matrix_file) fs.unlinkSync(data_matrix_file);
+				if (cancer_file) fs.unlinkSync( cancer_file );
+				if (data_matrix_file) fs.unlinkSync( data_matrix_file );
 
 				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to view your dataset." });
 			})
