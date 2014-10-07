@@ -547,7 +547,8 @@ function view(){
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes
 	var heatmapStyle = {
-		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])
+		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0]),
+		margins: {left: 55, right: 0, top: 0, bottom: 0}
 	};
 
 	// Only render the heatmap at all if there is data for it

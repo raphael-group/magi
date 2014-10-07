@@ -173,6 +173,15 @@ block body
             a(id="printMutMtx", title="Print mutation matrix.")
                 span(class="glyphicon glyphicon-print")
         div(id="mutation-matrix")
+        //- Heatmap view
+        div
+          h3 Heatmap
+              small(style="font-size:12px")
+                | &nbsp;&nbsp;
+                a(id="printHmpViz", title="Print heatmap.")
+                    span(class="glyphicon glyphicon-print")
+          div(id="heatmap")
+
 
       hr(style="margin:0px;")
 
@@ -196,17 +205,6 @@ block body
           div(id="transcript-plot")
 
       hr(style="clear:both;margin:0px;")
-
-      //- Heatmap view
-      div
-        h3 Heatmap
-            small(style="font-size:12px")
-              | &nbsp;&nbsp;
-              a(id="printHmpViz", title="Print heatmap.")
-                  span(class="glyphicon glyphicon-print")
-        div(id="heatmap")
-
-      hr(style="margin:0px;")
 
       //- CNA view
       div
