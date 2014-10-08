@@ -128,6 +128,9 @@ function getSizes() {
   vizLocs.trnant = $('div#transcript-plot').offset();
   vizSizes.cnaviz = {width:$('div#cna-browser').width(), height:$('div#cna-browser').height()};
   vizLocs.cnaviz = $('div#cna-browser').offset();
+  vizSizes.heatmp = {width:$('div#heatmap').width(), height:$('div#heatmap').height()};
+  vizLocs.heatmp = $('div#heatmap').offset();
+
   vizSizes.controls = {width: $('#control-panel').width(), height:$('#control-panel').height()};
   vizLocs.controls = $('#control-panel').offset();
 
