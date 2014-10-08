@@ -34,10 +34,12 @@ exports.logConsent = function(req, res) {
   }
   var LogPermission = Database.logDB.model('LogPermission'),
       enableState = req['body'].enable == 'true' ? true : false,
-      userId = req.user._id.toString(),
+      user = req.user || {},
+      userId = user._id || 'undefined',
+      userIdStr = userId.toString(),
       hasher = crypto.createHash('sha1');
 
-  hasher.update(userId);
+  hasher.update(userIdStr);
   var hash = hasher.digest('hex');
 
   // Store the user's logging consent response
@@ -58,16 +60,16 @@ exports.logConsent = function(req, res) {
 // Return false if logging consent is not given, true if is given
 exports.userGaveConsent = function(req, res) {
   var LogPermission = Database.logDB.model('LogPermission'),
-      userId = req.user._id.toString(),
+      user = req.user || {},
+      userId = user._id || 'undefined',
+      userIdStr = userId.toString(),
       hasher = crypto.createHash('sha1');
 
-  hasher.update(userId);
+  hasher.update(userIdStr);
   var hash = hasher.digest('hex');
 
   LogPermission.find({userHash:hash}, function(err, entries) {
     if (err) res.send(false);
-    console.log(hash, 'log?');
-    console.log(entries);
     if(entries.length == 0) { // if the user hasn't filled out information, disable logging
       res.send(false);
     } else { // if the user has filled out information, return the user's consent response

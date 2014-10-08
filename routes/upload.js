@@ -1,12 +1,25 @@
 // Load required modules
-var Dataset  = require( "../model/datasets" ),
+var mongoose = require( 'mongoose' ),
+	Dataset  = require( "../model/datasets" ),
+	Database = require('../model/db'),
 	formidable = require('formidable'),
 	fs = require('fs'),
+	Cancers  = require( "../model/cancers" ),
 	path = require('path');
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
-	res.render('upload', {user: req.user});
+	console.log('upload')
+	var Cancer = Database.magi.model( 'Cancer' );
+	Cancer.find({}, function(err, cancers){
+		if (err) throw new Error(err);
+		else{
+			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
+			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_standard; }),
+				user_cancers = cancers.filter(function(d){ return !d.is_standard; });
+			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
+		}
+	});
 }
 
 // Parse the user's dataset upload
@@ -21,7 +34,13 @@ exports.uploadDataset = function uploadDataset(req, res){
     	// Parse the form variables into shorter handles
     	var dataset = fields.dataset,
     		group_name = fields.groupName,
+    		cancer = fields.cancer,
     		color = fields.color;
+
+    	if (files.CancerMapping) cancer_file = files.CancerMapping.path;
+    	else cancer_file = null;
+
+    	var cancer_input = cancer_file ? cancer_file : cancer;
 
     	if (files.SNVs) snv_file = files.SNVs.path;
     	else snv_file = null;
@@ -32,16 +51,28 @@ exports.uploadDataset = function uploadDataset(req, res){
     	if (files.aberrations) aberration_file = files.aberrations.path;
     	else aberration_file = null;
 
-    	if (files.testedSamples) samples_file = files.testedSamples.path;
+    	if (files.SampleAnnotations) samples_file = files.SampleAnnotations.path;
     	else samples_file = null;
 
+    	if (files.AnnotationColors) annotation_colors_file = files.AnnotationColors.path;
+    	else annotation_colors_file = null;
+
+    	if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
+    	else data_matrix_file = null;
+
     	// Pass the files to the parsers
-		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file, false, color, req.user._id)
+		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
+								   data_matrix_file, annotation_colors_file, cancer_input,
+								   false, color, req.user._id)
 			.then(function(){
 		    	// Once the parsers have finished, destroy the tmp files
 				if (snv_file) fs.unlinkSync( snv_file );
 				if (cna_file) fs.unlinkSync( cna_file );
 				if (samples_file) fs.unlinkSync( samples_file );
+				if (annotation_colors_file) fs.unlinkSync( annotation_colors_file );
+				if (aberration_file) fs.unlinkSync( aberration_file );
+				if (cancer_file) fs.unlinkSync( cancer_file );
+				if (data_matrix_file) fs.unlinkSync( data_matrix_file );
 
 				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to view your dataset." });
 			})
@@ -71,4 +102,21 @@ exports.deleteDataset = function deleteDataset(req, res){
 	})
 
 
+}
+
+// Parse the user's dataset upload
+exports.uploadCancer = function uploadCancer(req, res){
+	console.log('upload/cancer')
+	var Cancer = Database.magi.model( 'Cancer' );
+
+	// Load the posted form
+	var name  = req.body.name,
+		abbr  = req.body.abbr,
+		color = req.body.color;
+
+	// Create the cancer
+	Cancer.create({name: name, abbr: abbr, color: color}, function(err, cancer){
+		if (err) throw new Error(err);
+		res.redirect("/cancers");
+	});
 }

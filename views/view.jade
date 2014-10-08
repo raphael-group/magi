@@ -24,6 +24,10 @@ block body
                   | CNA view
               li
                 label(style="font-weight:400")
+                  input(type="checkbox", id="heatmap", style="margin-right:5px;")
+                  | Heatmap view
+              li
+                label(style="font-weight:400")
                   input(type="checkbox", id="mutmatrix", style="margin-right:5px;")
                   | Mutation matrix view
               li
@@ -196,6 +200,17 @@ block body
 
       hr(style="clear:both;margin:0px;")
 
+      //- Heatmap view
+      div
+        h3 Heatmap
+            small(style="font-size:12px")
+              | &nbsp;&nbsp;
+              a(id="printHmpViz", title="Print heatmap.")
+                  span(class="glyphicon glyphicon-print")
+        div(id="heatmap")
+
+      hr(style="margin:0px;")
+
       //- CNA view
       div
         h3
@@ -247,6 +262,7 @@ block belowTheFold
       script(src='/components/gd3/dist/js/transcript-plot.js').
       script(src='/components/gd3/dist/js/mutation-matrix.js').
       script(src='/components/gd3/dist/js/subnetwork.js').
+      script(src='/components/gd3/dist/js/heatmap.js').
       script(src='components/shepherd.js/shepherd.min.js').
       script(src='/js/save.js').
       script(src='/js/view.js').

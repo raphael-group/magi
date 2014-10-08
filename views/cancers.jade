@@ -1,0 +1,68 @@
+extends layout
+block body
+	br
+	div(class="container")
+		h2 List of cancer types
+		div(class="col-sm-6")
+			p
+				| MAGI includes 44 cancer types and abbreviations from TCGA and ICGC.
+				| MAGI requires each dataset to be assigned to a particular cancer type,
+				| so if you don't see the cancer type for your dataset here, you can
+				| <em>add your own</em> using the form on the right.
+			ul
+				li
+					a(href="#tcga-icgc") TCGA/ICGC cancer types
+				li
+					a(href="#user") User-defined cancer types
+		div(class="col-sm-6", style="border:1px dotted #eee;padding:5px")
+			h4 Add a new cancer type
+			form(action="/upload/cancer", method="post", id="add-cancer-type")
+				div(class="col-sm-12")
+					label Name (case-sensitive).
+					input(type="text", id="name", name="name", class="form-control", placeholder="Enter cancer name.")
+				br
+				br
+				div(class="col-sm-6")
+					label Abbreviation.
+					input(type="text", id="abbr", name="abbr", maxlength=6, class="form-control", placeholder="Enter abbreviation (3-6 characters).")
+				div(class="col-sm-6")
+					label <strong>Color</strong> (hex;&nbsp;
+						a(onclick="randomColor(); return false;" id="randomColor") initialize randomly
+						| )
+					div(style="margin-top:5px")
+						span(id="db-color", style="width:33px;height:33px;padding:2px;margin-right:5px;border:1px solid #eee;border-radius:8px;float:left")
+						input(type="text", id="color", name="color", class="form-control", placeholder="#XXXXXX", style="width:100px", maxlength="7")
+			div(class="col-sm-12")
+				button(class="btn btn-default" id="submit") Submit
+				div(id="status") #{upload_error}
+		hr(style="clear:both;margin:10px")
+		a(name="tcga-icgc")
+		h3 TCGA/ICGC cancer types
+		table(class="table table-bordered table-striped", id="cancer-abbreviations")
+			tr
+				th Color
+				th Abbreviation
+				th Cancer
+			- for (var i in tcga_icgc_cancers)
+				- var d = tcga_icgc_cancers[i];
+				tr
+					td(style="background:#{d.color};width:30px;")
+					td #{d.abbr}
+					td #{d.cancer}
+		hr
+		a(name="user")
+		h3 User-defined cancer types
+		table(class="table table-bordered table-striped", id="cancer-abbreviations")
+			tr
+				th Color
+				th Abbreviation
+				th Cancer
+			- for (var i in user_cancers)
+				- var d = user_cancers[i];
+				tr
+					td(style="background:#{d.color};width:30px;")
+					td #{d.abbr}
+					td #{d.cancer}
+block belowTheFold
+	script(src='components/jquery/dist/jquery.min.js').
+	script(src='js/cancer-upload.js').

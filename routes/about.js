@@ -29,8 +29,8 @@ exports.acknowledgements  = function privacy(req, res){
 }
 
 // Route for the abbreviations page
-exports.abbreviations  = function privacy(req, res){
-	console.log('/abbreviations')
+exports.cancers  = function privacy(req, res){
+	console.log('/cancers')
 
 	// Load the abbreviations from the database
 	var	mongoose = require( 'mongoose' ),
@@ -40,6 +40,11 @@ exports.abbreviations  = function privacy(req, res){
 
 	Cancer.find({}, function(err, cancers){
 		if (err) throw new Error(err);
-		res.render('abbreviations', {user: req.user, cancers: cancers });
+		else{
+			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
+			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_standard; }),
+				user_cancers = cancers.filter(function(d){ return !d.is_standard; });
+			res.render('cancers', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
+		}
 	});
 }
