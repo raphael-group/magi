@@ -187,7 +187,8 @@ exports.createSampleAnnotationObject = function(datasets){
 		var categories = Object.keys(d.sample_annotations[d.samples[0]]);
 		categories.forEach(function(c){
 			if (obj.categories.indexOf(c) == -1) obj.categories.push(c);
-			if (c in d.annotation_colors){
+
+			if (d.annotation_colors && c in d.annotation_colors){
 				Object.keys(d.annotation_colors[c]).forEach(function(s){
 					obj.annotationToColor[s] = d.annotation_colors[c][s];
 				});
@@ -214,7 +215,7 @@ exports.createSampleAnnotationObject = function(datasets){
 				categories.push(c);
 			});
 			categories = uniq(categories);
-			console.log(categories)
+
 			obj.categories = categories;
 		});
 	});

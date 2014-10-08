@@ -12,6 +12,17 @@ var loggingEnabled = false,
       vizLocations: []
     };
 
+$('#magi-loggingReadMore').click(function(e) {
+  e.preventDefault();
+  var isVisible = 'visible' == $('#magi-loggingReadMoreDiv').css('visibility'),
+      visibleState = isVisible ? 'hidden' : 'visible',
+      displayState = isVisible ? 'none' : 'block';
+
+  $('#magi-loggingReadMoreDiv').css('visibility', visibleState);
+  $('#magi-loggingReadMoreDiv').css('display', displayState);
+
+});
+
 $('#magiConsentViewToggle').change(function() {
   console.log('toggle');
 })
@@ -65,16 +76,13 @@ $('#downloadLinkPNG').click(function(e) {
   addToLog(e, 'sPNG');
 });
 $('#annotation-form #inputs #submit').click(function(e) {
-  console.log('submit');
   addToLog(e, 'a');
 });
 
 $('.downvote').click(function(e) {
-  console.log('downvote');
   addToLog(e, 'd');
 });
 $('.upvote').click(function(e) {
-  console.log($(this).parent());
   addToLog(e, 'u');
 });
 
@@ -93,12 +101,10 @@ $().ready(function () {
       if(loggingEnabled) startLog();
     });
 
-  console.log(getSizes());
 });
 
 
 function resizeEvent() {
-  console.log('r');
   var s = getSizes();
   MAGI_resizes.documentSize.push(s.documentSize);
   MAGI_resizes.windowSize.push(s.windowSize);

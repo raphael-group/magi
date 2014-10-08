@@ -269,6 +269,9 @@ p#consentMoreInfo{cursor:pointer;font-style: italic; margin: 0 0 0 18px;}
 div#consentMoreInfoDiv{display:none; margin-left: 18px;}
 div#consentMoreInfoDiv hr{border-color: rgb(156, 204, 247); margin: 10px 0;}
 
+div#magi-loggingReadMoreDiv{display:none; visibility:hidden;}
+div#magi-loggingReadMoreDiv blockquote{font-size: 14px;}
+
 /* Acknowledgements page */
 div#acknowledgements img{ margin-right:25px;}
 div#acknowledgements img.color{ display:none;}
