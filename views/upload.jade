@@ -244,6 +244,7 @@ block body
                         | the annotation columns (3+) will be used as the name of the annotation
                         | category (e.g. <code>expression subtype</code>).
                         br
+                        br
                         | We also support uploading an Annotation Colors file, which is a tab-separated
                         | file where each row contains the color mapping for a different sample annotation.
                         | The first column in the file is the category of the annotation (e.g.
@@ -258,6 +259,7 @@ block body
                         | The first row <em>is a header</em>, with the names of each column. The names of
                         | the annotation columns (3+) will be used as the name of the annotation
                         | category (e.g. <code>expression subtype</code>).
+                        br
                         br
                         | We also support uploading an Annotation Colors file, which is a tab-separated
                         | file where each row contains the color mapping for a different sample annotation.
@@ -398,6 +400,8 @@ block belowTheFold
         function setColor(color){
             $('#db-color').css('background', color)
             $("input#color").val(color);
+            $('span.uploadSummaryDatasetColor').css('background', color);
+            $('p.uploadSummaryDatasetColorHex').text(color);
         }
         //- Give the user a random color
         function randomColor(){
