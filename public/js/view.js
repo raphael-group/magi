@@ -260,7 +260,6 @@ function view(){
 	}
 
 	// Add the mutation matrix
-	console.log(data.sampleAnnotations)
 	var annotations = data.annotations;
 	var m2Chart = mutation_matrix({style: style.mutation_matrix})
 					.addCoverage()
