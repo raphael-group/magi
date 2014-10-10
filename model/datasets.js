@@ -24,7 +24,8 @@ var DatasetSchema = new mongoose.Schema({
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
-	data_matrix_samples: { type : Array, required: false },
+	data_matrix_name: {type: String, required: true, default: "" },
+	data_matrix_samples: { type : Array, required: true, default: "" },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
@@ -110,6 +111,12 @@ exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
 }// end exports.mutGenesList
 
 exports.createHeatmap = function createHeatmap(genes, datasets, samples, callback){
+	// Filter datasets that aren't describing the same data
+	var data_matrix_name = datasets[0].data_matrix_name;
+	datasets = datasets.filter(function(d){
+		return d.data_matrix_name.toLowerCase() == data_matrix_name.toLowerCase();
+	});
+
 	// Construct the DataMatrixRow query
 	var DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
 		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
@@ -124,7 +131,8 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			// - x = row names
 			// - ys = column names
 			// - cell = number
-			var heatmap = {xs: [], ys: genes, cells: []},
+			// - name = descriptor of data
+			var heatmap = {xs: [], ys: genes, cells: [], name: data_matrix_name },
 				geneToDatasetToRow = {};
 
 			// Create a mapping of genes -> dataset_ids -> data matrix rows
@@ -215,8 +223,9 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 
 // Loads a SNVs into the database
 exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
-									  aberration_file, data_matrix_file, annotation_color_file,
-									  cancer_input, is_standard, color, user_id){
+									  aberration_file, data_matrix_file, data_matrix_name,
+									  annotation_color_file, cancer_input,
+									  is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = Database.magi.model( 'Dataset' ),
@@ -823,7 +832,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					user_id: user_id,
 					color: datasetToColor[datasetName],
 					cancer_id: datasetToCancer[datasetName],
-					data_matrix_samples: dataMatrixColHeaders
+					data_matrix_samples: dataMatrixColHeaders,
+					data_matrix_name: data_matrix_name || ""
 				};
 
 			// Include the user_id if it was provided

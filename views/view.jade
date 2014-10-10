@@ -24,8 +24,8 @@ block body
                   | CNA view
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="heatmap", style="margin-right:5px;")
-                  | Heatmap view
+                  input(type="checkbox", id="datamatrix", style="margin-right:5px;")
+                  | Data matrix view
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="mutmatrix", style="margin-right:5px;")
@@ -173,14 +173,14 @@ block body
             a(id="printMutMtx", title="Print mutation matrix.")
                 span(class="glyphicon glyphicon-print")
         div(id="mutation-matrix")
-        //- Heatmap view
+        //- Data matrix view
         div
-          h3 Heatmap
+          h3(id="data-mtx-title") Data matrix
               small(style="font-size:12px")
                 | &nbsp;&nbsp;
-                a(id="printHmpViz", title="Print heatmap.")
+                a(id="printDmtxViz", title="Print data matrix.")
                     span(class="glyphicon glyphicon-print")
-          div(id="heatmap")
+          div(id="data-matrix")
 
 
       hr(style="margin:0px;")
