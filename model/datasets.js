@@ -117,6 +117,14 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 		return d.data_matrix_name.toLowerCase() == data_matrix_name.toLowerCase();
 	});
 
+	// Construct the list of samples. If none were provided, use all
+	if (samples.length == 0){
+		var samples = [];
+		datasets.forEach(function(d){
+			samples = samples.concat(d.data_matrix_samples.map(function(d){ return {name: d}; }));
+		})
+	}
+
 	// Construct the DataMatrixRow query
 	var DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
 		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
@@ -142,8 +150,10 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			// Iterate over the genes and datasets to construct the unified heatmap
 			var sampleToMut = {};
 			samples.forEach(function(d){ sampleToMut[d.name] = true; });
+
 			datasets.forEach(function(d, j){
 				var mutSamples = d.data_matrix_samples.filter(function(s){ return sampleToMut[s]; });
+				console.log(mutSamples.length)
 				genes.forEach(function(g, i){
 					if (!(d._id in geneToDatasetToRow[g])) return;
 					geneToDatasetToRow[g][d._id].row.forEach(function(n, k){

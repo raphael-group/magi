@@ -262,21 +262,24 @@ function view(){
 
 	// Add the mutation matrix
 	var annotations = data.annotations;
-	var m2Chart = mutation_matrix({style: style.mutation_matrix})
-					.addCoverage()
-					.addMutationLegend()
-					.addSortingMenu()
-					.addTooltips(generateAnnotations(annotations))
-		  .addSampleAnnotations(data.sampleAnnotations)
-					.addOnClick(function(d, i){
-						var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
-						setAnnotation(d.gene, mutClass, d.dataset, {});
-					});
-	if (showDuplicates) m2Chart.showDuplicates();
+	if (data.mutation_matrix.samples.length > 0){
+		var m2Chart = mutation_matrix({style: style.mutation_matrix})
+						.addCoverage()
+						.addMutationLegend()
+						.addSortingMenu()
+						.addTooltips(generateAnnotations(annotations))
+			  .addSampleAnnotations(data.sampleAnnotations)
+						.addOnClick(function(d, i){
+							var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
+							setAnnotation(d.gene, mutClass, d.dataset, {});
+						});
+		if (showDuplicates) m2Chart.showDuplicates();
 
-	m2.datum(data.mutation_matrix);
-	m2Chart(m2);
-
+		m2.datum(data.mutation_matrix);
+		m2Chart(m2);
+	} else {
+		m2.append("b").text("No aberrations to display.")
+	}
 	///////////////////////////////////////////////////////////////////////////
 	// Add the subnetwork plot
 
@@ -559,7 +562,8 @@ function view(){
 
 		// Add the cancer types as a heatmap annotation
 		var heatmapAnnotations = data.sampleAnnotations;
-		if (heatmapAnnotations){
+		console.log(data.sampleAnnotations)
+		if (heatmapAnnotations && data.mutation_matrix.samples.length > 0){
 			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
 			heatmapAnnotations.annotationToColor["Cancer type"] = {};
 			Object.keys(data.datasetColors).forEach(function(d){
