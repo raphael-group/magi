@@ -153,7 +153,6 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 
 			datasets.forEach(function(d, j){
 				var mutSamples = d.data_matrix_samples.filter(function(s){ return sampleToMut[s]; });
-				console.log(mutSamples.length)
 				genes.forEach(function(g, i){
 					if (!(d._id in geneToDatasetToRow[g])) return;
 					geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
