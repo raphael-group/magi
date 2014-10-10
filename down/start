@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Shows this directory at port 8080
+python -m SimpleHTTPServer 8080
