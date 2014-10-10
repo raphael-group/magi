@@ -552,12 +552,29 @@ function view(){
 
 	// Only render the heatmap at all if there is data for it
 	if (data.heatmap.cells){
+		// Add the cancer types as a heatmap annotation
+		var heatmapAnnotations = data.sampleAnnotations;
+		if (heatmapAnnotations){
+			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
+			heatmapAnnotations.annotationToColor["Cancer type"] = {};
+			Object.keys(data.datasetColors).forEach(function(d){
+				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
+			});
+			data.mutation_matrix.samples.forEach(function(s){
+				if (s.name in heatmapAnnotations.sampleToAnnotations){
+					heatmapAnnotations.sampleToAnnotations[s.name].splice(0, 0, data.mutation_matrix.sampleToTypes[s._id]);
+				}
+			});
+		}
+		console.log(heatmapAnnotations)
+		// Draw the heatmap
 		var heatmapChart = d3.select(heatmapElement)
 				  .datum(data.heatmap)
 				  .call(heatmap({style:heatmapStyle})
 					  .addYLabels()
 					  .addXLabels()
 					  .addLegend(true)
+					  .addSampleAnnotations(heatmapAnnotations)
 				  );
 	}
 	else{

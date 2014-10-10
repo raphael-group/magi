@@ -109,7 +109,7 @@ exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
 
 }// end exports.mutGenesList
 
-exports.createHeatmap = function createHeatmap(genes, datasets, callback){
+exports.createHeatmap = function createHeatmap(genes, datasets, samples, callback){
 	// Construct the DataMatrixRow query
 	var DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
 		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
@@ -132,13 +132,18 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 			rows.forEach(function(r){ geneToDatasetToRow[r.gene][r.dataset_id] = r; });
 
 			// Iterate over the genes and datasets to construct the unified heatmap
-			genes.forEach(function(g, i){
-				datasets.forEach(function(d, j){
+			var sampleToMut = {};
+			samples.forEach(function(d){ sampleToMut[d.name] = true; });
+			datasets.forEach(function(d, j){
+				var mutSamples = d.data_matrix_samples.filter(function(s){ return sampleToMut[s]; });
+				genes.forEach(function(g, i){
 					if (!(d._id in geneToDatasetToRow[g])) return;
 					geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
+						// Ignore samples not mutated in the gene set
+						if (!sampleToMut[d.data_matrix_samples[k]]) return;
 						heatmap.cells.push({x: d.data_matrix_samples[k], y: g, value: n });
 					});
-					if (i ==0) Array.prototype.push.apply(heatmap.xs, d.data_matrix_samples);
+					if (i ==0) Array.prototype.push.apply(heatmap.xs, mutSamples);
 				});
 			});
 			callback("", heatmap);
@@ -188,7 +193,8 @@ exports.createSampleAnnotationObject = function(datasets){
 			obj.categories.forEach(function(c){
 				// If the sample doesn't have this type of annotation, we still need
 				// to record something since the annotations are stored as a list
-				if (!d.sample_annotations) obj.sampleToAnnotations[s].push(null);
+				if (!d.sample_annotations || !d.sample_annotations[s])
+					obj.sampleToAnnotations[s].push(null);
 				else{
 					obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
 					annotationTypes[d.sample_annotations[s][c]] = null;
@@ -199,6 +205,7 @@ exports.createSampleAnnotationObject = function(datasets){
 			obj.categories = categories;
 		});
 	});
+
 	return obj;
 }
 
