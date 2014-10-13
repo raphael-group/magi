@@ -562,7 +562,6 @@ function view(){
 
 		// Add the cancer types as a heatmap annotation
 		var heatmapAnnotations = data.sampleAnnotations;
-		console.log(data.sampleAnnotations)
 		if (heatmapAnnotations && data.mutation_matrix.samples.length > 0){
 			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
 			heatmapAnnotations.annotationToColor["Cancer type"] = {};
