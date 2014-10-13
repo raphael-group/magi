@@ -33,7 +33,6 @@ $().ready(function () {
   $.post('/userGaveConsent')
     .done(function(res) {
       loggingEnabled = res;
-      console.log('loggingEnabled', loggingEnabled);
     });
 });
 
