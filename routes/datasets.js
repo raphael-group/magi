@@ -1,5 +1,6 @@
 // Load required modules
 var	mongoose = require( 'mongoose' ),
+	Database = require('../model/db'),
 	Dataset  = require( "../model/datasets" );
 
 // Renders list of all datasets
