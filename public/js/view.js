@@ -52,14 +52,13 @@ function view(){
 		transcriptPositionElement = "div#annotation div#transcript-position",
 		commentElement = "div#annotation textarea#comment",
 		submitElement = "div#annotation button#submit",
-	dataMtxElement = 'div#data-matrix';
+		heatmapElement = 'div#heatmap';
 
 	// Select each element for easy access later
 	var m2 = d3.select(m2Element),
 		subnet = d3.select(subnetworkElement),
 		transcript = d3.select(transcriptElement),
 		transcriptSelect = d3.select(transcriptSelectElement),
-		dataMtx = d3.select(dataMtxElement)
 		cnaBrowser = d3.select(cnaBrowserElement),
 		cnaBrowserSelect = d3.select(cnaBrowserSelectElement),
 		controls = d3.select(controlsElement),
@@ -550,15 +549,15 @@ function view(){
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes
 	var heatmapStyle = {
-		width: parseInt(d3.select(dataMtxElement).style('width').split('px')[0])-55, // subtract off left margin
+		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])-55, // subtract off left margin
 		margins: {left: 55, right: 0, top: 0, bottom: 0}
 	};
 
 	// Only render the heatmap at all if there is data for it
 	if (data.heatmap.cells){
 		// Change the name
-		var dataMtxTitle = data.heatmap.name.charAt(0).toUpperCase() + data.heatmap.name.slice(1) + " data matrix";
-		d3.select("h3#data-mtx-title").text(dataMtxTitle);
+		var heatmapTitle = data.heatmap.name.charAt(0).toUpperCase() + data.heatmap.name.slice(1) + " heatmap";
+		d3.select("h3#heatmap-title").text(heatmapTitle);
 
 		// Add the cancer types as a heatmap annotation
 		var heatmapAnnotations = data.sampleAnnotations;
@@ -576,7 +575,7 @@ function view(){
 		}
 
 		// Draw the heatmap
-		var heatmapChart = d3.select(dataMtxElement)
+		var heatmapChart = d3.select(heatmapElement)
 				  .datum(data.heatmap)
 				  .call(heatmap({style:heatmapStyle})
 					  .addYLabels()
@@ -586,7 +585,7 @@ function view(){
 				  );
 	}
 	else{
-		$(dataMtxElement).parent().hide();
+		$(heatmapElement).parent().hide();
 	}
 
 	///////////////////////////////////////////////////////////////////////////
