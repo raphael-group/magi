@@ -33,7 +33,7 @@ function view(){
 	var deferred = $.Deferred();
 
 	// Hard-code the names of each element
-	var m2Element = "div#mutation-matrix",
+	var m2Element = "div#aberrations",
 		subnetworkElement = "div#subnetwork",
 		transcriptElement = "div#transcript-plot",
 		transcriptSelectElement = "select#transcript-plot-select",
