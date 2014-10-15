@@ -24,12 +24,12 @@ block body
                   | CNA view
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="heatmap", style="margin-right:5px;")
-                  | Heatmap view
+                  input(type="checkbox", id="datamatrix", style="margin-right:5px;")
+                  | Heatmap
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="mutmatrix", style="margin-right:5px;")
-                  | Mutation matrix view
+                  | Aberrations view
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="subnetwork", style="margin-right:5px;")
@@ -137,12 +137,17 @@ block body
                 | and you can <b>reposition the nodes </b>in the subnetwork for a better view by <b>dragging/dropping</b> them.
               li
                 i
-                  b Mutation matrix.&nbsp;
+                  b Aberrations view.&nbsp;
                 | Shows the mutations of genes (rows) across samples (columns). Samples are colored by cancer type.
                 | Full ticks represent SNVs, downticks represent deletions, upticks represent amplifications,
                 | and triangles represent fusions, rearragements or splice variants.
                 | Only samples with a mutation in the given subnetwork are shown.
                 | You can <b>zoom in on and drag the mutation matrix</b> by scrolling and/or clicking the figure with your mouse.
+              li
+                i
+                  b Heatmap view.&nbsp;
+                | Shows continuous-valued data in a query set of genes (rows) in a cohort of samples (columns) as heatmap.
+                | By default, displays expression data in only the samples in which the genes are mutated.
               li
                 i
                   b Transcript view.&nbsp;
@@ -167,12 +172,22 @@ block body
 
       div
         h3
-          | Mutation matrix
+          | Aberrations
           small
             | &nbsp;&nbsp;
-            a(id="printMutMtx", title="Print mutation matrix.")
+            a(id="printAberrs", title="Print aberrations view.")
                 span(class="glyphicon glyphicon-print")
-        div(id="mutation-matrix")
+        div(id="aberrations")
+        //- Heatmap view
+        div
+          h3(id="heatmap-title")
+              span(class="name") Heatmap
+              small(style="font-size:12px")
+                | &nbsp;&nbsp;
+                a(id="printHmpViz", title="Print heatmap.")
+                    span(class="glyphicon glyphicon-print")
+          div(id="heatmap")
+
 
       hr(style="margin:0px;")
 
@@ -196,17 +211,6 @@ block body
           div(id="transcript-plot")
 
       hr(style="clear:both;margin:0px;")
-
-      //- Heatmap view
-      div
-        h3 Heatmap
-            small(style="font-size:12px")
-              | &nbsp;&nbsp;
-              a(id="printHmpViz", title="Print heatmap.")
-                  span(class="glyphicon glyphicon-print")
-        div(id="heatmap")
-
-      hr(style="margin:0px;")
 
       //- CNA view
       div

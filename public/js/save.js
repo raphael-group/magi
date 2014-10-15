@@ -7,7 +7,7 @@
 var SAVEJS_CONST = {
   CNA_VIZ: 0,
   HMP_VIZ: 1,
-  MUT_MTX: 2,
+  ABERRS: 2,
   SUB_NET: 3,
   TRN_ANT: 4,
 };
@@ -15,7 +15,7 @@ var SAVEJS_CONST = {
 var SAVEJS_FNAMES = {
   CNA_VIZ: 'cna.svg',
   HMP_VIZ: 'heatmap.svg',
-  MUT_MTX: 'mutation-matrix.svg',
+  ABERRS: 'aberrations.svg',
   SUB_NET: 'subnetwork.svg',
   TRN_ANT: 'transcript-annotation.svg'
 }
@@ -41,7 +41,7 @@ function downloadVisualizations(saveFn) {
   var vizSelected = saveCheckboxes[SAVEJS_CONST.CNA_VIZ].checked == true
       || saveCheckboxes[SAVEJS_CONST.TRN_ANT].checked == true
       || saveCheckboxes[SAVEJS_CONST.SUB_NET].checked == true
-      || saveCheckboxes[SAVEJS_CONST.MUT_MTX].checked == true
+      || saveCheckboxes[SAVEJS_CONST.ABERRS].checked == true
       || saveCheckboxes[SAVEJS_CONST.HMP_VIZ].checked == true;
 
   if (vizSelected == false) {
@@ -60,8 +60,8 @@ function downloadVisualizations(saveFn) {
   if (saveCheckboxes[SAVEJS_CONST.SUB_NET].checked == true) {
     saveFn('subnetwork', SAVEJS_FNAMES.SUB_NET);
   }
-  if (saveCheckboxes[SAVEJS_CONST.MUT_MTX].checked == true) {
-    saveFn('mutation-matrix', SAVEJS_FNAMES.MUT_MTX);
+  if (saveCheckboxes[SAVEJS_CONST.ABERRS].checked == true) {
+    saveFn('aberrations', SAVEJS_FNAMES.ABERRS);
   }
   if (saveCheckboxes[SAVEJS_CONST.HMP_VIZ].checked == true) {
     saveFn('heatmap', SAVEJS_FNAMES.HMP_VIZ);
@@ -76,8 +76,8 @@ function grabSVG(saveFileName) {
   var svg = null;
   if (saveFileName == SAVEJS_FNAMES.SUB_NET) {
     svg = d3.select('div#subnetwork #figure');
-  } else if (saveFileName == SAVEJS_FNAMES.MUT_MTX) {
-    svg = d3.select('div#mutation-matrix svg#mutation-matrix');
+  } else if (saveFileName == SAVEJS_FNAMES.ABERRS) {
+    svg = d3.select('div#aberrations svg'); // TOOD: ensure mutation matrix and not legend is selected
   } else if (saveFileName == SAVEJS_FNAMES.TRN_ANT) {
     svg = d3.select('div#transcript-plot svg');
   } else if (saveFileName == SAVEJS_FNAMES.CNA_VIZ) {
@@ -268,8 +268,8 @@ function printVisualization(viz) {
   if (viz == SAVEJS_CONST.CNA_VIZ) {
     saveSVG('cna-browser', SAVEJS_FNAMES.CNA_VIZ).print();
   }
-  if (viz == SAVEJS_CONST.MUT_MTX) {
-    saveSVG('mutation-matrix', SAVEJS_FNAMES.MUT_MTX).print();
+  if (viz == SAVEJS_CONST.ABERRS) {
+    saveSVG('aberrations', SAVEJS_FNAMES.ABERRS).print();
   }
   if (viz == SAVEJS_CONST.SUB_NET) {
     saveSVG('subnetwork', SAVEJS_FNAMES.SUB_NET).print();
@@ -286,10 +286,9 @@ $('#printCnaViz').click(function(e) {
   e.preventDefault();
   printVisualization(SAVEJS_CONST.CNA_VIZ);
 });
-$('#printMutMtx').click(function(e) {
+$('#printAberrs').click(function(e) {
   e.preventDefault();
-  console.log('clicked');
-  printVisualization(SAVEJS_CONST.MUT_MTX);
+  printVisualization(SAVEJS_CONST.ABERRS);
 });
 $('#printSubNet').click(function(e) {
   e.preventDefault();

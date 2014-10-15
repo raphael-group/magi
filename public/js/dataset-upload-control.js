@@ -91,6 +91,12 @@ $('#DataMatrix').change(function() {
     $('.uploadSummaryDataMatrix').text(file);
 });
 
+$("#DataMatrixName").change(function(){
+    var val = $(this).val();
+    if (val == "Other") $("#other-data-matrix-name-container").css('visibility', 'visible');
+    else $("#other-data-matrix-name-container").css('visibility', 'hidden');
+});
+
 // Change viewable DIV on menu click
 $('.uploadSelectorOption').click(function(e) {
     e.preventDefault();
@@ -118,6 +124,12 @@ $('.uploadSelectorOption').click(function(e) {
 $('#submit').click(function(e) {
     e.preventDefault();
 
+    // Parse the data matrix name
+    if ($('#DataMatrixName').val() != "Other")
+        var dataMatrixName = $('#DataMatrixName').val();
+    else
+        var dataMatrixName = $('#OtherDataMatrixName').val();
+
     var dataset  = $(datasetNameEl).val(),
         color = $('#color').val(),
         groupName = $('#groupName').val(),
@@ -132,13 +144,13 @@ $('#submit').click(function(e) {
 
 
     // Validate data
-    var isDataValid = validateData(dataset, color, groupName, aberrationFile, cnaFile,
-                                   dataMatrixFile, sampleAnnotationsFile, annotationColorsFile,
-                                   snvFile, cancerMappingFile);
+    var isDataValid = validateData(dataset, color, groupName, dataMatrixName,
+                                   aberrationFile, cnaFile, dataMatrixFile, sampleAnnotationsFile,
+                                   annotationColorsFile, snvFile, cancerMappingFile);
     // If validation fails, we don't need to post an error, since that will be
     // posted as part of the validateDate call itself
     if (isDataValid == false) return;
-    submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile,
+    submitData(dataset, color, groupName, dataMatrixName, aberrationFile, cnaFile, dataMatrixFile,
                sampleAnnotationsFile, annotationColorsFile, snvFile, cancerMappingFile);
 });
 
@@ -150,7 +162,7 @@ function status(msg, classes) {
     $('#status').html(msg);
 }
 
-function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile,
+function submitData(dataset, color, groupName, dataMatrixName, aberrationFile, cnaFile, dataMatrixFile,
                     sampleAnnotationsFile, annotationColorsFile, snvFile, cancerMappingFile) {
     // If everything checks out, submit the form
     status('Uploading...', infoClasses);
@@ -159,7 +171,10 @@ function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatr
     var data = new FormData();
     if (aberrationFile) data.append( 'Aberrations', aberrationFile );
     if (cnaFile) data.append( 'CNAs', cnaFile );
-    if (dataMatrixFile) data.append( 'DataMatrix', dataMatrixFile);
+    if (dataMatrixFile){
+        data.append( 'DataMatrix', dataMatrixFile);
+        data.append( 'DataMatrixName', dataMatrixName);
+    }
     if (sampleAnnotationsFile) data.append( 'SampleAnnotations', sampleAnnotationsFile);
     if (annotationColorsFile) data.append( 'AnnotationColors', annotationColorsFile);
     if (snvFile) data.append( 'SNVs', snvFile );
@@ -196,7 +211,8 @@ function submitData(dataset, color, groupName, aberrationFile, cnaFile, dataMatr
     });
 }
 
-function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMatrixFile, sampleAnnotationsFile, annotationColorsFile, snvFile, cancerMappingFile) {
+function validateData(dataset, color, groupName, dataMatrixName, aberrationFile, cnaFile,
+                      dataMatrixFile, sampleAnnotationsFile, annotationColorsFile, snvFile, cancerMappingFile) {
     // Verify if a file meets MAGI requirements, error if not
     function verifyFile(file, fileName) {
         if (file && file.size > 100000000){
@@ -251,6 +267,12 @@ function validateData(dataset, color, groupName, aberrationFile, cnaFile, dataMa
     if (!(cnaFile || snvFile || aberrationFile || dataMatrixFile)){
         console.log(snvFile)
         status('Please choose an aberration, data matrix, SNV, and/or CNA file.', warningClasses);
+        return false;
+    }
+
+    // If a data matrix is supplied, there must be a data name
+    if (dataMatrixFile && !dataMatrixName){
+        status('Please specify the data type of your data matrix.', warningClasses);
         return false;
     }
 

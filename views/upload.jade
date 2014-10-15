@@ -3,7 +3,7 @@ block body
     br
     div(class="container", id="upload")
         div(class="row")
-            h3 Upload your mutation data.
+            h3 Upload your data.
             br
         div(class="row")
             div(class="col-sm-12")
@@ -244,6 +244,7 @@ block body
                         | the annotation columns (3+) will be used as the name of the annotation
                         | category (e.g. <code>expression subtype</code>).
                         br
+                        br
                         | We also support uploading an Annotation Colors file, which is a tab-separated
                         | file where each row contains the color mapping for a different sample annotation.
                         | The first column in the file is the category of the annotation (e.g.
@@ -258,6 +259,7 @@ block body
                         | The first row <em>is a header</em>, with the names of each column. The names of
                         | the annotation columns (3+) will be used as the name of the annotation
                         | category (e.g. <code>expression subtype</code>).
+                        br
                         br
                         | We also support uploading an Annotation Colors file, which is a tab-separated
                         | file where each row contains the color mapping for a different sample annotation.
@@ -295,7 +297,20 @@ block body
                 div(class="selectorViewOption dataMatrixUploadSelector")
                     h4 Data Matrix
                     br
-                    input(type="file", id="DataMatrix", name="DataMatrix")
+                    div(id="data-matrix-container", class="col-lg-4")
+                        label Data matrix file
+                        input(type="file", id="DataMatrix", name="DataMatrix")
+                    div(id="data-matrix-name-container", class="col-lg-4")
+                        label Data type
+                        br
+                        select(id="DataMatrixName", name="DataMatrixName")
+                            option(value="Expression") Expression data
+                            option(value="Methylation") Methylation data
+                            option(value="Other") Other (please specify)
+                    div(id="other-data-matrix-name-container", class="col-lg-4", style="visibility:hidden;")
+                        label Specifiy data type
+                        input(type="text", id="OtherDataMatrixName", class="form-control", placeholder="Data type (case-sensitive).")
+                    br(style="clear:both")
                     br
                     p <strong>The Data Matrix file is a tab-separated file (*.tsv)</strong>, such as
                         | <strong>Expression </strong> or <strong>Methylation</strong> data, that
@@ -305,6 +320,8 @@ block body
                     p The TSV body (i.e., matrix) is formatted such that each row's first column is
                         | a gene, and every following entry in a row is a cell of the matrix that
                         | refers to a sample/gene pair.
+                    p Please also specify a <b>data type</b> with your matrix, which will display whenever
+                        | whenever you view this data.
                     hr
                     h5 Format example
                     code &nbsp;&#9;TCGA-BL-A0C8&#9;TCGA-BL-A13I<br />
@@ -398,6 +415,8 @@ block belowTheFold
         function setColor(color){
             $('#db-color').css('background', color)
             $("input#color").val(color);
+            $('span.uploadSummaryDatasetColor').css('background', color);
+            $('p.uploadSummaryDatasetColorHex').text(color);
         }
         //- Give the user a random color
         function randomColor(){

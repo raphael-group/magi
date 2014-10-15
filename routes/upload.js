@@ -35,7 +35,8 @@ exports.uploadDataset = function uploadDataset(req, res){
     	var dataset = fields.dataset,
     		group_name = fields.groupName,
     		cancer = fields.cancer,
-    		color = fields.color;
+    		color = fields.color,
+    		data_matrix_name = fields.DataMatrixName;
 
     	if (files.CancerMapping) cancer_file = files.CancerMapping.path;
     	else cancer_file = null;
@@ -62,7 +63,7 @@ exports.uploadDataset = function uploadDataset(req, res){
 
     	// Pass the files to the parsers
 		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
-								   data_matrix_file, annotation_colors_file, cancer_input,
+								   data_matrix_file, data_matrix_name, annotation_colors_file, cancer_input,
 								   false, color, req.user._id)
 			.then(function(){
 		    	// Once the parsers have finished, destroy the tmp files

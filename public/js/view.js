@@ -33,7 +33,7 @@ function view(){
 	var deferred = $.Deferred();
 
 	// Hard-code the names of each element
-	var m2Element = "div#mutation-matrix",
+	var m2Element = "div#aberrations",
 		subnetworkElement = "div#subnetwork",
 		transcriptElement = "div#transcript-plot",
 		transcriptSelectElement = "select#transcript-plot-select",
@@ -52,7 +52,7 @@ function view(){
 		transcriptPositionElement = "div#annotation div#transcript-position",
 		commentElement = "div#annotation textarea#comment",
 		submitElement = "div#annotation button#submit",
-	heatmapElement = 'div#heatmap';
+		heatmapElement = 'div#heatmap';
 
 	// Select each element for easy access later
 	var m2 = d3.select(m2Element),
@@ -260,23 +260,25 @@ function view(){
 	}
 
 	// Add the mutation matrix
-	console.log(data.sampleAnnotations)
 	var annotations = data.annotations;
-	var m2Chart = mutation_matrix({style: style.mutation_matrix})
-					.addCoverage()
-					.addMutationLegend()
-					.addSortingMenu()
-					.addTooltips(generateAnnotations(annotations))
-		  .addSampleAnnotations(data.sampleAnnotations)
-					.addOnClick(function(d, i){
-						var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
-						setAnnotation(d.gene, mutClass, d.dataset, {});
-					});
-	if (showDuplicates) m2Chart.showDuplicates();
+	if (data.mutation_matrix.samples.length > 0){
+		var m2Chart = mutation_matrix({style: style.mutation_matrix})
+						.addCoverage()
+						.addMutationLegend()
+						.addSortingMenu()
+						.addTooltips(generateAnnotations(annotations))
+			  .addSampleAnnotations(data.sampleAnnotations)
+						.addOnClick(function(d, i){
+							var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
+							setAnnotation(d.gene, mutClass, d.dataset, {});
+						});
+		if (showDuplicates) m2Chart.showDuplicates();
 
-	m2.datum(data.mutation_matrix);
-	m2Chart(m2);
-
+		m2.datum(data.mutation_matrix);
+		m2Chart(m2);
+	} else {
+		m2.append("b").text("No aberrations to display.")
+	}
 	///////////////////////////////////////////////////////////////////////////
 	// Add the subnetwork plot
 
@@ -547,17 +549,39 @@ function view(){
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes
 	var heatmapStyle = {
-		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])
+		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])-55, // subtract off left margin
+		margins: {left: 55, right: 0, top: 0, bottom: 0}
 	};
 
 	// Only render the heatmap at all if there is data for it
 	if (data.heatmap.cells){
+		// Change the name
+		var heatmapTitle = data.heatmap.name.charAt(0).toUpperCase() + data.heatmap.name.slice(1) + " heatmap";
+		d3.select("h3#heatmap-title span.name").text(heatmapTitle);
+
+		// Add the cancer types as a heatmap annotation
+		var heatmapAnnotations = data.sampleAnnotations;
+		if (heatmapAnnotations && data.mutation_matrix.samples.length > 0){
+			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
+			heatmapAnnotations.annotationToColor["Cancer type"] = {};
+			Object.keys(data.datasetColors).forEach(function(d){
+				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
+			});
+			data.mutation_matrix.samples.forEach(function(s){
+				if (s.name in heatmapAnnotations.sampleToAnnotations){
+					heatmapAnnotations.sampleToAnnotations[s.name].splice(0, 0, data.mutation_matrix.sampleToTypes[s._id]);
+				}
+			});
+		}
+
+		// Draw the heatmap
 		var heatmapChart = d3.select(heatmapElement)
 				  .datum(data.heatmap)
 				  .call(heatmap({style:heatmapStyle})
 					  .addYLabels()
 					  .addXLabels()
 					  .addLegend(true)
+					  .addSampleAnnotations(heatmapAnnotations)
 				  );
 	}
 	else{

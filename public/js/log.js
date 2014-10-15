@@ -98,6 +98,7 @@ $().ready(function () {
   $.post('/userGaveConsent')
     .done(function(res) {
       loggingEnabled = res;
+
       if(loggingEnabled) startLog();
     });
 

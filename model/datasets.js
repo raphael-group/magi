@@ -24,7 +24,8 @@ var DatasetSchema = new mongoose.Schema({
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
-	data_matrix_samples: { type : Array, required: false },
+	data_matrix_name: {type: String, required: true, default: "" },
+	data_matrix_samples: { type : Array, required: false, default: [] },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
@@ -78,8 +79,8 @@ exports.datasetlist = function datasetlist(dataset_ids, callback){
 
 exports.removeDataset = function removeDataset(query, callback){
 	// Load the modules
-	var Dataset = magi.db.model( 'Dataset' ),
-		MutGene = magi.db.model( 'MutGene' );
+	var Dataset = Database.magi.model( 'Dataset' ),
+		MutGene = Database.magi.model( 'MutGene' );
 
 	// Remove the dataset, then remove all mutgenes from that dataset
 	Dataset.remove(query, function(err){
@@ -109,12 +110,35 @@ exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
 
 }// end exports.mutGenesList
 
-exports.createHeatmap = function createHeatmap(genes, datasets, callback){
+exports.createHeatmap = function createHeatmap(genes, datasets, samples, callback){
+	// Make sure the parameters were passed correctly
+	if (genes.length == 0 || datasets.length == 0 || !datasets[0].data_matrix_name)
+		callback("", {});
+
+	// Filter datasets that aren't describing the same data
+	var data_matrix_name = datasets[0].data_matrix_name;
+	console.log(datasets.map(function(d){ return d.data_matrix_name}))
+	datasets = datasets.filter(function(d){
+		return d.data_matrix_name != "" &&
+		       d.data_matrix_name.toLowerCase() == data_matrix_name.toLowerCase();
+	});
+
+	if (datasets.length == 0) callback("", {});
+
+	// Construct the list of samples. If none were provided, use all
+	if (samples.length == 0){
+		var samples = [];
+		datasets.forEach(function(d){
+			samples = samples.concat(d.data_matrix_samples.map(function(d){ return {name: d}; }));
+		})
+	}
+
 	// Construct the DataMatrixRow query
 	var DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
 		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
 
 	DataMatrixRow.find(query, function(err, rows){
+		console.log("HELLO")
 		if (err) throw new Error(err);
 		// Return an empty object if there is no data matrix for these genes/datasets
 		else if (rows.length == 0){ callback("", {}); }
@@ -124,7 +148,8 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 			// - x = row names
 			// - ys = column names
 			// - cell = number
-			var heatmap = {xs: [], ys: genes, cells: []},
+			// - name = descriptor of data
+			var heatmap = {xs: [], ys: genes, cells: [], name: data_matrix_name },
 				geneToDatasetToRow = {};
 
 			// Create a mapping of genes -> dataset_ids -> data matrix rows
@@ -132,15 +157,22 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 			rows.forEach(function(r){ geneToDatasetToRow[r.gene][r.dataset_id] = r; });
 
 			// Iterate over the genes and datasets to construct the unified heatmap
-			genes.forEach(function(g, i){
-				datasets.forEach(function(d, j){
+			var sampleToMut = {};
+			samples.forEach(function(d){ sampleToMut[d.name] = true; });
+
+			datasets.forEach(function(d, j){
+				var mutSamples = d.data_matrix_samples.filter(function(s){ return sampleToMut[s]; });
+				genes.forEach(function(g, i){
 					if (!(d._id in geneToDatasetToRow[g])) return;
 					geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
+						// Ignore samples not mutated in the gene set
+						if (!sampleToMut[d.data_matrix_samples[k]]) return;
 						heatmap.cells.push({x: d.data_matrix_samples[k], y: g, value: n });
 					});
-					if (i ==0) Array.prototype.push.apply(heatmap.xs, d.data_matrix_samples);
+					if (i ==0) Array.prototype.push.apply(heatmap.xs, mutSamples);
 				});
 			});
+			console.log(heatmap);
 			callback("", heatmap);
 		}
 	});// end DataMatrixRow.find
@@ -148,34 +180,13 @@ exports.createHeatmap = function createHeatmap(genes, datasets, callback){
 
 exports.createSampleAnnotationObject = function(datasets){
 	// http://stackoverflow.com/questions/9229645
-	function uniq(a) {
-    var prims = {"boolean":{}, "number":{}, "string":{}}, objs = [];
-
-    return a.filter(function(item) {
-      var type = typeof item;
-      if(type in prims)
-          return prims[type].hasOwnProperty(item) ? false : (prims[type][item] = true);
-      else
-          return objs.indexOf(item) >= 0 ? false : objs.push(item);
-    });
-	}
-	function assignColor(str){
-		function hashCode(str) {
-		  var hash = 0, i, chr, len;
-		  if (str.length == 0) return hash;
-		  for (i = 0, len = str.length; i < len; i++) {
-		    chr   = str.charCodeAt(i);
-		    hash  = ((hash << 5) - hash) + chr;
-		    hash |= 0; // Convert to 32bit integer
-		  }
-		  return hash;
-		}
-	  return '#' + hashCode(str).toString(16).substr(-6);
+	function uniq(a) { // doesn't handle objects, but categories can't be objects
+		return a.filter(function(item, pos){ return a.indexOf(item) == pos; });
 	}
 
 	// Initialize the object that will hold all the data required to add sample annotations
 	// to the mutation matrix
-	var obj = { categories: [], sampleToAnnotations: {}, annotationToColor: {}};
+	var obj = { categories: [], sampleToAnnotations: {}, annotationToColor: {} };
 
 	// Iterate through the datasets to make a list of all categories, and define a color
 	// mapping for the annotations
@@ -186,11 +197,15 @@ exports.createSampleAnnotationObject = function(datasets){
 		// Extract the categories and define a color mapping for them
 		var categories = Object.keys(d.sample_annotations[d.samples[0]]);
 		categories.forEach(function(c){
-			if (obj.categories.indexOf(c) == -1) obj.categories.push(c);
+
+			if (obj.categories.indexOf(c) == -1){
+				obj.categories.push(c);
+				obj.annotationToColor[c] = {};
+			}
 
 			if (d.annotation_colors && c in d.annotation_colors){
 				Object.keys(d.annotation_colors[c]).forEach(function(s){
-					obj.annotationToColor[s] = d.annotation_colors[c][s];
+					obj.annotationToColor[c][s] = d.annotation_colors[c][s];
 				});
 			}
 		});
@@ -207,7 +222,8 @@ exports.createSampleAnnotationObject = function(datasets){
 			obj.categories.forEach(function(c){
 				// If the sample doesn't have this type of annotation, we still need
 				// to record something since the annotations are stored as a list
-				if (!d.sample_annotations) obj.sampleToAnnotations[s].push(null);
+				if (!d.sample_annotations || !d.sample_annotations[s])
+					obj.sampleToAnnotations[s].push(null);
 				else{
 					obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
 					annotationTypes[d.sample_annotations[s][c]] = null;
@@ -219,6 +235,7 @@ exports.createSampleAnnotationObject = function(datasets){
 			obj.categories = categories;
 		});
 	});
+
 	return obj;
 }
 
@@ -228,8 +245,9 @@ var inactiveTys = ["frame_shift_ins", "nonstop_mutation", "nonsense_mutation",
 
 // Loads a SNVs into the database
 exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_file, cnas_file,
-									  aberration_file, data_matrix_file, annotation_color_file,
-									  cancer_input, is_standard, color, user_id){
+									  aberration_file, data_matrix_file, data_matrix_name,
+									  annotation_color_file, cancer_input,
+									  is_standard, color, user_id){
 	// Load required modules
 	var fs      = require( 'fs' ),
 		Dataset = Database.magi.model( 'Dataset' ),
@@ -375,6 +393,12 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			return d.promise;
 		}
 
+		// Function to convert a string input to float *if it is numeric*
+		function parseValue(val){
+			if (!isNaN(val) && isFinite(val)) return val * 1.0;
+			else return val;
+		}
+
 		fs.readFile(samples_file, 'utf-8', function (err, data) {
 			// Exit if there's an error
 			if (err) throw new Error(err);
@@ -403,7 +427,9 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					// Then add any annotations there may be
 					if (categories.length > 0){
 						sampleToAnnotations[arr[0]] = {};
-						categories.forEach(function(c, i){ sampleToAnnotations[arr[0]][c] = arr[2+i]; });
+						categories.forEach(function(c, i){
+							sampleToAnnotations[arr[0]][c] = parseValue(arr[2+i]);
+						});
 					}
 				}
 				else if(!dataset){
@@ -828,7 +854,8 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					user_id: user_id,
 					color: datasetToColor[datasetName],
 					cancer_id: datasetToCancer[datasetName],
-					data_matrix_samples: dataMatrixColHeaders
+					data_matrix_samples: dataMatrixColHeaders,
+					data_matrix_name: data_matrix_name
 				};
 
 			// Include the user_id if it was provided
@@ -1027,6 +1054,10 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			loadMutationFile(cnas_file, "CNA", 1, function(err, datasetToCNALines){
 				loadMutationFile(aberration_file, "aberrations", 0, function(err, datasetToAberrationLines){
 					loadMatrix(data_matrix_file, "matrix", 0, function(err, datasetToMatrixLines){
+						if (data_matrix_file && !data_matrix_name){
+							console.log("Data matrix name is required when passing in a data matrix file.");
+							process.exit(1);
+						}
 						var funcs = datasets.map(function(datasetName){
 							var samples = datasetToSamples[datasetName],
 								snvLines = datasetToSNVLines[datasetName],
