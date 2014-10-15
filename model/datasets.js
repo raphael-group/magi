@@ -24,8 +24,8 @@ var DatasetSchema = new mongoose.Schema({
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
-	data_matrix_name: {type: String, required: true, default: "" },
-	data_matrix_samples: { type : Array, required: true, default: "" },
+	data_matrix_name: {type: String, required: false },
+	data_matrix_samples: { type : Array, required: false, default: [] },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
@@ -846,7 +846,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					color: datasetToColor[datasetName],
 					cancer_id: datasetToCancer[datasetName],
 					data_matrix_samples: dataMatrixColHeaders,
-					data_matrix_name: data_matrix_name || ""
+					data_matrix_name: data_matrix_name
 				};
 
 			// Include the user_id if it was provided
@@ -1045,6 +1045,10 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			loadMutationFile(cnas_file, "CNA", 1, function(err, datasetToCNALines){
 				loadMutationFile(aberration_file, "aberrations", 0, function(err, datasetToAberrationLines){
 					loadMatrix(data_matrix_file, "matrix", 0, function(err, datasetToMatrixLines){
+						if (data_matrix_file && !data_matrix_name){
+							console.log("Data matrix name is required when passing in a data matrix file.");
+							process.exit(1);
+						}
 						var funcs = datasets.map(function(datasetName){
 							var samples = datasetToSamples[datasetName],
 								snvLines = datasetToSNVLines[datasetName],

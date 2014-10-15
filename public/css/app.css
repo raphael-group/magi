@@ -303,7 +303,7 @@ div#control-panel{width:200px;border:#333 solid 10px;position:absolute;right:0px
 div#control-panel h4{text-align:center;background:#333;color:#fff;padding-bottom:3px;}
 
 div#control-panel div#controls{ padding-top:2px; border-radius:4px;}
-div#control-panel div#controls ul#datasets{list-style-type: none;padding-left:7px;font-size:90%;}
+div#control-panel div#controls ul#datasets{list-style-type: none;padding-left:4px;font-size:90%;}
 
 div#control-panel div#controls ul#datasets li div{display:inline-block;}
 div#control-panel div#controls ul#datasets li div.dataset-color{margin-right:10px;height:11px;width:11px;border-radius:3px;padding:2px;border:1px solid #eee;}
