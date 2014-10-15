@@ -24,7 +24,7 @@ var DatasetSchema = new mongoose.Schema({
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
-	data_matrix_name: {type: String, required: false },
+	data_matrix_name: {type: String, required: true, default: "" },
 	data_matrix_samples: { type : Array, required: false, default: [] },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
@@ -117,9 +117,13 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 
 	// Filter datasets that aren't describing the same data
 	var data_matrix_name = datasets[0].data_matrix_name;
+	console.log(datasets.map(function(d){ return d.data_matrix_name}))
 	datasets = datasets.filter(function(d){
-		return d.data_matrix_name.toLowerCase() == data_matrix_name.toLowerCase();
+		return d.data_matrix_name != "" &&
+		       d.data_matrix_name.toLowerCase() == data_matrix_name.toLowerCase();
 	});
+
+	if (datasets.length == 0) callback("", {});
 
 	// Construct the list of samples. If none were provided, use all
 	if (samples.length == 0){
@@ -134,6 +138,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
 
 	DataMatrixRow.find(query, function(err, rows){
+		console.log("HELLO")
 		if (err) throw new Error(err);
 		// Return an empty object if there is no data matrix for these genes/datasets
 		else if (rows.length == 0){ callback("", {}); }
@@ -167,6 +172,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 					if (i ==0) Array.prototype.push.apply(heatmap.xs, mutSamples);
 				});
 			});
+			console.log(heatmap);
 			callback("", heatmap);
 		}
 	});// end DataMatrixRow.find

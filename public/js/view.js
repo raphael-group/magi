@@ -557,7 +557,7 @@ function view(){
 	if (data.heatmap.cells){
 		// Change the name
 		var heatmapTitle = data.heatmap.name.charAt(0).toUpperCase() + data.heatmap.name.slice(1) + " heatmap";
-		d3.select("h3#heatmap-title").text(heatmapTitle);
+		d3.select("h3#heatmap-title span.name").text(heatmapTitle);
 
 		// Add the cancer types as a heatmap annotation
 		var heatmapAnnotations = data.sampleAnnotations;
