@@ -24,7 +24,7 @@ var DatasetSchema = new mongoose.Schema({
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
-	data_matrix_name: {type: String, required: true, default: "" },
+	data_matrix_name: {type: String, required: false, default: "" },
 	data_matrix_samples: { type : Array, required: false, default: [] },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
