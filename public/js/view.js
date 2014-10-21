@@ -549,6 +549,10 @@ function view(){
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes
 	var heatmapStyle = {
+		cellHeight: 20,
+		cellWidth: 20,
+		fontSize: '14px',
+		fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
 		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])-55, // subtract off left margin
 		margins: {left: 55, right: 0, top: 0, bottom: 0}
 	};
