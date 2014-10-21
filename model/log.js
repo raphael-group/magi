@@ -11,6 +11,7 @@ var LogSchema = new mongoose.Schema({
   vizSizes: Array,
   vizLocations: Array,
 
+  tooltips: Array,
 
   genes: [String],
   datasets: [String],
@@ -39,6 +40,8 @@ exports.startLog = function(logObj, userId) {
     vizSizes: [logObj.vizSizes],
     vizLocations: [logObj.vizLocations],
 
+    tooltips: [],
+
     // Query Information
     genes: logObj.genes,
     datasets: logObj.datasets,
@@ -63,7 +66,8 @@ exports.extendLog = function(newInfo, userId) {
       vizSizes = newInfo.vizSizes,
       vizLocations = newInfo.vizLocations,
       annotations = newInfo.annotations,
-      logExtension = newInfo.log;
+      logExtension = newInfo.log,
+      tooltips = newInfo.tooltips;
 
   var log = Database.logDB.model('Log'),
       query = {userId: userId, sessionId: sessionId};
@@ -91,6 +95,10 @@ exports.extendLog = function(newInfo, userId) {
       if (vizLocations) {
         l.vizLocations.push.apply(l.vizLocations, vizLocations);
         l.markModified('vizLocations');
+      }
+      if (tooltips) {
+        l.tooltips.push.apply(l.tooltips, tooltips);
+        l.markModified('tooltips');
       }
       l.save();
       console.log('extended Log!');

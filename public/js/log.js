@@ -10,7 +10,8 @@ var loggingEnabled = false,
       windowSize: [],
       vizSizes: [],
       vizLocations: []
-    };
+    },
+    MAGI_tooltips = [];
 
 $('#magi-loggingReadMore').click(function(e) {
   e.preventDefault();
@@ -42,6 +43,19 @@ $(document).mousemove(function(e) {
 
 $(document).click(function(e) {
   addToLog(e, 'c');
+
+  var target = e.target,
+      parent = $(target).parent();
+
+  if(parent) {
+    // Log if a resize object
+    var pId = parent.attr('id');
+    if(pId == undefined) return;
+
+    if(pId == 'sample-sorting-interface' || pId == 'gd3-mutmtx-sample-annotation-legend') {
+      resizeEvent();
+    }
+  }
 });
 
 $(document).scroll(function(e) {
@@ -59,6 +73,8 @@ $(document).on('mousewheel', function(e) {
 $(window).resize(function() {
   resizeEvent();
 });
+
+
 $('#instructions').on('shown.bs.collapse', function() {
   resizeEvent();
 });
@@ -79,16 +95,7 @@ $('#annotation-form #inputs #submit').click(function(e) {
   addToLog(e, 'a');
 });
 
-$('.downvote').click(function(e) {
-  addToLog(e, 'd');
-});
-$('.upvote').click(function(e) {
-  addToLog(e, 'u');
-});
 
-$('div.m2-tooltip').click(function() {
-  console.log('clickkk');
-});
 
 
 $().ready(function () {
@@ -102,6 +109,14 @@ $().ready(function () {
       if(loggingEnabled) startLog();
     });
 
+
+  d3.select('div.d3-tip').on('mouseover',function(){
+    console.log('in tooltip', d3.event);
+  });
+
+  d3.select('div.d3-tip > *').on('mouseover',function(){
+    console.log('m!!');
+  });
 });
 
 
@@ -121,8 +136,8 @@ function getSizes() {
       vizLocs = {};
 
   // Get size and locations of visualizations
-  vizSizes.mutmtx = {width:$('div#mutation-matrix').width(), height:$('div#mutation-matrix').height()};
-  vizLocs.mutmtx = $('div#mutation-matrix').offset();
+  vizSizes.mutmtx = {width:$('div#aberrations').width(), height:$('div#aberrations').height()};
+  vizLocs.mutmtx = $('div#aberrations').offset();
   vizSizes.subnet = {width:$('div#subnetwork').width(), height:$('div#subnetwork').height()};
   vizLocs.subnet = $('div#subnetwork').offset();
   vizSizes.trnant = {width:$('div#transcript-plot').width(), height:$('div#transcript-plot').height()};
@@ -139,6 +154,8 @@ function getSizes() {
   windowSize.time = time;
   vizSizes.time = time;
   vizLocs.time = time;
+
+  console.log(vizLocs, vizSizes);
 
   return {
     documentSize:documentSize,
@@ -189,11 +206,19 @@ function extendLogEvents() {
   log.sessionId = MAGI_sessionLogStart;
   log.log = MAGI_interactionsLog;
   log.documentSize = MAGI_resizes.documentSize;
+  log.tooltips = MAGI_tooltips;
   log.windowSize = MAGI_resizes.windowSize;
   log.vizSizes = MAGI_resizes.vizSizes;
   log.vizLocations = MAGI_resizes.vizLocations;
   $.post('/extendLog', log);
   MAGI_interactionsLog = [];
+  MAGI_tooltips = [];
+  MAGI_resizes = {
+    documentSize: [],
+    windowSize: [],
+    vizSizes: [],
+    vizLocations: []
+  };
 }
 
 function addToLog(e, event) {
@@ -203,9 +228,31 @@ function addToLog(e, event) {
       time = Date.now();
   MAGI_interactionsLog.push({x:x, y:y, t:time, e:event});
 
+  trackTooltips();
   // Send the log if it's above a certain length
   // 5000 entries takes roughly 90 seconds of constant mouse events
   if( MAGI_interactionsLog.length > 5000) {
     extendLogEvents();
   }
+}
+
+function trackTooltips() {
+  var tip = d3.selectAll('div.d3-tip');
+
+  var tipLog = {};
+  tipLog.t = Date.now();
+  tipLog.tips = []
+  tip.each(function() {
+    var tip = d3.select(this),
+        tipOpacity = tip.style('opacity');
+
+  if (tipOpacity != 0) ;
+    var tipInfo = {};
+    tipInfo.left = tip.style('left');
+    tipInfo.top = tip.style('top');
+    tipInfo.width = tip.style('width'),
+    tipInfo.height = tip.style('height');
+    tipLog.tips.push(tipInfo);
+  });
+  MAGI_tooltips.push(tipLog);
 }
