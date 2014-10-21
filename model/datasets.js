@@ -138,7 +138,6 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 		query = { gene: {$in: genes}, dataset_id: {$in: datasets.map(function(d){ return d._id; }) }};
 
 	DataMatrixRow.find(query, function(err, rows){
-		console.log("HELLO")
 		if (err) throw new Error(err);
 		// Return an empty object if there is no data matrix for these genes/datasets
 		else if (rows.length == 0){ callback("", {}); }
@@ -172,7 +171,6 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 					if (i ==0) Array.prototype.push.apply(heatmap.xs, mutSamples);
 				});
 			});
-			console.log(heatmap);
 			callback("", heatmap);
 		}
 	});// end DataMatrixRow.find
