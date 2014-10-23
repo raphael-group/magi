@@ -1,7 +1,7 @@
 // Functions for saving user interaction data
 // For use in user studies
 
-var loggingEnabled = false,
+var loggingEnabled = true,
     lastSentTime,
     MAGI_sessionLogStart,
     MAGI_interactionsLog = [],
@@ -25,8 +25,9 @@ $('#magi-loggingReadMore').click(function(e) {
 });
 
 $('#magiConsentViewToggle').change(function() {
-  console.log('toggle');
-})
+  var checked = $('#magiConsentViewToggle').is(':checked');
+  loggingEnabled = checked;
+});
 
 $(document).keydown(function(e) {
   if(e.ctrlKey || e.metaKey) {
@@ -101,22 +102,6 @@ $('#annotation-form #inputs #submit').click(function(e) {
 $().ready(function () {
   lastSentTime = Date.now();
   MAGI_sessionLogStart = Date.now();
-  // Does the server enable logging?
-  $.post('/userGaveConsent')
-    .done(function(res) {
-      loggingEnabled = res;
-
-      if(loggingEnabled) startLog();
-    });
-
-
-  d3.select('div.d3-tip').on('mouseover',function(){
-    console.log('in tooltip', d3.event);
-  });
-
-  d3.select('div.d3-tip > *').on('mouseover',function(){
-    console.log('m!!');
-  });
 });
 
 
@@ -167,6 +152,7 @@ function getSizes() {
 
 function startLog() {
   if(!loggingEnabled) return;
+
   var sizes = getSizes(),
       documentSize = sizes.documentSize,
       windowSize = sizes.windowSize,
