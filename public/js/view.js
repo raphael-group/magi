@@ -103,6 +103,8 @@ function view(){
 				amp: "Amplification",
 				other: "Other"
 			};
+		// List of possible annotation classes
+		annotationClasses = ["Amp", "Del", "SNV", "Expression", "Methylation", "interact"];
 
 	///////////////////////////////////////////////////////////////////////////
 	// Get the data and initialize the view
@@ -587,6 +589,28 @@ function view(){
 					  .addXLabels()
 					  .addLegend(true)
 					  .addSampleAnnotations(heatmapAnnotations)
+					  .addTooltips(function(d, i){
+							var tip = ["Sample: " + d.x, "Score: " + d.value];
+							d.annotations.forEach(function(a){
+								tip.push( a.category + ": " + a.value )
+							});
+							return "<div class='heatmap-tooltip'>" + tip.join("\n<br/>") + "</div>";
+					  })
+					  .addOnClick(function(d, i){
+					  	// Extract the sample's cancer type
+					  	var cancerTy = d.annotations.filter(function(a){
+					  		return a.category == ["Cancer type"]
+					  	})[0].value;
+
+					  	// Determine the type of heatmap being shown
+					  	if (data.heatmap.name.toLowerCase() == "expression")
+					  		var mutTy = "Expression";
+					  	else if (data.heatmap.name.toLowerCase() == "methylation")
+					  		var mutTy = "Methylation";
+
+					  	// Set the annotation form
+					  	setAnnotation(d.y, mutTy, cancerTy, {});
+					  })
 				  );
 	}
 	else{
@@ -599,7 +623,7 @@ function view(){
 		.addTooltips()
 		.addOnClick(function(d){
 			var mutClass = d.ty == "amp" ? "Amp" : "Del";
-			setAnnotation(d.gene, mutClass, d.dataset);
+			setAnnotation(d.gene, mutClass, d.dataset, {});
 		});
 
 	function updateCNAChart(){
@@ -818,6 +842,17 @@ function view(){
 	function setAnnotation( gene, interaction, interactorName, fields ){
 		// Reset the form
 		resetAnnotation();
+
+		// Handle some possible sources of error
+		if (!gene || data.genes.indexOf(gene) == -1){
+			annotationStatus("No such gene: \"" + gene + "\"", warningClasses);
+			return
+		}
+		if (!interaction || annotationClasses.indexOf(interaction) == -1){
+			annotationStatus("No such annotation class: \"" + interaction + "\"", warningClasses);
+			return;
+		}
+		if (!fields) fields = {};
 
 		// Set the gene name and the interaction type, and update
 		// the remainder of the form appropriately
