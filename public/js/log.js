@@ -228,7 +228,7 @@ function addToLog(e, event) {
       time = Date.now();
   MAGI_interactionsLog.push({x:x, y:y, t:time, e:event});
 
-  trackTooltips();
+  trackTooltips(time);
   // Send the log if it's above a certain length
   // 5000 entries takes roughly 90 seconds of constant mouse events
   if( MAGI_interactionsLog.length > 5000) {
@@ -236,12 +236,12 @@ function addToLog(e, event) {
   }
 }
 
-function trackTooltips() {
+function trackTooltips(time) {
   var tip = d3.selectAll('div.d3-tip');
 
   var tipLog = {};
-  tipLog.t = Date.now();
-  tipLog.tips = []
+  tipLog.t = time;
+  tipLog.tips = [];
   tip.each(function() {
     var tip = d3.select(this),
         tipOpacity = tip.style('opacity');
@@ -254,5 +254,6 @@ function trackTooltips() {
     tipInfo.height = tip.style('height');
     tipLog.tips.push(tipInfo);
   });
+
   MAGI_tooltips.push(tipLog);
 }
