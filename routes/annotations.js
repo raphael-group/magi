@@ -84,7 +84,6 @@ exports.save = function save(req, res){
 		    		};
 
 				Annotations.upsertAnnotation(query, support, comment, req.user._id + "", function(err, annotation){
-					console.log(err)
 					if (err){
 						res.send({ error: "Annotation could not be parsed. " + err });
 						throw new Error(err);

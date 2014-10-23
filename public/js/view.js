@@ -94,6 +94,8 @@ function view(){
 				del: "Del",
 				inactive_snv: "SNV",
 				amp: "Amp",
+				expression: "Expression",
+				methylation: "Methylation",
 				other: "Other"
 			},
 		mutationToName = {
@@ -231,13 +233,16 @@ function view(){
 	function generateAnnotations(annotations){
 		return function(d, i){
 			var mutationClass = mutationToClass[d.ty],
-				tip  = "<div class='m2-tooltip' id='" + d.gene + "-" + d.sample + "'>";
+				tip  = "<div class='gd3-tooltip' id='" + d.gene + "-" + d.sample + "'>";
 			tip += "<span>Sample: " + d.sample.name + '<br />Type: ' + d.dataset + "<br/>"
-			tip += "Mutation(s): " + d.mutTys.map(function(t){ return mutationToName[t] }).join("; ") + ".\n<br/>";
+			if (d.mutTys)
+				tip += "Mutation(s): " + d.mutTys.map(function(t){ return mutationToName[t] }).join("; ") + ".\n<br/>";
+			if (d.value)
+				tip += "Value: " + d.value + "<br/>";
 			tip += sampleAnnotationTooltip(d.sample.name, false) + "</span>"
 			if (annotations[d.gene] && annotations[d.gene][mutationClass]){
 				var cancers = Object.keys(annotations[d.gene][mutationClass]);
-				tip += "<br style='clear:both'/>Known mutations<div class='less-info'>"
+				tip += "<br style='clear:both'/>Known aberrations<div class='less-info'>"
 				if (cancers.length <= 2){
 					tip += " in " + cancers.map(invertCancerTy).join(" and ") + ".";
 				}
@@ -287,7 +292,7 @@ function view(){
 						.addMutationLegend()
 						.addSortingMenu()
 						.addTooltips(generateAnnotations(annotations))
-			  .addSampleAnnotations(data.sampleAnnotations)
+						.addSampleAnnotations(data.sampleAnnotations)
 						.addOnClick(function(d, i){
 							var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
 							setAnnotation(d.gene, mutClass, d.dataset, {});
@@ -600,6 +605,7 @@ function view(){
 		}
 
 		// Draw the heatmap
+		var heatmapAnnotationFn = generateAnnotations(annotations);
 		var heatmapChart = d3.select(heatmapElement)
 				  .datum(data.heatmap)
 				  .call(heatmap({style:heatmapStyle})
@@ -608,12 +614,19 @@ function view(){
 					  .addLegend(true)
 					  .addSampleAnnotations(heatmapAnnotations)
 					  .addTooltips(function(d, i){
-					  	return "<div class='heatmap-tooltip'>" + sampleAnnotationTooltip(d.x, true) + "</div>";
+					  	// return "<div class='heatmap-tooltip'>" + sampleAnnotationTooltip(d.x, true) + "</div>";
+					  	var cancerTy = heatmapAnnotations.sampleToAnnotations[d.x][0],
+					  		datum = {	gene: d.y,
+					  					sample: { name: d.x },
+					  					value: d.value,
+					  					ty: data.heatmap.name.toLowerCase(),
+					  					dataset: cancerTy }
+					  	return heatmapAnnotationFn(datum, -1);
 					  })
 					  .addOnClick(function(d, i){
 					  	// Extract the sample's cancer types
 					  	var cancerTy = heatmapAnnotations.sampleToAnnotations[d.x][0];
-					  	
+
 					  	// Determine the type of heatmap being shown
 					  	if (data.heatmap.name.toLowerCase() == "expression")
 					  		var mutTy = "Expression";
@@ -1003,6 +1016,7 @@ function view(){
 					annotations[gene][mClass][cancerTy].push( {_id: response.annotation._id, pmid: pmid, vote: null, score: 0} );
 
 					m2Chart.addTooltips(generateAnnotations(annotations));
+					heatmapAnnotationFn = generateAnnotations(annotations)
 				}
 
 				// Reset the form
