@@ -24,7 +24,7 @@ var DatasetSchema = new mongoose.Schema({
 	group: { type: String, required: false},
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
-	data_matrix_name: {type: String, required: true, default: "" },
+	data_matrix_name: {type: String, required: false, default: "" },
 	data_matrix_samples: { type : Array, required: false, default: [] },
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
@@ -117,7 +117,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 
 	// Filter datasets that aren't describing the same data
 	var data_matrix_name = datasets[0].data_matrix_name;
-	console.log(datasets.map(function(d){ return d.data_matrix_name}))
+
 	datasets = datasets.filter(function(d){
 		return d.data_matrix_name != "" &&
 		       d.data_matrix_name.toLowerCase() == data_matrix_name.toLowerCase();
@@ -171,18 +171,12 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 					if (i ==0) Array.prototype.push.apply(heatmap.xs, mutSamples);
 				});
 			});
-			console.log(heatmap);
 			callback("", heatmap);
 		}
 	});// end DataMatrixRow.find
 }// end createHeatmap
 
-exports.createSampleAnnotationObject = function(datasets){
-	// http://stackoverflow.com/questions/9229645
-	function uniq(a) { // doesn't handle objects, but categories can't be objects
-		return a.filter(function(item, pos){ return a.indexOf(item) == pos; });
-	}
-
+exports.createSampleAnnotationObject = function(datasets, samples){
 	// Initialize the object that will hold all the data required to add sample annotations
 	// to the mutation matrix
 	var obj = { categories: [], sampleToAnnotations: {}, annotationToColor: {} };
@@ -212,12 +206,15 @@ exports.createSampleAnnotationObject = function(datasets){
 	if (obj.categories.length == 0) return {};
 
 	// Now construct the annotations, one for each sample
-	var annotationTypes = {}
+	var sampleToInclude = {},
+		annotationTypes = {};
+	samples.forEach(function(s){ sampleToInclude[s.name] = true; });
+
 	datasets.forEach(function(d){
 		d.samples.forEach(function(s){
+			if (!sampleToInclude[s]) return;
 			// The annotations for a given sample are stored in a list
 			obj.sampleToAnnotations[s] = [];
-			var categories = [];
 			obj.categories.forEach(function(c){
 				// If the sample doesn't have this type of annotation, we still need
 				// to record something since the annotations are stored as a list
@@ -227,11 +224,12 @@ exports.createSampleAnnotationObject = function(datasets){
 					obj.sampleToAnnotations[s].push(d.sample_annotations[s][c]);
 					annotationTypes[d.sample_annotations[s][c]] = null;
 				}
-				categories.push(c);
 			});
+
 			categories = uniq(categories);
 
 			obj.categories = categories;
+
 		});
 	});
 

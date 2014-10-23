@@ -234,7 +234,7 @@ exports.view  = function view(req, res){
 						// Heatmap is restricted to only mutated samples, which is why we pass that in
 						Dataset.createHeatmap(genes, datasets, samples, function(err, heatmap){
 							if (err) throw new Error(err);
-							var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets);
+							var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
 							PPIs.ppilist(genes, function(err, ppis){
 								PPIs.ppicomments(ppis, user_id, function(err, comments){
 									PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){

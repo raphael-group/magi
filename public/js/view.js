@@ -103,6 +103,8 @@ function view(){
 				amp: "Amplification",
 				other: "Other"
 			};
+		// List of possible annotation classes
+		annotationClasses = ["Amp", "Del", "SNV", "Expression", "Methylation", "interact"];
 
 	///////////////////////////////////////////////////////////////////////////
 	// Get the data and initialize the view
@@ -209,12 +211,30 @@ function view(){
 	// Define a function to generate the tooltips for the mutation matrix.
 	// You need a function to generate the tooltip function since the annotations can
 	// change over time
+	function sampleAnnotationTooltip(name, includeCancerTy){
+      var annotations = [];
+      if (data.sampleAnnotations && data.sampleAnnotations.categories.length > 0){
+          data.sampleAnnotations.categories.forEach(function(c, i){
+          	if (!includeCancerTy && c == "Cancer type") return;
+          	if (name in data.sampleAnnotations.sampleToAnnotations)
+          		var val = data.sampleAnnotations.sampleToAnnotations[name][i];
+          	else
+          		var val = "No data.";
+          	if (val == "" || val == null) val = "No data.";
+	        annotations.push( c + ": " +  val );
+          });
+          annotations.push("")
+        }
+      return annotations.join("\n<br/>");
+	}
+
 	function generateAnnotations(annotations){
 		return function(d, i){
 			var mutationClass = mutationToClass[d.ty],
-				tip  = "<div class='m2-tooltip' id='" + d.gene + "-" + d.sample + "'>"
+				tip  = "<div class='m2-tooltip' id='" + d.gene + "-" + d.sample + "'>";
 			tip += "<span>Sample: " + d.sample.name + '<br />Type: ' + d.dataset + "<br/>"
-			tip += "Mutation(s): " + d.mutTys.map(function(t){ return mutationToName[t] }).join("; ") + ".</span>";
+			tip += "Mutation(s): " + d.mutTys.map(function(t){ return mutationToName[t] }).join("; ") + ".\n<br/>";
+			tip += sampleAnnotationTooltip(d.sample.name, false) + "</span>"
 			if (annotations[d.gene] && annotations[d.gene][mutationClass]){
 				var cancers = Object.keys(annotations[d.gene][mutationClass]);
 				tip += "<br style='clear:both'/>Known mutations<div class='less-info'>"
@@ -549,12 +569,13 @@ function view(){
 	///////////////////////////////////////////////////////////////////////////
 	// Add a CNA browser selector to choose the genes
 	var heatmapStyle = {
+		annotationFontSize: '12px',
 		cellHeight: 20,
 		cellWidth: 20,
-		fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
 		fontSize: '14px',
+		fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
 		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])-55, // subtract off left margin
-		margins: {left: 55, right: 0, top: 0, bottom: 0}
+		margins: {left: 0, right: 0, top: 0, bottom: 0}
 	};
 
 	// Only render the heatmap at all if there is data for it
@@ -586,6 +607,22 @@ function view(){
 					  .addXLabels()
 					  .addLegend(true)
 					  .addSampleAnnotations(heatmapAnnotations)
+					  .addTooltips(function(d, i){
+					  	return "<div class='heatmap-tooltip'>" + sampleAnnotationTooltip(d.x, true) + "</div>";
+					  })
+					  .addOnClick(function(d, i){
+					  	// Extract the sample's cancer types
+					  	var cancerTy = heatmapAnnotations.sampleToAnnotations[d.x][0];
+
+					  	// Determine the type of heatmap being shown
+					  	if (data.heatmap.name.toLowerCase() == "expression")
+					  		var mutTy = "Expression";
+					  	else if (data.heatmap.name.toLowerCase() == "methylation")
+					  		var mutTy = "Methylation";
+
+					  	// Set the annotation form
+					  	setAnnotation(d.y, mutTy, cancerTy, {});
+					  })
 				  );
 	}
 	else{
@@ -598,7 +635,7 @@ function view(){
 		.addTooltips()
 		.addOnClick(function(d){
 			var mutClass = d.ty == "amp" ? "Amp" : "Del";
-			setAnnotation(d.gene, mutClass, d.dataset);
+			setAnnotation(d.gene, mutClass, d.dataset, {});
 		});
 
 	function updateCNAChart(){
@@ -817,6 +854,17 @@ function view(){
 	function setAnnotation( gene, interaction, interactorName, fields ){
 		// Reset the form
 		resetAnnotation();
+
+		// Handle some possible sources of error
+		if (!gene || data.genes.indexOf(gene) == -1){
+			annotationStatus("No such gene: \"" + gene + "\"", warningClasses);
+			return
+		}
+		if (!interaction || annotationClasses.indexOf(interaction) == -1){
+			annotationStatus("No such annotation class: \"" + interaction + "\"", warningClasses);
+			return;
+		}
+		if (!fields) fields = {};
 
 		// Set the gene name and the interaction type, and update
 		// the remainder of the form appropriately
