@@ -211,12 +211,30 @@ function view(){
 	// Define a function to generate the tooltips for the mutation matrix.
 	// You need a function to generate the tooltip function since the annotations can
 	// change over time
+	function sampleAnnotationTooltip(name, includeCancerTy){
+      var annotations = [];
+      if (data.sampleAnnotations && data.sampleAnnotations.categories.length > 0){
+          data.sampleAnnotations.categories.forEach(function(c, i){
+          	if (!includeCancerTy && c == "Cancer type") return;
+          	if (name in data.sampleAnnotations.sampleToAnnotations)
+          		var val = data.sampleAnnotations.sampleToAnnotations[name][i];
+          	else
+          		var val = "No data.";
+          	if (val == "" || val == null) val = "No data.";
+	        annotations.push( c + ": " +  val );
+          });
+          annotations.push("")
+        }
+      return annotations.join("\n<br/>");
+	}
+
 	function generateAnnotations(annotations){
 		return function(d, i){
 			var mutationClass = mutationToClass[d.ty],
-				tip  = "<div class='m2-tooltip' id='" + d.gene + "-" + d.sample + "'>"
+				tip  = "<div class='m2-tooltip' id='" + d.gene + "-" + d.sample + "'>";
 			tip += "<span>Sample: " + d.sample.name + '<br />Type: ' + d.dataset + "<br/>"
-			tip += "Mutation(s): " + d.mutTys.map(function(t){ return mutationToName[t] }).join("; ") + ".</span>";
+			tip += "Mutation(s): " + d.mutTys.map(function(t){ return mutationToName[t] }).join("; ") + ".\n<br/>";
+			tip += sampleAnnotationTooltip(d.sample.name, false) + "</span>"
 			if (annotations[d.gene] && annotations[d.gene][mutationClass]){
 				var cancers = Object.keys(annotations[d.gene][mutationClass]);
 				tip += "<br style='clear:both'/>Known mutations<div class='less-info'>"
@@ -590,18 +608,12 @@ function view(){
 					  .addLegend(true)
 					  .addSampleAnnotations(heatmapAnnotations)
 					  .addTooltips(function(d, i){
-							var tip = ["Sample: " + d.x, "Score: " + d.value];
-							d.annotations.forEach(function(a){
-								tip.push( a.category + ": " + a.value )
-							});
-							return "<div class='heatmap-tooltip'>" + tip.join("\n<br/>") + "</div>";
+					  	return "<div class='heatmap-tooltip'>" + sampleAnnotationTooltip(d.x, true) + "</div>";
 					  })
 					  .addOnClick(function(d, i){
-					  	// Extract the sample's cancer type
-					  	var cancerTy = d.annotations.filter(function(a){
-					  		return a.category == ["Cancer type"]
-					  	})[0].value;
-
+					  	// Extract the sample's cancer types
+					  	var cancerTy = heatmapAnnotations.sampleToAnnotations[d.x][0];
+					  	
 					  	// Determine the type of heatmap being shown
 					  	if (data.heatmap.name.toLowerCase() == "expression")
 					  		var mutTy = "Expression";
