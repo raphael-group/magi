@@ -87,7 +87,7 @@ block body
                       | Position
                       span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
                     input(class="form-control", id="position", placeholder="Mutation position", type="number")
-                    
+
                     br
                   div(id="transcript-domain", style="display:none")
                     label
@@ -178,6 +178,7 @@ block body
             a(id="printAberrs", title="Print aberrations view.")
                 span(class="glyphicon glyphicon-print")
         div(id="aberrations")
+        br
         //- Heatmap view
         div
           h3(id="heatmap-title")
