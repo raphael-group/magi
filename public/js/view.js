@@ -10,7 +10,7 @@ $(document).ready(
 			d3.select("div#loading").style("display", "none")
 			d3.select("div#view-page").transition().duration(1000).style("opacity", 1);
 			d3.select("div#view-page").style("height", "auto")
-		})
+		});
 	}
 );
 
