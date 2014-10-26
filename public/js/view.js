@@ -589,9 +589,15 @@ function view(){
 		var heatmapTitle = data.heatmap.name.charAt(0).toUpperCase() + data.heatmap.name.slice(1) + " heatmap";
 		d3.select("h3#heatmap-title span.name").text(heatmapTitle);
 
-		// Add the cancer types as a heatmap annotation
-		var heatmapAnnotations = data.sampleAnnotations;
-		if (heatmapAnnotations && data.mutation_matrix.samples.length > 0){
+		// Add cancer type to the sample annotations for the heatmap
+		if (data.sampleAnnotations && data.mutation_matrix.samples.length > 0){
+			// Perform a deep copy of the sample annotation data
+			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
+			$.extend(heatmapAnnotations.categories, data.sampleAnnotations.categories);
+			$.extend(heatmapAnnotations.annotationToColor, data.sampleAnnotations.annotationToColor);
+			$.extend(heatmapAnnotations.sampleToAnnotations, data.sampleAnnotations.sampleToAnnotations);
+
+			// Add the cancer types as a heatmap annotation
 			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
 			heatmapAnnotations.annotationToColor["Cancer type"] = {};
 			Object.keys(data.datasetColors).forEach(function(d){
