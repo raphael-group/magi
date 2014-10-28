@@ -23,15 +23,15 @@ exports.view  = function view(req, res){
 			if(entries.length == 0) {
 				req.session.msg401 = "Fatal error: bad query.";
 				res.redirect("401");
-	    } else {
-	    	var query = entries[0].query;
-      	if (query == undefined) {
+		    } else {
+		    	var query = entries[0].query;
+	      		if (query == undefined) {
 					req.session.msg401 = "Fatal error: bad query.";
 					res.redirect("401");
-    		} else { // parse the query and extract the gene names and datasets
-    			function getParameterByName(str,name) {
-	    				var match = RegExp('[?&]' + name + '=([^&]*)').exec(str);
-	    				return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+	      		} else { // parse the query and extract the gene names and datasets
+	      			function getParameterByName(str,name) {
+	      				var match = RegExp('[?&]' + name + '=([^&]*)').exec(str);
+	      				return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 					}
 					var genes = getParameterByName(query,"genes").split(','),
 						dataset_ids = getParameterByName(query,"datasets").split(',');
@@ -106,7 +106,6 @@ exports.view  = function view(req, res){
 							domainDBs[n] = true;
 						})
 					});
-
 
 					// Create empty Objects to store transcript/mutation matrix data
 					var M = {},
