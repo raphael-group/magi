@@ -87,7 +87,7 @@ exports.removeDataset = function removeDataset(query, callback){
 		// Throw an error if it occurred
 		if (err) throw new Error(err);
 
-		// Otherwise, remove all mutgenes with
+		// Otherwise, remove all mutgenes with 
 		MutGene.remove({dataset_id: query.dataset_id}, function(err){
 			// Throw an error if it occurred
 			if (err) throw new Error(err);
@@ -190,12 +190,10 @@ exports.createSampleAnnotationObject = function(datasets, samples){
 		// Extract the categories and define a color mapping for them
 		var categories = Object.keys(d.sample_annotations[d.samples[0]]);
 		categories.forEach(function(c){
-
 			if (obj.categories.indexOf(c) == -1){
 				obj.categories.push(c);
 				obj.annotationToColor[c] = {};
 			}
-
 			if (d.annotation_colors && c in d.annotation_colors){
 				Object.keys(d.annotation_colors[c]).forEach(function(s){
 					obj.annotationToColor[c][s] = d.annotation_colors[c][s];
@@ -225,11 +223,6 @@ exports.createSampleAnnotationObject = function(datasets, samples){
 					annotationTypes[d.sample_annotations[s][c]] = null;
 				}
 			});
-
-			categories = uniq(categories);
-
-			obj.categories = categories;
-
 		});
 	});
 
