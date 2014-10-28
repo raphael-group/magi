@@ -54,6 +54,8 @@ exports.startLog = function(logObj, userId) {
     if(e) {
       console.log('Undefined log creation');
       console.log(e);
+    } else {
+      console.log('new log made. Lookup:', userId, sessionId);
     }
   });
 }
@@ -76,30 +78,25 @@ exports.extendLog = function(newInfo, userId) {
       console.log('Could not find interaction logs. Lookup:', userId, sessionId);
     } else {
       var l = logs[0];
-      if (logExtension) {
-        l.log.push.apply(l.log, logExtension);
-        l.markModified('log');
+
+      var pushData = [
+        ['log', logExtension],
+        ['documentSize', documentSize],
+        ['windowSize', windowSize],
+        ['vizSizes', vizSizes],
+        ['vizLocations', vizLocations],
+        ['tooltips', tooltips]
+      ];
+
+      function pushDataFn(key, newInfo) {
+        if (newInfo) {
+          l[key].push.apply(l[key], newInfo);
+          l.markModified(key);
+        }
       }
-      if (documentSize) {
-        l.documentSize.push.apply(l.documentSize, documentSize);
-        l.markModified('documentSize');
-      }
-      if (windowSize) {
-        l.windowSize.push.apply(l.windowSize, windowSize);
-        l.markModified('windowSize');
-      }
-      if (vizSizes) {
-        l.vizSizes.push.apply(l.vizSizes, vizSizes);
-        l.markModified('vizSizes');
-      }
-      if (vizLocations) {
-        l.vizLocations.push.apply(l.vizLocations, vizLocations);
-        l.markModified('vizLocations');
-      }
-      if (tooltips) {
-        l.tooltips.push.apply(l.tooltips, tooltips);
-        l.markModified('tooltips');
-      }
+
+      pushData.forEach(function(d) { pushDataFn(d[0], d[1]); });
+
       l.save();
       console.log('extended Log!');
     }

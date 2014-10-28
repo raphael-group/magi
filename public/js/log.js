@@ -102,6 +102,7 @@ $('#annotation-form #inputs #submit').click(function(e) {
 $().ready(function () {
   lastSentTime = Date.now();
   MAGI_sessionLogStart = Date.now();
+  startLog();
 });
 
 
