@@ -107,6 +107,7 @@ $().ready(function () {
 
 
 function resizeEvent() {
+  if(!loggingEnabled) return;
   var s = getSizes();
   MAGI_resizes.documentSize.push(s.documentSize);
   MAGI_resizes.windowSize.push(s.windowSize);
@@ -115,6 +116,7 @@ function resizeEvent() {
 }
 
 function getSizes() {
+  if(!loggingEnabled) return;
   var time = Date.now();
   var documentSize = {width:$(document).width(), height:$(document).height()},
       windowSize = {width:$(window).width(), height:$(window).height()},
