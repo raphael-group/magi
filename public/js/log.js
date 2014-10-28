@@ -210,6 +210,7 @@ function extendLogEvents() {
   };
 }
 
+// Each log should be ~40 bytes
 function addToLog(e, event) {
   if(!loggingEnabled) return;
   var x = e.pageX,
@@ -220,11 +221,14 @@ function addToLog(e, event) {
   trackTooltips(time);
   // Send the log if it's above a certain length
   // 5000 entries takes roughly 90 seconds of constant mouse events
+  // Each full entry (tooltip + event) ≈ 100 bytes
+  // --> 5000 entries * 100b = 500 Kb
   if( MAGI_interactionsLog.length > 5000) {
     extendLogEvents();
   }
 }
 
+// Each tooltip should be ~56 bytes
 function trackTooltips(time) {
   var tip = d3.selectAll('div.d3-tip');
 
