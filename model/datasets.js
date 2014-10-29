@@ -118,7 +118,6 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 	}
 
 	// Filter datasets that aren't describing the same data
-	console.log(datasets)
 	var data_matrix_name = datasets[0].data_matrix_name;
 
 	datasets = datasets.filter(function(d){

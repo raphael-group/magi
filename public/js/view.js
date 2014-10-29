@@ -115,7 +115,7 @@ function view(){
 
 	// Create each element's style by merging in the dataset colors and
 	// finding the width of each container
-	console.log(data)
+	console.log(data.sampleAnnotations)
 	var genes = data.genes,
 		datasets = data.datasets;
 
