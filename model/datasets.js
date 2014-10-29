@@ -112,10 +112,13 @@ exports.mutGenesList = function snvlist(genes, dataset_ids, callback){
 
 exports.createHeatmap = function createHeatmap(genes, datasets, samples, callback){
 	// Make sure the parameters were passed correctly
-	if (genes.length == 0 || datasets.length == 0 || !datasets[0].data_matrix_name)
+	if (genes.length == 0 || datasets.length == 0 || !datasets[0].data_matrix_name){
 		callback("", {});
+		return;
+	}
 
 	// Filter datasets that aren't describing the same data
+	console.log(datasets)
 	var data_matrix_name = datasets[0].data_matrix_name;
 
 	datasets = datasets.filter(function(d){
