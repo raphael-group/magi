@@ -115,7 +115,6 @@ function view(){
 
 	// Create each element's style by merging in the dataset colors and
 	// finding the width of each container
-	console.log(data.sampleAnnotations)
 	var genes = data.genes,
 		datasets = data.datasets;
 
@@ -596,7 +595,6 @@ function view(){
 			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
 			$.extend(heatmapAnnotations.categories, data.sampleAnnotations.categories);
 			$.extend(heatmapAnnotations.annotationToColor, data.sampleAnnotations.annotationToColor);
-			$.extend(heatmapAnnotations.sampleToAnnotations, data.sampleAnnotations.sampleToAnnotations);
 
 			// Add the cancer types as a heatmap annotation
 			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
@@ -605,8 +603,9 @@ function view(){
 				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
 			});
 			data.mutation_matrix.samples.forEach(function(s){
-				if (s.name in heatmapAnnotations.sampleToAnnotations){
-					heatmapAnnotations.sampleToAnnotations[s.name].splice(0, 0, data.mutation_matrix.sampleToTypes[s._id]);
+				if (s.name in data.sampleAnnotations.sampleToAnnotations){
+					var currentAnnotations = data.sampleAnnotations.sampleToAnnotations[s.name];
+					heatmapAnnotations.sampleToAnnotations[s.name] = [data.mutation_matrix.sampleToTypes[s._id]].concat(currentAnnotations);
 				}
 			});
 		}
