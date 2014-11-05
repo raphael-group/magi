@@ -12,7 +12,7 @@ var AnnotationSchema = new mongoose.Schema({
 	mutation_type: { type: String, required: false},
 	references: { type: Array, required: false, default: [] },
 	support: { type: Array, required: false, default: [] },
-	created_at: { type: Date, default: Date.now }	
+	created_at: { type: Date, default: Date.now }
 });
 
 Database.magi.model( 'Annotation', AnnotationSchema );
@@ -20,6 +20,7 @@ Database.magi.model( 'Annotation', AnnotationSchema );
 // upsert an annotation into MongoDB
 exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
 	var Annotation = Database.magi.model( 'Annotation' );
+
 	var support = {ref: pmid, user_id: user_id, comment: comment};
 	Annotation.findOneAndUpdate(
 		query,
@@ -28,7 +29,7 @@ exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
 		function(err, annotation) {
 			if (err) throw new Error(err);
 			var addReference = annotation.references.filter(function(r){ return r.pmid == pmid }).length == 0;
-			
+
 			if (addReference){
 				annotation.references.push( {pmid: pmid, upvotes: [], downvotes: []} )
 				annotation.markModified('references');
@@ -97,7 +98,7 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 
 	// Read in the file asynchronously
 	var data;
-	function loadAnnotationFile(){	
+	function loadAnnotationFile(){
 		var d = Q.defer();
 		fs.readFile(filename, 'utf-8', function (err, fileData) {
 			// Exit if there's an error, else callback
