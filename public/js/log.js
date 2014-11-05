@@ -143,7 +143,6 @@ function getSizes() {
   vizSizes.time = time;
   vizLocs.time = time;
 
-  console.log(vizLocs, vizSizes);
 
   return {
     documentSize:documentSize,
