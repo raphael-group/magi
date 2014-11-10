@@ -14,5 +14,8 @@
     "bootstrap-multiselect": "latest",
     "shepherd.js": "latest",
     "jquery-mousewheel": "~3.1.12"
+  },
+  "resolutions": {
+    "d3": "3.4"
   }
 }
