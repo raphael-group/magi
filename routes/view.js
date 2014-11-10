@@ -187,94 +187,105 @@ exports.view  = function view(req, res){
 						}
 					}
 
-					// Load the annotations for each gene
-					var Annotation = Database.magi.model( 'Annotation' );
-					Annotation.find({gene: {$in: genes}}, function(err, support){
-						// Throw error if necessary
+					var Genome  = require( "../model/genome" ),
+						missingCNAData = genes.filter(function(g){ return !(g in cna_browser_data); });
+					Genome.addCNARegionData(missingCNAData, function(err, missingRegions){
 						if (err) throw new Error(err);
 
-						// Assemble the annotations
-						var annotations = {};
-						genes.forEach(function(g){ annotations[g] = {}; })
-						support.forEach(function(A){
-							if (!annotations[A.gene][A.mutation_class]){
-								annotations[A.gene][A.mutation_class] = {};
-							}
-							var refs = A.references.map(function(d){
-								var score = d.upvotes.length - d.downvotes.length,
-									vote = d.upvotes.indexOf(user_id) != -1 ? "up" : d.downvotes.indexOf(user_id) != -1 ? "down" : null;
-								return { pmid: d.pmid, score: score,  vote: vote, _id: A._id };
-							});
-							annotations[A.gene][A.mutation_class][A.cancer] = refs;
-						})
-
-						// Assemble data into single Object
-						var mutation_matrix = {
-												M : M,
-												sampleToTypes: sampleToTypes,
-												sampleTypes: Object.keys(typeToSamples),
-												typeToSamples: typeToSamples,
-												samples: samples
-											};
-
-						// Create nodes using the number of mutations in each gene
-						var nodes = genes.map(function(g){
-							var mutSamples = Object.keys( M[g] );
-							return { name: g, heat: mutSamples.length };
+						console.log(missingRegions)
+						missingCNAData.forEach(function(g){
+							console.log(missingRegions[g])
+							cna_browser_data[g] = missingRegions[g];
 						});
 
-						// Add sampleToTypes to each cna_browser gene
-						mutGenes.forEach(function(g){
-							if (g.cnas){
-								cna_browser_data[g.gene].sampleToTypes = cnaSampleToTypes;
-							}
-						});
-
-						// Heatmap is restricted to only mutated samples, which is why we pass that in
-						Dataset.createHeatmap(genes, datasets, samples, function(err, heatmap){
+						// Load the annotations for each gene
+						var Annotation = Database.magi.model( 'Annotation' );
+						Annotation.find({gene: {$in: genes}}, function(err, support){
+							// Throw error if necessary
 							if (err) throw new Error(err);
-							var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
-							PPIs.ppilist(genes, function(err, ppis){
-								PPIs.ppicomments(ppis, user_id, function(err, comments){
-									PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-										var Cancer = Database.magi.model( 'Cancer' );
 
-										Cancer.find({}, function(err, cancers){
-											if (err) throw new Error(err);
+							// Assemble the annotations
+							var annotations = {};
+							genes.forEach(function(g){ annotations[g] = {}; })
+							support.forEach(function(A){
+								if (!annotations[A.gene][A.mutation_class]){
+									annotations[A.gene][A.mutation_class] = {};
+								}
+								var refs = A.references.map(function(d){
+									var score = d.upvotes.length - d.downvotes.length,
+										vote = d.upvotes.indexOf(user_id) != -1 ? "up" : d.downvotes.indexOf(user_id) != -1 ? "down" : null;
+									return { pmid: d.pmid, score: score,  vote: vote, _id: A._id };
+								});
+								annotations[A.gene][A.mutation_class][A.cancer] = refs;
+							})
 
-											// Create a mapping of dataset titles to cancer names
-											var cancerIdToName = {},
-												abbrToCancer = {},
-												datasetToCancer = {};
-											cancers.forEach(function(c){
-												cancerIdToName[c._id] = c.cancer;
-												if (c.abbr) abbrToCancer[c.abbr] = c.cancer;
+							// Assemble data into single Object
+							var mutation_matrix = {
+													M : M,
+													sampleToTypes: sampleToTypes,
+													sampleTypes: Object.keys(typeToSamples),
+													typeToSamples: typeToSamples,
+													samples: samples
+												};
+
+							// Create nodes using the number of mutations in each gene
+							var nodes = genes.map(function(g){
+								var mutSamples = Object.keys( M[g] );
+								return { name: g, heat: mutSamples.length };
+							});
+
+							// Add sampleToTypes to each cna_browser gene
+							mutGenes.forEach(function(g){
+								if (g.cnas){
+									cna_browser_data[g.gene].sampleToTypes = cnaSampleToTypes;
+								}
+							});
+
+							// Heatmap is restricted to only mutated samples, which is why we pass that in
+							Dataset.createHeatmap(genes, datasets, samples, function(err, heatmap){
+								if (err) throw new Error(err);
+								var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
+								PPIs.ppilist(genes, function(err, ppis){
+									PPIs.ppicomments(ppis, user_id, function(err, comments){
+										PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
+											var Cancer = Database.magi.model( 'Cancer' );
+
+											Cancer.find({}, function(err, cancers){
+												if (err) throw new Error(err);
+
+												// Create a mapping of dataset titles to cancer names
+												var cancerIdToName = {},
+													abbrToCancer = {},
+													datasetToCancer = {};
+												cancers.forEach(function(c){
+													cancerIdToName[c._id] = c.cancer;
+													if (c.abbr) abbrToCancer[c.abbr] = c.cancer;
+												});
+												datasets.forEach(function(d){
+													datasetToCancer[d.title] = cancerIdToName[d.cancer_id];
+												});
+
+												// Package data into one object
+												var subnetwork_data = { edges: edges, nodes: nodes, refs: refs, comments: comments };
+												var pkg = 	{
+																abbrToCancer: abbrToCancer,
+																datasetToCancer: datasetToCancer,
+																subnetwork_data: subnetwork_data,
+																mutation_matrix: mutation_matrix,
+																transcript_data: transcript_data,
+																domainDBs: Object.keys(domainDBs),
+																cna_browser_data: cna_browser_data,
+																datasetColors: datasetColors,
+																annotations: annotations,
+																genes: genes,
+																dataset_ids: dataset_ids,
+																heatmap: heatmap,
+																sampleAnnotations: sampleAnnotations
+															};
+
+												// Render view
+												res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user });
 											});
-											datasets.forEach(function(d){
-												datasetToCancer[d.title] = cancerIdToName[d.cancer_id];
-											});
-
-											// Package data into one object
-											var subnetwork_data = { edges: edges, nodes: nodes, refs: refs, comments: comments };
-											var pkg = 	{
-															abbrToCancer: abbrToCancer,
-															datasetToCancer: datasetToCancer,
-															subnetwork_data: subnetwork_data,
-															mutation_matrix: mutation_matrix,
-															transcript_data: transcript_data,
-															domainDBs: Object.keys(domainDBs),
-															cna_browser_data: cna_browser_data,
-															datasetColors: datasetColors,
-															annotations: annotations,
-															genes: genes,
-															dataset_ids: dataset_ids,
-															heatmap: heatmap,
-															sampleAnnotations: sampleAnnotations
-														};
-
-											// Render view
-											res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user });
-
 										});
 									});
 								});

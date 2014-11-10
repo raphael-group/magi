@@ -1,6 +1,7 @@
 // Import required modules
 var mongoose = require( 'mongoose' ),
-    Database = require('./db');
+    Database = require('./db'),
+    Genome = require('./genome');
 
 // Create PPI schema and add it to Mongoose
 var GeneSchema = new mongoose.Schema({
@@ -11,6 +12,30 @@ var GeneSchema = new mongoose.Schema({
 });
 
 Database.magi.model( 'Gene', GeneSchema );
+
+exports.addCNARegionData = function(genes, callback){
+	var Gene = Database.magi.model( 'Gene' ),
+		Q = require( 'q' );
+		regions = {};
+
+	Gene.find({name: {$in: genes}}, function (err, genes){
+		Q.allSettled(
+			genes.map(function(g){
+				var d = Q.defer(),
+					minX = g.start - 1000000, // return genes within 1Mb
+					maxX = g.end + 1000000;
+				Genome.getGenesinRange(g.chr, minX, maxX, function (err, neighbors){
+					if(err) console.log(err);
+					var datum = {gene: g.name, segments: [], neighbors: neighbors};
+					datum.region = {chr: g.chr, minSegX: minX, maxSegX: maxX};
+					regions[g.name] = datum;
+					d.resolve();
+				});
+				return d.promise;
+			})
+		).then(function(){ callback("", regions); });
+	});
+}
 
 exports.getGenesinRange = function(chr, start, end, callback){
 	var Gene = Database.magi.model( 'Gene' );
