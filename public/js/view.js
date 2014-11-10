@@ -582,7 +582,7 @@ function view(){
 		cellWidth: 20,
 		fontSize: '14px',
 		fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0])-55, // subtract off left margin
+		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0]), // subtract off left margin
 		margins: {left: 0, right: 0, top: 0, bottom: 0}
 	};
 
