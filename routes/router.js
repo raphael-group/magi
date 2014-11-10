@@ -59,6 +59,8 @@ exports.saveShareURL = share.saveShareURL;
 
 // Session logs
 exports.saveLog = log.saveLog;
+exports.startLog = log.startLog;
+exports.extendLog = log.extendLog;
 exports.isLoggingEnabled = log.isLoggingEnabled;
 exports.logConsent = log.logConsent;
 exports.userGaveConsent = log.userGaveConsent;
