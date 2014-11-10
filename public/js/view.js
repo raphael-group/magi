@@ -285,7 +285,8 @@ function view(){
 	}
 
 	// Add the mutation matrix
-	var annotations = data.annotations;
+	var annotations = data.annotations,
+		sampleToIndex;
 	if (data.mutation_matrix.samples.length > 0){
 		var m2Chart = mutation_matrix({style: style.mutation_matrix})
 						.addCoverage()
@@ -301,8 +302,10 @@ function view(){
 
 		m2.datum(data.mutation_matrix);
 		m2Chart(m2);
+		sampleToIndex = m2Chart.sampleOrder();
 	} else {
 		m2.append("b").text("No aberrations to display.")
+		sampleToIndex = {};
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// Add the subnetwork plot
@@ -612,9 +615,7 @@ function view(){
 
 		// Draw the heatmap
 		var heatmapAnnotationFn = generateAnnotations(annotations);
-		var heatmapChart = d3.select(heatmapElement)
-				  .datum(data.heatmap)
-				  .call(heatmap({style:heatmapStyle})
+		var heatmapChart = heatmap({style:heatmapStyle})
 					  .addYLabels()
 					  .addXLabels()
 					  .addLegend(true)
@@ -642,7 +643,16 @@ function view(){
 					  	// Set the annotation form
 					  	setAnnotation(d.y, mutTy, cancerTy, {});
 					  })
-				  );
+
+		d3.select(heatmapElement)
+				  .datum(data.heatmap)
+				  .call(heatmapChart);
+
+		// Have the heatmap update sample order when the mutation matrix does
+		heatmapChart.sampleOrder(m2Chart.sampleOrder());
+		$("ul#sample-sort-list").click(function(event) {
+			heatmapChart.sampleOrder(m2Chart.sampleOrder());	
+		});
 	}
 	else{
 		$(heatmapElement).parent().hide();
