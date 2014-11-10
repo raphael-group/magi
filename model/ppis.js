@@ -46,11 +46,16 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 		comments = {};
 	ppis.forEach(function(ppi){
 		idToPPI[ppi._id] = ppi;
-		if (!(ppi.source in comments)) comments[ppi.source] = {};
-		if (!(ppi.target in comments[ppi.source])) comments[ppi.source][ppi.target] = {};
-		if (!(ppi.network in comments[ppi.source][ppi.target])) comments[ppi.source][ppi.target][ppi.network] = {};
+		// Sort the names so we don't have to copy the data twice
+		var sortedNames = [ppi.source, ppi.target].sort(),
+			source= sortedNames[0],
+			target = sortedNames[1];
+
+		if (!(source in comments)) comments[source] = {};
+		if (!(target in comments[source])) comments[source][target] = {};
+		if (!(ppi.network in comments[source][target])) comments[source][target][ppi.network] = {};
 		ppi.references.forEach(function(ref){
-			comments[ppi.source][ppi.target][ppi.network][ref.pmid] = "";
+			comments[source][target][ppi.network][ref.pmid] = "";
 		})
 	});
 
