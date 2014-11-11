@@ -192,7 +192,6 @@ exports.view  = function view(req, res){
 					Genome.addCNARegionData(missingCNAData, function(err, missingRegions){
 						if (err) throw new Error(err);
 
-						console.log(missingRegions)
 						missingCNAData.forEach(function(g){
 							console.log(missingRegions[g])
 							cna_browser_data[g] = missingRegions[g];
