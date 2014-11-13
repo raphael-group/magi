@@ -193,7 +193,6 @@ exports.view  = function view(req, res){
 						if (err) throw new Error(err);
 
 						missingCNAData.forEach(function(g){
-							console.log(missingRegions[g])
 							cna_browser_data[g] = missingRegions[g];
 						});
 
@@ -226,6 +225,11 @@ exports.view  = function view(req, res){
 													typeToSamples: typeToSamples,
 													samples: samples
 												};
+
+							// Sort genes by coverage
+							genes = genes.sort(function(a, b){
+								return Object.keys(M[a]).length > Object.keys(M[b]).length ? -1 : 1;
+							});
 
 							// Create nodes using the number of mutations in each gene
 							var nodes = genes.map(function(g){

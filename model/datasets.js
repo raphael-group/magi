@@ -134,6 +134,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			samples = samples.concat(d.data_matrix_samples.map(function(d){ return {name: d}; }));
 		})
 	}
+	var sampleNames = samples.map(function(d){ return d.name; });
 
 	// Construct the DataMatrixRow query
 	var DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
@@ -150,7 +151,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			// - ys = column names
 			// - cell = number
 			// - name = descriptor of data
-			var heatmap = {xs: [], ys: genes, cells: [], name: data_matrix_name },
+			var heatmap = {xs: sampleNames, ys: genes, cells: [], name: data_matrix_name },
 				geneToDatasetToRow = {};
 
 			// Create a mapping of genes -> dataset_ids -> data matrix rows
@@ -158,7 +159,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			rows.forEach(function(r){ geneToDatasetToRow[r.gene][r.dataset_id] = r; });
 
 			// Iterate over the genes and datasets to construct the unified heatmap
-			var sampleToMut = {};
+			var sampleToMut = {}, sampleToData = {};
 			samples.forEach(function(d){ sampleToMut[d.name] = true; });
 
 			datasets.forEach(function(d, j){
@@ -169,10 +170,21 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 						// Ignore samples not mutated in the gene set
 						if (!sampleToMut[d.data_matrix_samples[k]]) return;
 						heatmap.cells.push({x: d.data_matrix_samples[k], y: g, value: n });
+						sampleToData[d.data_matrix_samples[k]] = true;
 					});
-					if (i ==0) Array.prototype.push.apply(heatmap.xs, mutSamples);
 				});
 			});
+
+			// Add null for samples without expression data
+			sampleNames.forEach(function(n){
+				if (!sampleToData[n]){
+					console.log(n)
+					genes.forEach(function(g, i){
+						heatmap.cells.push({x: n, y: g, value: null});
+					});
+				}
+			});
+
 			callback("", heatmap);
 		}
 	});// end DataMatrixRow.find

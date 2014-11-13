@@ -497,10 +497,11 @@ function view(){
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add a transcript plot selector, where each transcript is grouped by gene
-	var genes = Object.keys(data.transcript_data),
-		firstGene, firstTranscript;
+	var firstGene, firstTranscript;
 
 	genes.forEach(function(g, i){
+		if (!data.transcript_data[g]) return;
+
 		var transcripts = Object.keys(data.transcript_data[g]).map(function(t){
 			return { name: t, numMutations: data.transcript_data[g][t].mutations.length };
 		});
@@ -681,10 +682,10 @@ function view(){
 	}
 
 	// Create the CNA genes data
-	var cnaGenes = Object.keys(data.cna_browser_data).map(function(g){
-		return { name: g, numCNAs: data.cna_browser_data[g].segments.length };
-	});
-	cnaGenes.sort(function(a, b){ return a.numCNAs < b.numCNAs ? 1 : -1; });
+	var cnaGenes = genes.filter(function(g){ return g in data.cna_browser_data; })
+		.map(function(g){
+			return { name: g, numCNAs: data.cna_browser_data[g].segments.length };
+		});
 
 	// Watch the CNA browser selector to update the current CNA browser on change
 	cnaBrowserSelect.selectAll(".cna-option")
