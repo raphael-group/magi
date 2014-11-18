@@ -52,9 +52,10 @@ $(document).ready(function() {
         return true;
     });
 
+    $(geneListEl).on("change", function(){ $(geneListEl).val($(geneListEl).val().toUpperCase()); });
+
     function status(msg, className){
         $(formEl + " div#status").attr("class", className);
         $(formEl + " div#status").html( msg );
     }
 });
-
