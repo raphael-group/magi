@@ -49,7 +49,7 @@ exports.uploadDataset = function uploadDataset(req, res){
     	if (files.CNAs) cna_file = files.CNAs.path;
     	else cna_file = null;
 
-    	if (files.aberrations) aberration_file = files.aberrations.path;
+    	if (files.Aberrations) aberration_file = files.Aberrations.path;
     	else aberration_file = null;
 
     	if (files.SampleAnnotations) samples_file = files.SampleAnnotations.path;
