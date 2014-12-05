@@ -356,6 +356,9 @@ block belowTheFold
         buttonWidth: 350,
         filterBehavior: 'both'
       });
+      //- Have all datasets selected by default
+      $('#dataset-multiselect').multiselect('selectAll', false);
+      $('#dataset-multiselect').multiselect('updateButtonText');
       //- Have the reset button uncheck all datasets and set the gene list to cohesin
       $("a#reset").on("click", function(){
           $('#dataset-multiselect').multiselect('deselect', datasetToCheckboxes.all);
