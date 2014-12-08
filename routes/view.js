@@ -85,7 +85,7 @@ exports.view  = function view(req, res){
 
 			// Create a map of each type to the number of mutated samples
 			var typeToSamples = {};
-			datasets.forEach(function(d){ typeToSamples[d.title] = d.samples;  });
+			datasets.forEach(function(d){ typeToSamples[d.title] = d.samples; });
 
 			Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
 				// Create a list of all the transcripts in the mutated genes
@@ -185,6 +185,19 @@ exports.view  = function view(req, res){
 							var updatedMutations = trsData.mutations.concat(G.snvs[t].mutations);
 							trsData.mutations = updatedMutations;
 						}
+					}
+
+					// If no genes were provided, just add all the samples in the case
+					// that there are sample annotations
+					if (genes.length == 0 || (genes.length === 1 && genes[0] === "")){
+						datasets.forEach(function(d){
+							d.samples.forEach(function(s){
+								var _id = s;
+								sampleToTypes[_id] = datasetNames[d.dataset_id];
+								sampleToTypes[s] = d.title;
+								samples.push( {_id: _id, name: s, z_index: 1 } );
+							})
+						});
 					}
 
 					var Genome  = require( "../model/genome" ),

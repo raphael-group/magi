@@ -225,24 +225,6 @@ block body
         select(class="form-control", id="cna-browser-select")
         div(id="cna-browser")
 
-    br
-    br
-    div(style="margin-left: 20px;min-width: 400px; max-width: 600px; margin-right: 200px")
-      input(id="magiConsentViewToggle", style="display:inline-block;margin-right:5px", type="checkbox")
-      p(style="display:inline-block") I do not want to improve the development of MAGI by sending usage information. <a href="" id="magi-loggingReadMore" style="color:rgb(100,100,100)">(Read More)</a>
-      div(id="magi-loggingReadMoreDiv")
-        blockquote
-          p We don't track identifying information and we anonymize queries. This means that our logs don't track your name or any other
-            | information about who you are, and the genes and datasets you look at are scrambled
-            | to respect research privacy. Logs are made up of anonymized query information and
-            | interaction information, like how visualizations are being used.
-          p Why collect this information? Cancer researchers are hard to observe in-lab due to how
-            | spread out geographically they are, which makes developing usable visualization software
-            | challenging. We use information about how you use the tool to understand how the tool is
-            | being used, to identify usability bottlenecks, and come up with new features.
-
-
-
   script(type="text/javascript").
     var data = !{JSON.stringify(data)},
         showDuplicates = !{showDuplicates};
@@ -286,7 +268,7 @@ block belowTheFold
       script(src='/js/save.js').
       script(src='/js/view.js').
       script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
-      script(src='/js/log.js').
+      //- script(src='/js/log.js').
       script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
       //- Define behavior for the scroll panel to stick to the top of the window
       script(type="text/javascript").

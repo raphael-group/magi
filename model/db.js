@@ -2,13 +2,13 @@
 var mongoose = require( 'mongoose' );
 
 // Create dbURI
-var dbURI = "mongodb://localhost/gd3";
+var dbURI = "mongodb://localhost/magi-paad";
 
 // Create the database connection
 //mongoose.connect(dbURI);
 var magi = mongoose.createConnection(dbURI);
 
-var logDB = magi.useDb('magi-logging');
+var logDB = magi.useDb('magi-paad-logging');
 
 exports.magi = magi;
 exports.logDB = logDB;

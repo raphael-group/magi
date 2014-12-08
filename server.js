@@ -196,11 +196,11 @@ app.get('/sitemap.xml', function(req, res) {
 app.post('/share', routes.saveShareURL);
 
 // Session logging
-app.post('/startLog', routes.startLog);
-app.post('/extendLog', routes.extendLog);
-app.get('/logEnabled', routes.isLoggingEnabled);
-app.post('/logConsent', routes.logConsent);
-app.post('/userGaveConsent', routes.userGaveConsent);
+// app.post('/startLog', routes.startLog);
+// app.post('/extendLog', routes.extendLog);
+// app.get('/logEnabled', routes.isLoggingEnabled);
+// app.post('/logConsent', routes.logConsent);
+// app.post('/userGaveConsent', routes.userGaveConsent);
 
 
 // redirect all others to the index (HTML5 history)
