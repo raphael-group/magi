@@ -19,7 +19,7 @@ app.locals.moment = require('moment');
 app.locals.production = app.get('env') === 'production';
 
 // Set the feedback widget ID based on whether we are in dev or production
-app.locals.webengageID = app.get('env') === 'production' ? '~13410664b' : '~47b66aaa';
+app.locals.webengageID = app.get('env') === 'production' ? '~991997c1' : '~47b66aaa';
 
 // Load models to register their schemas
 var user = require( './model/user' ),
@@ -59,7 +59,7 @@ if (app.get('env') === 'development') {
 // production only
 if (app.get('env') === 'production') {
   // TODO
-  app.set('site url', 'http://magi.cs.brown.edu/')
+  app.set('site url', 'http://paad.cs.brown.edu/')
 };
 
 // config passport to use Google OAuth2

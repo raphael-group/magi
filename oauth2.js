@@ -1,8 +1,8 @@
 var ids = {
 	google: {
-		clientID: "1029116400137-na3llnm5cddiu5fe372nmhc5981pj2s0.apps.googleusercontent.com",
-		clientSecret: "4of66UHCmZDbjYn0kiFF-AOW",
-		callbackURLSuffix: "auth/google/callback"
+	    clientID: "1029116400137-nmtdq1e0tu3jnuuo7fth0u363rt0m1a7.apps.googleusercontent.com",
+	    clientSecret: "tgR77tq0-9HOXqYQZ3-Vio-P",
+	    callbackURLSuffix: "auth/google/callback"
 	}
 }
 
