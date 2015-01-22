@@ -178,7 +178,6 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			// Add null for samples without expression data
 			sampleNames.forEach(function(n){
 				if (!sampleToData[n]){
-					console.log(n)
 					genes.forEach(function(g, i){
 						heatmap.cells.push({x: n, y: g, value: null});
 					});

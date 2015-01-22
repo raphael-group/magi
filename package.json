@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node server",
-    "postinstall": "bower install"
+    "postinstall": "./node_modules/bower/bin/bower install"
   },
   "dependencies": {
     "express": "3.4.x",
