@@ -219,8 +219,9 @@ function validateData(dataset, color, groupName, dataMatrixName, aberrationFile,
             status(fileName+' file is too large. Please upload a smaller file.', warningClasses);
             return false;
         }
-        else if(file && file.type != 'text/plain' && file.type != 'text/tab-separated-values'){
-            status(fileName+' file upload: only text and tsv files are allowed.', warningClasses);
+        else if(file && file.type != 'text/plain' && file.type != 'text/tab-separated-values' && file.name.substr(-4) != ".maf"){
+            console.log(file, file.type)
+            status(fileName+' file upload: only MAF, text, and tsv files are allowed.', warningClasses);
             return false;
         }
         else {

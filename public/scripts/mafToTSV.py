@@ -4,8 +4,10 @@
 import re, sys, math, os, json
 
 # Hard-code locations of transcript annotations
-transcriptFile = dict(refseq="refseq_transcript_lengths_new.json",
-                      ensembl="ensembl_transcript_lengths_new.json")
+dirname, filename = os.path.split(os.path.abspath(__file__))
+print "HELLLOOOOO"
+transcriptFile = dict(refseq=dirname + "/refseq_transcript_lengths_new.json",
+                      ensembl=dirname + "/ensembl_transcript_lengths_new.json")
 # Parse args
 def parse_args(input_list=None):
     # Parse arguments
@@ -17,6 +19,7 @@ def parse_args(input_list=None):
     parser.add_argument('-m', '--maf_file', required=True, help='MAF file.')
     parser.add_argument('-t', '--transcript_db', required=True,
                         choices=['refseq', 'ensembl'])
+    parser.add_argument('-s', '--sample_file', required=False, help="Sample whitelist.")
     parser.add_argument('-o', '--output_prefix', required=True, help='Output prefix.')
 
     if input_list: parser.parse_args(input_list, namespace=args)
@@ -46,16 +49,16 @@ def snp_mutation( aa_change ):
 def splice_site_mutation(aa_change, codon):
     aao, aan, aaloc = "", "", ""
 
-    # cpauter formats like p.A222_splice or e20-1
-    if re.search(r'^p\.[A-Z]\d+_splice', aa_change):
+    # capture formats like p.A222_splice or e20-1 or p.321_splice
+    if re.search(r'^p\.[A-Z]\d+_splice', aa_change): #p.A222_splice
         aao = aa_change[2]
         aan = 'splice'
-        aaloc = aa_change[3:-7]                             
-    #elif re.search(r'p.([\w*]+)?(\d+)([\w*]+)', aa_change):
-    #    aao = re.search(r'p.([\w*]+)?(\d+)([\w*]+)', aa_change).group(1)
-    #    aan = re.search(r'p.([\w*]+)?(\d+)([\w*]+)', aa_change).group(3)
-    #    aaloc = re.search(r'p.([\w*]+)?(\d+)([\w*]+)', aa_change).group(2)  
-    #    aao = "" if aao == None
+        aaloc = re.search(r'^p\.[A-Z](\d+)_splice', aa_change).group(1)
+    if re.search(r'^p\.\d+_splice', aa_change): # p.333_splice
+        aao = 'splice'
+        aan = 'splice'
+        aaloc = re.search(r'^p\.(\d+)_splice', aa_change).group(1)
+    
     elif re.search(r'^e', aa_change) and re.search(r'c\.(\d+)(\+|\-)(\d+)', codon):
         aao = 'splice'
         aan = 'splice'
@@ -115,9 +118,9 @@ def parse_indices( arr ):
     mutstat = ["mutation_status"] # FOR GERMLINE CHECKING
     mutty = ["variant_type"] # MUTATION TYPE
     loc = ["start_position"] # FOR POSITION OF MUTATION
-    codon = ["codon_change", "c_position", "c_position_wu", "chromchange"] # CODON
-    aachange = ["protein_change", "amino_acid_change", "aachange", "amino_acid_change_wu"] # Protein change
-    transcript_id = ["refseq_mrna_id", "transcript_name", "transcript_name_wu", "transcriptid"]
+    codon = ["codon_change", "c_position", "c_position_wu", "chromchange", "amino_acids"] # CODON
+    aachange = ["protein_change", "amino_acid_change", "aachange", "amino_acid_change_wu", "hgvsp_short"] # Protein change
+    transcript_id = ["refseq_mrna_id", "transcript_name", "transcript_name_wu", "transcriptid", "transcript_id"]
 
     header_terms = [hugo, tumor, classtype, mutty, validstat, mutstat,
                     loc, transcript_id, codon, aachange]
@@ -170,14 +173,23 @@ def parse_maf( maf_file, transcripts ):
     NO_TRANSCRIPT = '--'
 
     with open(maf_file) as MAF:
-        # Parse the header of the MAF file
-        indices = parse_indices( MAF.readline().rstrip().split("\t") )
-        for line in MAF:
+        indices = None
+        for i, line in enumerate(MAF):
+            # Skip comment lines 
+            if line.startswith("#"): continue
+
+            # Parse the header of the MAF file
+            if not indices:
+                indices = parse_indices( line.rstrip().split("\t") )
+                continue
+
+            # Else parse the line
             arr = line.rstrip().split("\t")
             gene, sample, var_class, var_ty, val_stat = [arr[i] for i in indices[:5]]
             mut_stat, loc, transcript, codon, aa_change = [arr[i] for i in indices[5:]]
 
             sample = parse_sample_name( sample.split("-") )
+            gene = gene.replace(".", "-") # Javascript can't have "." in gene names
 
             # Record the mutation type, sample ID, and gene name
             mut_tys.add( var_class )
@@ -212,8 +224,7 @@ def parse_maf( maf_file, transcripts ):
                         else:
                             transcript_info = dict(mutations=[mut], length=length)
                             gene2mutations[gene][transcript] = transcript_info
-                            
-            
+
     # Print summary to STDOUT
     print "SUMMARY OF MUTATION DATA"
     print "* Samples:", len(samples)
@@ -230,13 +241,21 @@ def run( args ):
     transcripts = json.load( open(transcriptFile[args.transcript_db]) )
     gene2transcripts, samples = parse_maf( args.maf_file, transcripts )
 
+    # Load the samples (if provided)
+    if args.sample_file:
+        with open(args.sample_file) as f:
+            sample_whitelist = set( l.replace("\t", " ").rstrip().split()[0] for l in f if not l.startswith("#") )
+            print "* Samples in whitelist:", len(samples & sample_whitelist)
+    else:
+        samples = set()
+
     #  Output as TSV file
     header = "#Gene\tSample\tTranscript\tTranscript_Length\tLocus\t"\
              "Mutation_Type\tOriginal_Amino_Acid\tNew_Amino_Acid"
     tbl = [ header ]
     for gene, transcripts in gene2transcripts.iteritems():
         for t, transcript_data in transcripts.iteritems():
-            
+
             # Extract mutations and transcript length
             mutations = transcript_data['mutations']
             length    = transcript_data['length']
@@ -247,13 +266,24 @@ def run( args ):
                 sample, mut_ty = mut['sample'], mut['ty']
                 aao, aan, locus = mut['aao'], mut['aan'], mut['locus']
 
+                # Skip samples not in the whitelist
+                if not args.sample_file or sample not in sample_whitelist:
+                    sample = "-".join(sample.split("-"))
+                    if args.sample_file and sample not in samples:
+                        continue
+
                 # Add a new row
                 row = [gene, sample, t, length, locus, mut_ty, aao, aan ]
                 tbl.append( "\t".join( map(str, row) ) )
 
+                if not args.sample_file:
+                    samples.add( sample )
+
     # Create output files
-    open("%s-snvs.tsv" % args.output_prefix, "w").write( "\n".join( sorted(tbl) ) )
-    open("%s-samples.tsv" % args.output_prefix, "w").write( "\n".join( sorted(samples) ) )
+    with open("%s-snvs.tsv" % args.output_prefix, "w") as snvFile:
+        snvFile.write( "\n".join( sorted(tbl) ) )
+    # with open("%s-samples.tsv" % args.output_prefix, "w") as sampleFile:
+    #     sampleFile.write( "\n".join( sorted(samples) ) )
 
 
 if __name__ == '__main__': run( parse_args() )
