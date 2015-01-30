@@ -1,5 +1,6 @@
 // Load required modules
 var mongoose = require( 'mongoose' ),
+	Q = require( 'q' ),
 	Dataset  = require( "../model/datasets" ),
 	Database = require('../model/db'),
 	formidable = require('formidable'),
@@ -10,7 +11,7 @@ var mongoose = require( 'mongoose' ),
 
 // must include the '.' otherwise string slicing will be off by one
 var MAF_EXT = '.maf';
-var MAF2TSV_PATH = '../public/scripts/maf2tsv.py';
+var MAF2TSV_PATH = 'public/scripts/mafToTSV.py';
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
@@ -37,38 +38,39 @@ exports.uploadDataset = function uploadDataset(req, res){
 
 	// given a path to a MAF file, call the converter script to create a TSV
 	// and return the path to newly created TSV
-	function convertMaf(path) {
-		// cut off the MAF extension
-		// this prefix will be used by the script to create a file
-		// with name <outputPrefix>.tsv
-		var outputPrefix = path.slice(0, -(MAF_EXT.length));
-		args = ['--maf_file=' + path, 
-				// TODO: how to choose which transcript db?
-				'--transcript_db=' + 'refseq', // 'ensemble',
-				'--output_prefix=', outputPrefix
-			   ];
+	function convertMaf(prefix, ext) {
+		// Set up a promise to return once the child process
+		// is complete
+		var d = Q.defer();
+		if (ext !== MAF_EXT){
+			d.resolve();
+		} else{
+			// Set up the arguments for the command
+			var args = ['--maf_file', prefix + ext,
+					// TODO: how to choose which transcript db?
+					'--transcript_db', 'refseq', // 'ensemble',
+					'--output_prefix', prefix
+				   ],
+				cmd = MAF2TSV_PATH + " " + args.join(" ");
 
-		convert = childProcess.execFile(MAF2TSV_PATH, function(err, stdout,
-															   stderr) {
-			if (err) throw new Error(err);
-
-			console.log('Child Process STDOUT: ' + stdout);
-			console.log('Child Process STDERR: ' + stderr);
-		});
-
-		// not sure if this is necessary since the callback has err
-		convert.on('error', function(err) {
-			console.log('Child processed error: ' + err);
-		});
-
-		convert.on('exit', function (code) {
-			console.log('Child process exited with exit code '+code);
-		});
-
-		var paths = {'snvs' : outputPrefix + "-snvs.tsv",
-					 'samples' : outputPrefix + "-samples.tsv"};
-		console.log(paths);
-		return paths;
+			// Execute the process, log it's intermediate output,
+			// and exit and resovlve the promise once it's done
+			var child = childProcess.exec(cmd);
+			child.on('stdout', function(stdout){
+				console.log(stdout)
+			});
+			child.on('stderr', function(stderr){
+				console.log(stderr);
+			})
+			child.on('close', function(code) {
+				console.log('closing code: ' + code);
+			});
+			child.on('exit', function (code) {
+				console.log('Child process exited with exit code '+code);
+				d.resolve();
+			});
+		}
+		return d.promise;
 	};
 
 	form.parse(req, function(err, fields, files) {
@@ -105,19 +107,15 @@ exports.uploadDataset = function uploadDataset(req, res){
 		// if the uploaded SNV file is a MAF file, convert it to TSV and 
 		// change the path of the samples file to the samples TSV output by the
 		// conversion script
-		// TODO: is it correct to assume that if the SNV file is MAF, there 
-		// is no samples file and that it's correct to overwrite the samples
-		// path?
-		if (snv_file && snv_file.slice(-3) === MAF_EXT) {
-			var newPaths = convertMaf(snv_file);
-			snv_file = newPaths['snvs'];
-			samples_file = newPaths['samples'];
-		}
+		var prefix = snv_file ? snv_file.slice(0, -(MAF_EXT.length)) : "",
+			ext = snv_file ? snv_file.slice(-(MAF_EXT.length)) : "";
 
-		// Pass the files to the parsers
-		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
-								   data_matrix_file, data_matrix_name, annotation_colors_file, cancer_input,
-								   false, color, req.user._id)
+		convertMaf(prefix, ext).then(function(){
+			if (ext == MAF_EXT){ snv_file = prefix + "-snvs.tsv"; }
+			// Pass the files to the parsers
+			Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
+									   data_matrix_file, data_matrix_name, annotation_colors_file, cancer_input,
+									   false, color, req.user._id)
 			.then(function(){
 				// Once the parsers have finished, destroy the tmp files
 				if (snv_file) fs.unlinkSync( snv_file );
@@ -133,6 +131,7 @@ exports.uploadDataset = function uploadDataset(req, res){
 			.fail(function(){
 				res.send({ status: "Data could not be parsed." });
 			});
+		});
 	});
 }
 
