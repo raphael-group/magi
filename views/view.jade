@@ -20,23 +20,23 @@ block body
             ul(id="saveOptList", style="padding:0px;list-style:none;")
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="cna", style="margin-right:5px;")
+                  input(type="checkbox", id="cna-download", style="margin-right:5px;")
                   | CNA view
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="datamatrix", style="margin-right:5px;")
+                  input(type="checkbox", id="heatmap-download", style="margin-right:5px;")
                   | Heatmap
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="mutmatrix", style="margin-right:5px;")
+                  input(type="checkbox", id="aberrations-download", style="margin-right:5px;")
                   | Aberrations view
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="subnetwork", style="margin-right:5px;")
+                  input(type="checkbox", id="network-download", style="margin-right:5px;")
                   | Network view
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="transcript", style="margin-right:5px;")
+                  input(type="checkbox", id="transcript-download", style="margin-right:5px;")
                   | Transcript view
             a(id="downloadLink", style="cursor:pointer")
               | &raquo; Download as SVG
@@ -199,7 +199,7 @@ block body
               | &nbsp;&nbsp;
               a(id="printSubNet", title="Print network.")
                   span(class="glyphicon glyphicon-print")
-          div(id="subnetwork")
+          div(id="network")
 
       div(class="half-page-view rightside")
           h3
@@ -208,8 +208,8 @@ block body
               | &nbsp;&nbsp;
               a(id="printTrnAnt", title="Print transcript view.")
                   span(class="glyphicon glyphicon-print")
-          select(class="form-control", id="transcript-plot-select")
-          div(id="transcript-plot")
+          select(class="form-control", id="transcript-select")
+          div(id="transcript")
 
       hr(style="clear:both;margin:0px;")
 
@@ -222,8 +222,8 @@ block body
             a(id="printCnaViz", title="Print CNA view.")
                 span(class="glyphicon glyphicon-print")
 
-        select(class="form-control", id="cna-browser-select")
-        div(id="cna-browser")
+        select(class="form-control", id="cnas-select")
+        div(id="cnas")
 
     br
     br
@@ -274,17 +274,11 @@ block belowTheFold
       script(src='/components/jquery/dist/jquery.min.js').
       script(src='/components/bootstrap/dist/js/bootstrap.min.js').
       script(src='/components/d3/d3.min.js').
-      script(src='/components/d3-tip/index.js').
       script(src='/components/hogan/web/builds/2.0.0/hogan-2.0.0.min.js').
-      //- script(src="/components/gd3/dist/js/gd3.min.js")
-      script(src='/components/gd3/dist/js/cna-browser.js').
-      script(src='/components/gd3/dist/js/transcript-plot.js').
-      script(src='/components/gd3/dist/js/mutation-matrix.js').
-      script(src='/components/gd3/dist/js/subnetwork.js').
-      script(src='/components/gd3/dist/js/heatmap.js').
+      script(src="/components/gd3prime/gd3.js")
       script(src='components/shepherd.js/shepherd.min.js').
       script(src='/js/save.js').
-      script(src='/js/view.js').
+      script(src='/js/view-prime.js').
       script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
       script(src='/js/log.js').
       script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').

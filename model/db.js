@@ -2,7 +2,7 @@
 var mongoose = require( 'mongoose' );
 
 // Create dbURI
-var dbURI = "mongodb://localhost/gd3";
+var dbURI = "mongodb://localhost/magi";
 
 // Create the database connection
 //mongoose.connect(dbURI);

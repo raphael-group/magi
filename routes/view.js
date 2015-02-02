@@ -234,7 +234,7 @@ exports.view  = function view(req, res){
 							// Create nodes using the number of mutations in each gene
 							var nodes = genes.map(function(g){
 								var mutSamples = Object.keys( M[g] );
-								return { name: g, heat: mutSamples.length };
+								return { name: g, value: mutSamples.length };
 							});
 
 							// Add sampleToTypes to each cna_browser gene
@@ -269,15 +269,15 @@ exports.view  = function view(req, res){
 												});
 
 												// Package data into one object
-												var subnetwork_data = { edges: edges, nodes: nodes, refs: refs, comments: comments };
+												var network_data = { edges: edges, nodes: nodes, refs: refs, comments: comments, title: "Mutations" };
 												var pkg = 	{
 																abbrToCancer: abbrToCancer,
 																datasetToCancer: datasetToCancer,
-																subnetwork_data: subnetwork_data,
-																mutation_matrix: mutation_matrix,
-																transcript_data: transcript_data,
+																network: network_data,
+																aberrations: mutation_matrix,
+																transcripts: transcript_data,
 																domainDBs: Object.keys(domainDBs),
-																cna_browser_data: cna_browser_data,
+																cnas: cna_browser_data,
 																datasetColors: datasetColors,
 																annotations: annotations,
 																genes: genes,

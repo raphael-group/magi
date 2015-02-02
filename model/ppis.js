@@ -63,7 +63,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 	var ppiIDs = ppis.map(function(ppi){ return ppi._id; });
 	PPIVote.find({user_id: user_id, ppi_id: {$in: ppiIDs} }, function (err, votes) {
   		if(err) console.log(err);
-  		
+
   		// Iterate through the votes
   		votes.forEach(function(vote){
   			if (vote.comment){
@@ -93,7 +93,7 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 			// throw error if necessary
 			if (err) throw new Error(err);
 
-			// Determine if this reference already exists			
+			// Determine if this reference already exists
 			var inReferences = false;
 			ppi.references.forEach(function(d){
 				if (d.ref == ref) inReferences = true;
@@ -102,7 +102,7 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 			// Save the reference if it hasn't already been saved
 			if (!inReferences){
 				ppi.references.push( {pmid: ref, upvotes: [], downvotes: [], annotation: true})
-	
+
 				// Save the PPI
 				ppi.save(function(err, model){
 					console.log(err);
@@ -178,7 +178,7 @@ exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
 					if (err) throw new Error(err);
 					d.resolve();
 				});
-			}			
+			}
 		});
 	});
 
@@ -242,7 +242,7 @@ exports.formatPPIs = function formatPPIs(ppis, user_id, callback){
 			source   = arr[0],
 			target   = arr[1],
 			networks = edgeNames[edgeName].map(function(d){ return d.name; });
-		
+
 		// Create a map of each network to its references
 		var references = {};
 		networks.forEach(function(n){ references[n] = []; });
@@ -273,7 +273,7 @@ exports.formatPPIs = function formatPPIs(ppis, user_id, callback){
 			});
 		});
 
-		edges.push({ source: source, target: target, weight: 1, networks: networks, references: references });
+		edges.push({ source: source, target: target, weight: 1, categories: networks, references: references });
 	}
 
 	// Execute callback
