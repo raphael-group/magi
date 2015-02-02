@@ -16,8 +16,8 @@ var SAVEJS_FNAMES = {
   CNA_VIZ: 'cna.svg',
   HMP_VIZ: 'heatmap.svg',
   ABERRS: 'aberrations.svg',
-  SUB_NET: 'subnetwork.svg',
-  TRN_ANT: 'transcript-annotation.svg'
+  SUB_NET: 'network.svg',
+  TRN_ANT: 'transcript.svg'
 }
 
 // error message box
@@ -52,13 +52,13 @@ function downloadVisualizations(saveFn) {
   }
 
   if (saveCheckboxes[SAVEJS_CONST.CNA_VIZ].checked == true) {
-    saveFn('cna-browser', SAVEJS_FNAMES.CNA_VIZ);
+    saveFn('cnas', SAVEJS_FNAMES.CNA_VIZ);
   }
   if (saveCheckboxes[SAVEJS_CONST.TRN_ANT].checked == true) {
-    saveFn('transcript-plot', SAVEJS_FNAMES.TRN_ANT);
+    saveFn('transcript', SAVEJS_FNAMES.TRN_ANT);
   }
   if (saveCheckboxes[SAVEJS_CONST.SUB_NET].checked == true) {
-    saveFn('subnetwork', SAVEJS_FNAMES.SUB_NET);
+    saveFn('network', SAVEJS_FNAMES.SUB_NET);
   }
   if (saveCheckboxes[SAVEJS_CONST.ABERRS].checked == true) {
     saveFn('aberrations', SAVEJS_FNAMES.ABERRS);
@@ -75,15 +75,15 @@ function downloadVisualizations(saveFn) {
 function grabSVG(saveFileName) {
   var svg = null;
   if (saveFileName == SAVEJS_FNAMES.SUB_NET) {
-    svg = d3.select('div#subnetwork #figure');
+    svg = d3.select('div#network svg');
   } else if (saveFileName == SAVEJS_FNAMES.ABERRS) {
     svg = d3.select('div#aberrations svg'); // TOOD: ensure mutation matrix and not legend is selected
   } else if (saveFileName == SAVEJS_FNAMES.TRN_ANT) {
-    svg = d3.select('div#transcript-plot svg');
+    svg = d3.select('div#transcript svg');
   } else if (saveFileName == SAVEJS_FNAMES.CNA_VIZ) {
-    svg = d3.select('div#cna-browser svg#cna-browser');
+    svg = d3.select('div#cnas svg');
   } else if (saveFileName == SAVEJS_FNAMES.HMP_VIZ) {
-    svg = d3.select('div#heatmap svg#figure')
+    svg = d3.select('div#heatmap svg')
   } else {
     console.log('error: unexpected save filename in grabSVG()');
     return;
@@ -226,14 +226,10 @@ var dlPNG = function(divContainerId, saveFileName) {
   var svg = grabSVG(saveFileName).node(),
       png = svgToPng(svg);
 
-  console.log(png);
   png = btoa(png);
-  console.log(png);
-  console.log(jQuery.isPlainObject(png));
+
   $.post('/saveSVG', {'img': png, 'fileName': saveFileName})
      .done(function(png) {
-      console.log(png);
-
       // When the post has returned, create a link in the browser to download the SVG
       // Store the data and create a download link
       var url = window.URL.createObjectURL(new Blob([png], { "type" : "image\/png" }));
@@ -266,16 +262,16 @@ $('#downloadLinkPNG').click(function() {
 //
 function printVisualization(viz) {
   if (viz == SAVEJS_CONST.CNA_VIZ) {
-    saveSVG('cna-browser', SAVEJS_FNAMES.CNA_VIZ).print();
+    saveSVG('cnas', SAVEJS_FNAMES.CNA_VIZ).print();
   }
   if (viz == SAVEJS_CONST.ABERRS) {
     saveSVG('aberrations', SAVEJS_FNAMES.ABERRS).print();
   }
   if (viz == SAVEJS_CONST.SUB_NET) {
-    saveSVG('subnetwork', SAVEJS_FNAMES.SUB_NET).print();
+    saveSVG('network', SAVEJS_FNAMES.SUB_NET).print();
   }
   if (viz == SAVEJS_CONST.TRN_ANT) {
-    saveSVG('transcript-plot', SAVEJS_FNAMES.TRN_ANT).print();
+    saveSVG('transcript', SAVEJS_FNAMES.TRN_ANT).print();
   }
   if (viz == SAVEJS_CONST.HMP_VIZ) {
     saveSVG('heatmap', SAVEJS_FNAMES.HMP_VIZ).print();
