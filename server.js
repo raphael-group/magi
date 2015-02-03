@@ -2,9 +2,17 @@
  * Module dependencies
  */
 
-var express  = require('express'),
-  http     = require('http'),
-  path     = require('path'),
+var express = require('express'),
+  path = require('path'),
+  favicon = require('serve-favicon'),
+  logger = require('morgan'),
+  compress = require('compression'),
+  methodOverride = require('method-override'),
+  bodyParser = require('body-parser'),
+  multer = require('multer'),
+  errorHandler = require('errorhandler'),
+  cookieParser = require('cookie-parser'),
+  cookieSession = require('cookie-session'),
   Database       = require('./model/db'),
   mongoose = require('mongoose'),
   config   = require('./oauth2.js'),
@@ -52,7 +60,7 @@ passport.deserializeUser(function(id, done) {
 
 // development only
 if (app.get('env') === 'development') {
-  app.use(express.errorHandler());
+  app.use(errorHandler());
   app.set('site url', 'http://localhost:8000/')
 }
 
@@ -91,20 +99,20 @@ passport.use(new GoogleStrategy({
 app.set('port', process.env.PORT || 8000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
-app.use(express.compress());
-app.use(express.logger('dev'));
-app.use(express.cookieParser());
-app.use(express.cookieSession({
+app.use(compress());
+app.use(logger('dev'));
+app.use(cookieParser());
+app.use(cookieSession({
   secret: 'magi_for_president!',
   cookie: { maxAge: 60 * 60 * 1000 * 24 } // store for three days
 }));
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(express.methodOverride());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(methodOverride());
+app.use(multer());
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(app.router);
 
 /**
  * Routes
@@ -261,6 +269,6 @@ function saveSVG(req, res) {
  * Start Server
  */
 
-http.createServer(app).listen(app.get('port'), function () {
+app.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });
