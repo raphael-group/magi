@@ -80,6 +80,14 @@ function view(){
 					 {name: "cnas", el: cnasElement},
 					 {name: "heatmap", el: heatmapElement} ];
 
+	function mutationToName(m){
+		m = m.toLowerCase();
+		if (m == "snv") return "SNV";
+		else if (m == "inactive_snv") return "Inactivating SNV";
+		else if (m == "amp") return "Amplification";
+		else if (m == "del") return "Deletion";
+		else return m;
+	}
 
 	// Set up the styles for the four views
 	var genes = data.genes,
@@ -126,6 +134,36 @@ function view(){
 			.call(gd3.mutationMatrix({
 				style: style.aberrations
 			}));
+
+		// Add tooltips
+		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
+		cells.classed('gd3-tipobj', true);
+		var aberrationsTooltips = [];
+		cells.each(function(d) {
+			// Create the tooltip data for the data that will always be present
+			var geneName    = d.rowLabel,
+				tooltipData = [
+					{ type: 'text', text: 'Sample: ' + d.colLabel },
+					{ type: 'text', text: 'Type: ' + d.cell.dataset},
+					{ type: 'text', text: 'Mutation: ' + mutationToName(d.cell.type) }
+				];
+
+			// Add the annotations
+			if (data.aberrations.annotations){
+				data.aberrations.annotations.categories.forEach(function(c, i){
+					var value = data.aberrations.annotations.sampleToAnnotations[d.colLabel][i];
+					if (!value) value = "No data";
+					tooltipData.push({type: 'text', text: c + ': ' + value});
+				});
+			}
+
+			// Add the tooltip
+			aberrationsTooltips.push(tooltipData.map(gd3.tooltip.datum) );
+		});
+
+		aberrations.select('svg').call(gd3.tooltip.make().useData(aberrationsTooltips));
+
+
 	} else {
 		aberrations.html("<b>No aberrations</b>.")
 	}
@@ -153,20 +191,65 @@ function view(){
 			});
 			data.heatmap.annotations = heatmapAnnotations;
 		}
+
+		// Draw the heatmap
 		heatmap.datum(data.heatmap)
 			.call(gd3.heatmap({
 				style: style.heatmap
 			}));
+
+		// Add tooltips
+		var cells = heatmap.selectAll('.gd3heatmapCells rect');
+		cells.classed('gd3-tipobj', true);
+		var heatmapTooltips = [];
+		cells.each(function(d) {
+			// Create the tooltip data for the data that will always be present
+			var tooltipData = [
+					{ type: 'text', text: 'Sample: ' + d.x },
+					{ type: 'text', text: 'Value: ' + d.value}
+				];
+
+			// Add the annotations
+			if (data.heatmap.annotations){
+				data.heatmap.annotations.categories.forEach(function(c, i){
+					var value = data.heatmap.annotations.sampleToAnnotations[d.x][i];
+					if (!value) value = "No data";
+					tooltipData.push({type: 'text', text: c + ': ' + value});
+				});
+			}
+
+			// Add the tooltip
+			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
+		});
+
+		heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
+
 	} else {
 		d3.select(heatmapElement).remove();
 		d3.select("h3#heatmap-title").remove();
 	}
 
 	// Network
+
+	// Draw network
 	network.datum(data.network)
 		.call(gd3.graph({
 			style: style.network
 		}));
+
+	// Add network tooltips
+	var edges = network.selectAll("g.gd3Link"),
+		networkTooltips = [];
+	edges.classed("gd3-tipobj", true);
+	edges.each(function(d) {
+		// Add the tooltip
+		networkTooltips.push([
+			{ type: 'text', text: 'Source: ' + d.source.name },
+			{ type: 'text', text: 'Target: ' + d.target.name }
+		].map(gd3.tooltip.datum) );
+	});
+
+	network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
 
 	// Transcript(s)
 
@@ -201,12 +284,27 @@ function view(){
 
 		// Then add the new plot
 		transcript.append("h5").text(geneName);
-		transcript.append("div")
+		var transcriptPlot = transcript.append("div")
 			.datum(data.transcripts[geneName][transcriptName])
 			.call(gd3.transcript({
 				showLegend: true,
 				style: style.transcript
 			}));
+
+		// And add tooltips
+		var mutations = transcriptPlot.selectAll("path.symbols"),
+			transcriptTooltips = [];
+		mutations.classed("gd3-tipobj", true);
+		mutations.each(function(d) {
+			transcriptTooltips.push([
+				{ type: 'text', text: 'Sample: ' + d.sample },
+				{ type: 'text', text: 'Dataset: ' + d.dataset },
+				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
+				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan}
+			].map(gd3.tooltip.datum));
+		});
+
+		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
 	if (data.transcripts && Object.keys(data.transcripts).length > 0){
@@ -244,6 +342,22 @@ function view(){
 		// Update the CNA browser
 		cnas.datum(data.cnas[geneName])
 			.call(gd3.cna({ style: style.cnas }))
+
+		// And add tooltips
+		var intervals = cnas.selectAll("g.intervals"),
+			cnaTooltips = [];
+		intervals.classed("gd3-tipobj", true);
+		intervals.each(function(d) {
+			cnaTooltips.push([
+				{ type: 'text', text: 'Sample: ' + d.sample },
+				{ type: 'text', text: 'Dataset: ' + d.dataset },
+				{ type: 'text', text: 'Type: ' + mutationToName(d.ty) },
+				{ type: 'text', text: 'Start: ' + d.start },
+				{ type: 'text', text: 'End: ' + d.end }
+			].map(gd3.tooltip.datum));
+		});
+
+		cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
 	}
 
 
