@@ -89,6 +89,16 @@ function view(){
 		else return m;
 	}
 
+	function mutationToClass(m){
+		m = m.toLowerCase();
+		if (m == "snv" || m == "inactive_snv") return "SNV";
+		else if (m == "amp") return "Amplification";
+		else if (m == "del") return "Deletion";
+		else if (m == "expression") return "Expression";
+		else if (m == "methylation") return "Methylation";
+		else return "Other";
+	}
+
 	// Set up the styles for the four views
 	var genes = data.genes,
 		datasets = data.datasets;
@@ -207,6 +217,7 @@ function view(){
 			// Create the tooltip data for the data that will always be present
 			var geneName     = d.rowLabel,
 				mutationType = mutationToName(d.cell.type),
+				mutationClass = mutationToClass(d.cell.type),
 				tooltipData  = [
 					{ type: 'text', text: 'Sample: ' + d.colLabel },
 					{ type: 'text', text: 'Type: ' + d.cell.dataset},
@@ -225,8 +236,9 @@ function view(){
 			// Add the references (if necessary)
 			if (data.annotations && data.annotations[geneName]){
 				var annotatedMutationNames = Object.keys(data.annotations[geneName])
-					annotatedMutations = annotatedMutationNames.map(mutationToName),
-					mutationIndex = annotatedMutations.indexOf(mutationType);
+					annotatedMutations = annotatedMutationNames.map(mutationToClass),
+					mutationIndex = annotatedMutations.indexOf(mutationClass);
+
 				// Determine if there are references for the current gene
 				// AND its current mutation type
 				if (mutationIndex !== -1){
@@ -255,7 +267,7 @@ function view(){
 					// The table is hidden on default, so we show a string describing the 
 					// table before showing it.
 					var knownAberrations = cancerNames.map(function(d){ return d.toUpperCase(); }).join(", ");
-					tooltipData.push({ type: 'text', text: 'Known aberrations in ' + knownAberrations});
+					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + ' in ' + knownAberrations});
 					tooltipData.push({type: 'table', table: refTable, defaultHidden: true});
 				}
 			}
