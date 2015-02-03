@@ -22,7 +22,7 @@ $('button#shareBtn').on('click', function(e) {
 		});
 	});
 
-// Master function for 
+// Master function for
 // * drawing the D3 visualizations
 // * adding tooltips
 // * adding annotations
@@ -126,6 +126,70 @@ function view(){
 
 	///////////////////////////////////////////////////////////////////////////
 	// Draw the five views
+	console.log(data)
+
+	// Heatmap: has to come first so that it gets sorted
+	// in the same order as the aberration matrix
+	if (data.heatmap.cells){
+		// Add cancer type to the sample annotations for the heatmap
+		if (data.sampleAnnotations && data.aberrations.samples.length > 0){
+			// Perform a deep copy of the sample annotation data
+			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
+			$.extend(heatmapAnnotations.categories, data.sampleAnnotations.categories);
+			$.extend(heatmapAnnotations.annotationToColor, data.sampleAnnotations.annotationToColor);
+
+			// Add the cancer types as a heatmap annotation
+			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
+			heatmapAnnotations.annotationToColor["Cancer type"] = {};
+			Object.keys(data.datasetColors).forEach(function(d){
+				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
+			});
+			data.aberrations.samples.forEach(function(s){
+				if (s.name in data.sampleAnnotations.sampleToAnnotations){
+					var currentAnnotations = data.sampleAnnotations.sampleToAnnotations[s.name];
+					heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]].concat(currentAnnotations);
+				}
+			});
+			data.heatmap.annotations = heatmapAnnotations;
+		}
+
+		// Draw the heatmap
+		heatmap.datum(data.heatmap)
+			.call(gd3.heatmap({
+				style: style.heatmap
+			}));
+
+
+		// Add tooltips
+		var cells = heatmap.selectAll('.gd3heatmapCells rect');
+		cells.classed('gd3-tipobj', true);
+		var heatmapTooltips = [];
+		cells.each(function(d) {
+			// Create the tooltip data for the data that will always be present
+			var tooltipData = [
+					{ type: 'text', text: 'Sample: ' + d.x },
+					{ type: 'text', text: 'Value: ' + d.value}
+				];
+
+			// Add the annotations
+			if (data.heatmap.annotations){
+				data.heatmap.annotations.categories.forEach(function(c, i){
+					var value = data.heatmap.annotations.sampleToAnnotations[d.x][i];
+					if (!value) value = "No data";
+					tooltipData.push({type: 'text', text: c + ': ' + value});
+				});
+			}
+
+			// Add the tooltip
+			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
+		});
+
+		// heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
+
+	} else {
+		d3.select(heatmapElement).remove();
+		d3.select("h3#heatmap-title").remove();
+	}
 
 	// Aberrations
 	if (data.aberrations.samples && data.aberrations.samples.length > 0){
@@ -161,72 +225,11 @@ function view(){
 			aberrationsTooltips.push(tooltipData.map(gd3.tooltip.datum) );
 		});
 
-		aberrations.select('svg').call(gd3.tooltip.make().useData(aberrationsTooltips));
+		// aberrations.select('svg').call(gd3.tooltip.make().useData(aberrationsTooltips));
 
 
 	} else {
 		aberrations.html("<b>No aberrations</b>.")
-	}
-
-	// Heatmap
-	if (data.heatmap.cells){
-		// Add cancer type to the sample annotations for the heatmap
-		if (data.sampleAnnotations && data.aberrations.samples.length > 0){
-			// Perform a deep copy of the sample annotation data
-			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
-			$.extend(heatmapAnnotations.categories, data.sampleAnnotations.categories);
-			$.extend(heatmapAnnotations.annotationToColor, data.sampleAnnotations.annotationToColor);
-
-			// Add the cancer types as a heatmap annotation
-			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
-			heatmapAnnotations.annotationToColor["Cancer type"] = {};
-			Object.keys(data.datasetColors).forEach(function(d){
-				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
-			});
-			data.aberrations.samples.forEach(function(s){
-				if (s.name in data.sampleAnnotations.sampleToAnnotations){
-					var currentAnnotations = data.sampleAnnotations.sampleToAnnotations[s.name];
-					heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]].concat(currentAnnotations);
-				}
-			});
-			data.heatmap.annotations = heatmapAnnotations;
-		}
-
-		// Draw the heatmap
-		heatmap.datum(data.heatmap)
-			.call(gd3.heatmap({
-				style: style.heatmap
-			}));
-
-		// Add tooltips
-		var cells = heatmap.selectAll('.gd3heatmapCells rect');
-		cells.classed('gd3-tipobj', true);
-		var heatmapTooltips = [];
-		cells.each(function(d) {
-			// Create the tooltip data for the data that will always be present
-			var tooltipData = [
-					{ type: 'text', text: 'Sample: ' + d.x },
-					{ type: 'text', text: 'Value: ' + d.value}
-				];
-
-			// Add the annotations
-			if (data.heatmap.annotations){
-				data.heatmap.annotations.categories.forEach(function(c, i){
-					var value = data.heatmap.annotations.sampleToAnnotations[d.x][i];
-					if (!value) value = "No data";
-					tooltipData.push({type: 'text', text: c + ': ' + value});
-				});
-			}
-
-			// Add the tooltip
-			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
-		});
-
-		heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
-
-	} else {
-		d3.select(heatmapElement).remove();
-		d3.select("h3#heatmap-title").remove();
 	}
 
 	// Network
@@ -249,7 +252,7 @@ function view(){
 		].map(gd3.tooltip.datum) );
 	});
 
-	network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
+	// network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
 
 	// Transcript(s)
 
@@ -304,7 +307,7 @@ function view(){
 			].map(gd3.tooltip.datum));
 		});
 
-		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
+		// transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
 	if (data.transcripts && Object.keys(data.transcripts).length > 0){
@@ -357,7 +360,7 @@ function view(){
 			].map(gd3.tooltip.datum));
 		});
 
-		cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
+		// cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
 	}
 
 

@@ -14,6 +14,8 @@ h1, h2, h3, h4, h5{
   padding:0;
 }
 
+.toggle{ display:none; }
+
 .noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
