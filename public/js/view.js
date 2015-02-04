@@ -1,6 +1,6 @@
 /* Master D3 controller for the view */
 
-SHOW_TOOLTIPS = false
+SHOW_TOOLTIPS = true
 
 // When the document is ready, draw the visualizations
 // and then fade them in and the loading GIF out
@@ -135,9 +135,24 @@ function view(){
 	// Cold to hot gradient for the network
 	style.network.nodeColor = ['rgb(102, 178, 255)', 'rgb(255, 51, 51)'];
 
+	// Set up the GD3 color palette
+	if (data.datasetColors){
+		var colors = datasets.map(function(d){ return data.datasetColors[d]; });
+		gd3.color.categories(datasets, colors);
+		gd3.color.annotations('Cancer type', datasets, 'discrete', colors);
+	}
+	if (data.sampleAnnotations && data.sampleAnnotations.categories){
+		data.sampleAnnotations.categories.forEach(function(c){
+			var values = Object.keys(data.sampleAnnotations.annotationToColor[c]);
+			if (values.length > 0){
+				var colors = values.map(function(v){return data.sampleAnnotations.annotationToColor[c][v]; });
+				gd3.color.annotations(c, values, 'discrete', colors);
+			}
+		})
+	}
+
 	///////////////////////////////////////////////////////////////////////////
 	// Draw the five views
-	console.log(data)
 
 	// Heatmap: has to come first so that it gets sorted
 	// in the same order as the aberration matrix
@@ -208,7 +223,7 @@ function view(){
 		aberrations.datum(data.aberrations)
 			.call(gd3.mutationMatrix({
 				style: style.aberrations
-			}));
+			}).showColumnCategories(false));
 
 		// Add tooltips
 		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
