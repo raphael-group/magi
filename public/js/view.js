@@ -1,5 +1,7 @@
 /* Master D3 controller for the view */
 
+SHOW_TOOLTIPS = false
+
 // When the document is ready, draw the visualizations
 // and then fade them in and the loading GIF out
 $(document).ready(
@@ -27,7 +29,6 @@ $('button#shareBtn').on('click', function(e) {
 // * adding tooltips
 // * adding annotations
 // * controlling which datasets are visible
-var votePPI, voteMutation, commentPPI;
 function view(){
 	// Set up promise
 	var deferred = $.Deferred();
@@ -101,7 +102,7 @@ function view(){
 
 	// Set up the styles for the four views
 	var genes = data.genes,
-		datasets = data.datasets;
+		datasets = Object.keys(data.datasetColors);
 
 	if (showDuplicates == null) {
 		showDuplicates = true; // TODO fix this hack
@@ -194,7 +195,7 @@ function view(){
 			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
 		});
 
-		heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
+		if (SHOW_TOOLTIPS) heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
 
 	} else {
 		d3.select(heatmapElement).remove();
@@ -276,7 +277,7 @@ function view(){
 			aberrationsTooltips.push(tooltipData.map(gd3.tooltip.datum) );
 		});
 
-		aberrations.select('svg').call(gd3.tooltip.make().useData(aberrationsTooltips));
+		if (SHOW_TOOLTIPS) aberrations.select('svg').call(gd3.tooltip.make().useData(aberrationsTooltips));
 
 
 	} else {
@@ -329,7 +330,7 @@ function view(){
 		].map(gd3.tooltip.datum) );
 	});
 
-	network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
+	if (SHOW_TOOLTIPS) network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
 	// Transcript(s)
 
 	// First populate the dropdown with the transcripts for each gene
@@ -383,7 +384,7 @@ function view(){
 			].map(gd3.tooltip.datum));
 		});
 
-		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
+		if (SHOW_TOOLTIPS) transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
 	if (data.transcripts && Object.keys(data.transcripts).length > 0){
@@ -436,13 +437,115 @@ function view(){
 			].map(gd3.tooltip.datum));
 		});
 
-		cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
+		if (SHOW_TOOLTIPS) cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
 	}
 
 
 	// Watch the CNA browser selector to update the current CNA browser on change
 	cnasSelect.on("change", updateCNAChart);
 	if (cnaGenes) updateCNAChart();
+
+	///////////////////////////////////////////////////////////////////////////
+	// Controls for the control panel
+
+	function resizeControlPanel() {
+		var viewportWidth = $(window).width();
+		if(viewportWidth < 600) {
+			$('div#control-panel').css("width", viewportWidth+"px");
+			$('div#control-panel').css("right", "0px");
+			$('div#view').css('padding-top', $('div#control-panel').css('height'));
+		} else {
+			$('div#control-panel').css("width", "200px");
+			$('div#control-panel').css("right", "0px");
+			$('div#view').css('margin-top', '0px');
+		}
+	}
+
+	$(window).resize(resizeControlPanel);
+	$(function() { resizeControlPanel(); });
+
+	$('span#hideControlPanel').click(function(e) {
+		if($('div#controls').css('display') == 'block') {
+			$('div#controls').css('display', 'none');
+			$('div#saveBox').css('display', 'none');
+			$('div#annotation').css('display', 'none');
+		} else {
+			$('div#controls').css('display', 'block');
+			$('div#saveBox').css('display', 'block');
+			$('div#annotation').css('display', 'block');
+		}
+		if($(window).width() < 600) {
+			$('div#view').css('padding-top', $('div#control-panel').css('height'));
+		}
+	});
+
+	///////////////////////////////////////////////////////////////////////////
+	// Add a dataset menu to the control panel
+
+	// Extract info about each dataset
+	var filteredDatasets = [],
+		datasetToColor = data.datasetColors,
+		datasetToSamples = data.aberrations.typeToSamples,
+		datasetData = datasets.map(function(d){
+			return { name: d, color: datasetToColor[d], numSamples: datasetToSamples[d].length };
+		}).sort(function(a, b){ return d3.ascending(a.name, b.name); });
+
+	// Add a container and a heading
+	var controls = d3.select("#control-panel div#controls"),
+		datasetsPanel = controls.append("div")
+			.attr("class", "panel panel-default")
+			.style("padding", "0px")
+
+	var datasetHeading = datasetsPanel.append("div")
+		.attr("class", "panel-heading")
+		.style("padding", "5px")
+		.append("h5")
+		.attr("class", "panel-title")
+		.attr("id", "datasetLink")
+		.style("cursor", "pointer")
+		.style("font-size", "14px")
+		.style("width", "100%")
+		.text("Datasets");
+	bootstrapToggle({link: "dataset", target: "Dataset"});
+
+	datasetHeading.append("span")
+		.style("float", "right")
+		.text("[+]");
+
+	// Add each dataset
+	var datasetsBody = datasetsPanel.append("div")
+		.attr("id", "collapseDataset")
+		.attr("class", "panel-collapse collapse in")
+		.append("div")
+		.attr("class", "panel-body")
+		.style("padding", "5px");
+
+	var datasetEls = datasetsBody.append("ul")
+		.attr("id", "datasets")
+		.selectAll(".dataset")
+		.data(datasetData).enter()
+		.append("li")
+		.style("cursor", "pointer")
+		.on("click", function(d){
+			// Add/Remove the dataset from the list of filtered datasets
+			var index = filteredDatasets.indexOf(d.name),
+				visible = index == -1;
+
+			if (visible){
+				filteredDatasets.push( d.name );
+			} else{
+				filteredDatasets.splice(index, 1);
+			}
+
+			// Filter the mutation matrix, transcript plot, and CNA browser
+			gd3.dispatch.filterCategory( { categories: filteredDatasets });
+
+			// Fade in/out this dataset
+			d3.select(this).style("opacity", visible ? 0.5 : 1);
+		});
+
+	datasetEls.append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
+	datasetEls.append("div").text(function(d){ return d.name + " (" + d.numSamples + ")"; });
 
 	// Resolve the promise and return
 	deferred.resolve();
