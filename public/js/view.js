@@ -175,24 +175,16 @@ function view(){
 	// Heatmap: has to come first so that it gets sorted
 	// in the same order as the aberration matrix
 	if (data.heatmap.cells){
-		// Add cancer type to the sample annotations for the heatmap
-		if (data.sampleAnnotations && data.aberrations.samples.length > 0){
-			// Perform a deep copy of the sample annotation data
+		// Add the cancer type as an annotation for the heatmap
+		if (data.aberrations && data.aberrations.samples){
 			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
-			$.extend(heatmapAnnotations.categories, data.sampleAnnotations.categories);
-			$.extend(heatmapAnnotations.annotationToColor, data.sampleAnnotations.annotationToColor);
-
-			// Add the cancer types as a heatmap annotation
-			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
+			heatmapAnnotations.categories.push("Cancer type");
 			heatmapAnnotations.annotationToColor["Cancer type"] = {};
 			Object.keys(data.datasetColors).forEach(function(d){
 				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
 			});
 			data.aberrations.samples.forEach(function(s){
-				if (s.name in data.sampleAnnotations.sampleToAnnotations){
-					var currentAnnotations = data.sampleAnnotations.sampleToAnnotations[s.name];
-					heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]].concat(currentAnnotations);
-				}
+				heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]]
 			});
 			data.heatmap.annotations = heatmapAnnotations;
 		}
@@ -201,7 +193,7 @@ function view(){
 		heatmap.datum(data.heatmap)
 			.call(gd3.heatmap({
 				style: style.heatmap
-			}));
+			}).showXLabels(false));
 
 
 		// Add tooltips
