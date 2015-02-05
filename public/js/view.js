@@ -275,7 +275,37 @@ function view(){
 							refTable.push([
 								{ type: 'text', text: i ? "" : cancer.toUpperCase() },
 								{ type: 'link', body: ref.pmid, href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid},
-								{ type: 'vote', voteCount: ref.score }
+								{ type: 'vote',
+								  voteDirectionFn: function(){ return ref.vote; },
+								  voteCountFn: function(){ console.log(ref.score); return ref.score; },
+								  upvoteFn: function(){
+								  	if (ref.vote == 'down'){
+								  		ref.score += 2;
+								  		ref.vote = 'up';
+								  	} else if (ref.vote == 'up'){
+								  		ref.score -= 1;
+								  		ref.vote = null;
+								  	} else {
+								  		ref.vote = 'up';
+								  		ref.score += 1;
+								  	}
+								  	return ref.vote;
+								  	console.log(ref)
+								  },
+								  downvoteFn: function(){
+								  	if (ref.vote == 'down'){
+								  		ref.score += 1;
+								  		ref.vote = null;
+								  	} else if (ref.vote == 'up'){
+								  		ref.score -= 2;
+								  		ref.vote = 'down'
+								  	} else {
+								  		ref.vote = 'down';
+								  		ref.score -= 1;
+								  	}
+								  	return ref.vote;
+								  	console.log(ref)
+								  }}
 							].map(gd3.tooltip.datum));
 						});
 					});
@@ -326,10 +356,24 @@ function view(){
 			if (d.references[n].length > 0){
 				d.references[n].forEach(function(ref, i){
 					// only show the network name in the first row
+				 	console.log(ref.upvotes)
 					refTable.push([
 						{type: 'text', text: i ? "" : n},
 						{type: 'link', href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid, body: ref.pmid},
-						{type: 'vote', voteCount: ref.upvotes.length - ref.downvotes.length}
+						{type: 'vote',
+						 voteCount: function(){
+						 	return ref.upvotes.length - ref.downvotes.length;
+						 },
+						 upvoteFn: function(){
+						 	var index = ref.downvotes.indexOf(user._id);
+						 	if (index !== -1) ref.downvotes.splice(index, 1)
+						 	ref.upvotes.push( user._id );
+						 },
+						 downvoteFn: function(){
+						 	var index = ref.upvotes.indexOf(user._id);
+						 	if (index !== -1) ref.upvotes.splice(index, 1)
+						 	ref.downvotes.push( user._id );
+						 }}
 					].map(gd3.tooltip.datum));
 				})
 			} else{
