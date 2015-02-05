@@ -82,7 +82,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 exports.upsertInteraction = function(source, target, network, ref, comment, user_id, callback){
 	var PPI = Database.magi.model( 'PPI' );
 		Q = require( 'q' );
-
+	console.log(source, target, network, ref, comment)
 	var d = Q.defer();
 
 	PPI.findOneAndUpdate(
@@ -120,12 +120,20 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 }
 
 // Record a user's vote for an interaction
-exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
+exports.vote = function ppiVote(fields, user_id){
 	// Set up the promise
 	var PPI = Database.magi.model( 'PPI' ),
 		PPIVote = Database.magi.model( 'PPIVote' ),
 		Q = require( 'q' ),
 		d = Q.defer();
+
+	// Parse the fields into shorter handles
+	var source = fields.source,
+		target = fields.target,
+		network = fields.network,
+		pmid = fields.pmid,
+		vote = fields.vote;
+	console.log(source, target, network, pmid, vote);
 
 	//Create and execute the query
 	var query = {

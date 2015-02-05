@@ -141,7 +141,8 @@ app.get('/datasets/view/:datasetID', routes.datasets.view);
 // Annotation views
 app.get('/annotations/gene/:gene', routes.annotations.gene);
 app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
-app.post('/save/annotation', ensureAuthenticated, routes.annotations.save);
+app.post('/save/annotation/mutation', ensureAuthenticated, routes.annotations.save.mutation);
+app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save.ppi);
 app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 app.post('/vote/mutation', ensureAuthenticated, routes.annotations.mutationVote);

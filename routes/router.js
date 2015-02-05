@@ -46,10 +46,11 @@ exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view
 
 // Annotations
-exports.annotations = {}
+exports.annotations = { save: {}}
 exports.annotations.gene = annotations.gene;
 exports.annotations.cancer = annotations.cancer;
-exports.annotations.save = annotations.save;
+exports.annotations.save.mutation = annotations.saveMutation;
+exports.annotations.save.ppi = annotations.savePPI;
 exports.annotations.ppiVote = annotations.ppiVote;
 exports.annotations.ppiComment = annotations.ppiComment;
 exports.annotations.mutationVote = annotations.mutationVote;

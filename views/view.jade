@@ -61,7 +61,7 @@ block body
               | &nbsp;|&nbsp;
               a(href="#", onclick="toggleForm('interaction')" id="show-interaction-form") Interactions
               br
-              form(method="post", role="form", id="mutations")
+              form(method="post", role="form", id="annotations")
                 //- Inputs for the mutation annotation form
                 div(id="mutations")
                   select(class="form-control", id="gene")
@@ -75,48 +75,43 @@ block body
                     option(value="methylation") is methylated (hypo/hyper) in
                   br
                   input(class="typeahead form-control", id="cancer-typeahead", type="text", placeholder="Cancer")
-                  br(class="toggle")
-                  br(class="toggle")
+                  label PMID
+                  input(class="form-control", id="mutation-pmid", placeholder="PMID", maxlength="8")
                   //- Optional cancer fields
                   label(class="toggle")
                     | Mutation type
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#mut_ty').hide()")
                   input(class="form-control toggle", id="mut_ty", placeholder="Mutation type")
-                  br(class="toggle")
                   label(class="toggle")
                     | Locus
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#locus').hide()")
                   input(class="form-control toggle", id="locus", placeholder="Mutation locus/position.", type="number")
-                  br
                   label(class="toggle")
                     | Domain
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#domain').hide()")
                   input(class="form-control toggle", id="domain", placeholder="Domain name")
-                  br(class="toggle")
                   label(class="toggle") PMID
                   input(class="form-control toggle", id="mutation-pmid", placeholder="PMID", maxlength="8")
-                  br(class="toggle")
                   label(class="toggle")
                     | Comments
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('textarea#mutation-comment').hide()")
                   textarea(class="form-control toggle", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
-                  br(class="toggle")
                 //- Interaction annotation form
                 div(id="interactions", style="display:none")
                   select(class="form-control", id="protein1")
-                  b(class="toggle text-center") interacts with
+                  b(class="toggle") interacts with
                   select(class="toggle form-control", id="protein2")
                   label(class="toggle") PMID
-                  input(class="toggle form-control", id="pmid", placeholder="PMID", maxlength="8")
+                  input(class="toggle form-control", id="ppi-pmid", placeholder="PMID", maxlength="8")
                   //- Optional protein interaction fields
-                  br(class="toggle")
                   label(class="toggle") Comments
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('textarea#interaction-comment').hide()")
                   textarea(class="toggle form-control", id="interaction-comment", placeholder="Enter any comments.", type="textarea")
                 br
                 input(type="hidden", value="mutation", id="antype")
                 button(type="submit", id="submit", class="btn btn-default") Submit
-
+                br
+                br
                 div(id="annotationStatus")
               br
               a(href="#", id="reset-annotation", onclick="resetAnnotations();return false;")
@@ -290,8 +285,8 @@ block belowTheFold
       script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
       script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
       script(src='/js/save.js').
-      script(src='/js/annotate.js').
       script(src='/js/view.js').
+      script(src='/js/annotate.js').
       script(src='/js/log.js').
       //- Define behavior for the scroll panel to stick to the top of the window
       script(type="text/javascript").

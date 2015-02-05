@@ -348,24 +348,19 @@ address{ margin-left:15px;width:350px }
 address img{ float:right; }
 
 /* Annotation styling */
-div#annotation div#inputs label {width: 100%;}
-div#annotation div#inputs label span.glyphicon{ float:right;font-size:80%;cursor:pointer}
+form#annotations label {width: 100%;}
+form#annotations input{ margin-bottom:5px;}
+form#annotations label span.glyphicon{ float:right;font-size:80%;cursor:pointer}
 /* Styling for d3-tip */
-.d3-tip {line-height: 1;padding: 7px;background: rgba(0, 0, 0, 0.8);color: #fff;border-radius: 5px;font-size:80%;max-width:300px;}
-
-/* Creates a small triangle extender for the tooltip */
-.d3-tip:after {box-sizing: border-box;display: inline;font-size: 10px;width: 100%;line-height: 1;color: rgba(0, 0, 0, 0.8);content: "\25BC";position: absolute;text-align: center;}
-
-/* Style northward tooltips differently */
-.d3-tip.n:after {margin: -3px 0 0 0;top: 100%;left: 0;}
-
-.d3-tip table{ font-size:90%; }
-.d3-tip table th{ min-width:75px; }
-.d3-tip .gd3-tooltip span.info{ float:left; }
-.d3-tip .gd3-tooltip span.x{ float:right;cursor:pointer; }
-.d3-tip .gd3-tooltip div.less-info{ display:inline; }
-.d3-tip .gd3-tooltip div.more-info{ display:none; }
-.d3-tip .gd3-tooltip ul{ padding-left:10px; }
+table.gd3-tooltip-table{
+  margin-top:5px;
+  margin-bottom:5px;
+  width:100%;
+}
+table.gd3-tooltip-table tr{
+  border-top:1px solid #fff;
+  margin:3px;
+}
 
 /* Typeahead.js styling */
 .tt-query,

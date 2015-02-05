@@ -29,6 +29,14 @@ $('button#shareBtn').on('click', function(e) {
 // * adding tooltips
 // * adding annotations
 // * controlling which datasets are visible
+
+// Globals
+var abbrToCancer = data.abbrToCancer,
+	cancerToAbbr = {};
+
+Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; });
+cancers = Object.keys(cancerToAbbr);
+
 function view(){
 	// Set up promise
 	var deferred = $.Deferred();
@@ -81,6 +89,14 @@ function view(){
 					 {name: "cnas", el: cnasElement},
 					 {name: "heatmap", el: heatmapElement} ];
 
+
+	// Functions for giving names from our abbreviations
+	// for cancer types and mutations
+	function cancerToName(c){
+		if (cancerToAbbr[c]) return cancerToAbbr[c].toUpperCase();
+		else return c.toUpperCase();
+	}
+
 	function mutationToName(m){
 		m = m.toLowerCase();
 		if (m == "snv") return "SNV";
@@ -104,6 +120,8 @@ function view(){
 	var genes = data.genes,
 		datasets = Object.keys(data.datasetColors);
 
+
+	// Determine if we're showing duplicates
 	if (showDuplicates == null) {
 		showDuplicates = true; // TODO fix this hack
 	}
@@ -272,13 +290,14 @@ function view(){
 					cancerNames.forEach(function(cancer){
 						cancerToRefs[cancer].forEach(function(ref, i){
 							// only show the cancer name in the first row
-							refTable.push([
-								{ type: 'text', text: i ? "" : cancer.toUpperCase() },
+							refTable.push([	
+								{ type: 'text', text: i ? "" : cancerToName(cancer) },
 								{ type: 'link', body: ref.pmid, href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid},
 								{ type: 'vote',
 								  voteDirectionFn: function(){ return ref.vote; },
-								  voteCountFn: function(){ console.log(ref.score); return ref.score; },
+								  voteCountFn: function(){ return ref.score; },
 								  upvoteFn: function(){
+								  	// Update the reference vote count
 								  	if (ref.vote == 'down'){
 								  		ref.score += 2;
 								  		ref.vote = 'up';
@@ -289,8 +308,8 @@ function view(){
 								  		ref.vote = 'up';
 								  		ref.score += 1;
 								  	}
+								  	vote({_id: ref._id, pmid: ref.pmid, vote: 'up'}, '/vote/mutation');
 								  	return ref.vote;
-								  	console.log(ref)
 								  },
 								  downvoteFn: function(){
 								  	if (ref.vote == 'down'){
@@ -303,8 +322,8 @@ function view(){
 								  		ref.vote = 'down';
 								  		ref.score -= 1;
 								  	}
+								  	vote({_id: ref._id, pmid: ref.pmid, vote: 'down'}, '/vote/mutation');
 								  	return ref.vote;
-								  	console.log(ref)
 								  }}
 							].map(gd3.tooltip.datum));
 						});
@@ -312,7 +331,7 @@ function view(){
 
 					// The table is hidden on default, so we show a string describing the 
 					// table before showing it.
-					var knownAberrations = cancerNames.map(function(d){ return d.toUpperCase(); }).join(", ");
+					var knownAberrations = cancerNames.map(cancerToName).join(", ");
 					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + ' in ' + knownAberrations});
 					tooltipData.push({type: 'table', table: refTable, defaultHidden: true});
 				}
@@ -355,24 +374,58 @@ function view(){
 		d.categories.forEach(function(n){
 			if (d.references[n].length > 0){
 				d.references[n].forEach(function(ref, i){
+					ref.score = ref.upvotes.length - ref.downvotes.length;
+					if (ref.upvotes.indexOf(user._id) > -1){
+						ref.vote = 'up';
+					} else if (ref.downvotes.indexOf(user._id) > -1){
+						ref.vote = 'down';
+					} else {
+						ref.vote = null;
+					}
 					// only show the network name in the first row
-				 	console.log(ref.upvotes)
 					refTable.push([
 						{type: 'text', text: i ? "" : n},
 						{type: 'link', href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid, body: ref.pmid},
 						{type: 'vote',
-						 voteCount: function(){
-						 	return ref.upvotes.length - ref.downvotes.length;
-						 },
+						 voteDirectionFn: function(){ return ref.vote; },
+						 voteCountFn: function(){ return ref.score; },
 						 upvoteFn: function(){
-						 	var index = ref.downvotes.indexOf(user._id);
-						 	if (index !== -1) ref.downvotes.splice(index, 1)
-						 	ref.upvotes.push( user._id );
+						  	if (ref.vote == 'down'){
+						  		ref.score += 2;
+						  		ref.vote = 'up';
+						  	} else if (ref.vote == 'up'){
+						  		ref.score -= 1;
+						  		ref.vote = null;
+						  	} else {
+						  		ref.vote = 'up';
+						  		ref.score += 1;
+						  	}
+						 	vote({
+						 		source: d.source.name,
+						 		target: d.target.name,
+						 		network: n,
+						 		pmid: ref.pmid,
+						 		vote: 'up'
+						 	}, '/vote/ppi');
 						 },
 						 downvoteFn: function(){
-						 	var index = ref.upvotes.indexOf(user._id);
-						 	if (index !== -1) ref.upvotes.splice(index, 1)
-						 	ref.downvotes.push( user._id );
+						  	if (ref.vote == 'down'){
+						  		ref.score += 1;
+						  		ref.vote = null;
+						  	} else if (ref.vote == 'up'){
+						  		ref.score -= 2;
+						  		ref.vote = 'down'
+						  	} else {
+						  		ref.vote = 'down';
+						  		ref.score -= 1;
+						  	}
+						 	vote({
+						 		source: d.source.name,
+						 		target: d.target.name,
+						 		network: n,
+						 		pmid: ref.pmid,
+						 		vote: 'down'
+						 	}, '/vote/ppi')
 						 }}
 					].map(gd3.tooltip.datum));
 				})
@@ -610,4 +663,54 @@ function view(){
 	deferred.resolve();
 
 	return deferred;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AJAX functions
+function populateForm(fields){
+	var formData = new FormData();
+	Object.keys(fields).forEach(function(k){
+		formData.append( k, fields[k] );
+	});
+	return formData;
+}
+
+function vote(fields, url){
+	// Create a form to submit as an AJAX request to update the database
+	var formData = populateForm(fields);
+	$.ajax({
+		// Note: can't use JSON otherwise IE8 will pop open a dialog
+		// window trying to download the JSON as a file
+		url: url,
+		data: formData,
+		cache: false,
+		contentType: false,
+		processData: false,
+		type: 'POST',
+
+		error: function(xhr) {
+			annotationStatus('Database error: ' + xhr.status);
+		},
+
+		success: function(response) {
+			if(response.error) {
+				annotationStatus('Oops, something bad happened.', warningClasses);
+				return;
+			}
+
+			// Log the status
+			annotationStatus(response.status, successClasses);
+		}
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Update the HTML status <div>
+var infoClasses  = 'alert alert-info',
+	warningClasses = 'alert alert-warning',
+	successClasses = 'alert alert-success';
+
+function annotationStatus(msg, classes) {
+	$("#annotationStatus").attr('class', classes);
+	$('#annotationStatus').html(msg);
 }
