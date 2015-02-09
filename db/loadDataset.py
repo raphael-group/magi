@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 
 # Load required modules
 import sys, os, argparse, json, datetime, urllib2
@@ -6,6 +6,7 @@ from collections import defaultdict
 
 # Set up the connection to the MongoDB database
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 client = MongoClient("mongodb://localhost:27017/magi")
 db = client.magi
 
@@ -174,7 +175,7 @@ def load_aberrations_file(filename, aberrationType, dataset, sampleToMuts,
 	for arr in arrs:
 		if len(arr) < 2: continue
 		sample, muts = arr[0], set(arr[1:])
-		sampleToMuts[sample] |= arr[1:]
+		sampleToMuts[sample] |= muts
 		for gene in muts:
 			geneToCases[gene][sample].add(aberrationType)
 			geneToAberrations[gene].add(sample)
@@ -239,6 +240,10 @@ def get_parser():
 		help='Add this dataset to a particular group.')
 	parser.add_argument('-col', '--color', required=False, default=None,
 		help='Color (hex) for this dataset. Default is the default for the given cancer type.')
+	parser.add_argument('--is_public', required=False, default=False, action='store_true',
+		help='Flag that this should be a public dataset.')
+	parser.add_argument('--user_id', required=False, default=None,
+		help='User ID to associate with this dataset.')
 
 	# SNVs
 	parser.add_argument('-sf', '--snv_file', required=False, type=str, default=None,
@@ -291,7 +296,7 @@ def run( args ):
 		else:
 			annotationToColor = dict( (c, {}) for c in categories )
 	else:
-		samples, categories, sampleToAnnotations, annotationToColor = None, None, None, None
+		samples, categories, sampleToAnnotations, annotationToColor, sampleWhitelist = None, None, None, None, None
 		sampleToMuts = defaultdict(set)
 
 	# Load the mutations
@@ -407,7 +412,9 @@ def run( args ):
 	###########################################################################
 	# Remove datasets with the same identifiers, as well as any of their
 	# associated mutgenes or data matrix rows
-	oldDatasetIds = [ oldDB['_id'] for oldDB in db.datasets.find(dict(title=args.dataset_name, group=args.group_name, is_standard=True), {"_id": True}) ]
+	userID = ObjectId(args.user_id) if args.user_id else None,
+	dbQuery = dict(title=args.dataset_name, group=args.group_name, is_public=args.is_public, user_id=userID)
+	oldDatasetIds = [ oldDB['_id'] for oldDB in db.datasets.find(dbQuery, {"_id": True}) ]
 	db.mutgenes.remove({"dataset_id": {"$in": oldDatasetIds}})
 	db.datamatricesrow.remove({"dataset_id": {"$in": oldDatasetIds}})
 	db.datasets.remove({"_id": {"$in": oldDatasetIds}})
@@ -421,8 +428,8 @@ def run( args ):
 		"group": args.group_name,
 		"updated_at": datetime.datetime.utcnow(),
 		"summary": summary,
-		"is_standard": True,
-		"user_id": None,
+		"is_public": args.is_public,
+		"user_id": userID,
 		"color": args.color if args.color else cancerToColor[args.cancer],
 		"cancer_id": cancerToId[args.cancer],
 		"data_matrix_samples": list(dataMatrixSamples) if dataMatrixSamples else None,

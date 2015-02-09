@@ -171,7 +171,7 @@ def parse_maf( mafFile, dbToTranscripts, dataset, sampleToMuts, geneToCases, sam
     # Load the MAF
     from collections import defaultdict
     sampleToInactive = defaultdict(set)
-    geneToMutations  = defaultdict(lambda: dict(mutations=[]))
+    geneToMutations  = defaultdict(lambda: defaultdict(lambda: dict(mutations=[])))
     genes, = set(),
     mutTys = set()
     samples = sampleWhitelist if sampleWhitelist else set()
@@ -247,10 +247,10 @@ def parse_maf( mafFile, dbToTranscripts, dataset, sampleToMuts, geneToCases, sam
                         else:
                             length = dbToTranscripts[db][transcript]
                             if '.' in transcript: transcript = transcript.split('.')[0]
-                            mut = dict( sample=sample, ty=varClass, aao=aao, aan=aan, locus=loc, dataset=dataset)
-                            if transcript in geneToMutations[gene]:
-                                geneToMutations[gene][transcript]['mutations'].append( mut )
-                                geneToMutations[gene][transcript]['length'] = length
+                            mut = dict( sample=sample, ty=varClass, aao=aao, aan=aan,
+                                        locus=int(loc), dataset=dataset)
+                            geneToMutations[gene][transcript]['mutations'].append( mut )
+                            geneToMutations[gene][transcript]['length'] = length
 
     # Print summary to STDOUT
     if verbose:

@@ -109,7 +109,7 @@ app.use(cookieSession({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride());
-app.use(multer());
+app.use(multer({dest: 'tmp/'}));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 app.use(passport.session());

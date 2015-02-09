@@ -107,25 +107,26 @@ div.indexTop ul li a.loginBtn {
   margin-top: -3px;
 }
 
-div.uploadDataSelectArea {
-  border: 1px solid #ccc;
-  border-radius: 10px 0 0 10px;
-  height: 500px;
-  min-height: 500px;
-  max-height: 500px;
-  padding: 5px 10px;
-  -webkit-box-shadow: inset 0px 0px 4px 1px rgba(0,0,0,0.75);
-  -moz-box-shadow: inset 0px 0px 4px 1px rgba(0,0,0,0.75);
-  box-shadow: inset 0px 0px 4px 1px rgba(0,0,0,0.15);
-  overflow-y: scroll;
+/* Make nice file upload buttons (from http://goo.gl/nBijOX) */
+.btn-file {
+    position: relative;
+    overflow: hidden;
 }
-div.cnvUploadSelector {
-  visibility: hidden;
-  display: none;
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
 }
-
-.multi-dataset{display:none;}
-
 div#sec-about{
   margin-top: 100px;
 }

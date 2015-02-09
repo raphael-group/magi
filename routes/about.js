@@ -42,8 +42,8 @@ exports.cancers  = function privacy(req, res){
 		if (err) throw new Error(err);
 		else{
 			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
-			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_standard; }),
-				user_cancers = cancers.filter(function(d){ return !d.is_standard; });
+			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_public; }),
+				user_cancers = cancers.filter(function(d){ return !d.is_public; });
 			res.render('cancers', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
 		}
 	});

@@ -9,10 +9,6 @@ var mongoose = require( 'mongoose' ),
 	path = require('path');
 	childProcess = require('child_process');
 
-// must include the '.' otherwise string slicing will be off by one
-var MAF_EXT = '.maf';
-var MAF2TSV_PATH = 'public/scripts/mafToTSV.py';
-
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
 	console.log('upload')
@@ -21,8 +17,8 @@ exports.upload  = function upload(req, res){
 		if (err) throw new Error(err);
 		else{
 			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
-			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_standard; }),
-				user_cancers = cancers.filter(function(d){ return !d.is_standard; });
+			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_public; }),
+				user_cancers = cancers.filter(function(d){ return !d.is_public; });
 			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
 		}
 	});
@@ -30,109 +26,132 @@ exports.upload  = function upload(req, res){
 
 // Parse the user's dataset upload
 exports.uploadDataset = function uploadDataset(req, res){
-	// Load the posted form
-	var form = new formidable.IncomingForm({
-		uploadDir: path.normalize(__dirname + '/../tmp'),
-		keepExtensions: true
-	});
+	console.log('/upload/dataset');
 
-	// given a path to a MAF file, call the converter script to create a TSV
-	// and return the path to newly created TSV
-	function convertMaf(prefix, ext) {
-		// Set up a promise to return once the child process
-		// is complete
-		var d = Q.defer();
-		if (ext !== MAF_EXT){
-			d.resolve();
-		} else{
-			// Set up the arguments for the command
-			var args = ['--maf_file', prefix + ext,
-					// TODO: how to choose which transcript db?
-					'--transcript_db', 'refseq', // 'ensemble',
-					'--output_prefix', prefix
-				   ],
-				cmd = MAF2TSV_PATH + " " + args.join(" ");
+	// Parse the form variables into shorter handles
+	var fields = req.body,
+		files = req.files,
+		dataset = fields.Dataset,
+		groupName = fields.GroupName,
+		cancer = fields.Cancer,
+		color = fields.Color,
+		dataMatrixName = fields.DataMatrixName,
+		aberrationType  = fields.AberrationType,
+		snvFileFormat = fields.SNVFileFormat,
+		cnaFileFormat = fields.CNAFileFormat,
+		tmpFiles = [], // file paths we need to remove later
+		snvFile, cnaFile, aberrationsFile, dataMatrixFile, sampleAnnotationsFile, annotationColorsFile;
 
-			// Execute the process, log it's intermediate output,
-			// and exit and resovlve the promise once it's done
-			var child = childProcess.exec(cmd);
-			child.on('stdout', function(stdout){
-				console.log(stdout)
-			});
-			child.on('stderr', function(stderr){
-				console.log(stderr);
-			})
-			child.on('close', function(code) {
-				console.log('closing code: ' + code);
-			});
-			child.on('exit', function (code) {
-				console.log('Child process exited with exit code '+code);
-				d.resolve();
-			});
+	if (fields.SNVsSource == 'upload'){
+		if (files.SNVsLocation){
+			snvFile = files.SNVsLocation.path;
+			tmpFiles.push(snvFile);
 		}
-		return d.promise;
-	};
+		else{
+			snvFile = null;
+		}
+	} else{
+		snvFile = fields.SNVsLocation;
+	}
 
-	form.parse(req, function(err, fields, files) {
-		// Parse the form variables into shorter handles
-		var dataset = fields.dataset,
-			group_name = fields.groupName,
-			cancer = fields.cancer,
-			color = fields.color,
-			data_matrix_name = fields.DataMatrixName;
+	if (fields.CNAsSource == 'upload'){
+		if (files.CNAsLocation){
+			cnaFile = files.CNAsLocation.path;
+			tmpFiles.push(cnaFile);
+		}
+		else{
+			cnaFile = null;
+		}
+	} else{
+		cnaFile = fields.CNAsLocation;
+	}
 
-		if (files.CancerMapping) cancer_file = files.CancerMapping.path;
-		else cancer_file = null;
+	if (fields.AberrationsSource == 'upload'){
+		if (files.AberrationsLocation){
+			aberrationsFile = files.AberrationsLocation.path;
+			tmpFiles.push(aberrationsFile);
+		}
+		else{
+			aberrationsFile = null;
+		}
+	} else{
+		aberrationsFile = fields.AberrationsLocation;
+	}
 
-		var cancer_input = cancer_file ? cancer_file : cancer;
+	if (fields.DataMatrixSource == 'upload'){
+		if (files.DataMatrixLocation){
+			dataMatrixFile = files.DataMatrixLocation.path;
+			tmpFiles.push(dataMatrixFile);
+		}
+		else{
+			dataMatrixFile = null;
+		}
+	} else{
+		dataMatrixFile = fields.DataMatrixLocation;
+	}
 
-		if (files.SNVs) snv_file = files.SNVs.path;
-		else snv_file = null;
+	if (fields.SampleAnnotationsSource == 'upload'){
+		if (files.SampleAnnotationsLocation){
+			sampleAnnotationsFile = files.SampleAnnotationsLocation.path;
+			tmpFiles.push(sampleAnnotationsFile);
+		}
+		else{
+			sampleAnnotationsFile = null;
+		}
+	} else{
+		sampleAnnotationsFile = fields.SampleAnnotationsLocation;
+	}
 
-		if (files.CNAs) cna_file = files.CNAs.path;
-		else cna_file = null;
+	if (fields.AnnotationColorsSource == 'upload'){
+		if (files.AnnotationColorsLocation){
+			annotationColorsFile = files.AnnotationColorsLocation.path;
+			tmpFiles.push(annotationColorsFile);
+		}
+		else{
+			annotationColorsFile = null;
+		}
+	} else{
+		annotationColorsFile = fields.AnnotationColorsLocation;
+	}
 
-		if (files.Aberrations) aberration_file = files.Aberrations.path;
-		else aberration_file = null;
+	// Construct the 
+	var args = ['-c', cancer, '-dn', dataset, '--user_id', req.user._id];
+	if (groupName) args = args.concat(['-gn', groupName]);
+	if (snvFile) args = args.concat(['-sf', snvFile, '-sft', snvFileFormat]);
+	if (cnaFile) args = args.concat(['-cf', cnaFile, '-cft', cnaFileFormat]);
+	if (aberrationsFile) args = args.concat(['-af', aberrationsFile, '-at', aberrationType]);
+	if (dataMatrixFile) args = args.concat(['-dmf', dataMatrixFile, '-mn', dataMatrixName]);
+	if (sampleAnnotationsFile) args = args.concat(['-saf', sampleAnnotationsFile]);
+	if (annotationColorsFile) args = args.concat(['-acf', annotationColorsFile]);
+	cmd = "db/loadDataset.py " + args.join(" ");
+	console.log(cmd);
 
-		if (files.SampleAnnotations) samples_file = files.SampleAnnotations.path;
-		else samples_file = null;
+	// Execute the process, log it's intermediate output,
+	// and exit and resovlve the promise once it's done
+	var code, err = "", output = "";
+	function loadDataset(){
+		var d = Q.defer(),
+			child = childProcess.exec(cmd);
 
-		if (files.AnnotationColors) annotation_colors_file = files.AnnotationColors.path;
-		else annotation_colors_file = null;
+		child.on('stdout', function(stdout){ output += stdout; });
+		child.on('stderr', function(stderr){ err += stderr; });
+		child.on('close', function(closeCode) { code = closeCode; });
 
-		if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
-		else data_matrix_file = null;
-
-		// if the uploaded SNV file is a MAF file, convert it to TSV and 
-		// change the path of the samples file to the samples TSV output by the
-		// conversion script
-		var prefix = snv_file ? snv_file.slice(0, -(MAF_EXT.length)) : "",
-			ext = snv_file ? snv_file.slice(-(MAF_EXT.length)) : "";
-
-		convertMaf(prefix, ext).then(function(){
-			if (ext == MAF_EXT){ snv_file = prefix + "-snvs.tsv"; }
-			// Pass the files to the parsers
-			Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
-									   data_matrix_file, data_matrix_name, annotation_colors_file, cancer_input,
-									   false, color, req.user._id)
-			.then(function(){
-				// Once the parsers have finished, destroy the tmp files
-				if (snv_file) fs.unlinkSync( snv_file );
-				if (cna_file) fs.unlinkSync( cna_file );
-				if (samples_file) fs.unlinkSync( samples_file );
-				if (annotation_colors_file) fs.unlinkSync( annotation_colors_file );
-				if (aberration_file) fs.unlinkSync( aberration_file );
-				if (cancer_file) fs.unlinkSync( cancer_file );
-				if (data_matrix_file) fs.unlinkSync( data_matrix_file );
-
-				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to view your dataset." });
-			})
-			.fail(function(){
-				res.send({ status: "Data could not be parsed." });
-			});
+		child.on('exit', function (exitCode) {
+			code = exitCode;
+			// tmpFiles.forEach(function(filename){ fs.unlinkSync(filename); })
+			d.resolve();
 		});
-	});
+
+		return d.promise;
+	}
+	loadDataset().then(function(){
+		if (output || err){ output = output + "<br/>" + err; }
+		res.send({
+			status: 'Child process exited with exit code ' + code + '.',
+			output: output
+		});
+	})
 }
 
 
@@ -168,7 +187,7 @@ exports.uploadCancer = function uploadCancer(req, res){
 		color = req.body.color;
 
 	// Create the cancer
-	Cancer.create({name: name, abbr: abbr, color: color}, function(err, cancer){
+	Cancer.create({name: name, abbr: abbr, color: color, is_public: false}, function(err, cancer){
 		if (err) throw new Error(err);
 		res.redirect("/cancers");
 	});
