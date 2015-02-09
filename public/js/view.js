@@ -2,6 +2,8 @@
 
 SHOW_TOOLTIPS = true
 
+console.log(data);
+
 // When the document is ready, draw the visualizations
 // and then fade them in and the loading GIF out
 $(document).ready(
