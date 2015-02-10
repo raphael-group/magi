@@ -110,12 +110,10 @@ def parse_gistic2( input_directory, dataset, amp_cutoff, del_cutoff, cna_consist
     if os.path.exists(input_directory + "/" + focalSegs):
         interval_file = input_directory + "/" + focalSegs
     else:
-        print "Ooops! ", input_directory, " does not have a valid CNA segmentation file named", focalSegs, "!"
-        exit(1)
+        raise ValueError("Ooops! " + input_directory + " does not have a valid CNA segmentation file named " + focalSegs + "!\n")
 
     if not (os.path.exists(input_directory + "/" + ampPeak) and os.path.exists(input_directory + "/" + delPeak) and os.path.exists(input_directory + "/" + focalMatrix)):    
-        print "Ooops! No valid rCNA files!"
-        exit(1)
+        raise ValueError("Ooops! No valid rCNA files!")
 
     gene_db = json.load(open(GENE))
     # for CNA-browser: read interval inforamtion

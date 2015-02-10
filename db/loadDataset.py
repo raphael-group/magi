@@ -37,26 +37,26 @@ def is_url(filename):
 
 def load_file(filename):
 	if is_url(filename):
-		try:
-			response = urllib2.urlopen(filename)
-			return response.read().split("\n")
-		except urllib2.HTTPError as e:
-			raise MAGIFileParsingException("Loading {}: {}".format(filename, e))
+		response = urllib2.urlopen(filename)
+		print response.read()
+		return response.read().split("\n")
 	else:
 		with open(filename) as f:
 			return f.readlines()
 
 #
 def load_file_to_tmp(filename):
-	# Determine
+	# Determine whether the file should be read as binary (if it's a tarball),
+	# or as text
 	if filename.lower().endswith(".tar"):
 		suffix = ".tar"
 		mode = 'wb'
 	else:
 		suffix = '.txt'
 		mode = 'w'
+
+	# Create a temporary file to copy the input file to
 	_, tmpfile = tempfile.mkstemp(suffix=suffix)
-	print tmpfile
 	with open(tmpfile, mode) as outfile:
 		if is_url(filename):
 			try:
@@ -251,6 +251,109 @@ def add_neighbors(cnas):
 		cnas[g]['neighbors'] = list(db.genes.find(query, {"_id": False}))
 		cnas[g]['region'] = dict(chr=gene['chr'], minSegX=minSegX, maxSegX=maxSegX)
 
+# Load the transcripts from MongoDB
+def load_transcripts():
+	db.transcripts.find()
+	with open(transcriptFile) as f:
+		return json.load(f)
+
+###############################################################################
+# Functions for loading SNV/CNA/aberration/data matrix/sample files
+
+# Wrapper for loading the sample annotation and annotation color file,
+# or to just return blank data structures
+def load_samples(sample_annotation_file, annotation_color_file):
+	# Load the sample file (if provided)
+	if (sample_annotation_file):
+		# Load the samples and sample annotations (if provided)
+		samples, categories, sampleToAnnotations = load_sample_file(sample_annotation_file)
+		sampleWhitelist = set(samples)
+		sampleToMuts = dict( (s, set()) for s in sampleWhitelist)
+
+		# If we're given a sample file then we need to try and load the
+		# annotation colors
+		if (len(categories) > 0 and annotation_color_file):
+			annotationToColor = load_annotation_color_file(annotation_color_file, categories)
+		else:
+			annotationToColor = dict( (c, {}) for c in categories )
+	else:
+		samples, categories, sampleToAnnotations, annotationToColor, sampleWhitelist = None, None, None, None, None
+		sampleToMuts = defaultdict(set)
+
+	return samples, categories, sampleToAnnotations, annotationToColor, sampleWhitelist, sampleToMuts
+
+# Wrapper to load SNVs file
+def load_snvs(snvFile, snvFileType, dataset, sampleToMuts, geneToCases, sampleWhitelist):
+	if snvFile:
+		if snvFileType == 'MAGI':
+			snvs, numSNVs = load_snv_file(snvFile, dataset, sampleToMuts, geneToCases, sampleWhitelist)
+		else:
+			from mafToTSV import parse_maf, transcriptFile
+			filename = load_file_to_tmp(snvFile)
+			dbToTranscripts = load_transcripts()
+			snvs, numSNVs = parse_maf( filename, dbToTranscripts, dataset, sampleToMuts,
+										   geneToCases, sampleWhitelist, inactiveTys )
+			os.remove(filename) # remove the temporary file
+	else:
+		snvs, numSNVs = {}, 0
+
+	return snvs, numSNVs
+
+# Wrapper to load the CNA file
+def load_cnas(cnaFile, cnaFileType, dataset, sampleToMuts, geneToCases, sampleWhitelist,
+			  ampCutoff, delCutoff, CNAConsistencyThreshold, rangeCNA):
+	if (cnaFile):
+		if cnaFileType == 'MAGI':
+			cnas, numCNAs = load_cna_file(cnaFile, dataset, sampleToMuts, geneToCases, sampleWhitelist)
+		elif cnaFileType == 'GISTIC2':
+			# GISTIC2 requires a tarball. So verify that there is a tarball, then 
+			# untar it to a temporary directory
+			filename = load_file_to_tmp(cnaFile)
+			cnaDir = tempfile.mkdtemp()
+
+			if not tarfile.is_tarfile(filename):
+				sys.stderr.write("CNA file is not a valid TAR file.\n")
+				os._exit(100)
+			else:
+				tar = tarfile.open(filename)
+				tar.extractall(path=cnaDir)
+				tar.close()
+				os.remove(filename)
+
+			# Parse the CNAs
+			from gistic2ToTSV import parse_gistic2
+			cnas, numCNAs = parse_gistic2(cnaDir, dataset, ampCutoff, delCutoff,
+										  CNAConsistencyThreshold, rangeCNA, sampleToMuts,
+										  geneToCases, sampleWhitelist)
+			shutil.rmtree(cnaDir) # clear the extracted tar direcotry
+
+		# Identify the neighbors of each gene with CNAs
+		add_neighbors(cnas)
+
+	else:
+		cnas, numCNAs = {}, 0
+
+	return cnas, numCNAs
+
+# Wrapper to load the aberrations file or return a blank data structure
+def load_aberrations(aberrationsFile, aberrationType, dataset, sampleToMuts,
+					 geneToCases, sampleWhitelist):
+	if (aberrationsFile):
+		aberrations = load_aberrations_file(aberrationsFile, aberrationType,
+			dataset, sampleToMuts, geneToCases, sampleWhitelist)
+		mutationMatrixTypes.add(aberrationType)
+	else:
+		aberrations = {}
+	return aberrations
+
+# Wrapper to load the data matrix or return blank data structures
+def load_data_matrix(dataMatrixFile, sampleWhitelist):
+	if dataMatrixFile:
+		dataMatrix, dataMatrixSamples = load_data_matrix_file(dataMatrixFile, sampleWhitelist)
+	else:
+		dataMatrix, dataMatrixSamples = None, None
+	return dataMatrix, dataMatrixSamples
+
 ###############################################################################
 # Parse arguments
 def get_parser():
@@ -314,91 +417,71 @@ def get_parser():
 
 # Run
 def run( args ):
+	###########################################################################
 	# Do some additional argument checks
 	assert(args.snv_file or args.cna_file or args.data_matrix_file or data.aberrations_file)
 
-	# Load the sample file (if provided)
-	if (args.sample_annotation_file):
-		# Load the samples and sample annotations (if provided)
-		samples, categories, sampleToAnnotations = load_sample_file(args.sample_annotation_file)
-		sampleWhitelist = set(samples)
-		sampleToMuts = dict( (s, set()) for s in sampleWhitelist)
+	###########################################################################
+	# Load the data
 
-		# If we're given a sample file then we need to try and load the
-		# annotation colors
-		if (len(categories) > 0 and args.annotation_color_file):
-			annotationToColor = load_annotation_color_file(args.annotation_color_file, categories)
-		else:
-			annotationToColor = dict( (c, {}) for c in categories )
-	else:
-		samples, categories, sampleToAnnotations, annotationToColor, sampleWhitelist = None, None, None, None, None
-		sampleToMuts = defaultdict(set)
-
-	# Load the mutations
+	# Keep a map of genes -> samples -> mutation types
 	geneToCases = defaultdict(lambda: defaultdict(set))
 
-	if args.snv_file:
-		if args.snv_file_type == 'MAGI':
-			snvs, numSNVs = load_snv_file(args.snv_file, args.dataset_name, sampleToMuts, geneToCases, sampleWhitelist)
-		else:
-			from mafToTSV import parse_maf, transcriptFile
-			filename = load_file_to_tmp(args.snv_file)
-			with open(transcriptFile) as f:
-				dbToTranscripts = json.load(f)
-				try:
-					snvs, numSNVs = parse_maf( filename, dbToTranscripts, args.dataset_name,
-											   sampleToMuts, geneToCases, sampleWhitelist, inactiveTys )
-				except ValueError as e:
-					raise MAGIFileParsingException(e)
-				except:
-					raise MAGIFileParsingException("Could not parse MAF.")
-			os.remove(filename) # remove the temporary file
-	else:
-		snvs, numSNVs = {}, 0
+	# Load samples
+	try:
+		samples, categories, sampleToAnnotations, annotationToColor, sampleWhitelist, sampleToMuts = load_samples(args.sample_annotation_file, args.annotation_color_file)
+	except (urllib2.HTTPError, urllib2.URLError):
+		sys.stderr.write("urllib2 error when parsing sample annotation or annotation color file.")
+		os._exit(4) # Samples/Annotation colors URL file error
+	except IOError as e:
+		sys.stderr.write("IOError when parsing sample annotation or annotation color file.\n")
+		os._exit(5) # Samples/Annotation colors local file error
+		
+	# Load SNVs
+	try:
+		snvs, numSNVs = load_snvs(args.snv_file, args.snv_file_type, args.dataset_name,
+								  sampleToMuts, geneToCases, sampleWhitelist)
+	except (urllib2.HTTPError, urllib2.URLError):
+		sys.stderr.write("urllib2 error when parsing SNV file.\n")
+		os._exit(14) # SNV URL file error
+	except IOError as e:
+		sys.stderr.write("IOError when parsing SNV file.\n")
+		os._exit(15) # SNV local file error
 
-	if (args.cna_file):
-		if args.cna_file_type == 'MAGI':
-			cnas, numCNAs = load_cna_file(args.cna_file, args.dataset_name, sampleToMuts, geneToCases, sampleWhitelist)
-		elif args.cna_file_type == 'GISTIC2':
-			# GISTIC2 requires a tarball. So verify that there is a tarball, then 
-			# untar it to a temporary directory
-			filename = load_file_to_tmp(args.cna_file)
-			cnaDir = tempfile.mkdtemp()
+	# Load CNAs
+	try:
+		cnas, numCNAs = load_cnas(args.cna_file, args.cna_file_type, args.dataset_name,
+								  sampleToMuts, geneToCases, sampleWhitelist,
+								  args.amp_cutoff, args.del_cutoff,
+								  args.cna_consistency_threshold, args.range_cna)
+	except (urllib2.HTTPError, urllib2.URLError):
+		sys.stderr.write("urllib2 error parsing CNA file.\n")
+		os._exit(24) # CNA URL file error
+	except IOError as e:
+		sys.stderr.write("IOError when parsing CNA file.\n")
+		os._exit(25) # CNA local file error
 
-			if not tarfile.is_tarfile(filename):
-				sys.stderr.write("CNA file is not a valid TAR file.\n")
-				sys.exit(100)
-			else:
-				tar = tarfile.open(filename)
-				tar.extractall(path=cnaDir)
-				tar.close()
-				os.remove(filename)
-
-			# Parse the CNAs
-			from gistic2ToTSV import parse_gistic2
-			cnas, numCNAs = parse_gistic2(cnaDir, args.dataset_name, args.amp_cutoff, args.del_cutoff,
-										  args.cna_consistency_threshold, args.range_cna, sampleToMuts,
-										  geneToCases, sampleWhitelist)
-			shutil.rmtree(cnaDir) # clear the extracted tar direcotry
-
-		# Identify the neighbors of each gene with CNAs
-		add_neighbors(cnas)
-
-	else:
-		cnas, numCNAs = {}, 0
-
-	if (args.aberrations_file):
-		aberrations = load_aberrations_file(args.aberrations_file, args.aberration_type,
-			args.dataset_name, sampleToMuts, geneToCases, sampleWhitelist)
-		mutationMatrixTypes.add(args.aberration_type)
-	else:
-		aberrations = {}
+	# Load aberrations
+	try:
+		aberrations = load_aberrations(args.aberrations_file, args.aberration_type,
+									   args.dataset_name, sampleToMuts, geneToCases,
+									   sampleWhitelist)
+	except (urllib2.HTTPError, urllib2.URLError):
+		sys.stderr.write("urllib2 error when parsing aberrations file.\n")
+		os._exit(34) # aberrations URL file error
+	except IOError as e:
+		sys.stderr.write("IOError when parsing aberrations file.\n")
+		os._exit(35) # aberrations local file error
 
 	# Load the data matrix (if given)
-	if args.data_matrix_file:
+	try:
 		dataMatrix, dataMatrixSamples = load_data_matrix(args.data_matrix_file, sampleWhitelist)
-	else:
-		dataMatrix, dataMatrixSamples = None, None
+	except urllib2.HTTPError as e:
+		sys.stderr.write("urllib2 error when parsing data matrix color file.\n")
+		os._exit(44) # data matrix URL file error
+	except (urllib2.HTTPError, urllib2.URLError):
+		sys.stderr.write("IOError when parsing data matrix file.\n")
+		os._exit(45) # data matrix local file error
 
 	# Create a list of the samples in this dataset if one wasn't provided
 	if not sampleWhitelist:
@@ -416,6 +499,16 @@ def run( args ):
 	# Sort the genes by their total number of mutated samples
 	genesWithCount = sorted([ (g, len(cases)) for g, cases in geneToCases.iteritems() ],
 							 key=lambda (g, c): c, reverse=True)
+
+	# Do some quick error checking
+	if len(genesWithCount) == 0 or genesWithCount[0][1] == 0:
+		if args.data_matrix_file:
+			print "Warning: No valid mutation data in files. Only loading data matrix..."
+		else:
+			sys.stderr.write("Fatal error: No valid mutation data in files and no data matrix.\n")
+			os._exit(60) # no data
+
+	# Identify the most mutated genes and data for the mutation plot
 	mostMutatedGenes, mutationPlotData = [], []
 	for i, (g, num_mutated_samples) in enumerate(genesWithCount[:500]):
 		# Record data to show in the most mutated genes table

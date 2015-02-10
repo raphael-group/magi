@@ -9,6 +9,31 @@ var mongoose = require( 'mongoose' ),
 	path = require('path');
 	childProcess = require('child_process');
 
+// Mapping of exit codes to messages when loading a dataset
+// by running the Python loadDataset.py script through a
+// child process
+var codeToMsg = {
+	0: "<b>Success! </b>Return to the <a href='/'>homepage</a> to query your dataset.",
+	2: "Invalid argument. Please <a href='/contact'>contact us</a> for assistance.",
+	4: "Error downloading sample/annotation color file.",
+	5: "Error reading in sample/annotation color file.",
+	14: "Error downloading SNV file. Please check the URL you provided.",
+	15: "Error reading in SNV file.",
+	24: "Error downloading CNA file. Please check the URL you provided.",
+	25: "Error reading in CNA file.",
+	34: "Error downloading other aberrations file. Please check the URL you provided.",
+	35: "Error reading in other aberrations file.",
+	44: "Error downloading data matrix file. Please check the URL you provided.",
+	45: "Error reading in data matrix file.",
+	50: "Unknown fatal error. Please <a href='/contact'>contact us</a> for assistance.",
+	60: "Fatal error: No valid data in mutation files and no data matrix => no data to save."
+};
+
+function codeToMessage(code){
+	if (code in codeToMsg) return codeToMsg[code];
+	else return "Unknown error."
+}
+
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
 	console.log('upload')
@@ -43,7 +68,7 @@ exports.uploadManifest = function uploadManifest(req, res){
 			fs.unlinkSync(manifestFile);
 		});
 	} else {
-		console.log("FAILURE")
+		console.error("Manifest could not be loaded.")
 		res.send({error: "Manifest could not be loaded."})
 	}
 }
@@ -152,7 +177,7 @@ exports.uploadDataset = function uploadDataset(req, res){
 
 	// Execute the process, log it's intermediate output,
 	// and exit and resovlve the promise once it's done
-	var code, err = "", output = "";
+	var msg, err = "", output = "";
 	function loadDataset(){
 		var d = Q.defer(),
 			child = childProcess.exec(cmd);
@@ -162,19 +187,17 @@ exports.uploadDataset = function uploadDataset(req, res){
 		child.on('close', function(closeCode) { code = closeCode; });
 
 		child.on('exit', function (exitCode) {
-			code = exitCode;
-			// tmpFiles.forEach(function(filename){ fs.unlinkSync(filename); })
+			msg = codeToMessage(exitCode);
+			tmpFiles.forEach(function(filename){ fs.unlinkSync(filename); })
 			d.resolve();
 		});
 
 		return d.promise;
 	}
+
 	loadDataset().then(function(){
 		if (output || err){ output = output + "<br/>" + err; }
-		res.send({
-			status: 'Child process exited with exit code ' + code + '.',
-			output: output
-		});
+		res.send({ status: msg, output: output });
 	})
 }
 

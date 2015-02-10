@@ -47,9 +47,11 @@ $(document).ready(function() {
 		var el = $("select#" + d + "FileSource"),
 			fileUpload = $("#" + d + "FileUpload").parent(),
 			fileURL = $("#" + d + "FileURL");
+
 		el.on("change", function(){
 			if (el.val() === "url"){
 				fileUpload.hide();
+				fileUpload.siblings('abbr').html("");
 				fileURL.show();
 			} else if (el.val() === "upload") {
 				fileUpload.show();
