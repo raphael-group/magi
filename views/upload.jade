@@ -22,6 +22,21 @@ block body
                     | TCGA controlled-data sharing policy
                 | .
         div(class="row")
+            h4 Step 0: Upload a manifest
+            br
+            p
+                | You can simplify uploading data to MAGI by creating a 
+                a(href="") JSON 
+                | file to represent your data. Upload the JSON file below to populate the forms on this page
+                | with your data. Then all you have to do is click &ldquo;Submit&rdquo; below!
+            div
+                span(class="btn btn-primary btn-file")
+                    | Select manifest file 
+                    input(class="btn form-control", type="file", id="manifestFileUpload")
+                abbr(class="filename", style="margin-left:12px")
+                div(id="manifestStatus", style="display:inline;margin-left:12px;")
+        hr
+        div(class="row")
             h4 Step 1: Pick a cancer, name, and color.
             br
         div(class="row")

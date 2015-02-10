@@ -288,4 +288,104 @@ $(document).ready(function() {
 			}
 		});
 	});
+
+	///////////////////////////////////////////////////////////////////////////
+	// Parse the request to upload a manifest
+
+	// The manifest 
+	var manifestFileElement = $("input#manifestFileUpload"),
+		manifestStatusElement = $("div#manifestStatus");
+
+	function manifest_status(msg, classes){
+		manifestStatusElement.attr('class', classes);
+		manifestStatusElement.html(msg);
+	}
+
+	manifestFileElement.on("change", function(){
+		manifest_status('Uploading data...', infoClasses);
+		var manifestFile = manifestFileElement[0].files[0];
+		if (manifestFile){
+			var form = new FormData();
+			form.append( 'Manifest', manifestFile );
+			$.ajax({
+				// Note: can't use JSON otherwise IE8 will pop open a dialog
+				// window trying to download the JSON as a file
+				url: '/upload/manifest',
+				data: form,
+				cache: false,
+				contentType: false,
+				processData: false,
+				type: 'POST',
+
+				error: function(xhr) {
+					manifest_status('File upload error: ' + xhr.status);
+				},
+
+				success: function(response) {
+					// If the server responds, then we either report the error
+					if(response.error) {
+						manifest_status(response.error, warningClasses);
+					// Or use the data to update the form
+					} else if (response.data){
+						// 
+						manifest_status(response.status + " See updated form below.", successClasses);
+
+						// Iterate through the keys of the data file we've been passed,
+						// updating the appropriate fields.
+						var data = response.data,
+							keys = Object.keys(response.data);
+
+						keys.forEach(function(k){
+							var name = k.toLowerCase();
+							if (name == 'dataset'){
+								$("#dataset").val(data[k]);	
+							} else if (name == 'color'){
+								$('#color').val(data[k]);
+							} else if (name == 'groupname'){
+								$('#groupName').val(data[k]);
+							} else if (name == 'cancer'){
+								$('select#cancer').val(data[k]);
+							} else if (name == 'snvs' && data[k].location){
+								$('#SNVFileSource').val('url');
+								$('#SNVFileURL').val(data[k].location);
+								$('#SNVFileSource').change();
+								if (data[k].format) $('#SNVFileFormat').val(data[k].format);
+							} else if (name == 'cnas' && data[k].location){
+								$('#CNAFileSource').val('url');
+								$('#CNAFileSource').change();
+								$('#CNAFileURL').val(data[k].location);
+								if (data[k].format) $('#CNAFileFormat').val(data[k].format);
+							} else if (name == 'dataMatrix' && data[k].location){
+								$('#DataMatrixFileSource').val('url');
+								$('#DataMatrixFileSource').change();
+								$('#DataMatrixFileURL').val(data[k].location);
+								if (data[k].matrixName) $('#DataMatrixName').val(data[k].matrixName);
+							} else if (name == 'aberrations' && data[k].location){
+								$('#OtherAberrationsFileSource').val('url');
+								$('#OtherAberrationsFileSource').change();
+								$('#OtherAberrationsFileURL').val(data[k].location);
+								if (data[k].aberrationType) $('#OtherAberrationsType').val(data[k].aberrationType);
+							} else if (name == 'sampleannotations' && data[k].location){
+								$('#SampleAnnotationsFileSource').val('url');
+								$('#SampleAnnotationsFileSource').change();
+								$('#SampleAnnotationsFileURL').val(data[k].location);
+							} else if (name == 'annotationcolors' && data[k].location){
+								$('#AnnotationColorsFileSource').val('url');
+								$('#AnnotationColorsFileSource').change();
+								$('#AnnotationColorsFileURL').val(data[k].location);
+							} else {
+								console.log('Warning: Unused key "' + k + '" in manifest file.')
+							}
+						});
+					} else {
+						manifest_status('Manifest file upload errror.')
+					}
+				}
+			});
+		} else {
+			status('Manifest file could not be uploaded.');
+			return;
+		}
+	});
+
 });

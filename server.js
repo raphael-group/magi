@@ -121,18 +121,19 @@ var routes = require( './routes/router' );
 
 // Index page and query handler
 app.get('/', routes.index);
-app.post('/', routes.queryhandler)
+app.post('/', routes.queryhandler);
 
 // gd3 view
-app.get('/view', routes.view)
-app.get('/view/:id', routes.view)
+app.get('/view', routes.view);
+app.get('/view/:id', routes.view);
 
 // Data-/gene set uploads
-app.post('/upload/geneset', routes.uploadGeneset)
-app.get('/upload', ensureAuthenticated, routes.upload)
-app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset)
-app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset)
-app.post('/upload/cancer', routes.uploadCancer)
+app.post('/upload/geneset', routes.uploadGeneset);
+app.get('/upload', ensureAuthenticated, routes.upload);
+app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset);
+app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset);
+app.post('/upload/manifest', ensureAuthenticated, routes.uploadManifest);
+app.post('/upload/cancer', routes.uploadCancer);
 
 // Dataset views
 app.get('/datasets', routes.datasets.index);
@@ -148,12 +149,12 @@ app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 app.post('/vote/mutation', ensureAuthenticated, routes.annotations.mutationVote);
 
 // more information
-app.get('/terms', routes.terms)
-app.get('/contact', routes.contact)
-app.get('/support', routes.support)
-app.get('/privacy', routes.privacy)
-app.get('/acknowledgements', routes.acknowledgements)
-app.get('/cancers', routes.cancers)
+app.get('/terms', routes.terms);
+app.get('/contact', routes.contact);
+app.get('/support', routes.support);
+app.get('/privacy', routes.privacy);
+app.get('/acknowledgements', routes.acknowledgements);
+app.get('/cancers', routes.cancers);
 
 // set up the authentication routes
 app.get('/login', routes.login);
@@ -166,7 +167,7 @@ app.get("/401", function(req, res){
   var msg = req.session.msg401;
   req.session.msg401 = null;
   res.render("401", {msg: msg});
-})
+});
 
 // this route extracts the previous url (returnTo) and stores it in the session
 // so it will get rerouted on authentication

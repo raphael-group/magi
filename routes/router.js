@@ -34,6 +34,7 @@ exports.uploadGeneset = index.uploadGeneset;
 exports.upload = upload.upload;
 exports.uploadDataset = upload.uploadDataset;
 exports.deleteDataset = upload.deleteDataset;
+exports.uploadManifest = upload.uploadManifest;
 exports.uploadCancer = upload.uploadCancer;
 
 // Routes for the main view

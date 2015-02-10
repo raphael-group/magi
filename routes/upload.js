@@ -24,6 +24,26 @@ exports.upload  = function upload(req, res){
 	});
 }
 
+//
+exports.uploadManifest = function uploadManifest(req, res){
+	console.log('/upload/manifest');
+	if (req.user && req.files && req.files.Manifest){
+		var manifestFile = req.files.Manifest.path;
+		fs.readFile(manifestFile, 'utf-8', function (err, data) {
+			if (err){
+				res.send({error: err});
+				throw new Error(err);
+			} else {
+				res.send({status: "Success!", data: JSON.parse(data) });
+			}
+
+		});
+	} else {
+		console.log("FAILURE")
+		res.send({error: "Manifest could not be loaded."})
+	}
+}
+
 // Parse the user's dataset upload
 exports.uploadDataset = function uploadDataset(req, res){
 	console.log('/upload/dataset');
