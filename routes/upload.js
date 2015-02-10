@@ -24,7 +24,7 @@ exports.upload  = function upload(req, res){
 	});
 }
 
-//
+// Load a JSON manifest file and send the data to the server
 exports.uploadManifest = function uploadManifest(req, res){
 	console.log('/upload/manifest');
 	if (req.user && req.files && req.files.Manifest){
@@ -34,9 +34,13 @@ exports.uploadManifest = function uploadManifest(req, res){
 				res.send({error: err});
 				throw new Error(err);
 			} else {
-				res.send({status: "Success!", data: JSON.parse(data) });
+				try{
+					res.send({status: "Success!", data: JSON.parse(data) });
+				} catch(e){
+					res.send({error: "Not a valid JSON file."})
+				}
 			}
-
+			fs.unlinkSync(manifestFile);
 		});
 	} else {
 		console.log("FAILURE")
