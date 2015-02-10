@@ -108,7 +108,7 @@ $(document).ready(function() {
 			status(fileName+' file is too large. Please upload a smaller file.', warningClasses);
 		return false;
 		}
-		else if(file && file.type != 'text/plain' && file.type != 'text/tab-separated-values' && file.name.substr(-4) != ".maf"){
+		else if(file && file.type != 'text/plain' && file.type != 'text/tab-separated-values' && file.name.substr(-4) != ".maf" && file.type != "application/x-tar"){
 			console.log(file, file.type)
 			status(fileName+' file upload: only MAF, text, and tsv files are allowed.', warningClasses);
 			return false;

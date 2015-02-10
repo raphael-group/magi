@@ -29,7 +29,7 @@ var DatasetSchema = new mongoose.Schema({
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
-	is_standard: { type: Boolean, default: false, required: true },
+	is_public: { type: Boolean, default: false, required: true },
 	color: { type: String, required: true }
 });
 

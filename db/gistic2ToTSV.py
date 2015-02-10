@@ -1,38 +1,43 @@
 #!/usr/bin/python
-import sys, os, json
+import sys, os, json, argparse
 from collections import defaultdict
+from mutation_data import MutationData, AMP, DEL, SNV
+from gistic_constants import *
 
-# Hard-coded locations of transcript DBs
-GENE = "hg19_genes_list.json"
+dirname, filename = os.path.split(os.path.abspath(__file__))
+GENE = dirname + "/data/hg19_genes_list.json"
+CENSUS = dirname + "/data/census_glist.txt"
+ZACK_AMP = dirname + "/data/zack_cna_amp.lst"
+ZACK_DEL = dirname + "/data/zack_cna_del.lst"
 
-
-def load_mutation_data( sample_file, cna_file, run_cancer):
+def load_mutation_data( M, tumor_ty, cna_consistency_threshold ):
     # Load sample and gene whitelists. Sample file is required for typing.
-    #if run_cancer == "PANCAN":
-    sample2ty = dict([l.rstrip().split()[0], "CANCER"] for l in open(sample_file))
-    #else:
-    #    sample2ty = dict( l.rstrip().split() for l in open(sample_file) if l.rstrip().split()[1] == run_cancer)    
-    samples_with_mutation = set() # added by Hsin-Ta, output only samples with mutations
-
+    
+    sample2ty = M.patientID_tumorTypes
+    
     # Load SNVs
     from collections import defaultdict
     gene2cases = defaultdict(lambda: defaultdict(list))
         
     # Load CNAs
-    if cna_file:
-        arrs = [ l.rstrip().split("\t") for l in open(cna_file)
-                 if not l.startswith("#")]
-        cna_ty = dict(D="del", A="amp", R="fus") # Hsin-Ta: added fusion type
-        for arr in arrs:
-            sample, mutations = arr[0], arr[1:]
-            if sample in sample2ty:
-                samples_with_mutation.add(sample)
-                for g in mutations:
-                    name = g[:-3]
-                    ty = cna_ty[g[-2]]
-                    gene2cases[name][sample].append( ty )
+    for g in M.genes_mutatedPatient[tumor_ty]:
+        amps = M.genes_mutatedPatient[tumor_ty][g][AMP]
+        dels = M.genes_mutatedPatient[tumor_ty][g][DEL]
+        num_amps, num_dels = float(len(amps)), float(len(dels))
 
-    return sample2ty, gene2cases, samples_with_mutation
+        if num_amps == 0 and num_dels == 0: continue
+
+        if num_amps / (num_amps + num_dels) >= cna_consistency_threshold:
+            for sample in amps:
+                gene2cases[g][sample].append("amp")
+        
+        elif num_dels / (num_amps + num_dels) >= cna_consistency_threshold:            
+            for sample in dels:
+                gene2cases[g][sample].append("del")
+        else:
+            continue
+
+    return sample2ty, gene2cases
 
 
 def compute_coverage( gene2mutations, geneset ):
@@ -52,7 +57,7 @@ def parse_sample_name( arr ):
         return "-".join(arr[start:start+3])
                                     
 # for CNA-browser: cna calling
-def create_cna_data(gene2cases, interval_db, gene_db, sample2ty, range_cna, ac, dc):
+def create_cna_data(gene2cases, dataset, interval_db, gene_db, sample2ty, range_cna, ac, dc):
     cna_interval_data = dict()
     for g in gene2cases:
         if g in gene_db and len(gene_db[g]) == 1:
@@ -69,92 +74,139 @@ def create_cna_data(gene2cases, interval_db, gene_db, sample2ty, range_cna, ac, 
                 tmp_pat_seg = list()
                 for il, ir, iw in interval_db[sample][chrom]:
                     if iw > ac and 'amp' in ty and not(gl-range_cna > ir or gr+range_cna < il):
-                        tmp_pat_seg.append(dict(x0=il, x1=ir, pat=sample, type='AMP', amp=iw))
+                        tmp_pat_seg.append(dict(name=g, start=il, end=ir, sample=sample, ty='amp', amp=iw, dataset=dataset))
                     if iw < dc and 'del' in ty and not(gl-range_cna > ir or gr+range_cna < il):
-                        tmp_pat_seg.append(dict(x0=il, x1=ir, pat=sample, type='DEL', amp=iw))
+                        tmp_pat_seg.append(dict(name=g, start=il, end=ir, sample=sample, ty='del', amp=iw, dataset=dataset))
             
                 if 'fus' in ty:
-                    tmp_pat_seg.append(dict(x0="", x1="", pat=sample, type='FUS', amp=0.00))
+                    tmp_pat_seg.append(dict(name=g, start="", end="", sample=sample, ty='fus', amp=0.00, dataset=dataset))
                         
                 cna_interval_data[g][sample2ty[sample]].append(tmp_pat_seg)    
     return cna_interval_data
-            
 
-# Main function
-def run(args):
+
+def CNA_processing(runCancer, cancerDir, t_amp, t_del, gene_db):
+    import cnas
+    # Load index of single cancer CNA files
+    individual_tys_and_paths = [ [runCancer, cancerDir] ]
+    
+    pan_tys_paths = [['PAN', None]]
+    focal_matrix_path = individual_tys_and_paths
+
+    M = MutationData()
+    # fetch target that consistency cross multiple cancers, define targets by Zack et al genes, and Census genes
+    target, sample2ty, mTable, missingpeak = cnas.check_consistency_cross_cancers(individual_tys_and_paths, pan_tys_paths, gene_db, ZACK_AMP, ZACK_DEL, CENSUS)
+
+    # based on targets, get calling from GISTIC2 matrix
+    G2_M = cnas.readGistic2_focal(focal_matrix_path, t_amp, t_del)  # 2 for 0.9, -0.9, 1 for 0.1, -0.1
+    
+    # output focal Matrix
+    cnas.focalMatrixProcessing(M, G2_M, target[AMP], target[DEL], sample2ty)
+
+    return M
+
+def parse_gistic2( input_directory, dataset, amp_cutoff, del_cutoff, cna_consistency_threshold,
+                   range_cna, sampleToMuts, geneToCases, sampleWhitelist ):
+    if os.path.exists(input_directory + "/" + focalSegs):
+        interval_file = input_directory + "/" + focalSegs
+    else:
+        print "Ooops! ", input_directory, " does not have a valid CNA segmentation file named", focalSegs, "!"
+        exit(1)
+
+    if not (os.path.exists(input_directory + "/" + ampPeak) and os.path.exists(input_directory + "/" + delPeak) and os.path.exists(input_directory + "/" + focalMatrix)):    
+        print "Ooops! No valid rCNA files!"
+        exit(1)
+
     gene_db = json.load(open(GENE))
     # for CNA-browser: read interval inforamtion
-    if args.interval_file:
-        interval_db = defaultdict(dict)
-        for l in open(args.interval_file):
-            if not l.startswith("Sample"):
-                v = l.rstrip().split()
-                patient_id = "-".join(v[0].split("-")[:3])
-                if v[1] not in interval_db[patient_id]:
-                    interval_db[patient_id][v[1]] = list()
-                    interval_db[patient_id][v[1]].append([int(v[2]), int(v[3]), float(v[5])])
-                else:
-                    interval_db[patient_id][v[1]].append([int(v[2]), int(v[3]), float(v[5])])
 
-    # Store high-level info about the runs
-    runs = []
+    interval_db = defaultdict(dict)
+    for l in open(interval_file):
+        if not l.startswith("Sample"):
+            v = l.rstrip().split()
+            patient_id = parse_sample_name(v[0].split("-"))
+            if v[1] not in interval_db[patient_id]:
+                interval_db[patient_id][v[1]] = list()
+                interval_db[patient_id][v[1]].append([int(v[2]), int(v[3]), float(v[5])])
+            else:
+                interval_db[patient_id][v[1]].append([int(v[2]), int(v[3]), float(v[5])])
+
+    M = CNA_processing(dataset, input_directory, amp_cutoff, del_cutoff, gene_db)
     
     # Load mutation data (if necessary)
-    sample2ty, gene2cases, samples_with_mutation = load_mutation_data(args.sample_file, args.cna_file, args.run)
-    n = len(samples_with_mutation)
+    sample2ty, gene2cases = load_mutation_data(M, dataset, cna_consistency_threshold)
+    n = len(M.patients())
+    #print n, len(sample2ty), len(gene2cases)    
      
     #print n, len(sample2ty), len(gene2cases)
     # Create output directory
-    output_dir = "%s/" % (args.output_dir)
-    try: os.makedirs( output_dir )
-    except OSError: pass
 
     # Declare variables used to keep track of output
             
     # for CNA-browser: cna_interval_data: output cna json
     
-    cna_interval_data = create_cna_data(gene2cases, interval_db, gene_db, sample2ty, args.range_cna, args.amp_cutoff, args.del_cutoff)
-    
-    fout = open(args.output_dir + "/"+ args.run + "_cna.tsv", "w")
-    #fout.write("\t".join(['Gene', 'Sample ID', 'CNA Type', 'Left', 'Right', 'Amplitude'])+"\n")
-    fout.write("\t".join(['Gene', 'Sample ID', 'CNA Type', 'Left', 'Right'])+"\n")
-    for g in cna_interval_data.keys():
-        for cancer_type in cna_interval_data[g].keys():
-           for seg_db in cna_interval_data[g][cancer_type]:
-                for seg_info in seg_db:
-                    #fout.write("\t".join([str(s) for s in [g, seg_info['pat'], seg_info['type'], seg_info['x0'], seg_info['x1'], seg_info['amp']]])+"\n")
-                    fout.write("\t".join([str(s) for s in [g, seg_info['pat'], seg_info['type'], seg_info['x0'], seg_info['x1']]])+"\n")
+    cna_interval_data = create_cna_data(gene2cases, dataset, interval_db, gene_db, sample2ty, range_cna, amp_cutoff, del_cutoff)
 
-    fout.close()    
-    return
+    # Convert the data into MAGI format, and update the 
+    cnas = defaultdict(lambda: dict(segments=defaultdict(list)))
+    numCNAs = 0
+    for gene, datasetToSegments in cna_interval_data.iteritems():
+        for dataset, segments in datasetToSegments.iteritems():
+            for sampleSegments in segments:
+                for segment in sampleSegments:
+                    sample = segment['sample']
+                    cnaTy = segment['ty'] 
+                    if not sampleWhitelist or (sampleWhitelist and sample in sampleWhitelist):
+                        cnas[gene]['segments'][sample].append( segment )
+                        numCNAs += 1
+                        if geneToCases:
+                            geneToCases[gene][sample].add( cnaTy if cnaTy else "cna" )
+                        if sampleToMuts:
+                            sampleToMuts[sample].add(gene)
 
-def parse_args(input_list=None):
-    import argparse
-    class Args: pass
-    args = Args()
+    for g, d in cnas.iteritems():
+        d['segments'] = [ dict(sample=sample, segments=d['segments'][sample]) for sample in d['segments']]
+
+    return cnas, numCNAs
+
+# Main function
+def run(args):
+    cna_interval_data = parse_gistic2(args.input_directory, args.dataset, args.amp_cutoff, args.del_cutoff,
+                                      args.cna_consistency_threshold, args.range_cna, None, None, None)
+
+    if args.output_directory:
+        output_dir = "%s/" % (args.output_directory)
+        try: os.makedirs( output_dir )
+        except OSError: pass
+        fout = open(output_dir + "/"+ args.dataset + "_cna.tsv", "w")
+        #fout.write("\t".join(['Gene', 'Sample ID', 'CNA Type', 'Left', 'Right', 'Amplitude'])+"\n")
+        fout.write("\t".join(['Gene', 'Sample ID', 'CNA Type', 'Left', 'Right'])+"\n")
+        for g in cna_interval_data.keys():
+            for cancer_type in cna_interval_data[g].keys():
+               for seg_db in cna_interval_data[g][cancer_type]:
+                    for seg_info in seg_db:
+                        #fout.write("\t".join([str(s) for s in [g, seg_info['pat'], seg_info['type'], seg_info['x0'], seg_info['x1'], seg_info['amp']]])+"\n")
+                        fout.write("\t".join([str(s) for s in [g, seg_info['pat'], seg_info['type'], seg_info['x0'], seg_info['x1']]])+"\n")
+
+        fout.close()    
+    return cna_interval_data
+
+def get_parser():
     description = 'Creates CNA to TSV data for MAGI.'
     parser = argparse.ArgumentParser(description=description)    
-    parser.add_argument('-n', '--run', required=True)
-    parser.add_argument('-cna', '--cna_file', default=None,
-                        help='CNA file to use for all input files.')
-    parser.add_argument('-interval', '--interval_file', default=None,
-                        help='CNA interval file to use for all input files.')
+    parser.add_argument('-d', '--dataset', required=True)
+    parser.add_argument('-i', '--input_directory', required=True,
+                        help='Directory containing GISTIC2 output files.')
     parser.add_argument('-range', '--range_cna', default=500000, type=int,
                         help='Tolerant range of CNA are included in the browser.')
-    parser.add_argument('-a', '--amp_cutoff', default=0.3, type=float,
+    parser.add_argument('-ac', '--amp_cutoff', default=0.3, type=float,
                         help='Amplification changes to be considered.')
-    parser.add_argument('-d', '--del_cutoff', default=-0.3, type=float,
+    parser.add_argument('-dc', '--del_cutoff', default=-0.3, type=float,
                         help='Deletion changes to be considered.')
-    parser.add_argument('-s', '--sample_file', default=None,
-                        help='Sample file (space-separated samples and types).')
-    parser.add_argument('-o', '--output_dir', required=True,
-                    help='Output directory.')
+    parser.add_argument('-cct', '--cna_consistency_threshold', default=0.75, type=float,
+                        help='CNA cna_consistency_threshold to be considered.')    
+    parser.add_argument('-o', '--output_directory', required=False, default=None, help='Output directory.')
 
-    if input_list:
-        parser.parse_args(input_list, namespace=args)
-    else:
-        parser.parse_args(namespace=args)
+    return parser
 
-    return args
-
-if __name__ == "__main__": run( parse_args() )
+if __name__ == "__main__": run( get_parser().parse_args(sys.argv[1:]) )

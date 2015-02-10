@@ -1,8 +1,9 @@
 #!/usr/local/bin/python
 
 # Load required modules
-import sys, os, argparse, json, datetime, urllib2
+import sys, os, argparse, json, datetime, urllib2, shutil
 from collections import defaultdict
+import tarfile, tempfile
 
 # Set up the connection to the MongoDB database
 from pymongo import MongoClient
@@ -31,8 +32,11 @@ mutationMatrixTypes = set(["del", "amp", "fus", "snv", "inactive_snv"])
 # Utility functions
 
 # Load files either from URL or locally
+def is_url(filename):
+	return filename.lower().startswith("http://")
+
 def load_file(filename):
-	if filename.lower().startswith("http://"):
+	if is_url(filename):
 		try:
 			response = urllib2.urlopen(filename)
 			return response.read().split("\n")
@@ -41,6 +45,29 @@ def load_file(filename):
 	else:
 		with open(filename) as f:
 			return f.readlines()
+
+#
+def load_file_to_tmp(filename):
+	# Determine
+	if filename.lower().endswith(".tar"):
+		suffix = ".tar"
+		mode = 'wb'
+	else:
+		suffix = '.txt'
+		mode = 'w'
+	_, tmpfile = tempfile.mkstemp(suffix=suffix)
+	print tmpfile
+	with open(tmpfile, mode) as outfile:
+		if is_url(filename):
+			try:
+				response = urllib2.urlopen(filename)
+				outfile.write(response.read())
+			except urllib2.HTTPError as e:
+				raise MAGIFileParsingException("Loading {}: {}".format(filename, e))
+		else:
+			with open(filename) as f:
+				outfile.write(f.read())
+	return tmpfile
 
 # Load the file, split it on tabs, and restrict to the rows in the whitelist
 def load_split_restrict_file(filename, sampleWhitelist, sampleIndex):
@@ -256,6 +283,14 @@ def get_parser():
 		help='Path (or URL) to input CNA file.')
 	parser.add_argument('-cft', '--cna_file_type', default='MAGI', type=str,
 		choices=["GISTIC2", "MAGI"], help='CNA File type.')
+	parser.add_argument('-ac', '--amp_cutoff', default=0.3, type=float,
+    	help='Amplification changes to be considered.')
+	parser.add_argument('-dc', '--del_cutoff', default=-0.3, type=float,
+		help='Deletion changes to be considered.')
+	parser.add_argument('-cct', '--cna_consistency_threshold', default=0.75,
+		type=float, help='CNA cna_consistency_threshold to be considered.')    
+	parser.add_argument('-range', '--range_cna', default=500000, type=int,
+		help='Tolerant range of CNA are included in the browser.')
 
 	# Data matrix
 	parser.add_argument('-dmf', '--data_matrix_file', required=False, type=str, default=None,
@@ -302,26 +337,53 @@ def run( args ):
 	# Load the mutations
 	geneToCases = defaultdict(lambda: defaultdict(set))
 
-	if (args.snv_file):
+	if args.snv_file:
 		if args.snv_file_type == 'MAGI':
 			snvs, numSNVs = load_snv_file(args.snv_file, args.dataset_name, sampleToMuts, geneToCases, sampleWhitelist)
 		else:
 			from mafToTSV import parse_maf, transcriptFile
+			filename = load_file_to_tmp(args.snv_file)
 			with open(transcriptFile) as f:
 				dbToTranscripts = json.load(f)
 				try:
-					snvs, numSNVs = parse_maf( args.snv_file, dbToTranscripts, args.dataset_name,
+					snvs, numSNVs = parse_maf( filename, dbToTranscripts, args.dataset_name,
 											   sampleToMuts, geneToCases, sampleWhitelist, inactiveTys )
 				except ValueError as e:
 					raise MAGIFileParsingException(e)
 				except:
 					raise MAGIFileParsingException("Could not parse MAF.")
+			os.remove(filename) # remove the temporary file
 	else:
 		snvs, numSNVs = {}, 0
 
 	if (args.cna_file):
-		cnas, numCNAs = load_cna_file(args.cna_file, args.dataset_name, sampleToMuts, geneToCases, sampleWhitelist)
+		if args.cna_file_type == 'MAGI':
+			cnas, numCNAs = load_cna_file(args.cna_file, args.dataset_name, sampleToMuts, geneToCases, sampleWhitelist)
+		elif args.cna_file_type == 'GISTIC2':
+			# GISTIC2 requires a tarball. So verify that there is a tarball, then 
+			# untar it to a temporary directory
+			filename = load_file_to_tmp(args.cna_file)
+			cnaDir = tempfile.mkdtemp()
+
+			if not tarfile.is_tarfile(filename):
+				sys.stderr.write("CNA file is not a valid TAR file.\n")
+				sys.exit(100)
+			else:
+				tar = tarfile.open(filename)
+				tar.extractall(path=cnaDir)
+				tar.close()
+				os.remove(filename)
+
+			# Parse the CNAs
+			from gistic2ToTSV import parse_gistic2
+			cnas, numCNAs = parse_gistic2(cnaDir, args.dataset_name, args.amp_cutoff, args.del_cutoff,
+										  args.cna_consistency_threshold, args.range_cna, sampleToMuts,
+										  geneToCases, sampleWhitelist)
+			shutil.rmtree(cnaDir) # clear the extracted tar direcotry
+
+		# Identify the neighbors of each gene with CNAs
 		add_neighbors(cnas)
+
 	else:
 		cnas, numCNAs = {}, 0
 
@@ -412,7 +474,7 @@ def run( args ):
 	###########################################################################
 	# Remove datasets with the same identifiers, as well as any of their
 	# associated mutgenes or data matrix rows
-	userID = ObjectId(args.user_id) if args.user_id else None,
+	userID = ObjectId(args.user_id) if args.user_id else None
 	dbQuery = dict(title=args.dataset_name, group=args.group_name, is_public=args.is_public, user_id=userID)
 	oldDatasetIds = [ oldDB['_id'] for oldDB in db.datasets.find(dbQuery, {"_id": True}) ]
 	db.mutgenes.remove({"dataset_id": {"$in": oldDatasetIds}})
