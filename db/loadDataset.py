@@ -3,7 +3,8 @@
 # Load required modules
 import sys, os, argparse, json, datetime, urllib2, shutil
 from collections import defaultdict
-import tarfile, tempfile
+import tarfile, tempfile, gzip
+pathsToDelete = set()
 
 # Set up the connection to the MongoDB database
 from pymongo import MongoClient
@@ -33,41 +34,69 @@ mutationMatrixTypes = set(["del", "amp", "fus", "snv", "inactive_snv"])
 
 # Load files either from URL or locally
 def is_url(filename):
-	return filename.lower().startswith("http://")
+	return filename.lower().startswith("http://") or filename.lower().startswith("https://")
 
 def load_file(filename):
 	if is_url(filename):
 		response = urllib2.urlopen(filename)
-		print response.read()
 		return response.read().split("\n")
 	else:
 		with open(filename) as f:
 			return f.readlines()
 
 #
-def load_file_to_tmp(filename):
+def load_file_to_tmp(filename, needs_dir=False):
 	# Determine whether the file should be read as binary (if it's a tarball),
 	# or as text
-	if filename.lower().endswith(".tar"):
+	url = filename.lower()
+	if url.endswith(".tar"):
 		suffix = ".tar"
 		mode = 'wb'
-	else:
-		suffix = '.txt'
+	elif url.endswith(".gz"):
+		suffix = ".gz"
+		mode = 'wb'
+	else: # we'll pretend it's a text file
+		suffix = ".txt"
 		mode = 'w'
 
 	# Create a temporary file to copy the input file to
-	_, tmpfile = tempfile.mkstemp(suffix=suffix)
-	with open(tmpfile, mode) as outfile:
-		if is_url(filename):
-			try:
-				response = urllib2.urlopen(filename)
-				outfile.write(response.read())
-			except urllib2.HTTPError as e:
-				raise MAGIFileParsingException("Loading {}: {}".format(filename, e))
+	isURL = is_url(filename)
+	if isURL:
+		_, tmp = tempfile.mkstemp(suffix=suffix)
+		pathsToDelete.add(tmp)
+		with open(tmp, mode) as outfile:
+			response = urllib2.urlopen(filename)
+			outfile.write(response.read())
+	else:
+		tmp = filename
+
+	# Then load the tar or GZIP file
+	tmpDir = tempfile.mkdtemp()
+	pathsToDelete.add(tmpDir)
+	if suffix == ".txt":
+		return tmp
+	elif suffix == ".gz":
+		_, tmp2 = tempfile.mkstemp(suffix='.txt')
+		f = gzip.open(tmp, 'rb')
+		fileContent = f.read()
+		f.close()
+		pathsToDelete.add(tmp2)
+		with open(tmp2, 'w') as outfile2: outfile2.write(fileContent)
+		return tmp2
+	elif suffix == ".tar":
+		if not tarfile.is_tarfile(tmp):
+			raise IOError("Not a valid TAR file.")
 		else:
-			with open(filename) as f:
-				outfile.write(f.read())
-	return tmpfile
+			# Extract the tar file
+			tar = tarfile.open(tmp)
+			tar.extractall(path=tmpDir)
+			tar.close()
+
+		# Either take the first file, or return the directory
+		if needs_dir:
+			return tmpDir
+		else:
+			return tmpDir + "/" + os.listdir(tmpDir)[0]
 
 # Load the file, split it on tabs, and restrict to the rows in the whitelist
 def load_split_restrict_file(filename, sampleWhitelist, sampleIndex):
@@ -209,7 +238,7 @@ def load_aberrations_file(filename, aberrationType, dataset, sampleToMuts,
 
 	return geneToAberrations
 
-def load_data_matrix(filename, sampleWhitelist):
+def load_data_matrix_file(filename, sampleWhitelist):
 	lines = load_file(filename)
 	arrs = [ l.rstrip().split("\t") for i, l in enumerate(lines) if i == 0 or not l.startswith("#")]
 	header = arrs.pop(0)[1:]
@@ -252,7 +281,7 @@ def add_neighbors(cnas):
 		cnas[g]['region'] = dict(chr=gene['chr'], minSegX=minSegX, maxSegX=maxSegX)
 
 # Load the transcripts from MongoDB
-def load_transcripts():
+def load_transcripts(transcriptFile):
 	db.transcripts.find()
 	with open(transcriptFile) as f:
 		return json.load(f)
@@ -290,10 +319,9 @@ def load_snvs(snvFile, snvFileType, dataset, sampleToMuts, geneToCases, sampleWh
 		else:
 			from mafToTSV import parse_maf, transcriptFile
 			filename = load_file_to_tmp(snvFile)
-			dbToTranscripts = load_transcripts()
+			dbToTranscripts = load_transcripts(transcriptFile)
 			snvs, numSNVs = parse_maf( filename, dbToTranscripts, dataset, sampleToMuts,
 										   geneToCases, sampleWhitelist, inactiveTys )
-			os.remove(filename) # remove the temporary file
 	else:
 		snvs, numSNVs = {}, 0
 
@@ -308,24 +336,14 @@ def load_cnas(cnaFile, cnaFileType, dataset, sampleToMuts, geneToCases, sampleWh
 		elif cnaFileType == 'GISTIC2':
 			# GISTIC2 requires a tarball. So verify that there is a tarball, then 
 			# untar it to a temporary directory
-			filename = load_file_to_tmp(cnaFile)
-			cnaDir = tempfile.mkdtemp()
-
-			if not tarfile.is_tarfile(filename):
-				sys.stderr.write("CNA file is not a valid TAR file.\n")
-				os._exit(100)
-			else:
-				tar = tarfile.open(filename)
-				tar.extractall(path=cnaDir)
-				tar.close()
-				os.remove(filename)
+			cnaDir = load_file_to_tmp(cnaFile, needs_dir=True)
+			print cnaDir
 
 			# Parse the CNAs
 			from gistic2ToTSV import parse_gistic2
 			cnas, numCNAs = parse_gistic2(cnaDir, dataset, ampCutoff, delCutoff,
 										  CNAConsistencyThreshold, rangeCNA, sampleToMuts,
 										  geneToCases, sampleWhitelist)
-			shutil.rmtree(cnaDir) # clear the extracted tar direcotry
 
 		# Identify the neighbors of each gene with CNAs
 		add_neighbors(cnas)
@@ -608,4 +626,9 @@ def run( args ):
 	db.mutgenes.insert(mutGenes)
 
 
-if __name__ == "__main__": run( get_parser().parse_args(sys.argv[1:]) )
+if __name__ == "__main__":
+	run( get_parser().parse_args(sys.argv[1:]) )
+	for path in pathsToDelete:
+		if os.path.isfile(path): os.remove(path)
+		elif os.path.isdir(path): shutil.rmtree(path)
+		print path, 'removed'

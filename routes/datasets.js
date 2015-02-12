@@ -3,6 +3,12 @@ var	mongoose = require( 'mongoose' ),
 	Database = require('../model/db'),
 	Dataset  = require( "../model/datasets" );
 
+// Renders a list of manifests
+exports.manifests = function manifests(req, res){
+	console.log('/manifests');
+	res.render('manifests', { user: req.user });
+}
+
 // Renders list of all datasets
 exports.index = function index(req, res){
 	console.log('/datasets/index')

@@ -110,7 +110,7 @@ $(document).ready(function() {
 			status(fileName+' file is too large. Please upload a smaller file.', warningClasses);
 		return false;
 		}
-		else if(file && file.type != 'text/plain' && file.type != 'text/tab-separated-values' && file.name.substr(-4) != ".maf" && file.type != "application/x-tar"){
+		else if(file && file.type != 'text/plain' && file.type != 'text/tab-separated-values' && file.name.substr(-4) != ".maf" && file.type != "application/x-tar" && file.type != "application/x-gzip"){
 			console.log(file, file.type)
 			status(fileName+' file upload: only MAF, text, and tsv files are allowed.', warningClasses);
 			return false;
@@ -212,8 +212,12 @@ $(document).ready(function() {
 
 		var verifications = files.map(function(file) {
 			if (file.datum.src == 'url'){
-				if (file.datum.location.toLowerCase().slice(0, 7) != "http://"){
-					status(file.name + " URL: must start with http://.", warningClasses);
+				var n = file.datum.location.length,
+					prefix7 = file.datum.location.toLowerCase().slice(0, Math.min(7, n)),
+					prefix8 = file.datum.location.toLowerCase().slice(0, Math.min(8, n));
+
+				if (prefix7 != "http://" && prefix8 != "https://"){
+					status(file.name + " URL: must start with http:// or https://.", warningClasses);
 				} else {
 					return true;
 				}
@@ -347,6 +351,7 @@ $(document).ready(function() {
 								$('#groupName').val(data[k]);
 							} else if (name == 'cancer'){
 								$('select#cancer').val(data[k]);
+								$('select#cancer').change();
 							} else if (name == 'snvs' && data[k].location){
 								$('#SNVFileSource').val('url');
 								$('#SNVFileURL').val(data[k].location);
@@ -357,7 +362,7 @@ $(document).ready(function() {
 								$('#CNAFileSource').change();
 								$('#CNAFileURL').val(data[k].location);
 								if (data[k].format) $('#CNAFileFormat').val(data[k].format);
-							} else if (name == 'dataMatrix' && data[k].location){
+							} else if (name == 'datamatrix' && data[k].location){
 								$('#DataMatrixFileSource').val('url');
 								$('#DataMatrixFileSource').change();
 								$('#DataMatrixFileURL').val(data[k].location);

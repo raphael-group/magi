@@ -138,6 +138,7 @@ app.post('/upload/cancer', routes.uploadCancer);
 // Dataset views
 app.get('/datasets', routes.datasets.index);
 app.get('/datasets/view/:datasetID', routes.datasets.view);
+app.get('/manifests', routes.datasets.manifests);
 
 // Annotation views
 app.get('/annotations/gene/:gene', routes.annotations.gene);

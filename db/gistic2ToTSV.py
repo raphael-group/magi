@@ -157,9 +157,9 @@ def parse_gistic2( input_directory, dataset, amp_cutoff, del_cutoff, cna_consist
                     if not sampleWhitelist or (sampleWhitelist and sample in sampleWhitelist):
                         cnas[gene]['segments'][sample].append( segment )
                         numCNAs += 1
-                        if geneToCases:
+                        if geneToCases is not None:
                             geneToCases[gene][sample].add( cnaTy if cnaTy else "cna" )
-                        if sampleToMuts:
+                        if sampleToMuts is not None:
                             sampleToMuts[sample].add(gene)
 
     for g, d in cnas.iteritems():

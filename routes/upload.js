@@ -164,12 +164,12 @@ exports.uploadDataset = function uploadDataset(req, res){
 	}
 
 	// Construct the 
-	var args = ['-c', cancer, '-dn', dataset, '--user_id', req.user._id];
-	if (groupName) args = args.concat(['-gn', groupName]);
+	var args = ['-c', cancer, '-dn', '"' + dataset + '"', '--user_id', req.user._id];
+	if (groupName) args = args.concat(['-gn', '"' + groupName + '"']);
 	if (snvFile) args = args.concat(['-sf', snvFile, '-sft', snvFileFormat]);
 	if (cnaFile) args = args.concat(['-cf', cnaFile, '-cft', cnaFileFormat]);
-	if (aberrationsFile) args = args.concat(['-af', aberrationsFile, '-at', aberrationType]);
-	if (dataMatrixFile) args = args.concat(['-dmf', dataMatrixFile, '-mn', dataMatrixName]);
+	if (aberrationsFile) args = args.concat(['-af', aberrationsFile, '-at', '"' + aberrationType + '"']);
+	if (dataMatrixFile) args = args.concat(['-dmf', dataMatrixFile, '-mn', '"' + dataMatrixName + '"']);
 	if (sampleAnnotationsFile) args = args.concat(['-saf', sampleAnnotationsFile]);
 	if (annotationColorsFile) args = args.concat(['-acf', annotationColorsFile]);
 	cmd = "db/loadDataset.py " + args.join(" ");

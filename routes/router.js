@@ -45,6 +45,7 @@ exports.queryError = view.queryError;
 exports.datasets = {}
 exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view
+exports.datasets.manifests = datasets.manifests;
 
 // Annotations
 exports.annotations = { save: {}}
