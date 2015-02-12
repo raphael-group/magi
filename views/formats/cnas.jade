@@ -1,0 +1,72 @@
+extends ../layout
+block body
+    br
+    div(class="container")
+        h3 Copy number aberrations (CNA) file format specifications
+        br
+        h4 Accepted formats
+        ul(style="width:500px")
+            li
+                | MAGI format (
+                a(href="#magi-format") below
+                | ).
+            li
+                a(href="", target="_new")
+                    | GISTIC2 output format
+                | . This must be passed in as a 
+                a(href="http://www.gnu.org/software/tar/manual/html_node/Standard.html", target="_new")
+                    | TAR file
+                | &nbsp; that include the files
+                | <code>&ldquo;focal_input.seg.txt</code>&rdquo;, 
+                | &ldquo;<code>table_amp.conf_99.txt</code>&rdquo;, 
+                | &ldquo;<code>table_del.conf_99.txt</code>&rdquo;, and 
+                | &ldquo;<code>focal_data_by_genes.txt</code>&rdquo; 
+                | in the <strong>topmost directory</strong>.
+        hr
+        a(name="magi-format")
+        h4 MAGI CNA Format
+        p <strong>The CNA file is a tab-separated file (*.tsv)</strong> that includes all CNAs for a dataset.
+            | Each row contains the data for a single copy number segment that occurs in one gene in one particular sample.
+        p The columns whose names are starred are required.
+        hr
+        h5 Format example
+        code PIK3CA&#9;TCGA-FD-A3B6&#9;AMP&#9;29843973&#9;30327089<br />
+        code AKT1&#9;TCGA-06-0327 X&#9;--&#9;--&#9;--
+        hr
+        h5 Format description
+        table(class="table table-bordered table-striped")
+            tr
+                th Column
+                th Name (*=required)
+                th Example
+                th Description
+            tr
+                td 1
+                td Gene*
+                td PIK3CA
+                td Gene name.
+            tr
+                td 2
+                td Sample*
+                td TCGA-FD-A3B6
+                td Sample ID.
+            tr
+                td 3
+                td CNA type
+                td 
+                    | Type of CNA that occurred. MAGI understands the following CNA types:
+                    ul
+                        li AMP
+                        li DEL
+
+                td Copy number type.
+            tr
+                td 4
+                td Left
+                td 29843973
+                td Left start-point of segment.
+            tr
+                td 5
+                td Right
+                td 30327089
+                td Right end-point of segment.

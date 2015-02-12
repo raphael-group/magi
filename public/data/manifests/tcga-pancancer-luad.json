@@ -1,0 +1,23 @@
+{
+	"dataset": "LUAD",
+	"groupName": "TCGA Pan-Cancer",
+	"cancer": "luad",
+	"snvs":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/luad/tcga-pancancer-luad-snvs.tsv",
+		"format": "MAGI"
+	},
+	"cnas": {
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/luad/tcga-pancancer-luad-cnas.tsv",
+		"format": "MAGI"
+	},
+	"datamatrix":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/luad/tcga-pancancer-luad-expression.txt",
+		"matrixName": "Expression"
+	},
+	"sampleAnnotations": {
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/luad/tcga-pancancer-luad-sample-annotations-purity-gender-survival.tsv"
+	},
+	"annotationColors":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/annotation-colors.tsv"
+	}
+}

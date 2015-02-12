@@ -1,0 +1,23 @@
+{
+	"dataset": "KIRC",
+	"groupName": "TCGA Pan-Cancer",
+	"cancer": "kirc",
+	"snvs":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/kirc/tcga-pancancer-kirc-snvs.tsv",
+		"format": "MAGI"
+	},
+	"cnas": {
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/kirc/tcga-pancancer-kirc-cnas.tsv",
+		"format": "MAGI"
+	},
+	"datamatrix":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/kirc/tcga-pancancer-kirc-expression.txt",
+		"matrixName": "Expression"
+	},
+	"sampleAnnotations": {
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/kirc/tcga-pancancer-kirc-sample-annotations-purity-gender-survival.tsv"
+	},
+	"annotationColors":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/annotation-colors.tsv"
+	}
+}

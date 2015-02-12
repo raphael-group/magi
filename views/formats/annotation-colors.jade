@@ -1,0 +1,25 @@
+extends ../layout
+block body
+    br
+    div(class="container")
+        h3 Annotation color file format specifications
+        br
+        h4 Accepted formats
+        ul
+            li
+                | MAGI format (
+                a(href="#magi-format") below
+                | ).
+        hr
+        a(name="magi-format")
+        h4 MAGI Annotation Colors format
+        p
+            | The Annotation Colors file is a tab-separated file where each row
+            | contains the color mapping for a different sample annotation.
+            | The first column in the file is the category of the annotation (e.g.
+            | <code>expression subtype</code>), the second column is the name of the annotation
+            | (e.g. <code>Basal-like breast</code>), and the third column is a hex color.
+        hr
+        h5 Format example
+        code Annotation&#9;Category&#9;Color
+        code Gender&#9;Male&#9;#ff0000

@@ -1,0 +1,41 @@
+extends ../layout
+block body
+    br
+    div(class="container")
+        h3 Aberrations file format specifications
+        br
+        h4 Accepted formats
+        ul
+            li
+                | MAGI format (
+                a(href="#magi-format") below
+                | ).
+        hr
+        a(name="magi-format")
+        h4 MAGI Other Aberrations format
+        p &ldquo;Other Aberrations&rdquo; can be any categorical, binary data. <strong>The &ldquo;Other
+            | Aberrations&rdquo; file is a tab-separated file (*.tsv)</strong> that
+            | contains an association list.
+        p In each row the first column is a sample ID, and ensuing columns list genes that are aberrated.
+        hr
+        h5 Format example
+        code TCGA-BL-A0C8&#9;A1BG&#9;A2M<br />
+        hr
+        h5 Format description
+        br
+        table(class="table table-bordered table-striped")
+            tr
+                th Column
+                th Name (*=required)
+                th Example
+                th Description
+            tr
+                td 1
+                td Sample ID*
+                td TCGA-FD-A3B6
+                td Sample ID Name
+            tr
+                td >1
+                td Gene Name*
+                td PIK3CA
+                td Aberrated genes
