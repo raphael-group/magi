@@ -239,3 +239,34 @@ exports.uploadCancer = function uploadCancer(req, res){
 		res.redirect("/cancers");
 	});
 }
+
+// Render pages describing file formats
+exports.formatSNVs = function formatSNVs(req, res){
+	console.log('/upload/formats/snvs');
+	res.render('formats/snvs', {user: req.user });
+}
+
+exports.formatCNAs = function formatCNAs(req, res){
+	console.log('/upload/formats/cnas');
+	res.render('formats/cnas', {user: req.user });
+}
+
+exports.formatAberrations = function formatAberrations(req, res){
+	console.log('/upload/formats/aberrations');
+	res.render('formats/aberrations', {user: req.user });
+}
+
+exports.formatDataMatrices = function formatDataMatrices(req, res){
+	console.log('/upload/formats/data-matrices');
+	res.render('formats/data-matrices', {user: req.user });
+}
+
+exports.formatSampleAnnotations = function formatSampleAnnotations(req, res){
+	console.log('/upload/formats/sample-annotations');
+	res.render('formats/sample-annotations', {user: req.user });
+}
+
+exports.formatAnnotationColors = function formatAnnotationColors(req, res){
+	console.log('/upload/formats/annotation-colors');
+	res.render('formats/annotation-colors', {user: req.user });
+}

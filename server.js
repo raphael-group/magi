@@ -134,6 +134,12 @@ app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset);
 app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset);
 app.post('/upload/manifest', ensureAuthenticated, routes.uploadManifest);
 app.post('/upload/cancer', routes.uploadCancer);
+app.get('/upload/formats/snvs', routes.formatSNVs);
+app.get('/upload/formats/cnas', routes.formatCNAs);
+app.get('/upload/formats/aberrations', routes.formatAberrations);
+app.get('/upload/formats/data-matrices', routes.formatDataMatrices);
+app.get('/upload/formats/sample-annotations', routes.formatSampleAnnotations);
+app.get('/upload/formats/annotation-colors', routes.formatAnnotationColors);
 
 // Dataset views
 app.get('/datasets', routes.datasets.index);

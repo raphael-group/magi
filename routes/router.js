@@ -36,6 +36,12 @@ exports.uploadDataset = upload.uploadDataset;
 exports.deleteDataset = upload.deleteDataset;
 exports.uploadManifest = upload.uploadManifest;
 exports.uploadCancer = upload.uploadCancer;
+exports.formatSNVs = upload.formatSNVs;
+exports.formatCNAs = upload.formatCNAs;
+exports.formatAberrations = upload.formatAberrations;
+exports.formatDataMatrices = upload.formatDataMatrices;
+exports.formatSampleAnnotations = upload.formatSampleAnnotations;
+exports.formatAnnotationColors = upload.formatAnnotationColors;
 
 // Routes for the main view
 exports.view       = view.view;
