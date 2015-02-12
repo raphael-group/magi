@@ -268,6 +268,7 @@ $(document).ready(function() {
 
 		// Submit an AJAX-ified form
 		status('Uploading data...', infoClasses);
+		console.log(form)
 		$.ajax({
 			// Note: can't use JSON otherwise IE8 will pop open a dialog
 			// window trying to download the JSON as a file

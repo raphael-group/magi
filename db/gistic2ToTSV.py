@@ -5,10 +5,10 @@ from mutation_data import MutationData, AMP, DEL, SNV
 from gistic_constants import *
 
 dirname, filename = os.path.split(os.path.abspath(__file__))
-GENE = dirname + "/data/hg19_genes_list.json"
-CENSUS = dirname + "/data/census_glist.txt"
-ZACK_AMP = dirname + "/data/zack_cna_amp.lst"
-ZACK_DEL = dirname + "/data/zack_cna_del.lst"
+GENE = os.path.normpath(dirname + "/../data/gistic2/hg19_genes_list.json")
+CENSUS = os.path.normpath(dirname + "/../data/gistic2/census_glist.txt")
+ZACK_AMP = os.path.normpath(dirname + "/../data/gistic2/zack_cna_amp.lst")
+ZACK_DEL = os.path.normpath(dirname + "/../data/gistic2/zack_cna_del.lst")
 
 def load_mutation_data( M, tumor_ty, cna_consistency_threshold ):
     # Load sample and gene whitelists. Sample file is required for typing.

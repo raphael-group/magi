@@ -6,7 +6,8 @@ from collections import defaultdict, Counter
 
 # Hard-code locations of transcript annotations
 dirname, filename = os.path.split(os.path.abspath(__file__))
-transcriptFile = "{}/data/transcript-lengths.json".format(dirname)
+transcriptFile = os.path.normpath(dirname + "/../data/maf/transcript-lengths.json")
+
 # Parse args
 def parse_args(input_list=None):
     # Parse arguments
