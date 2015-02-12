@@ -2,6 +2,7 @@
 
 SHOW_TOOLTIPS = true
 
+var user_id = user ? user._id : "";
 console.log(data);
 
 // When the document is ready, draw the visualizations
@@ -370,9 +371,9 @@ function view(){
 			if (d.references[n].length > 0){
 				d.references[n].forEach(function(ref, i){
 					ref.score = ref.upvotes.length - ref.downvotes.length;
-					if (ref.upvotes.indexOf(user._id) > -1){
+					if (ref.upvotes.indexOf(user_id) > -1){
 						ref.vote = 'up';
-					} else if (ref.downvotes.indexOf(user._id) > -1){
+					} else if (ref.downvotes.indexOf(user_id) > -1){
 						ref.vote = 'down';
 					} else {
 						ref.vote = null;
