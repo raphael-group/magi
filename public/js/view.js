@@ -668,7 +668,6 @@ function view(){
 							   { checkbox: $('#CNAsHideCheckbox'), _id: "cnasRow" }]
 	hideViewCheckboxes.forEach(function(d){
 		d.checkbox.change(function() {
-			console.log(d._id)
 			if ($(this).is(":checked")){
 				$('#' + d._id).hide();
 			} else {
