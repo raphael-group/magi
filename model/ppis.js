@@ -63,7 +63,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 	var ppiIDs = ppis.map(function(ppi){ return ppi._id; });
 	PPIVote.find({user_id: user_id, ppi_id: {$in: ppiIDs} }, function (err, votes) {
   		if(err) console.log(err);
-  		
+
   		// Iterate through the votes
   		votes.forEach(function(vote){
   			if (vote.comment){
@@ -82,7 +82,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 exports.upsertInteraction = function(source, target, network, ref, comment, user_id, callback){
 	var PPI = Database.magi.model( 'PPI' );
 		Q = require( 'q' );
-
+	console.log(source, target, network, ref, comment)
 	var d = Q.defer();
 
 	PPI.findOneAndUpdate(
@@ -93,7 +93,7 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 			// throw error if necessary
 			if (err) throw new Error(err);
 
-			// Determine if this reference already exists			
+			// Determine if this reference already exists
 			var inReferences = false;
 			ppi.references.forEach(function(d){
 				if (d.ref == ref) inReferences = true;
@@ -102,7 +102,7 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 			// Save the reference if it hasn't already been saved
 			if (!inReferences){
 				ppi.references.push( {pmid: ref, upvotes: [], downvotes: [], annotation: true})
-	
+
 				// Save the PPI
 				ppi.save(function(err, model){
 					console.log(err);
@@ -120,12 +120,20 @@ exports.upsertInteraction = function(source, target, network, ref, comment, user
 }
 
 // Record a user's vote for an interaction
-exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
+exports.vote = function ppiVote(fields, user_id){
 	// Set up the promise
 	var PPI = Database.magi.model( 'PPI' ),
 		PPIVote = Database.magi.model( 'PPIVote' ),
 		Q = require( 'q' ),
 		d = Q.defer();
+
+	// Parse the fields into shorter handles
+	var source = fields.source,
+		target = fields.target,
+		network = fields.network,
+		pmid = fields.pmid,
+		vote = fields.vote;
+	console.log(source, target, network, pmid, vote);
 
 	//Create and execute the query
 	var query = {
@@ -178,7 +186,7 @@ exports.vote = function ppiVote(source, target, network, pmid, vote, user_id){
 					if (err) throw new Error(err);
 					d.resolve();
 				});
-			}			
+			}
 		});
 	});
 
@@ -242,7 +250,7 @@ exports.formatPPIs = function formatPPIs(ppis, user_id, callback){
 			source   = arr[0],
 			target   = arr[1],
 			networks = edgeNames[edgeName].map(function(d){ return d.name; });
-		
+
 		// Create a map of each network to its references
 		var references = {};
 		networks.forEach(function(n){ references[n] = []; });
@@ -273,7 +281,7 @@ exports.formatPPIs = function formatPPIs(ppis, user_id, callback){
 			});
 		});
 
-		edges.push({ source: source, target: target, weight: 1, networks: networks, references: references });
+		edges.push({ source: source, target: target, weight: 1, categories: networks, references: references });
 	}
 
 	// Execute callback

@@ -20,23 +20,23 @@ block body
             ul(id="saveOptList", style="padding:0px;list-style:none;")
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="cna", style="margin-right:5px;")
+                  input(type="checkbox", id="cna-download", style="margin-right:5px;")
                   | CNA view
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="datamatrix", style="margin-right:5px;")
+                  input(type="checkbox", id="heatmap-download", style="margin-right:5px;")
                   | Heatmap
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="mutmatrix", style="margin-right:5px;")
+                  input(type="checkbox", id="aberrations-download", style="margin-right:5px;")
                   | Aberrations view
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="subnetwork", style="margin-right:5px;")
+                  input(type="checkbox", id="network-download", style="margin-right:5px;")
                   | Network view
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="transcript", style="margin-right:5px;")
+                  input(type="checkbox", id="transcript-download", style="margin-right:5px;")
                   | Transcript view
             a(id="downloadLink", style="cursor:pointer")
               | &raquo; Download as SVG
@@ -56,61 +56,66 @@ block body
           div(class="panel-body", style="padding:5px;font-size:90%")
             - if (user)
               | Enter your own annotations.
-              form(method="post", role="form", id="annotation-form")
-                select(class="form-control", id="gene")
-                  option(value="") -- choose gene --
-                br
-                select(class="form-control", id="interaction")
-                  option(value="") -- choose interaction --
-                  option(value="Amp") is amplified in
-                  option(value="Del") is deleted in
-                  option(value="SNV") is mutated in
-                  option(value="Expression") is expressed (over/under) in
-                  option(value="Methylation") is methylated (hypo/hyper) in
-                  option(value="interact") interacts with
-                br
-                div(id="inputs", style="display:none")
-                  select(class="form-control", id="interactor",  style="display:none;")
-                  div(id="cancers", class="typeahead", style="display:none")
-                    label Cancer
-                    input(class="typeahead form-control", id="cancer-typeahead", type="text", placeholder="Cancer")
-                    br
-                    br
-                  div(id="transcript-mutation", style="display:none")
-                    label
-                      | Mutation type
-                      span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
-                    input(class="form-control", id="mut_ty", placeholder="Mutation type")
-                    br
-                  div(id="transcript-position", style="display:none")
-                    label
-                      | Position
-                      span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
-                    input(class="form-control", id="position", placeholder="Mutation position", type="number")
-
-                    br
-                  div(id="transcript-domain", style="display:none")
-                    label
-                      | Domain
-                      span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
-                    input(class="form-control", id="domain", placeholder="Domain name")
-                    br
-                  div(id="annotations")
-                    label PMID
-                    input(class="form-control", id="pmid", placeholder="PMID", maxlength="8")
-                    br
-                  div(id="comments")
-                    label
-                      | Comments
-                      span(class="glyphicon glyphicon-remove", onclick="$(this).parent().parent().hide()")
-                    textarea(class="form-control", id="comment", placeholder="Enter any comments.", type="textarea")
-                    br
-                  button(type="submit", id="submit", class="btn btn-default") Submit
+              br
+              a(href="#", onclick="toggleForm('mutation')" id="show-mutation-form", style="font-weight:bold;text-decoration:underline") Mutations
+              | &nbsp;|&nbsp;
+              a(href="#", onclick="toggleForm('interaction')" id="show-interaction-form") Interactions
+              br
+              form(method="post", role="form", id="annotations")
+                //- Inputs for the mutation annotation form
+                div(id="mutations")
+                  select(class="form-control", id="gene")
                   br
+                  select(class="form-control", id="aberration")
+                    option(value="") -- choose aberration type --
+                    option(value="amp") is amplified in
+                    option(value="del") is deleted in
+                    option(value="snv") is mutated in
+                    option(value="expression") is expressed (over/under) in
+                    option(value="methylation") is methylated (hypo/hyper) in
+                  br
+                  input(class="typeahead form-control", id="cancer-typeahead", type="text", placeholder="Cancer")
+                  label PMID
+                  input(class="form-control", id="mutation-pmid", placeholder="PMID", maxlength="8")
+                  //- Optional cancer fields
+                  label(class="toggle")
+                    | Mutation type
+                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#mut_ty').hide()")
+                  input(class="form-control toggle", id="mut_ty", placeholder="Mutation type")
+                  label(class="toggle")
+                    | Locus
+                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#locus').hide()")
+                  input(class="form-control toggle", id="locus", placeholder="Mutation locus/position.", type="number")
+                  label(class="toggle")
+                    | Domain
+                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#domain').hide()")
+                  input(class="form-control toggle", id="domain", placeholder="Domain name")
+                  label(class="toggle") PMID
+                  input(class="form-control toggle", id="mutation-pmid", placeholder="PMID", maxlength="8")
+                  label(class="toggle")
+                    | Comments
+                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('textarea#mutation-comment').hide()")
+                  textarea(class="form-control toggle", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
+                //- Interaction annotation form
+                div(id="interactions", style="display:none")
+                  select(class="form-control", id="protein1")
+                  b(class="toggle") interacts with
+                  select(class="toggle form-control", id="protein2")
+                  label(class="toggle") PMID
+                  input(class="toggle form-control", id="ppi-pmid", placeholder="PMID", maxlength="8")
+                  //- Optional protein interaction fields
+                  label(class="toggle") Comments
+                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('textarea#interaction-comment').hide()")
+                  textarea(class="toggle form-control", id="interaction-comment", placeholder="Enter any comments.", type="textarea")
+                br
+                input(type="hidden", value="mutation", id="antype")
+                button(type="submit", id="submit", class="btn btn-default") Submit
+                br
+                br
                 div(id="annotationStatus")
               br
-              a(href="#", id="reset-annotation")
-                span(class="glyphicon glyphicon-trash", onclick="resetAnnotation()", style="cursor:pointer")
+              a(href="#", id="reset-annotation", onclick="resetAnnotations();return false;")
+                span(class="glyphicon glyphicon-trash", style="cursor:pointer")
                 | &nbsp;Reset.
             - else
               | You must <a href="/auth/google/returnTo">Login</a> to be able to add annotations.
@@ -199,7 +204,7 @@ block body
               | &nbsp;&nbsp;
               a(id="printSubNet", title="Print network.")
                   span(class="glyphicon glyphicon-print")
-          div(id="subnetwork")
+          div(id="network")
 
       div(class="half-page-view rightside")
           h3
@@ -208,8 +213,8 @@ block body
               | &nbsp;&nbsp;
               a(id="printTrnAnt", title="Print transcript view.")
                   span(class="glyphicon glyphicon-print")
-          select(class="form-control", id="transcript-plot-select")
-          div(id="transcript-plot")
+          select(class="form-control", id="transcript-select")
+          div(id="transcript")
 
       hr(style="clear:both;margin:0px;")
 
@@ -222,8 +227,8 @@ block body
             a(id="printCnaViz", title="Print CNA view.")
                 span(class="glyphicon glyphicon-print")
 
-        select(class="form-control", id="cna-browser-select")
-        div(id="cna-browser")
+        select(class="form-control", id="cnas-select")
+        div(id="cnas")
 
     br
     br
@@ -274,20 +279,15 @@ block belowTheFold
       script(src='/components/jquery/dist/jquery.min.js').
       script(src='/components/bootstrap/dist/js/bootstrap.min.js').
       script(src='/components/d3/d3.min.js').
-      script(src='/components/d3-tip/index.js').
       script(src='/components/hogan/web/builds/2.0.0/hogan-2.0.0.min.js').
-      //- script(src="/components/gd3/dist/js/gd3.min.js")
-      script(src='/components/gd3/dist/js/cna-browser.js').
-      script(src='/components/gd3/dist/js/transcript-plot.js').
-      script(src='/components/gd3/dist/js/mutation-matrix.js').
-      script(src='/components/gd3/dist/js/subnetwork.js').
-      script(src='/components/gd3/dist/js/heatmap.js').
+      script(src="/components/gd3prime/gd3.js")
       script(src='components/shepherd.js/shepherd.min.js').
+      script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
+      script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
       script(src='/js/save.js').
       script(src='/js/view.js').
-      script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
+      script(src='/js/annotate.js').
       script(src='/js/log.js').
-      script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
       //- Define behavior for the scroll panel to stick to the top of the window
       script(type="text/javascript").
         $(document).ready(function(){
