@@ -34,7 +34,8 @@ $('button#shareBtn').on('click', function(e) {
 
 // Globals
 var abbrToCancer = data.abbrToCancer,
-	cancerToAbbr = {};
+	cancerToAbbr = {},
+	linkViews = true;
 
 Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; });
 cancers = Object.keys(cancerToAbbr);
@@ -168,7 +169,7 @@ function view(){
 				var colors = values.map(function(v){return data.sampleAnnotations.annotationToColor[c][v]; });
 				gd3.color.annotations(c, values, 'discrete', colors);
 			}
-		})
+		});
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -253,7 +254,7 @@ function view(){
 				];
 
 			// Add the annotations
-			if (data.aberrations.annotations){
+			if (data.aberrations.annotations && data.aberrations.categories && data.aberrations.sampleToAnnotations){
 				data.aberrations.annotations.categories.forEach(function(c, i){
 					var value = data.aberrations.annotations.sampleToAnnotations[d.colLabel][i];
 					if (!value) value = "No data";
@@ -658,6 +659,24 @@ function view(){
 
 	datasetEls.append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
 	datasetEls.append("div").text(function(d){ return d.name + " (" + d.numSamples + ")"; });
+
+	///////////////////////////////////////////////////////////////////////////
+	// Add controls
+	var hideViewCheckboxes = [ { checkbox: $('#AberrationsHideCheckbox'), _id: "aberrationsRow" },
+							   { checkbox: $('#DataMatrixHideCheckbox'), _id: "dataMatrixRow" },
+							   { checkbox: $('#NetworkTranscriptHideCheckbox'), _id: "networkTranscriptRow" },
+							   { checkbox: $('#CNAsHideCheckbox'), _id: "cnasRow" }]
+	hideViewCheckboxes.forEach(function(d){
+		d.checkbox.change(function() {
+			console.log(d._id)
+			if ($(this).is(":checked")){
+				$('#' + d._id).hide();
+			} else {
+				$('#' + d._id).show();
+			}
+		});
+	})
+
 
 	// Resolve the promise and return
 	deferred.resolve();

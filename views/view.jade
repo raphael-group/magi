@@ -8,7 +8,32 @@ block body
     div(id="control-panel")
       h4 Control Panel <span id="hideControlPanel">[-]</span>
       div(id="controls")
-      div(id="saveBox" class="panel panel-default" style="padding:0px")
+      div(id="viz-options", class="panel panel-default")
+        div(class="panel-heading", style="padding:5px")
+          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="optionsLink")
+            | Page options
+            span(style="float:right") [+]
+        div(id="collapseOptions", class="panel-collapse collapse", style="padding:5px")
+          b Hide views
+          ul(style="padding:0px;list-style:none")
+            li(class="checkbox")
+              label
+                input(type="checkbox", id="AberrationsHideCheckbox")
+                | Aberrations
+            li(class="checkbox")
+              label(style="font-weight:400")
+                input(type="checkbox", id="DataMatrixHideCheckbox")
+                | Data matrix
+            li(class="checkbox")
+              label
+                input(type="checkbox", id="NetworkTranscriptHideCheckbox")
+                | Network and transcript
+            li(class="checkbox")
+              label
+                input(type="checkbox", id="CNAsHideCheckbox")
+                | CNAs
+
+      div(id="saveBox", class="panel panel-default", style="padding:0px")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="saveLink")
             | Download options
@@ -176,16 +201,17 @@ block body
     div(id="view")
 
       div
-        h3
-          | Aberrations
-          small
-            | &nbsp;&nbsp;
-            a(id="printAberrs", title="Print aberrations view.")
-                span(class="glyphicon glyphicon-print")
-        div(id="aberrations")
-        br
+        div(id="aberrationsRow")
+          h3
+            | Aberrations
+            small
+              | &nbsp;&nbsp;
+              a(id="printAberrs", title="Print aberrations view.")
+                  span(class="glyphicon glyphicon-print")
+          div(id="aberrations")
+          br
         //- Heatmap view
-        div
+        div(id="heatmapRow")
           h3(id="heatmap-title")
               span(class="name") Heatmap
               small(style="font-size:12px")
@@ -197,29 +223,30 @@ block body
 
       hr(style="margin:0px;")
 
-      div(class="half-page-view leftside")
-          h3
-            | Network
-            small(style="font-size:12px")
-              | &nbsp;&nbsp;
-              a(id="printSubNet", title="Print network.")
-                  span(class="glyphicon glyphicon-print")
-          div(id="network")
+      div(id="networkTranscriptRow")
+        div(class="half-page-view leftside")
+            h3
+              | Network
+              small(style="font-size:12px")
+                | &nbsp;&nbsp;
+                a(id="printSubNet", title="Print network.")
+                    span(class="glyphicon glyphicon-print")
+            div(id="network")
 
-      div(class="half-page-view rightside")
-          h3
-            | Transcript
-            small
-              | &nbsp;&nbsp;
-              a(id="printTrnAnt", title="Print transcript view.")
-                  span(class="glyphicon glyphicon-print")
-          select(class="form-control", id="transcript-select")
-          div(id="transcript")
+        div(class="half-page-view rightside")
+            h3
+              | Transcript
+              small
+                | &nbsp;&nbsp;
+                a(id="printTrnAnt", title="Print transcript view.")
+                    span(class="glyphicon glyphicon-print")
+            select(class="form-control", id="transcript-select")
+            div(id="transcript")
 
       hr(style="clear:both;margin:0px;")
 
       //- CNA view
-      div
+      div(id="cnasRow")
         h3
           | Copy number aberrations
           small
@@ -305,7 +332,8 @@ block belowTheFold
         //- Set up bootstrap toggling
         var linksWithToggles = [{link: "instructions", target: "One"},
                                 {link: "save", target: "Save"},
-                                {link: "annotate", target: "Annotation"}];
+                                {link: "annotate", target: "Annotation"},
+                                {link: "options", target: "Options"}];
         function bootstrapToggle(d){
           $("#" + d.link + "Link").click(function(e){
               e.preventDefault();
