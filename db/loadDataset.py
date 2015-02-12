@@ -438,6 +438,7 @@ def run( args ):
 	###########################################################################
 	# Do some additional argument checks
 	assert(args.snv_file or args.cna_file or args.data_matrix_file or data.aberrations_file)
+	assert(args.is_public or args.user_id)
 
 	###########################################################################
 	# Load the data
