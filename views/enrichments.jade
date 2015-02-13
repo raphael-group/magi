@@ -1,0 +1,82 @@
+extends layout
+block body
+	br
+	div(class="container")
+		h3 Enrichment statistics
+		br
+		ul(class="nav nav-tabs")
+			- for (var i in genes )
+				- if (i == 0) var className = "active";
+				- else var className = "";
+				li(role="presentation", class="#{className}")
+					a(id="gene-#{genes[i]}") #{genes[i]}
+
+block belowTheFold
+	//- Dependencies
+	script(src='/components/jquery/dist/jquery.min.js').
+	script(src='/components/bootstrap/dist/js/bootstrap.min.js').
+	script(src='/components/d3/d3.min.js').
+	//- Main for enrichment interaction
+	script(type="text/javascript").
+		var genes = !{JSON.stringify(genes)},
+			datasets = !{JSON.stringify(datasets)},
+			geneToMutatedSamples = !{JSON.stringify(geneToMutatedSamples)},
+			samples = !{JSON.stringify(samples)},
+			annotationToColor = !{JSON.stringify(sampleAnnotations.annotationToColor)},
+			sampleToAnnotations = !{JSON.stringify(sampleAnnotations.sampleToAnnotations)},
+			categories = !{JSON.stringify(sampleAnnotations.categories)};
+		// Identify the data categories with at most 5 values
+		var categoryValues = {},
+			discreteCategories = categories.filter(function(c, i){
+				var values = samples.map(function(s){ return sampleToAnnotations[s][i]; });
+				categoryValues[c] = values;
+				return d3.set(values).values().length < 6;
+			});
+
+		// Add the onclick enrichment statistics
+		var geneToCategoryToStats = {};
+		genes.forEach(function(g, j){
+			if (j > 0) return;
+			// Compute the enrichment statistics for the discrete categories
+			geneToCategoryToStats[g] = {};
+			var X = samples.map(function(s){
+				return geneToMutatedSamples[g][s] ? "Mutated" : "Not Mutated";
+			});
+
+			discreteCategories.forEach(function(c, i){
+				var Y = categoryValues[c];
+				$.ajax({
+					// Note: can't use JSON otherwise IE8 will pop open a dialog
+					// window trying to download the JSON as a file
+					url: '/enrichments/stats',
+					data: JSON.stringify({X: X, Y: Y}),
+					dataType: 'json',
+					contentType: 'application/json; charset=utf-8',
+					type: 'POST',
+
+					error: function(xhr) {
+						console.error('Error: ' + xhr.status);
+					},
+
+					success: function(response) {
+						if(response.error) {
+							console.error('Enrichment stats: Oops, something bad happened.');
+							return;
+						} else{
+							console.log(response.status);
+							console.log(response.data);
+							geneToCategoryToStats[g][c] = response.data;
+						}
+					}
+				});
+
+			});
+
+			// Add onclick functions to show the enrichment results per gene
+			$("a#gene-" + g).on("click", function(){
+				// Update the "active" gene
+				$("a").parent().removeClass("active");
+				$(this).parent().addClass("active");
+
+			});
+		});
