@@ -29,18 +29,21 @@ block body
                 p(class="bg-danger", style="padding:5px;font-size:110%")
                     b
                         span(class="glyphicon glyphicon-warning-sign")
-                        | &nbsp; Before you upload. 
+                        | &nbsp; ATTENTION: Before you upload. 
                     | By uploading data to MAGI, you agree to our 
                     a(href="/terms") terms.
                     | &nbsp; All data uploaded to MAGI is private to your account, 
-                    | and we will not share your data with anyone. 
-                    i Think before you upload. 
-                    | We encourage you to be vigilant to ensure you are not violating the
-                    | confidentiality of your patients. If you're uploading TCGA data, please 
-                    | consult the 
+                    | and will not be shared with anyone.  However, uploaded data 
+                    | might be subject to additional restrictions from your institution 
+                    | or data source.  We cannot assume responsibility for violations 
+                    | of these restrictions. Please be vigilant in conforming to any policies 
+                    | that apply to your data. If you are uploading TCGA data, please consult the
                     a(href="https://tcga-data.nci.nih.gov/tcga/tcgaDataType.jsp", target="_new")
                         | TCGA's sharing policies
                     | &nbsp;for cancer genomics data
+                    | .  If data access restrictions prevent you from uploading data to the 
+                    | public webserver, we encourage you to download and create a
+                    a(href="https://github.com/raphael-group/magi", target="_new") private version of MAGI
                     | .
         hr
         div(class="row")
