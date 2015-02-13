@@ -245,8 +245,6 @@ function extendLogEvents() {
   log.vizSizes = MAGI_log.resizes.vizSizes;
   log.vizLocations = MAGI_log.resizes.vizLocations;
 
-  console.log(sizeof(log));
-
   $.post('/extendLog', log);
   MAGI_log.interactions = [];
   MAGI_log.tooltips = [];
