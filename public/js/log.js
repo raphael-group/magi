@@ -1,17 +1,64 @@
 // Functions for saving user interaction data
 // For use in user studies
 
+// sizeof gets a rough size of javascript objects
+// https://gist.github.com/pgpbpadilla/10344038
+(function () {
+  var typeOfWindow = typeof window;
+
+  function sizeof(object) {
+    var objectList = [],
+      stack = [ object ],
+      bytes = 0,
+      value,
+      i;
+
+    while (stack.length) {
+      value = stack.pop();
+
+      if (typeof value === 'boolean') {
+        bytes += 4;
+      } else if (typeof value === 'string') {
+        bytes += value.length * 2;
+      } else if (typeof value === 'number') {
+        bytes += 8;
+      } else if (typeof value === 'object'
+          && objectList.indexOf(value) === -1) {
+        objectList.push(value);
+
+        for (i in value) {
+          if (value.hasOwnProperty(i)) {
+            stack.push(value[i]);
+          }
+        }
+      }
+    }
+    return bytes;
+  }
+
+  // export function
+  if ('undefined' !== typeOfWindow) { // export to window
+    window.sizeof = sizeof;
+  } else { // export to node
+    module.exports = sizeof;
+  }
+}());
+
+var LOGGING_SEND_LIMIT = 75;
+
 var loggingEnabled = true,
     lastSentTime,
-    MAGI_sessionLogStart,
-    MAGI_interactionsLog = [],
-    MAGI_resizes = {
-      documentSize: [],
-      windowSize: [],
-      vizSizes: [],
-      vizLocations: []
-    },
-    MAGI_tooltips = [];
+    MAGI_log = {};
+
+MAGI_log.sessionLogStart;
+MAGI_log.interactions = [];
+MAGI_log.resizes = {
+  documentSize: [],
+  windowSize: [],
+  vizSizes: [],
+  vizLocations: []
+};
+MAGI_log.tooltips = [];
 
 $('#magi-loggingReadMore').click(function(e) {
   e.preventDefault();
@@ -48,15 +95,7 @@ $(document).click(function(e) {
   var target = e.target,
       parent = $(target).parent();
 
-  if(parent) {
-    // Log if a resize object
-    var pId = parent.attr('id');
-    if(pId == undefined) return;
-
-    if(pId == 'sample-sorting-interface' || pId == 'gd3-mutmtx-sample-annotation-legend') {
-      resizeEvent();
-    }
-  }
+  resizeEvent();
 });
 
 $(document).scroll(function(e) {
@@ -67,7 +106,7 @@ $(document).on('mousewheel', function(e) {
       velocity = evt.detail || evt.wheelDelta,
       logText = velocity >= 0 ? 'w+'+velocity : 'w'+velocity;
 
-  addToLog(e, logText);
+  addToLog(e, 'w');
 });
 
 
@@ -101,7 +140,7 @@ $('#annotation-form #inputs #submit').click(function(e) {
 
 $().ready(function () {
   lastSentTime = Date.now();
-  MAGI_sessionLogStart = Date.now();
+  MAGI_log.sessionLogStart = Date.now();
   startLog();
 });
 
@@ -109,10 +148,17 @@ $().ready(function () {
 function resizeEvent() {
   if(!loggingEnabled) return;
   var s = getSizes();
-  MAGI_resizes.documentSize.push(s.documentSize);
-  MAGI_resizes.windowSize.push(s.windowSize);
-  MAGI_resizes.vizSizes.push(s.vizSizes);
-  MAGI_resizes.vizLocations.push(s.vizLocations);
+
+  MAGI_log.resizes.documentSize.push(s.documentSize);
+  MAGI_log.resizes.windowSize.push(s.windowSize);
+  MAGI_log.resizes.vizSizes.push(s.vizSizes);
+  MAGI_log.resizes.vizLocations.push(s.vizLocations);
+
+  // Send the log if it's above a certain length
+  // If it's above 90Kb, send it
+  if(sizeof(MAGI_log)/1024 > LOGGING_SEND_LIMIT) {
+    extendLogEvents();
+  }
 }
 
 function getSizes() {
@@ -168,7 +214,7 @@ function startLog() {
       showDuplicates = pathTkns[2].replace('showDuplicates=','');
 
   var log = {
-    sessionId: MAGI_sessionLogStart,
+    sessionId: MAGI_log.sessionLogStart,//MAGI_sessionLogStart,
     documentSize: documentSize,
     windowSize: windowSize,
     vizSizes: vizSizes,
@@ -191,17 +237,18 @@ function extendLogEvents() {
   lastSentTime = now; // update sent time to reflect this call
 
   var log = {};
-  log.sessionId = MAGI_sessionLogStart;
-  log.log = MAGI_interactionsLog;
-  log.documentSize = MAGI_resizes.documentSize;
-  log.tooltips = MAGI_tooltips;
-  log.windowSize = MAGI_resizes.windowSize;
-  log.vizSizes = MAGI_resizes.vizSizes;
-  log.vizLocations = MAGI_resizes.vizLocations;
+  log.sessionId = MAGI_log.sessionLogStart;
+  log.log = MAGI_log.interactions;
+  log.documentSize = MAGI_log.resizes.documentSize;
+  log.tooltips = MAGI_log.tooltips;
+  log.windowSize = MAGI_log.resizes.windowSize;
+  log.vizSizes = MAGI_log.resizes.vizSizes;
+  log.vizLocations = MAGI_log.resizes.vizLocations;
+
   $.post('/extendLog', log);
-  MAGI_interactionsLog = [];
-  MAGI_tooltips = [];
-  MAGI_resizes = {
+  MAGI_log.interactions = [];
+  MAGI_log.tooltips = [];
+  MAGI_log.resizes = {
     documentSize: [],
     windowSize: [],
     vizSizes: [],
@@ -215,21 +262,19 @@ function addToLog(e, event) {
   var x = e.pageX,
       y = e.pageY,
       time = Date.now();
-  MAGI_interactionsLog.push({x:x, y:y, t:time, e:event});
+  MAGI_log.interactions.push({x:x, y:y, t:time, e:event});
 
   trackTooltips(time);
-  // Send the log if it's above a certain length
-  // 5000 entries takes roughly 90 seconds of constant mouse events
-  // Each full entry (tooltip + event) ≈ 100 bytes
-  // --> 5000 entries * 100b = 500 Kb
-  if( MAGI_interactionsLog.length > 5000) {
+
+  if(sizeof(MAGI_log)/1024 > LOGGING_SEND_LIMIT) {
     extendLogEvents();
   }
 }
 
 // Each tooltip should be ~56 bytes
 function trackTooltips(time) {
-  var tip = d3.selectAll('div.d3-tip');
+  var tip = d3.selectAll('div.gd3-tooltip'),
+      mutmtxhoverLegend = $('div.gd3-mutmtx-legend');
 
   var tipLog = {};
   tipLog.t = time;
@@ -247,5 +292,18 @@ function trackTooltips(time) {
     tipLog.tips.push(tipInfo);
   });
 
-  MAGI_tooltips.push(tipLog);
+  // Add hover legend if it exists
+  if(mutmtxhoverLegend.length > 0) {
+    var mhlWidth = mutmtxhoverLegend.width(),
+          mhlHeight = mutmtxhoverLegend.height(),
+          mhlOffset = mutmtxhoverLegend.offset();
+      tipLog.tips.push({
+        left: mhlOffset.left,
+        top: mhlOffset.top,
+        width: mhlWidth,
+        height: mhlHeight
+      });
+  }
+
+  MAGI_log.tooltips.push(tipLog);
 }
