@@ -6,7 +6,7 @@ block body
             h3 Upload your data.
         br
         div(class="row")
-            div(class="col-lg-7", style="margin-left:0px;padding-left:0px")
+            div(class="col-lg-5", style="margin-left:0px;padding-left:0px")
                 h4 Step 0: Upload a manifest
                 br
                 p
@@ -25,59 +25,41 @@ block body
                         input(class="btn form-control", type="file", id="manifestFileUpload")
                     abbr(class="filename", style="margin-left:12px")
                     div(id="manifestStatus", style="display:inline;margin-left:12px;")
-            div(class="col-lg-5")
-                p(class="bg-danger", style="padding:5px;font-size:110%")
-                    b
-                        span(class="glyphicon glyphicon-warning-sign")
-                        | &nbsp; ATTENTION: Before you upload. 
-                    | By uploading data to MAGI, you agree to our 
-                    a(href="/terms") terms.
-                    | &nbsp; All data uploaded to MAGI is private to your account, 
-                    | and will not be shared with anyone.  However, uploaded data 
-                    | might be subject to additional restrictions from your institution 
-                    | or data source.  We cannot assume responsibility for violations 
-                    | of these restrictions. Please be vigilant in conforming to any policies 
-                    | that apply to your data. If you are uploading TCGA data, please consult the
-                    a(href="https://tcga-data.nci.nih.gov/tcga/tcgaDataType.jsp", target="_new")
-                        | TCGA's sharing policies
-                    | &nbsp;for cancer genomics data
-                    | .  If data access restrictions prevent you from uploading data to the 
-                    | public webserver, we encourage you to download and create a
-                    a(href="https://github.com/raphael-group/magi", target="_new") private version of MAGI
-                    | .
-        hr
-        div(class="row")
-            h4 Step 1: Pick a cancer, name, and color.
-            br
-        div(class="row")
-            div(class="col-sm-3")
-                label
-                    | Cancer type (
-                    a(href="/cancers") full list or add another
-                    | )
+            div(class="col-lg-7")
+                div(class="row")
+                    h4 Step 1: Pick a cancer, name, and color.
+                    br
+                div(class="row")
+                    div(class="col-sm-6")
+                        label
+                            | Cancer type (
+                            a(href="/cancers") full list or add another
+                            | )
+                        br
+                        select(class="form-control", id="cancer")
+                            optgroup(label="TCGA & ICGC")
+                            - for (var i in tcga_icgc_cancers)
+                                option(value="#{tcga_icgc_cancers[i].abbr}") #{tcga_icgc_cancers[i].cancer} (#{tcga_icgc_cancers[i].abbr.toUpperCase()})
+                            optgroup(label="User-defined")
+                            - for (var i in user_cancers )
+                                option(value="#{user_cancers[i].abbr}") #{user_cancers[i].cancer} (#{user_cancers[i].abbr.toUpperCase()})
+                    div(class="col-sm-6")
+                        label Dataset name (e.g. cancer type)
+                        input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
                 br
-                select(class="form-control", id="cancer")
-                    optgroup(label="TCGA & ICGC")
-                    - for (var i in tcga_icgc_cancers)
-                        option(value="#{tcga_icgc_cancers[i].abbr}") #{tcga_icgc_cancers[i].cancer} (#{tcga_icgc_cancers[i].abbr.toUpperCase()})
-                    optgroup(label="User-defined")
-                    - for (var i in user_cancers )
-                        option(value="#{user_cancers[i].abbr}") #{user_cancers[i].cancer} (#{user_cancers[i].abbr.toUpperCase()})
-            div(class="col-sm-3")
-                label Dataset name (e.g. cancer type)
-                input(type="text", id="dataset", name="dataset", class="form-control", placeholder="Enter dataset name.")
-            div(class="col-sm-3 noselect")
-                label
-                | <strong>Color</strong> (hex;&nbsp;
-                a(id="randomColor") initialize randomly
-                | )
-                div(style="margin-top:5px")
-                    span(id="db-color", style="width:33px;height:33px;padding:2px;margin-right:5px;border:1px solid #eee;border-radius:8px;float:left")
-                    input(type="text", id="color", name="color", class="form-control", placeholder="#XXXXXX", style="width:100px", maxlength="7")
-            div(class="col-sm-3", id="groupNameContainer")
-                label
-                    | Group name (optional).
-                input(type="text", id="groupName", name="groupName", class="form-control", placeholder="Enter group name (optional).")
+                div(class="row")
+                    div(class="col-sm-6 noselect")
+                        label
+                        | <strong>Color</strong> (hex;&nbsp;
+                        a(id="randomColor") initialize randomly
+                        | )
+                        div(style="margin-top:5px")
+                            span(id="db-color", style="width:33px;height:33px;padding:2px;margin-right:5px;border:1px solid #eee;border-radius:8px;float:left")
+                            input(type="text", id="color", name="color", class="form-control", placeholder="#XXXXXX", style="width:100px", maxlength="7")
+                    div(class="col-sm-6", id="groupNameContainer")
+                        label
+                            | Group name (optional).
+                        input(type="text", id="groupName", name="groupName", class="form-control", placeholder="Enter group name (optional).")
         hr
         div(class="row")
             h4 Step 2: Select data to upload.
@@ -87,7 +69,7 @@ block body
                 | supported file formats (see below). For example, both methylation and expression data can be uploaded as 
                 em &ldquo;Other Aberrations&rdquo;
                 | or as 
-                em &ldquo;Heatmaps&rdquo;. Any file (or URL) can be
+                em &ldquo;Heatmaps&rdquo;. Any file (or URL) can be 
                 a(href="http://www.gzip.org/", target="_new") GZIP-ed
                 | .
             br
@@ -238,7 +220,26 @@ block body
                         br
                         abbr(class="filename")
                     td N/A
-
+        div(class="row")
+            p(class="bg-danger", style="padding:5px;font-size:110%")
+                b
+                    span(class="glyphicon glyphicon-warning-sign")
+                    | &nbsp; ATTENTION: Before you upload. 
+                | By uploading data to MAGI, you agree to our 
+                a(href="/terms") terms.
+                | &nbsp; All data uploaded to MAGI is private to your account, 
+                | and will not be shared with anyone.  However, uploaded data 
+                | might be subject to additional restrictions from your institution 
+                | or data source.  We cannot assume responsibility for violations 
+                | of these restrictions. Please be vigilant in conforming to any policies 
+                | that apply to your data. If you are uploading TCGA data, please consult the
+                a(href="https://tcga-data.nci.nih.gov/tcga/tcgaDataType.jsp", target="_new")
+                    | TCGA's sharing policies
+                | &nbsp;for cancer genomics data
+                | .  If data access restrictions prevent you from uploading data to the 
+                | public webserver, we encourage you to download and create a
+                a(href="https://github.com/raphael-group/magi", target="_new") private version of MAGI
+                | .
         div(class="row text-center")
             button(id="submit", type="button", class="btn btn-success") Submit
             div(id="status", style="display:inline;margin-left:15px")
