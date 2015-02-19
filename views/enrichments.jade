@@ -4,6 +4,15 @@ block body
 	div(class="container")
 		h3 Enrichment statistics
 		br
+		div(class="panel panel-default")
+			div(class="panel-heading", style="padding:5px")
+				h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="datasetsLink")
+					| Datasets used to compute enrichment statistics
+					span(style="float:right") [+]
+			div(id="collapseDatasets", class="panel-collapse collapse", style="padding:5px")
+				ul
+				- for (var i in datasets )
+					li #{datasets[i].title} (#{datasets[i].samples.length} samples)
 		ul(class="nav nav-tabs")
 			- for (var i in genes )
 				- if (i == 0) var className = "active";
@@ -46,6 +55,13 @@ block belowTheFold
 			annotationToColor = !{JSON.stringify(sampleAnnotations.annotationToColor)},
 			sampleToAnnotations = !{JSON.stringify(sampleAnnotations.sampleToAnnotations)},
 			categories = !{JSON.stringify(sampleAnnotations.categories)};
+
+		// Add toggling to the datasets link
+		$("#datasetsLink").click(function(e){
+			e.preventDefault();
+			e.stopPropagation();// prevent the default anchor functionality
+			$("#collapseDatasets").collapse('toggle');
+		});
 
 		// Identify the data categories with at most 5 values
 		var categoryValues = {},
