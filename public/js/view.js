@@ -472,9 +472,6 @@ function view(){
 
 		// Then add the new plot
 		transcript.append("h5").text(geneName);
-		transcript.append("span")
-			.style("font-size", "10px")
-			.text("Activating mutations are shown above the genome, inactivating below.");
 		var transcriptPlot = transcript.append("div")
 			.datum(data.transcripts[geneName][transcriptName])
 			.call(gd3.transcript({
@@ -529,9 +526,6 @@ function view(){
 
 		// Empty out the CNA browser container
 		cnas.selectAll("*").remove();
-		cnas.append("span")
-			.style("font-size", "10px")
-			.text("Amplifications are shown above the genome, deletions below.");
 
 		// Update the CNA browser
 		cnas.datum(data.cnas[geneName])
