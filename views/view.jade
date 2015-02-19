@@ -13,7 +13,7 @@ block body
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="optionsLink")
-            | Page options
+            | Show/hide views
             span(style="float:right") [+]
         div(id="collapseOptions", class="panel-collapse collapse", style="padding:5px")
           b Hide views
@@ -25,7 +25,7 @@ block body
             li(class="checkbox")
               label(style="font-weight:400")
                 input(type="checkbox", id="DataMatrixHideCheckbox")
-                | Data matrix
+                | Heatmap
             li(class="checkbox")
               label
                 input(type="checkbox", id="NetworkTranscriptHideCheckbox")
@@ -38,7 +38,7 @@ block body
       div(id="saveBox", class="panel panel-default", style="padding:0px")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="saveLink")
-            | Download options
+            | Download views
             span(style="float:right") [+]
 
         div(id="collapseSave", class="panel-collapse collapse")
@@ -47,24 +47,24 @@ block body
             ul(id="saveOptList", style="padding:0px;list-style:none;")
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="cna-download", style="margin-right:5px;")
-                  | CNA view
+                  input(type="checkbox", id="aberrations-download", style="margin-right:5px;")
+                  | Aberrations
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="heatmap-download", style="margin-right:5px;")
                   | Heatmap
               li
                 label(style="font-weight:400")
-                  input(type="checkbox", id="aberrations-download", style="margin-right:5px;")
-                  | Aberrations view
-              li
-                label(style="font-weight:400")
                   input(type="checkbox", id="network-download", style="margin-right:5px;")
-                  | Network view
+                  | Network
               li
                 label(style="font-weight:400")
                   input(type="checkbox", id="transcript-download", style="margin-right:5px;")
-                  | Transcript view
+                  | Transcript
+              li
+                label(style="font-weight:400")
+                  input(type="checkbox", id="cna-download", style="margin-right:5px;")
+                  | CNAs
             a(id="downloadLink", style="cursor:pointer")
               | &raquo; Download as SVG
             br
@@ -309,7 +309,7 @@ block belowTheFold
       script(src='/components/bootstrap/dist/js/bootstrap.min.js').
       script(src='/components/d3/d3.min.js').
       script(src='/components/hogan/web/builds/2.0.0/hogan-2.0.0.min.js').
-      script(src="/components/gd3prime/gd3.js")
+      script(src="/components/gd3/gd3.js")
       script(src='components/shepherd.js/shepherd.min.js').
       script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
       script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
