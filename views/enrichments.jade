@@ -10,11 +10,32 @@ block body
 				- else var className = "";
 				li(role="presentation", class="#{className}")
 					a(id="gene-#{genes[i]}") #{genes[i]}
+		br
+		select(id="category", class="form-control")
+		br
+		div(id="contingency-table", style="display:none")
+			h4 Contingency table
+			table(class="table table-hover", style="width: auto !important;min-width:300px")
+		br
+		div(id="tests", style="display:none")
+			h4 Statistical tests
+			select(class="form-control")
+		br
+		div(id="test-results", style="display:none")
+			div
+				b
+					i P
+					| -value 
+				span(id="pval") 
+			table(class="table table-hover", style="width:auto !important;min-width:300px")
+				thead
+					tr(style="background:#d3d3d3")
+						th Property
+						th Value
+				tbody
 
 block belowTheFold
 	//- Dependencies
-	script(src='/components/jquery/dist/jquery.min.js').
-	script(src='/components/bootstrap/dist/js/bootstrap.min.js').
 	script(src='/components/d3/d3.min.js').
 	//- Main for enrichment interaction
 	script(type="text/javascript").
@@ -25,6 +46,7 @@ block belowTheFold
 			annotationToColor = !{JSON.stringify(sampleAnnotations.annotationToColor)},
 			sampleToAnnotations = !{JSON.stringify(sampleAnnotations.sampleToAnnotations)},
 			categories = !{JSON.stringify(sampleAnnotations.categories)};
+
 		// Identify the data categories with at most 5 values
 		var categoryValues = {},
 			discreteCategories = categories.filter(function(c, i){
@@ -33,18 +55,27 @@ block belowTheFold
 				return d3.set(values).values().length < 6;
 			});
 
+		// Select the elements that we're going to modify
+		var categorySelect = d3.select("select#category"),
+			cTable = d3.select('div#contingency-table table'),
+			tests = d3.select('div#tests select'),
+			testResults = d3.select('div#test-results'),
+			statsTableBody = testResults.select('table tbody'),
+			pval = d3.select("span#pval");
+
 		// Add the onclick enrichment statistics
 		var geneToCategoryToStats = {};
 		genes.forEach(function(g, j){
-			if (j > 0) return;
 			// Compute the enrichment statistics for the discrete categories
 			geneToCategoryToStats[g] = {};
 			var X = samples.map(function(s){
 				return geneToMutatedSamples[g][s] ? "Mutated" : "Not Mutated";
 			});
 
-			discreteCategories.forEach(function(c, i){
-				var Y = categoryValues[c];
+			var promises = discreteCategories.map(function(c, i){
+				var dfd = new jQuery.Deferred(),
+					Y = categoryValues[c];
+
 				$.ajax({
 					// Note: can't use JSON otherwise IE8 will pop open a dialog
 					// window trying to download the JSON as a file
@@ -56,6 +87,7 @@ block belowTheFold
 
 					error: function(xhr) {
 						console.error('Error: ' + xhr.status);
+						dfd.resolve();
 					},
 
 					success: function(response) {
@@ -63,20 +95,119 @@ block belowTheFold
 							console.error('Enrichment stats: Oops, something bad happened.');
 							return;
 						} else{
-							console.log(response.status);
-							console.log(response.data);
+							console.log(response)
 							geneToCategoryToStats[g][c] = response.data;
 						}
+						dfd.resolve();
 					}
 				});
-
+				return dfd;
 			});
 
-			// Add onclick functions to show the enrichment results per gene
-			$("a#gene-" + g).on("click", function(){
-				// Update the "active" gene
-				$("a").parent().removeClass("active");
-				$(this).parent().addClass("active");
+			$.when.apply($, promises).then(function() {
+				// Add onclick functions to show the enrichment results per gene
+				$('a#gene-' + g).on('click', function(){
+					// Update the "active" gene
+					$('a').parent().removeClass('active');
+					$(this).parent().addClass('active');
+					d3.select('div#contingency-table').style('display', 'none');
+					d3.select('div#tests').style('display', 'none');
+					testResults.style('display', 'none');
 
+					//
+					categorySelect.selectAll('*').remove();
+					var geneCategories = Object.keys(geneToCategoryToStats[g]);
+					var options = categorySelect.selectAll('.cat-option')
+						.data(["-- choose category --"].concat(geneCategories)).enter()
+						.append('option')
+						.attr('value', function(d){ return d; })
+						.text(function(d){ return d; });
+
+					categorySelect.on('change', function(){
+						var category = categorySelect.property('value');
+						if (category !== '-- choose category --'){
+							var datum = geneToCategoryToStats[g][category];
+
+							// Show the table and the tests, and remove all their previous
+							// elements
+							d3.select('div#contingency-table').style('display', 'inline');
+							cTable.selectAll('*').remove();
+							d3.select('div#tests').style('display', '');
+							tests.selectAll('*').remove();
+
+							// Populate the table
+							var thead = cTable.append('thead'),
+								tbody = cTable.append('tbody');
+							
+							thead.append('tr')
+								.style('background', '#d3d3d3')
+									.selectAll('.enrichment-th')
+									.data(datum.table[0]).enter()
+									.append('th')
+									.text(function(d){ return d; });
+							
+							tbody.selectAll('.enrichment-tr')
+								.data(datum.table.slice(1, datum.table.length)).enter()
+								.append('tr')
+								.selectAll('.enrichment-td')
+								.data(function(d){ return d; }).enter()
+									.append('td')
+									.style('font-weight', function(d, i){ return i == 0 ? 'bold' : 'normal'; })
+									.style('background', function(d, i){ return i == 0 ? '#d3d3d3' : '#ffffff'; })
+									.style('text-align', function(d, i){ return i == 0 ? 'right' : 'center'; })
+									.text(function(d){ return d; });
+
+							// Add the statistical tests
+							var testNames = Object.keys(datum.stats);
+							var testOptions = tests.selectAll('.stat-test-option')
+								.data(["-- choose test --"].concat(testNames)).enter()
+								.append('option')
+								.attr('value', function(d){ return d; })
+								.text(function(d){ return d; });
+
+							tests.on('change', function(){
+								var test = tests.property('value');
+								if (test !== '-- choose test --'){
+									// Show the test results
+									testResults.style('display', 'inline');
+									testResults.select('table').style('display', '');
+									statsTableBody.selectAll('*').remove();
+
+									// Add the P-value
+									var p = "p" in datum.stats[test] ? '= ' + datum.stats[test]["p"] : "(N/A)";
+									pval.text(p);
+
+									// Populate the table body
+									var attributes = Object.keys(datum.stats[test]).filter(function(d){ return d !== "p"; });
+									if (attributes.length == 0) testResults.select('table').style('display', 'none');
+									statsTableBody.selectAll('.stats-table-row')
+										.data(attributes).enter()
+										.append('tr')
+										.selectAll('.stats-table-cell')
+										.data(function(d){ return [d, datum.stats[test][d]]; }).enter()
+										.append('td')
+										.style('font-weight', function(d, i){ return i == 0 ? 'bold' : 'normal'; })
+										.text(function(d){ return d; });
+
+								} else{
+									// Hide the test results
+									testResults.style('display', 'none');
+								}
+							});
+
+						} else {
+							// Hide the table and the tests
+							d3.select('div#contingency-table').style('display', 'none');
+							d3.select('div#tests').style('display', 'none');
+						}
+					});
+				});
+
+				// Load the categories for the first gene (which is by default visible) 
+				// by simulating a click on it
+				$('a#gene-' + genes[0]).click();
+
+			}, function(e) {
+				console.log("My ajax failed");
 			});
 		});
