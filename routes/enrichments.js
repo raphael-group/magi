@@ -77,7 +77,7 @@ exports.index  = function enrichments(req, res){
 			// Create a map from samples to their mutated samples
 			var geneToMutatedSamples = {};
 			mutatedGenes.forEach(function(d){
-				geneToMutatedSamples[d.gene] = {};
+				if (!(d.gene in geneToMutatedSamples)) geneToMutatedSamples[d.gene] = {};
 				Object.keys(d.mutated_samples).forEach(function(s){
 					geneToMutatedSamples[d.gene][s] = true;	
 				});

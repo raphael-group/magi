@@ -24,6 +24,10 @@ block body
 		br
 		div(id="contingency-table", style="display:none")
 			h4 Contingency table
+			div(id="samples-removed")
+				| Removed&nbsp;
+				span
+				| &nbsp;samples with missing annotation data.
 			table(class="table table-hover", style="width: auto !important;min-width:300px")
 		br
 		div(id="tests", style="display:none")
@@ -77,16 +81,20 @@ block belowTheFold
 			tests = d3.select('div#tests select'),
 			testResults = d3.select('div#test-results'),
 			statsTableBody = testResults.select('table tbody'),
-			pval = d3.select("span#pval");
+			pval = d3.select("span#pval"),
+			samplesRemoved = d3.select('div#samples-removed span');
 
 		// Add the onclick enrichment statistics
 		var geneToCategoryToStats = {};
 		genes.forEach(function(g, j){
 			// Compute the enrichment statistics for the discrete categories
 			geneToCategoryToStats[g] = {};
+			var mutated = 0;
 			var X = samples.map(function(s){
+				if (geneToMutatedSamples[g][s]) mutated += 1;
 				return geneToMutatedSamples[g][s] ? "Mutated" : "Not Mutated";
 			});
+			console.log(g, mutated);
 
 			var promises = discreteCategories.map(function(c, i){
 				var dfd = new jQuery.Deferred(),
@@ -150,6 +158,9 @@ block belowTheFold
 							cTable.selectAll('*').remove();
 							d3.select('div#tests').style('display', '');
 							tests.selectAll('*').remove();
+
+							// Record the number of samples removed
+							samplesRemoved.text(datum.samplesRemoved);
 
 							// Populate the table
 							var thead = cTable.append('thead'),
