@@ -87,7 +87,7 @@ block body
                 | supported file formats (see below). For example, both methylation and expression data can be uploaded as 
                 em &ldquo;Other Aberrations&rdquo;
                 | or as 
-                em &ldquo;Data Matrices&rdquo;. Any file (or URL) can be
+                em &ldquo;Heatmaps&rdquo;. Any file (or URL) can be
                 a(href="http://www.gzip.org/", target="_new") GZIP-ed
                 | .
             br
@@ -173,7 +173,7 @@ block body
                         input(class="form-control", id="OtherAberrationsType", value="Other")
                 tr
                     td
-                        b Data matrix (e.g. gene expression)
+                        b Heatmap (e.g. gene expression)
                         ul
                             li
                                 a(href="/upload/formats/data-matrices") MAGI format
@@ -197,7 +197,7 @@ block body
                             option(value="Expression") Gene expression
                             option(value="Methylation") DNA methylation
                             option(value="Other") Other (please specify)
-                        input(type="text", id="OtherDataMatrixName", class="form-control", placeholder="Data matrix type.", style="display:none;margin-top:5px")
+                        input(type="text", id="OtherDataMatrixName", class="form-control", placeholder="Heatmap type.", style="display:none;margin-top:5px")
                 tr
                     td
                         b Sample annotations
