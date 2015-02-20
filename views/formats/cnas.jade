@@ -68,7 +68,7 @@ block body
         h4 GISTIC2 CNA Format
         p This must be passed in as a 
             a(href="http://www.gnu.org/software/tar/manual/html_node/Standard.html", target="_new") TAR file
-            | ; that include the following GISTIC2 output files. 
+            | ; that includes the following GISTIC2 output files in the <b>topmost directory</b>.
         ul(style="width:500px")
             li &ldquo;<code>focal_data_by_genes.txt</code>&rdquo;
                 ul(style="width:800px")
@@ -80,17 +80,17 @@ block body
             li &ldquo;<code>focal_input.seg.txt</code>&rdquo;
                 ul(style="width:800px")
                     li A list of copy number segments describing just the focal events present in the data. Each row is a copy number segment with the following column: TCGA sample id, chromosome, start base pair, end base pair, the number of markers in the segment, level of amplification or deletion.
-        | in the <strong>topmost directory</strong>. More details of the file format please see 
+        | For more details on the GISTIC2 file format please see the 
         a(href="ftp://ftp.broadinstitute.org/pub/genepattern/modules_public_server_doc/GISTIC2.pdf", target="_new") GISTIC2 document.
         hr
         h5 Parse GISTIC2 CNA format to MAGI copy number browser
         ul(style="width:800px")
-            li Step 1: Select target genes
+            li <b>Step 1: Select target genes</b>. 
                 | <p> We selected target genes in each maxpeak by checking whether the peak contains genes from  
                 a(href="http://cancer.sanger.ac.uk/cancergenome/projects/census/", target="_new") The Sanger Institute’s Cancer Gene Census 
                 | or 
                 a(href="http://www.nature.com/ng/journal/v45/n10/full/ng.2760.html", target="_new") Zack et al. study. 
                 | For max peaks that did not have target genes, we picked a max peak as a target gene if the peak contains only one gene.
-            li Step 2: Copy number calling 
-                | <p> To determine if each sample had a copy number aberration in a given target gene, we extracted discretized copy number amplifications and deletions from the gene-level matrix (&ldquo;<code>focal_data_by_genes.txt</code>&rdquo;) with value 2 and -2, respectively.
+            li <b>Step 2: Copy number calling</b>.
+                | <p> To determine if each sample had a copy number aberration in a given target gene, we extracted discretized copy number amplifications and deletions from the gene-level matrix (&ldquo;<code>focal_data_by_genes.txt</code>&rdquo;) with values  >2 and <-2, respectively.
         
