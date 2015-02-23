@@ -60,7 +60,7 @@ block body
                      optgroup(label="#{groupName}")
                        -for (var j in group.dbs)
                          -var db = group.dbs[j];
-                         //- The checkbox values are constructed
+                         //- The checkbox values are constructed server side
                          option(value="#{db.checkboxValue}") #{db.title}
 
             div(class="col-lg-1")
@@ -352,8 +352,10 @@ block belowTheFold
         buttonWidth: 350,
         filterBehavior: 'both'
       });
-      //- Have all datasets selected by default
+      //- Have all datasets except TCGA STAD selected by default
+      var datasetDeselect = !{JSON.stringify(datasetDeselect)};
       $('#dataset-multiselect').multiselect('selectAll', false);
+      $('#dataset-multiselect').multiselect('deselect', datasetDeselect)
       $('#dataset-multiselect').multiselect('updateButtonText');
       //- Have the reset button uncheck all datasets and set the gene list to cohesin
       $("a#reset").on("click", function(){

@@ -18,7 +18,8 @@ exports.index = function index(req, res){
 		// checkbox ID
 
 		// Store the checkbox IDs of all and the public datasets by group
-		var datasetToCheckboxes = { all: [] };
+		var datasetToCheckboxes = { all: [] },
+			datasetDeselect = [];
 
 		function toCheckboxValue(_id, scope, title, gName){ return ["db", scope, gName, title, _id].join(" "); }
 		function initGroup(groups, scope){
@@ -38,6 +39,8 @@ exports.index = function index(req, res){
 						datasetToCheckboxes[groupName].push( db.checkboxValue );
 						if (groupName == "tcga pan-cancer" && db.title == "GBM"){
 							datasetToCheckboxes.gbm = [ db.checkboxValue ];
+						} else if (groupName == "tcga publications"){
+							datasetDeselect.push( db.checkboxValue );
 						}
 					}
 				})
@@ -51,7 +54,8 @@ exports.index = function index(req, res){
 			user: req.user,
 			groups: standardGroups,
 			datasetToCheckboxes: datasetToCheckboxes,
-			recentQueries: []
+			recentQueries: [],
+			datasetDeselect: datasetDeselect
 		};
 		// Load the user's datasets (if necessary)
 		if (req.user){
