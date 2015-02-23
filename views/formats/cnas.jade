@@ -5,23 +5,15 @@ block body
         h3 Copy number aberrations (CNA) file format specifications
         br
         h4 Accepted formats
-        ul(style="width:500px")
+        ul(style="width:800px")
             li
                 | MAGI format (
                 a(href="#magi-format") below
                 | ).
             li
-                a(href="", target="_new")
-                    | GISTIC2 output format
-                | . This must be passed in as a 
-                a(href="http://www.gnu.org/software/tar/manual/html_node/Standard.html", target="_new")
-                    | TAR file
-                | &nbsp; that include the files
-                | <code>&ldquo;focal_input.seg.txt</code>&rdquo;, 
-                | &ldquo;<code>table_amp.conf_99.txt</code>&rdquo;, 
-                | &ldquo;<code>table_del.conf_99.txt</code>&rdquo;, and 
-                | &ldquo;<code>focal_data_by_genes.txt</code>&rdquo; 
-                | in the <strong>topmost directory</strong>.
+                | GISTIC2 output format (
+                a(href="#gistic2-format") below
+                | ).                
         hr
         a(name="magi-format")
         h4 MAGI CNA Format
@@ -70,3 +62,35 @@ block body
                 td Right
                 td 30327089
                 td Right end-point of segment.
+
+        hr
+        a(name="gistic2-format")
+        h4 GISTIC2 CNA Format
+        p This must be passed in as a 
+            a(href="http://www.gnu.org/software/tar/manual/html_node/Standard.html", target="_new") TAR file
+            | ; that include the following GISTIC2 output files. 
+        ul(style="width:500px")
+            li &ldquo;<code>focal_data_by_genes.txt</code>&rdquo;
+                ul(style="width:800px")
+                    li  A gene-level matrix of copy number values for all samples. Each row is the data for a gene. The first three columns name the gene, its NIH locus ID, and its cytoband - the remaining columns are the samples. The copy number values in the table are in units of (copy number -2), so that no amplification or deletion is 0, genes with amplifications have positive values, and genes with deletions are negative values.
+
+            li &ldquo;<code>table_amp.conf_99.txt</code>&rdquo; and &ldquo;<code>table_del.conf_99.txt</code>&rdquo;
+                ul(style="width:800px")
+                    li Tables of basic information about the genomic regions (peaks) that GISTIC determined to be significantly amplified or deleted. These describe three kinds of peak boundaries, and list the genes contained in two of them. The region start and region end columns (along with the chromosome column) delimit the entire area containing the peak that is above the significance level. The region may be the same for multiple peaks. The peak start and end delimit the maximum value of the peak. The extended peak is the peak determined by robust, and is contained within the wide peak reported in {amp|del}_genes.txt by one marker.
+            li &ldquo;<code>focal_input.seg.txt</code>&rdquo;
+                ul(style="width:800px")
+                    li A list of copy number segments describing just the focal events present in the data. Each row is a copy number segment with the following column: TCGA sample id, chromosome, start base pair, end base pair, the number of markers in the segment, level of amplification or deletion.
+        | in the <strong>topmost directory</strong>. More details of the file format please see 
+        a(href="ftp://ftp.broadinstitute.org/pub/genepattern/modules_public_server_doc/GISTIC2.pdf", target="_new") GISTIC2 document.
+        hr
+        h5 Parse GISTIC2 CNA format to MAGI copy number browser
+        ul(style="width:800px")
+            li Step 1: Select target genes
+                | <p> We selected target genes in each maxpeak by checking whether the peak contains genes from  
+                a(href="http://cancer.sanger.ac.uk/cancergenome/projects/census/", target="_new") The Sanger Institute’s Cancer Gene Census 
+                | or 
+                a(href="http://www.nature.com/ng/journal/v45/n10/full/ng.2760.html", target="_new") Zack et al. study. 
+                | For max peaks that did not have target genes, we picked a max peak as a target gene if the peak contains only one gene.
+            li Step 2: Copy number calling 
+                | <p> To determine if each sample had a copy number aberration in a given target gene, we extracted discretized copy number amplifications and deletions from the gene-level matrix (&ldquo;<code>focal_data_by_genes.txt</code>&rdquo;) with value 2 and -2, respectively.
+        
