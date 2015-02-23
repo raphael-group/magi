@@ -15,10 +15,16 @@ do
 		CNA_ARG=""
 	fi
 
+	if [ "$db" == "brca" ]
+	then
+		SAF_ARG="$DATA/tcga-pancancer-brca-sample-annotations-purity-gender-survival-expression-subtype.tsv"
+	else
+		SAF_ARG="$DATA/tcga-pancancer-$db-sample-annotations-purity-gender-survival.tsv"
+	fi
+
 	python loadDataset.py --is_public -c $db -dn $CANCER_TYPE -gn "TCGA Pan-Cancer" \
 		-mn "Expression" -dmf $DATA/tcga-pancancer-$db-expression.txt \
-		-sf $DATA/tcga-pancancer-$db-snvs.tsv -sft MAGI $CNA_ARG \
-		-saf $DATA/tcga-pancancer-$db-sample-annotations-purity-gender-survival.tsv \
+		-sf $DATA/tcga-pancancer-$db-snvs.tsv -sft MAGI $CNA_ARG -saf $SAF_ARG \
 		-acf ../data/datasets/magi-format/annotation-colors.tsv
 done
 

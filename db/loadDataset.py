@@ -528,7 +528,7 @@ def run( args ):
 			os._exit(60) # no data
 
 	# Identify the most mutated genes and data for the mutation plot
-	mostMutatedGenes, mutationPlotData = [], []
+	mostMutatedGenes, mutationPlotData = [], dict()
 	for i, (g, num_mutated_samples) in enumerate(genesWithCount[:500]):
 		# Record data to show in the most mutated genes table
 		datum = dict(name=g)
@@ -541,11 +541,13 @@ def run( args ):
 
 		# Record additional data for the mutation plot summary
 		point = dict(datum.items())
+		del point['name']
 		for t in mutationTypes:
-			if t in datum: continue # skip the types we computed manually above
-			datum[t.replace("_", "")] = numMutSamples([g], set([t]))
-		mutationPlotData.append(datum)
+			# Skip the types we computed manually above
+			if t in datum or t in ['snv', 'inactive_snv']: continue 
+			point[t.lower()] = numMutSamples([g], set([t]))
 
+		mutationPlotData[g] = point
 
 	# Identify the gene sets with the most mutations
 	mostMutatedGeneSets = []
