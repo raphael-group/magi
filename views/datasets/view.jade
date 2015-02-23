@@ -90,6 +90,7 @@ block body
 			//- as that seems to break the DataTables.
 			//- Add the mutations plot with the axes selectors
 			var data = !{JSON.stringify(db.summary.mutation_plot_data)};
+			console.log(data)
 			//- Make the most mutated gene and gene set tables sortable as a DataTable
 			var plot = d3.select("div#mutations-plot")
 				.append("div")
