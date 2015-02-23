@@ -4,13 +4,13 @@ block body
     h1
       | Datasets&nbsp;
       small Click a dataset's name to view a summary of its mutations.
-    -var seenStandard = false;
+    -var seenPublic = false;
     -var seenUser = false;
     -for (var i in groupClasses)
       -var groups = groupClasses[i].groups;
-      //- Create a horizontal break if this is the first standard/user dataset
-      -if (groupClasses[i].ty == "standard" && !seenStandard)
-        - seenStandard = true;
+      //- Create a horizontal break if this is the first public/user dataset
+      -if (groupClasses[i].ty == "public" && !seenPublic)
+        - seenPublic = true;
         hr
         h4 Provided datasets
       -if (groupClasses[i].ty == "user" && !seenUser)
@@ -26,7 +26,7 @@ block body
           th Color
           th Created on
           th Last updated
-          -if (!seenStandard)
+          -if (!seenPublic)
             th Remove
         -for(var j = 0; j < groups.length; j++)
           -var group = groups[j];
@@ -46,7 +46,7 @@ block body
               td(style="background:#{db.color};width:20px;height:20px;", title="#{db.color}")
               td #{ moment(db.created_at).format("MM/DD/YYYY") }
               td #{ moment(db.updated_at).fromNow() }
-              -if (!seenStandard)
+              -if (!seenPublic)
                 td
                   a(href="/delete/dataset?did=#{db._id}", title="Remove dataset")
                     span(class="glyphicon glyphicon-trash")
