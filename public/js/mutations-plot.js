@@ -46,12 +46,14 @@ function mutation_plot(params){
 		addAxesSelectors;
 
 	function chart(selection){
-		selection.each(function(geneToData) {
+		selection.each(function(geneData) {
 			// Distance from origin function
 			function dist(d){ return d.x * d.x + d.y * d.y; }
 
 			// Generate the data
 			function generateData(){
+				var geneToData = {};
+				geneData.forEach(function(d){ geneToData[d.name] = d; });
 				var genes = Object.keys(geneToData),
 					n = genes.length;
 					mutationData = {};
@@ -177,6 +179,7 @@ function mutation_plot(params){
 				.offset([-10, 0])
 				.html(function(g){
 					var d = points[g];
+					console.log(g, d)
 					return d.gene + "<br/>" + tyToName[ty1] + ": " + d.x + "<br/>" + tyToName[ty2] + ": " + d.y;
 				});
 
