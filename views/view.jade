@@ -7,6 +7,8 @@ block body
   div(id="view-page")
     div(id="control-panel")
       h4 Control Panel <span id="hideControlPanel">[-]</span>
+      a(href="#", id="enrichmentStatsLink")
+        | Enrichment statistics
       div(id="controls")
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")
@@ -342,3 +344,5 @@ block belowTheFold
             });
         }
         linksWithToggles.forEach(bootstrapToggle);
+        //- Append this page's query parameters to create the enrichments link
+        $("#enrichmentStatsLink").attr("href", "/enrichments?" + window.location.href.split("?")[1]);

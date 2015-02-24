@@ -124,9 +124,13 @@ var routes = require( './routes/router' );
 app.get('/', routes.index);
 app.post('/', routes.queryhandler);
 
-// gd3 view
+// MAGI view
 app.get('/view', routes.view);
 app.get('/view/:id', routes.view);
+
+// Enrichment statistics
+app.get('/enrichments', routes.enrichments);
+app.post('/enrichments/stats', routes.enrichmentStats);
 
 // Data-/gene set uploads
 app.post('/upload/geneset', routes.uploadGeneset);
