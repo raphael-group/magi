@@ -94,6 +94,8 @@ block body
             li <b>Step 2: Copy number calling</b>.
                 | <p> To determine if each sample had a copy number aberration in a given target gene, we extracted discretized copy number amplifications and deletions from the gene-level matrix (&ldquo;<code>focal_data_by_genes.txt</code>&rdquo;) with values  >2 and <-2, respectively.
             li <b>Step 3: Consistency of target genes</b>.
-                | <p> After copy number calling, we discard target genes for which the sign (i.e., amplification or deletion) was not the same in at least 75% of the samples.
-        
-        
+                p
+                    | After copy number calling, we discard target genes for which the sign 
+                    | (i.e., amplification or deletion) was not the same in at least 75% of the samples. 
+                    | We then restrict to the majority aberration class in each gene. 
+                    | In other words, if a gene has more amplifications than deletions, we only consider its amplifications.
