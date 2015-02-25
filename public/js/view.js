@@ -1,9 +1,6 @@
 /* Master D3 controller for the view */
 
-SHOW_TOOLTIPS = true
-
 var user_id = user ? user._id : "";
-console.log(data);
 
 // When the document is ready, draw the visualizations
 // and then fade them in and the loading GIF out
@@ -197,7 +194,7 @@ function view(){
 		heatmap.datum(data.heatmap)
 			.call(gd3.heatmap({
 				style: style.heatmap
-			}).showXLabels(false));
+			}));
 
 
 		// Add tooltips
@@ -224,7 +221,7 @@ function view(){
 			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
 		});
 
-		if (SHOW_TOOLTIPS) heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
+		heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
 
 	} else {
 		d3.select(heatmapElement).remove();
@@ -237,7 +234,7 @@ function view(){
 		aberrations.datum(data.aberrations)
 			.call(gd3.mutationMatrix({
 				style: style.aberrations
-			}).showColumnCategories(false));
+			}).showColumnCategories(false).showColumnLabels(false));
 
 		// Add tooltips
 		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
@@ -337,7 +334,7 @@ function view(){
 			aberrationsTooltips.push(tooltipData.map(gd3.tooltip.datum) );
 		});
 
-		if (SHOW_TOOLTIPS) aberrations.select('svg').call(gd3.tooltip.make().useData(aberrationsTooltips));
+		aberrations.select('svg').call(gd3.tooltip.make().useData(aberrationsTooltips));
 
 
 	} else {
@@ -438,7 +435,7 @@ function view(){
 		].map(gd3.tooltip.datum) );
 	});
 
-	if (SHOW_TOOLTIPS) network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
+	network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
 	// Transcript(s)
 
 	// First populate the dropdown with the transcripts for each gene
@@ -492,7 +489,7 @@ function view(){
 			].map(gd3.tooltip.datum));
 		});
 
-		if (SHOW_TOOLTIPS) transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
+		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
 	if (data.transcripts && Object.keys(data.transcripts).length > 0){
@@ -545,7 +542,7 @@ function view(){
 			].map(gd3.tooltip.datum));
 		});
 
-		if (SHOW_TOOLTIPS) cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
+		cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
 	}
 
 
