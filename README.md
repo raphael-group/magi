@@ -42,3 +42,8 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
    * Mutations (pancan-hotnet2 (regenerate_pancan_data.sh), tcga-gastric) -- loadDataset
 
 6. View the website at `http://localhost:8000/`.
+
+
+## Support ##
+
+MAGI was created and is maintained by the [Raphael research group](http://compbio.cs.brown.edu) in the [Center for Computational Molecular Biology](http://brown.edu/ccmb) and the [Department of Computer Science](http://cs.brown.edu) at [Brown University](http://brown.edu). Please visit the group website to contact us.
