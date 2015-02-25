@@ -1,19 +1,18 @@
 # MAGI
-This repository contains the code to run a webserver based on the [GD3](https://github.com/raphael-group/gd3) suite of genomic visualization tools. The server allows you to query a set of genes' mutations in cohorts of tumors, and to see mutations and protein-protein interactions among those genes.
 
-The site consists of two main pages:
+<a href="http://magi.cs.brown.edu"><img src="http://magi.cs.brown.edu/img/magiTitle.svg" width="200px" align="left" hspace="10" vspace="6"></a>
 
-1. The `index` page allows the user to choose his/her query genes and datasets.
-2. The `view` page displays the GD3 visualizations for the given query genes and datasets. The `view` is an AngularJS app. The Angular controller for the `view` takes the genes and datasets encoded in the query params, and makes a GET request to the server for a JSON object, and then uses Angular-D3 directives to render the resulting visualizations.
+**MAGI** is a platform for interactive visualization and collaborative annotation of combinations of genetic aberrations. MAGI allows users to upload their own private datasets and view and annotate them in combination with public datasets. MAGI is created and maintained by the [Raphael research group](http://compbio.cs.brown.edu) at Brown University.
+
+This repository contains the source code for MAGI. MAGI is written in [Node.js](http://nodejs.org/) with a [MongoDB](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/) database. MAGI uses [D3](http://d3js.org/), [jQuery](http://jquery.com/), and [GD3](github.com/raphael-group/gd3) on the front-end. Below, we describe how to get a version of MAGI running on your personal machine.
 
 ## Dependencies
 
-* [Node.js](http://nodejs.org/) and [NPM](https://www.npmjs.org/) (generally included with Node.js).
+* [Node.js](http://nodejs.org/) and [NPM](https://www.npmjs.org/) (included with Node.js).
 * [MongoDB](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/). Make sure you can run `mongod` from your terminal. Some basic debugging tips are:
    1. Make sure that you make a directory to store the database. The default is `/data/db`,
       so you'll need to make that directory before running `mongod`.
    2. Make sure that the `mongod`, `mongo`, etc. are in your `PATH`.
-
 
 ## Setup
 
