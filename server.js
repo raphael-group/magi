@@ -15,7 +15,6 @@ var express = require('express'),
   cookieSession = require('cookie-session'),
   Database       = require('./model/db'),
   mongoose = require('mongoose'),
-  config   = require('./oauth2.js'),
   passport = require('passport'),
   jsdom    = require('jsdom'),
   GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
@@ -70,30 +69,36 @@ if (app.get('env') === 'production') {
   app.set('site url', 'http://magi.cs.brown.edu/')
 };
 
-// config passport to use Google OAuth2
-passport.use(new GoogleStrategy({
-    clientID: config.google.clientID,
-    clientSecret: config.google.clientSecret,
-    callbackURL: app.get('site url') + config.google.callbackURLSuffix
-  },
-  function(token, tokenSecret, profile, done) {
-    User.findOne({ googleId: profile.id }, function (err, user) {
-      if (err) console.log( err );
-      if (!user) var user = new User();
+// 
+try {
+    var config   = require('./oauth2.js');
+  // config passport to use Google OAuth2
+  passport.use(new GoogleStrategy({
+      clientID: config.google.clientID || "",
+      clientSecret: config.google.clientSecret || "",
+      callbackURL: app.get('site url') + config.google.callbackURLSuffix || ""
+    },
+    function(token, tokenSecret, profile, done) {
+      User.findOne({ googleId: profile.id }, function (err, user) {
+        if (err) console.log( err );
+        if (!user) var user = new User();
 
-      // Store the user's full name, and his/her first email
-    user.name     = profile.name.givenName + " " + profile.name.familyName;
-    user.email    = profile.emails[0].value;
-    user.googleId = profile.id;
+        // Store the user's full name, and his/her first email
+      user.name     = profile.name.givenName + " " + profile.name.familyName;
+      user.email    = profile.emails[0].value;
+      user.googleId = profile.id;
 
-    // Save/Update the user
-    user.save(function(err){
-      if (err) done(err, null);
-      else done(err, user);
-    });
-    });
-  }
-));
+      // Save/Update the user
+      user.save(function(err){
+        if (err) done(err, null);
+        else done(err, user);
+      });
+      });
+    }
+  ));
+} catch(e){
+  console.error("Invalid oauth2.js file. Authentication is turned off.");
+}
 
 // all environments
 app.set('port', process.env.PORT || 8000);
