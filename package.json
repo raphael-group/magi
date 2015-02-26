@@ -11,6 +11,7 @@
     "postinstall": "./node_modules/bower/bin/bower install"
   },
   "dependencies": {
+    "optimist": "latest",
     "express": "latest",
     "body-parser": "latest",
     "errorhandler": "latest",

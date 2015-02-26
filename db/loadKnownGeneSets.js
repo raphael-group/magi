@@ -1,6 +1,6 @@
 // Load models
-var db = require('../../model/db'),
-	genesets = require('../../model/genesets');
+var db = require('../model/db'),
+	genesets = require('../model/genesets');
 
 // Validate args
 var argv = require('optimist').argv;

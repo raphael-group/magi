@@ -1,6 +1,6 @@
 // Load models
-var db    = require('../../model/db')
-, domains = require('../../model/domains');
+var db    = require('../model/db')
+, domains = require('../model/domains');
 
 // Validate args
 var argv = require('optimist').argv;

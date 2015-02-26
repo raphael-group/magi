@@ -1,6 +1,6 @@
 // Load models
-var db = require('../../model/db'),
-	cancers = require('../../model/cancers');
+var db = require('../model/db'),
+	cancers = require('../model/cancers');
 
 // Validate args
 var argv = require('optimist').argv;

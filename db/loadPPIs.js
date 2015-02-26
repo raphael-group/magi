@@ -1,6 +1,6 @@
 // Load models
-var db = require('../../model/db')
-, ppis = require('../../model/ppis');
+var db = require('../model/db')
+, ppis = require('../model/ppis');
 
 // Validate args
 var argv = require('optimist').argv;
