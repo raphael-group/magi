@@ -6,7 +6,7 @@
 
 This repository contains the source code for MAGI. MAGI is written in [Node.js](http://nodejs.org/) with a [MongoDB](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/) database. MAGI uses [D3](http://d3js.org/), [jQuery](http://jquery.com/), and [GD3](github.com/raphael-group/gd3) on the front-end. Below, we describe how to get a version of MAGI running on your personal machine.
 
-## Dependencies
+### Dependencies ###
 
 * [Node.js](http://nodejs.org/) and [NPM](https://www.npmjs.org/) (included with Node.js).
 * [MongoDB](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/). Make sure you can run `mongod` from your terminal. Some basic debugging tips are:
@@ -14,7 +14,7 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
       so you'll need to make that directory before running `mongod`.
    2. Make sure that the `mongod`, `mongo`, etc. are in your `PATH`.
 
-## Setup
+### Setup ###
 
 1. Clone the repository:
 
@@ -62,7 +62,7 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
 
 8. View the website at `http://localhost:8000/`.
 
-### Authentication ###
+#### Authentication ####
 
 MAGI uses the Google OAuth2 protocol for authentication. To set up authentication on your own personal version of MAGI:
 
@@ -81,6 +81,6 @@ MAGI uses the Google OAuth2 protocol for authentication. To set up authenticatio
 
 If you do not set up authentication, you will not be able to use the `/upload` feature, and attempting to "Login via Google" will result in server errors. You will, however, be able to view public datasets and upload additional datasets to MongoDB from the command line.
 
-## Support ##
+### Support ###
 
 MAGI was created and is maintained by the [Raphael research group](http://compbio.cs.brown.edu) in the [Center for Computational Molecular Biology](http://brown.edu/ccmb) and the [Department of Computer Science](http://cs.brown.edu) at [Brown University](http://brown.edu). Please visit the group website to contact us.
