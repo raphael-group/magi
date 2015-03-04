@@ -4,6 +4,7 @@ var about = require( './about' ),
 	index = require( './index' ),
 	upload = require( './upload' ),
 	view = require( './view' ),
+	enrichments = require( './enrichments' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
   log = require('./log'),
@@ -34,22 +35,35 @@ exports.uploadGeneset = index.uploadGeneset;
 exports.upload = upload.upload;
 exports.uploadDataset = upload.uploadDataset;
 exports.deleteDataset = upload.deleteDataset;
+exports.uploadManifest = upload.uploadManifest;
 exports.uploadCancer = upload.uploadCancer;
+exports.formatSNVs = upload.formatSNVs;
+exports.formatCNAs = upload.formatCNAs;
+exports.formatAberrations = upload.formatAberrations;
+exports.formatDataMatrices = upload.formatDataMatrices;
+exports.formatSampleAnnotations = upload.formatSampleAnnotations;
+exports.formatAnnotationColors = upload.formatAnnotationColors;
 
 // Routes for the main view
 exports.view       = view.view;
 exports.queryError = view.queryError;
 
+// Enrichment statistics routes
+exports.enrichments = enrichments.index;
+exports.enrichmentStats = enrichments.stats;
+
 // Datasets
 exports.datasets = {}
 exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view
+exports.datasets.manifests = datasets.manifests;
 
 // Annotations
-exports.annotations = {}
+exports.annotations = { save: {}}
 exports.annotations.gene = annotations.gene;
 exports.annotations.cancer = annotations.cancer;
-exports.annotations.save = annotations.save;
+exports.annotations.save.mutation = annotations.saveMutation;
+exports.annotations.save.ppi = annotations.savePPI;
 exports.annotations.ppiVote = annotations.ppiVote;
 exports.annotations.ppiComment = annotations.ppiComment;
 exports.annotations.mutationVote = annotations.mutationVote;

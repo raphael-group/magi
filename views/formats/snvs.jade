@@ -1,0 +1,86 @@
+extends ../layout
+block body
+    br
+    div(class="container")
+        h3 Single nucleotide variants (SNV) file format specifications
+        br
+        h4 Accepted formats
+        ul
+            li
+                | MAGI format (
+                a(href="#magi-format") below
+                | ).
+            li
+                a(href="https://wiki.nci.nih.gov/display/TCGA/Mutation+Annotation+Format", target="_new")
+                    | TCGA Mutation Annotation Format (MAF)
+                | .
+        hr
+        a(name="magi-format")
+        h4 MAGI SNV format
+        p
+            | A tab-separated file (*.tsv)</strong> that includes all SNVs for a dataset.
+            | Each row contains the data for a single SNV that occurs in one gene in one particular sample.
+        p The columns whose names are starred are required.
+        hr
+        h5 Format example
+        code PIK3CA&#9;TCGA-FD-A3B6&#9;ENST00000263967&#9;1068&#9;545&#9;Missense_Mutation&#9;E&#9;Q<br />
+        code STAG1&#9;TCGA-B0-4700&#9;--&#9;--&#9;--&#9;--&#9;--&#9;--
+        hr
+        h5 Format description
+        table(class="table table-bordered table-striped")
+            tr
+                th Column
+                th Name (*=required)
+                th Example
+                th Description
+            tr
+                td 1
+                td Gene*
+                td PIK3CA
+                td Gene name.
+            tr
+                td 2
+                td Sample*
+                td TCGA-FD-A3B6
+                td Sample ID.
+            tr
+                td 3
+                td Transcript
+                td ENST00000263967
+                td Transcript ID (RefSeq/ENSEMBL).
+            tr
+                td 4
+                td Transcript Length
+                td 1068
+                td Length of transcript.
+            tr
+                td 5
+                td Locus
+                td 545
+                td Position in transcript at which SNV occurred.
+            tr
+                td 6
+                td Mutation Type
+                td Missense_Mutation
+                td
+                    | Type of mutation that occurred. MAGI understands the following mutation types:
+                    ul
+                        li Nonsense_Mutation
+                        li Frame_Shift_Del
+                        li Frame_Shift_Ins
+                        li Missense_Mutation
+                        li Splice_Site
+                        li In_Frame_Del
+                        li In_Frame_Ins
+            tr
+                td 7
+                td Original &nbsp;
+                    abbr(title="Amino Acid") AA
+                td E
+                td The amino acid at the locus before the variant occurred.
+            tr
+                td 8
+                td New &nbsp;
+                    abbr(title="Amino Acid") AA
+                td Q
+                td The amino acid at the locus after the variant occurred.          

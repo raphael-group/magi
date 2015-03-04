@@ -29,7 +29,7 @@ var DatasetSchema = new mongoose.Schema({
 	updated_at: { type: Date, default: Date.now, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
-	is_standard: { type: Boolean, default: false, required: true },
+	is_public: { type: Boolean, default: false, required: true },
 	color: { type: String, required: true }
 });
 
@@ -178,7 +178,6 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			// Add null for samples without expression data
 			sampleNames.forEach(function(n){
 				if (!sampleToData[n]){
-					console.log(n)
 					genes.forEach(function(g, i){
 						heatmap.cells.push({x: n, y: g, value: null});
 					});
@@ -585,7 +584,6 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 					cnaTy  = fields[2] == "AMP" ? "amp" : fields[2] == "DEL" ? "del" : "fus",
 					start  = fields[3],
 					end    = fields[4];
-
 				// Record the CNA if a start/end were provided
 				if (start != "" && end != ""){
 					var mut = { dataset: sampleToDataset[sample], ty: cnaTy, sample: sample,
@@ -607,9 +605,13 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 			// Load locations of each gene and find their neighbors 
 			var Gene = Database.magi.model( 'Gene' );
+			// console.log(Object.keys(cnas["AKR1C2"].segments))
+			// Object.keys(cnas["AKR1C2"].segments).forEach(function(s){
+			// 	console.log("AKR1C2 " + s)
+			// 	console.log(cnas["AKR1C2"].segments[s])
+			// })
 			Gene.find({name: {$in: Object.keys(cnas)}}, function (err, genes){
 				if (err) throw new Error(err);
-
 				Q.allSettled( genes.map(function(g){
 					var d2 = Q.defer();
 
@@ -620,6 +622,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 						segments = [];
 
 					Object.keys(cnaSamples).forEach(function(s){
+						// console.log(g.name, s)
 						var segs = cnaSamples[s];
 						segments.push( {sample: s, segments: segs} );
 						segs.forEach(function(seg){

@@ -1,0 +1,72 @@
+extends layout
+block body
+	br
+	div(class="container")
+		h3 Manifests
+		p(class="caption", style="width:500px")
+			| Below are manifest files in JSON format for each of the datasets preloaded 
+			| into MAGI. You can use manifests to prepopulate the form on the 
+			a(href="/upload") MAGI upload page
+			|.
+
+		h5 TCGA Pan-Cancer
+		ul
+			li
+				a(href="/data/manifests/tcga-pancancer-blca.json") BLCA
+			li
+				a(href="/data/manifests/tcga-pancancer-brca.json") BRCA
+			li
+				a(href="/data/manifests/tcga-pancancer-coadread.json") COADREAD
+			li
+				a(href="/data/manifests/tcga-pancancer-gbm.json") GBM
+			li
+				a(href="/data/manifests/tcga-pancancer-hnsc.json") HNSC
+			li
+				a(href="/data/manifests/tcga-pancancer-kirc.json") KIRC
+			li
+				a(href="/data/manifests/tcga-pancancer-laml.json") LAML
+			li
+				a(href="/data/manifests/tcga-pancancer-luad.json") LUAD
+			li
+				a(href="/data/manifests/tcga-pancancer-lusc.json") LUSC
+			li
+				a(href="/data/manifests/tcga-pancancer-ov.json") OV
+			li
+				a(href="/data/manifests/tcga-pancancer-ucec.json") UCEC
+		h5 TCGA Publications
+		ul
+			li
+				a(href="/data/manifests/tcga-stad.json") STAD
+
+		hr
+		a(name="format")
+		h4 Manifest format
+		p Manifests are JSON files that accept the following keys.
+		pre
+			code
+				| {
+				|  "dataset": "string",   // required
+				|  "groupName": "string", // required
+				|  "cancer": "string",    // required
+				|   "color": "string",
+				|   "snvs":{
+				|       "location": "string"
+				|   },
+				|   "cnas":{
+				|       "location": "string"
+				|   },
+				|   "aberrations":{
+				|       "location": "string",
+				|       "aberrationType": "string"
+				|   },
+				|   "dataMatrix":{
+				|       "location": "string",
+				|       "matrixName": "string"
+				|   },
+				|   "sampleAnnotations":{
+				|       "location": "string"
+				|   },
+				|   "annotationColors":{
+				|       "location": "string"
+				|   }
+				| }

@@ -53,13 +53,14 @@ exports.vote = function mutationVote(fields, user_id){
 	//Create and execute the query
 	var pmid = fields.pmid,
 		vote = fields.vote;
+
 	Annotation.findById(fields._id, function(err, annotation){
 		// Throw error and resolve if necessary
 		if (err){
 			throw new Error(err);
 			d.resolve();
 		}
-
+		console.log(annotation)
 		// Update the vote for the reference
 		annotation.references.forEach(function(ref){
 			if (ref.pmid == pmid){

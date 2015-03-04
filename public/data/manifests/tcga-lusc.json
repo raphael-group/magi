@@ -1,0 +1,9 @@
+{
+	"dataset": "LUSC (2012)",
+	"groupName": "TCGA Publication Pages",
+	"cancer": "lusc",
+	"snvs":{
+		"location": "https://tcga-data.nci.nih.gov/docs/publications/lusc_2012/LUSC_Paper_v8.aggregated.tcga.somatic.maf.gz",
+		"format": "MAF"
+	}
+}

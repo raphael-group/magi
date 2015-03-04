@@ -1,0 +1,101 @@
+extends ../layout
+block body
+    br
+    div(class="container")
+        h3 Copy number aberrations (CNA) file format specifications
+        br
+        h4 Accepted formats
+        ul(style="width:800px")
+            li
+                | MAGI format (
+                a(href="#magi-format") below
+                | ).
+            li
+                | GISTIC2 output format (
+                a(href="#gistic2-format") below
+                | ).                
+        hr
+        a(name="magi-format")
+        h4 MAGI CNA Format
+        p <strong>The CNA file is a tab-separated file (*.tsv)</strong> that includes all CNAs for a dataset.
+            | Each row contains the data for a single copy number segment that occurs in one gene in one particular sample.
+        p The columns whose names are starred are required.
+        hr
+        h5 Format example
+        code PIK3CA&#9;TCGA-FD-A3B6&#9;AMP&#9;29843973&#9;30327089<br />
+        code AKT1&#9;TCGA-06-0327 X&#9;--&#9;--&#9;--
+        hr
+        h5 Format description
+        table(class="table table-bordered table-striped")
+            tr
+                th Column
+                th Name (*=required)
+                th Example
+                th Description
+            tr
+                td 1
+                td Gene*
+                td PIK3CA
+                td Gene name.
+            tr
+                td 2
+                td Sample*
+                td TCGA-FD-A3B6
+                td Sample ID.
+            tr
+                td 3
+                td CNA type
+                td 
+                    | Type of CNA that occurred. MAGI understands the following CNA types:
+                    ul
+                        li AMP
+                        li DEL
+
+                td Copy number type.
+            tr
+                td 4
+                td Left
+                td 29843973
+                td Left start-point of segment.
+            tr
+                td 5
+                td Right
+                td 30327089
+                td Right end-point of segment.
+
+        hr
+        a(name="gistic2-format")
+        h4 GISTIC2 CNA Format
+        p This must be passed in as a 
+            a(href="http://www.gnu.org/software/tar/manual/html_node/Standard.html", target="_new") TAR file
+            | ; that includes the following GISTIC2 output files in the <b>topmost directory</b>.
+        ul(style="width:500px")
+            li &ldquo;<code>focal_data_by_genes.txt</code>&rdquo;
+                ul(style="width:800px")
+                    li  A gene-level matrix of copy number values for all samples. Each row is the data for a gene. The first three columns name the gene, its NIH locus ID, and its cytoband - the remaining columns are the samples. The copy number values in the table are in units of (copy number -2), so that no amplification or deletion is 0, genes with amplifications have positive values, and genes with deletions are negative values.
+
+            li &ldquo;<code>table_amp.conf_99.txt</code>&rdquo; and &ldquo;<code>table_del.conf_99.txt</code>&rdquo;
+                ul(style="width:800px")
+                    li Tables of basic information about the genomic regions (peaks) that GISTIC determined to be significantly amplified or deleted. These describe three kinds of peak boundaries, and list the genes contained in two of them. The region start and region end columns (along with the chromosome column) delimit the entire area containing the peak that is above the significance level. The region may be the same for multiple peaks. The peak start and end delimit the maximum value of the peak. The extended peak is the peak determined by robust, and is contained within the wide peak reported in {amp|del}_genes.txt by one marker.
+            li &ldquo;<code>focal_input.seg.txt</code>&rdquo;
+                ul(style="width:800px")
+                    li A list of copy number segments describing just the focal events present in the data. Each row is a copy number segment with the following column: TCGA sample id, chromosome, start base pair, end base pair, the number of markers in the segment, level of amplification or deletion.
+        | For more details on the GISTIC2 file format please see the 
+        a(href="ftp://ftp.broadinstitute.org/pub/genepattern/modules_public_server_doc/GISTIC2.pdf", target="_new") GISTIC2 document.
+        hr
+        h5 Parse GISTIC2 CNA format to MAGI copy number browser
+        ul(style="width:800px")
+            li <b>Step 1: Select target genes</b>. 
+                | <p> We selected target genes in each maxpeak by checking whether the peak contains genes from  
+                a(href="http://cancer.sanger.ac.uk/cancergenome/projects/census/", target="_new") The Sanger Institute’s Cancer Gene Census 
+                | or 
+                a(href="http://www.nature.com/ng/journal/v45/n10/full/ng.2760.html", target="_new") Zack et al. study. 
+                | For max peaks that did not have target genes, we picked a max peak as a target gene if the peak contains only one gene.
+            li <b>Step 2: Copy number calling</b>.
+                | <p> To determine if each sample had a copy number aberration in a given target gene, we extracted discretized copy number amplifications and deletions from the gene-level matrix (&ldquo;<code>focal_data_by_genes.txt</code>&rdquo;) with values  >2 and <-2, respectively.
+            li <b>Step 3: Consistency of target genes</b>.
+                p
+                    | After copy number calling, we discard target genes for which the sign 
+                    | (i.e., amplification or deletion) was not the same in at least 75% of the samples. 
+                    | We then restrict to the majority aberration class in each gene. 
+                    | In other words, if a gene has more amplifications than deletions, we only consider its amplifications.
