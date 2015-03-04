@@ -1,11 +1,38 @@
 // Load required modules
 var mongoose = require( 'mongoose' ),
+	Q = require( 'q' ),
 	Dataset  = require( "../model/datasets" ),
 	Database = require('../model/db'),
 	formidable = require('formidable'),
 	fs = require('fs'),
 	Cancers  = require( "../model/cancers" ),
 	path = require('path');
+	childProcess = require('child_process');
+
+// Mapping of exit codes to messages when loading a dataset
+// by running the Python loadDataset.py script through a
+// child process
+var codeToMsg = {
+	0: "<b>Success! </b>Return to the <a href='/'>homepage</a> to query your dataset.",
+	2: "Invalid argument. Please <a href='/contact'>contact us</a> for assistance.",
+	4: "Error downloading sample/annotation color file.",
+	5: "Error reading in sample/annotation color file.",
+	14: "Error downloading SNV file. Please check the URL you provided.",
+	15: "Error reading in SNV file.",
+	24: "Error downloading CNA file. Please check the URL you provided.",
+	25: "Error reading in CNA file.",
+	34: "Error downloading other aberrations file. Please check the URL you provided.",
+	35: "Error reading in other aberrations file.",
+	44: "Error downloading data matrix file. Please check the URL you provided.",
+	45: "Error reading in data matrix file.",
+	50: "Unknown fatal error. Please <a href='/contact'>contact us</a> for assistance.",
+	60: "Fatal error: No valid data in mutation files and no data matrix => no data to save."
+};
+
+function codeToMessage(code){
+	if (code in codeToMsg) return codeToMsg[code];
+	else return "Unknown error."
+}
 
 // Loads form for users to upload datasets
 exports.upload  = function upload(req, res){
@@ -15,72 +42,163 @@ exports.upload  = function upload(req, res){
 		if (err) throw new Error(err);
 		else{
 			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
-			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_standard; }),
-				user_cancers = cancers.filter(function(d){ return !d.is_standard; });
+			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_public; }),
+				user_cancers = cancers.filter(function(d){ return !d.is_public; });
 			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
 		}
 	});
 }
 
+// Load a JSON manifest file and send the data to the server
+exports.uploadManifest = function uploadManifest(req, res){
+	console.log('/upload/manifest');
+	if (req.user && req.files && req.files.Manifest){
+		var manifestFile = req.files.Manifest.path;
+		fs.readFile(manifestFile, 'utf-8', function (err, data) {
+			if (err){
+				res.send({error: err});
+				throw new Error(err);
+			} else {
+				try{
+					res.send({status: "Success!", data: JSON.parse(data) });
+				} catch(e){
+					res.send({error: "Not a valid JSON file."})
+				}
+			}
+			fs.unlinkSync(manifestFile);
+		});
+	} else {
+		console.error("Manifest could not be loaded.")
+		res.send({error: "Manifest could not be loaded."})
+	}
+}
+
 // Parse the user's dataset upload
 exports.uploadDataset = function uploadDataset(req, res){
-	// Load the posted form
-	var form = new formidable.IncomingForm({
-		uploadDir: path.normalize(__dirname + '/../tmp'),
-		keepExtensions: true
-    });
+	console.log('/upload/dataset');
 
-    form.parse(req, function(err, fields, files) {
-    	// Parse the form variables into shorter handles
-    	var dataset = fields.dataset,
-    		group_name = fields.groupName,
-    		cancer = fields.cancer,
-    		color = fields.color,
-    		data_matrix_name = fields.DataMatrixName;
+	// Parse the form variables into shorter handles
+	var fields = req.body,
+		files = req.files,
+		dataset = fields.Dataset,
+		groupName = fields.GroupName,
+		cancer = fields.Cancer,
+		color = fields.Color,
+		dataMatrixName = fields.DataMatrixName,
+		aberrationType  = fields.AberrationType,
+		snvFileFormat = fields.SNVFileFormat,
+		cnaFileFormat = fields.CNAFileFormat,
+		tmpFiles = [], // file paths we need to remove later
+		snvFile, cnaFile, aberrationsFile, dataMatrixFile, sampleAnnotationsFile, annotationColorsFile;
 
-    	if (files.CancerMapping) cancer_file = files.CancerMapping.path;
-    	else cancer_file = null;
+	if (fields.SNVsSource == 'upload'){
+		if (files.SNVsLocation){
+			snvFile = files.SNVsLocation.path;
+			tmpFiles.push(snvFile);
+		}
+		else{
+			snvFile = null;
+		}
+	} else{
+		snvFile = fields.SNVsLocation;
+	}
 
-    	var cancer_input = cancer_file ? cancer_file : cancer;
+	if (fields.CNAsSource == 'upload'){
+		if (files.CNAsLocation){
+			cnaFile = files.CNAsLocation.path;
+			tmpFiles.push(cnaFile);
+		}
+		else{
+			cnaFile = null;
+		}
+	} else{
+		cnaFile = fields.CNAsLocation;
+	}
 
-    	if (files.SNVs) snv_file = files.SNVs.path;
-    	else snv_file = null;
+	if (fields.AberrationsSource == 'upload'){
+		if (files.AberrationsLocation){
+			aberrationsFile = files.AberrationsLocation.path;
+			tmpFiles.push(aberrationsFile);
+		}
+		else{
+			aberrationsFile = null;
+		}
+	} else{
+		aberrationsFile = fields.AberrationsLocation;
+	}
 
-    	if (files.CNAs) cna_file = files.CNAs.path;
-    	else cna_file = null;
+	if (fields.DataMatrixSource == 'upload'){
+		if (files.DataMatrixLocation){
+			dataMatrixFile = files.DataMatrixLocation.path;
+			tmpFiles.push(dataMatrixFile);
+		}
+		else{
+			dataMatrixFile = null;
+		}
+	} else{
+		dataMatrixFile = fields.DataMatrixLocation;
+	}
 
-    	if (files.Aberrations) aberration_file = files.Aberrations.path;
-    	else aberration_file = null;
+	if (fields.SampleAnnotationsSource == 'upload'){
+		if (files.SampleAnnotationsLocation){
+			sampleAnnotationsFile = files.SampleAnnotationsLocation.path;
+			tmpFiles.push(sampleAnnotationsFile);
+		}
+		else{
+			sampleAnnotationsFile = null;
+		}
+	} else{
+		sampleAnnotationsFile = fields.SampleAnnotationsLocation;
+	}
 
-    	if (files.SampleAnnotations) samples_file = files.SampleAnnotations.path;
-    	else samples_file = null;
+	if (fields.AnnotationColorsSource == 'upload'){
+		if (files.AnnotationColorsLocation){
+			annotationColorsFile = files.AnnotationColorsLocation.path;
+			tmpFiles.push(annotationColorsFile);
+		}
+		else{
+			annotationColorsFile = null;
+		}
+	} else{
+		annotationColorsFile = fields.AnnotationColorsLocation;
+	}
 
-    	if (files.AnnotationColors) annotation_colors_file = files.AnnotationColors.path;
-    	else annotation_colors_file = null;
+	// Construct the 
+	var args = ['-c', cancer, '-dn', '"' + dataset + '"', '--user_id', req.user._id];
+	if (groupName) args = args.concat(['-gn', '"' + groupName + '"']);
+	if (snvFile) args = args.concat(['-sf', snvFile, '-sft', snvFileFormat]);
+	if (cnaFile) args = args.concat(['-cf', cnaFile, '-cft', cnaFileFormat]);
+	if (aberrationsFile) args = args.concat(['-af', aberrationsFile, '-at', '"' + aberrationType + '"']);
+	if (dataMatrixFile) args = args.concat(['-dmf', dataMatrixFile, '-mn', '"' + dataMatrixName + '"']);
+	if (sampleAnnotationsFile) args = args.concat(['-saf', sampleAnnotationsFile]);
+	if (annotationColorsFile) args = args.concat(['-acf', annotationColorsFile]);
+	cmd = "db/loadDataset.py " + args.join(" ");
+	console.log(cmd);
 
-    	if (files.DataMatrix) data_matrix_file = files.DataMatrix.path;
-    	else data_matrix_file = null;
+	// Execute the process, log it's intermediate output,
+	// and exit and resovlve the promise once it's done
+	var msg, err = "", output = "";
+	function loadDataset(){
+		var d = Q.defer(),
+			child = childProcess.exec(cmd);
 
-    	// Pass the files to the parsers
-		Dataset.addDatasetFromFile(dataset, group_name, samples_file, snv_file, cna_file, aberration_file,
-								   data_matrix_file, data_matrix_name, annotation_colors_file, cancer_input,
-								   false, color, req.user._id)
-			.then(function(){
-		    	// Once the parsers have finished, destroy the tmp files
-				if (snv_file) fs.unlinkSync( snv_file );
-				if (cna_file) fs.unlinkSync( cna_file );
-				if (samples_file) fs.unlinkSync( samples_file );
-				if (annotation_colors_file) fs.unlinkSync( annotation_colors_file );
-				if (aberration_file) fs.unlinkSync( aberration_file );
-				if (cancer_file) fs.unlinkSync( cancer_file );
-				if (data_matrix_file) fs.unlinkSync( data_matrix_file );
+		child.on('stdout', function(stdout){ output += stdout; });
+		child.on('stderr', function(stderr){ err += stderr; });
+		child.on('close', function(closeCode) { code = closeCode; });
 
-				res.send({ status: "Data uploaded successfully! Return to the <a href='/'>home page</a> to view your dataset." });
-			})
-			.fail(function(){
-				res.send({ status: "Data could not be parsed." });
-			});
-	});
+		child.on('exit', function (exitCode) {
+			msg = codeToMessage(exitCode);
+			tmpFiles.forEach(function(filename){ fs.unlinkSync(filename); })
+			d.resolve();
+		});
+
+		return d.promise;
+	}
+
+	loadDataset().then(function(){
+		if (output || err){ output = output + "<br/>" + err; }
+		res.send({ status: msg, output: output });
+	})
 }
 
 
@@ -116,8 +234,39 @@ exports.uploadCancer = function uploadCancer(req, res){
 		color = req.body.color;
 
 	// Create the cancer
-	Cancer.create({name: name, abbr: abbr, color: color}, function(err, cancer){
+	Cancer.create({name: name, abbr: abbr, color: color, is_public: false}, function(err, cancer){
 		if (err) throw new Error(err);
 		res.redirect("/cancers");
 	});
+}
+
+// Render pages describing file formats
+exports.formatSNVs = function formatSNVs(req, res){
+	console.log('/upload/formats/snvs');
+	res.render('formats/snvs', {user: req.user });
+}
+
+exports.formatCNAs = function formatCNAs(req, res){
+	console.log('/upload/formats/cnas');
+	res.render('formats/cnas', {user: req.user });
+}
+
+exports.formatAberrations = function formatAberrations(req, res){
+	console.log('/upload/formats/aberrations');
+	res.render('formats/aberrations', {user: req.user });
+}
+
+exports.formatDataMatrices = function formatDataMatrices(req, res){
+	console.log('/upload/formats/data-matrices');
+	res.render('formats/data-matrices', {user: req.user });
+}
+
+exports.formatSampleAnnotations = function formatSampleAnnotations(req, res){
+	console.log('/upload/formats/sample-annotations');
+	res.render('formats/sample-annotations', {user: req.user });
+}
+
+exports.formatAnnotationColors = function formatAnnotationColors(req, res){
+	console.log('/upload/formats/annotation-colors');
+	res.render('formats/annotation-colors', {user: req.user });
 }

@@ -75,25 +75,23 @@ $(document).ready(function(){
 		var params = {style: {width: 750}};
 		d3.select("#multi-cancer-m2")
 			.style("border", "1px solid #eee")
-			.datum(data.multi_cancer_mutation_matrix)
-			.call( mutation_matrix(params).addSampleLegend() );
+			.datum(data.multi_cancer_aberrations)
+			.call( gd3.mutationMatrix(params) );
 
 		// Add the single-sample mutation matrix
 		d3.select("#single-cancer-m2")
 			.style("border", "1px solid #eee")
-			.datum(data.single_cancer_mutation_matrix)
-			.call( mutation_matrix(params) );
+			.datum(data.single_cancer_aberrations)
+			.call( gd3.mutationMatrix(params) );
 
 		// Add the subnetwork
 		params.style.width = 500;
-		params.style.height = 200;
+		data.network.title = "Mutations";
+		params.style.nodeColor = ['rgb(102, 178, 255)', 'rgb(255, 51, 51)'];
 		d3.select("#gd3-subnetwork-plot")
 			.style("border", "1px solid #eee")
-			.datum(data.subnetwork)
-			.call( subnetwork(params)
-                	.addNetworkLegend()
-                	.addGradientLegend()
-            );
+			.datum(data.network)
+			.call( gd3.graph(params) );
 
         // Add the transcript plot
         params.domainDB = "PFAM";
@@ -104,18 +102,17 @@ $(document).ready(function(){
 
 		d3.select("#gd3-transcript-plot")
 			.style("border", "1px solid #eee")
-			.datum(data.transcript_plot)
-			.call( transcript_plot(params).addLegend() );
+			.datum(data.transcript)
+			.call( gd3.transcript(params) );
 
 		// Add the CNA browser
 		params.style.width = 800;
-		params.style.height = 200;
 		d3.select("#gd3-cna-browser")
 			.style("border", "1px solid #eee")
 			.style("height", "300px")
 			.style("overflow-y", "scroll")
-			.datum(data.cna_browser)
-			.call(cna_browser(params))
+			.datum(data.cnas)
+			.call(gd3.cna(params))
 			.select("svg")
 
 	})

@@ -8,13 +8,13 @@ var CancerSchema = new mongoose.Schema({
 	abbr: { type: String, required: true},
 	color: { type: String, required: true },
 	created_at: { type: Date, default: Date.now, required: true },
-	is_standard: { type: Boolean, default: false, required: false }
+	is_public: { type: Boolean, default: false, required: false }
 });
 
 Database.magi.model( 'Cancer', CancerSchema );
 
 // Loads annotations into the database
-exports.loadCancersFromFile = function(filename, is_standard, callback){
+exports.loadCancersFromFile = function(filename, is_public, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
 		Cancer = Database.magi.model( 'Cancer' ),
@@ -46,7 +46,7 @@ exports.loadCancersFromFile = function(filename, is_standard, callback){
 					cancer: fields[0],
 					abbr: fields[1],
 					color: fields[2],
-					is_standard: is_standard
+					is_public: is_public
 				}
 			cancers.push( cancer );
 		});

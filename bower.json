@@ -3,19 +3,15 @@
   "version": "0.0.1",
   "dependencies": {
     "jquery": "latest",
-    "d3": "3.3.x",
+    "d3": "latest",
     "bootstrap": "3.x",
     "jquery-form": "3.x",
-    "gd3": "latest",
     "DataTables": "latest",
-    "d3-tip": "latest",
     "typeahead.js": "latest",
     "hogan": "latest",
     "bootstrap-multiselect": "latest",
     "shepherd.js": "latest",
-    "jquery-mousewheel": "~3.1.12"
-  },
-  "resolutions": {
-    "d3": "3.4"
+    "jquery-mousewheel": "~3.1.12",
+    "d3-tip": "latest"
   }
 }

@@ -1,5 +1,7 @@
 /* Master D3 controller for the view */
 
+var user_id = user ? user._id : "";
+
 // When the document is ready, draw the visualizations
 // and then fade them in and the loading GIF out
 $(document).ready(
@@ -22,23 +24,31 @@ $('button#shareBtn').on('click', function(e) {
 		});
 	});
 
-// Master function for 
+// Master function for
 // * drawing the D3 visualizations
 // * adding tooltips
 // * adding annotations
 // * controlling which datasets are visible
-var votePPI, voteMutation, commentPPI;
+
+// Globals
+var abbrToCancer = data.abbrToCancer,
+	cancerToAbbr = {},
+	linkViews = true;
+
+Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; });
+cancers = Object.keys(cancerToAbbr);
+
 function view(){
 	// Set up promise
 	var deferred = $.Deferred();
 
 	// Hard-code the names of each element
-	var m2Element = "div#aberrations",
-		subnetworkElement = "div#subnetwork",
-		transcriptElement = "div#transcript-plot",
-		transcriptSelectElement = "select#transcript-plot-select",
-		cnaBrowserElement = "div#cna-browser",
-		cnaBrowserSelectElement = "select#cna-browser-select",
+	var aberrationsElement = "div#aberrations",
+		networkElement = "div#network",
+		transcriptElement = "div#transcript",
+		transcriptSelectElement = "select#transcript-select",
+		cnasElement = "div#cnas",
+		cnasSelectElement = "select#cnas-select",
 		controlsElement = "div#control-panel div#controls",
 		annotateInputElement = "div#annotation div#inputs",
 		annotatedGeneElement = "div#annotation select#gene",
@@ -55,12 +65,13 @@ function view(){
 		heatmapElement = 'div#heatmap';
 
 	// Select each element for easy access later
-	var m2 = d3.select(m2Element),
-		subnet = d3.select(subnetworkElement),
+	var aberrations = d3.select(aberrationsElement),
+		heatmap = d3.select(heatmapElement),
+		network = d3.select(networkElement),
 		transcript = d3.select(transcriptElement),
 		transcriptSelect = d3.select(transcriptSelectElement),
-		cnaBrowser = d3.select(cnaBrowserElement),
-		cnaBrowserSelect = d3.select(cnaBrowserSelectElement),
+		cnas = d3.select(cnasElement),
+		cnasSelect = d3.select(cnasSelectElement),
 		controls = d3.select(controlsElement),
 		annotateInput = d3.select(annotateInputElement),
 		annotatedGene = d3.select(annotatedGeneElement),
@@ -73,10 +84,49 @@ function view(){
 		annotation = d3.select(annotationsElement),
 		submit = d3.select(submitElement);
 
-	var elements = [ {name: "mutation_matrix", el: m2Element}, {name: "subnetwork", el: subnetworkElement},
-					 {name: "transcript", el: transcriptElement}, {name: "cnabrowser", el: cnaBrowserElement} ];
+	var elements = [ {name: "aberrations", el: aberrationsElement},
+					 {name: "network", el: networkElement},
+					 {name: "transcript", el: transcriptElement},
+					 {name: "cnas", el: cnasElement},
+					 {name: "heatmap", el: heatmapElement} ];
 
-	// Hard-code the network colors (TODO: more elegant way later)
+
+	// Functions for giving names from our abbreviations
+	// for cancer types and mutations
+	function cancerToName(c){
+		if (cancerToAbbr[c]) return cancerToAbbr[c].toUpperCase();
+		else return c.toUpperCase();
+	}
+
+	function mutationToName(m){
+		m = m.toLowerCase();
+		if (m == "snv") return "SNV";
+		else if (m == "inactive_snv") return "Inactivating SNV";
+		else if (m == "amp") return "Amplification";
+		else if (m == "del") return "Deletion";
+		else return m;
+	}
+
+	function mutationToClass(m){
+		m = m.toLowerCase();
+		if (m == "snv" || m == "inactive_snv") return "SNV";
+		else if (m == "amp") return "Amplification";
+		else if (m == "del") return "Deletion";
+		else if (m == "expression") return "Expression";
+		else if (m == "methylation") return "Methylation";
+		else return "Other";
+	}
+
+	// Set up the styles for the four views
+	var genes = data.genes,
+		datasets = Object.keys(data.datasetColors);
+
+
+	// Determine if we're showing duplicates
+	if (showDuplicates == null) {
+		showDuplicates = true; // TODO fix this hack
+	}
+
 	var defaultStyle = function(){
 		var sty = { colorSchemes: { network: {} , sampleType: {} } };
 		sty.colorSchemes.network["HPRD"] = "rgb(13, 59, 56)"
@@ -88,42 +138,9 @@ function view(){
 		return sty;
 	}
 
-	// Hard-code the classes and names of mutations (TODO: more elegant way later)
-	var mutationToClass = {
-				snv: "SNV",
-				del: "Del",
-				inactive_snv: "SNV",
-				amp: "Amp",
-				expression: "Expression",
-				methylation: "Methylation",
-				other: "Other"
-			},
-		mutationToName = {
-				snv: "SNV",
-				del: "Deletion",
-				inactive_snv: "Inactivating SNV",
-				amp: "Amplification",
-				other: "Other"
-			};
-		// List of possible annotation classes
-		annotationClasses = ["Amp", "Del", "SNV", "Expression", "Methylation", "interact"];
-
-	///////////////////////////////////////////////////////////////////////////
-	// Get the data and initialize the view
-	function pmidLink(pmid){ return "<a href='http://www.ncbi.nlm.nih.gov/pubmed/" + pmid + "' target='_new'>" + pmid + "</a>" }
-	//d3.json(query, function(err, data){
-
-	// Create each element's style by merging in the dataset colors and
-	// finding the width of each container
-	var genes = data.genes,
-		datasets = data.datasets;
-
-	if (showDuplicates == null) {
-		showDuplicates = true; // TODO fix this hack
-	}
-
-	var style = { subnetwork: defaultStyle(), mutation_matrix: defaultStyle(),
-				  transcript: defaultStyle(), cnabrowser: defaultStyle() };
+	var style = { network: defaultStyle(), aberrations: defaultStyle(),
+				  transcript: defaultStyle(), cnas: defaultStyle(),
+				  heatmap: defaultStyle() };
 
 	elements.forEach(function(e){
 		style[e.name].width = $(e.el).width();
@@ -134,376 +151,299 @@ function view(){
 		}
 	});
 
-	///////////////////////////////////////////////////////////////////////////
-	// Parse and store the dataset colors and number of samples, and
-	// by default include all datasets in each visualization
-	var datasetToColor = data.datasetColors,
-		datasetToSamples = data.mutation_matrix.typeToSamples;
+	// Cold to hot gradient for the network
+	style.network.nodeColor = ['rgb(102, 178, 255)', 'rgb(255, 51, 51)'];
 
-	var datasetData = Object.keys(datasetToColor).map(function(d){
-		return { name: d, color: datasetToColor[d], numSamples: datasetToSamples[d].length, active: true };
-	}).sort(function(a, b){ return d3.ascending(a.name, b.name); });
-
-	var datasetToInclude = {};
-	datasetData.forEach(function(d){ datasetToInclude[d.name] = true; });
-
-	///////////////////////////////////////////////////////////////////////////
-	// Function for updating the tooltips when a user votes, and storing the
-	// resulting vote in the datbase
-	voteMutation = function (gene, mutClass, cancer, index, pmid, annotationID, direction){
-		// Extract the voting data and the respective elements
-		var d = annotations[gene][mutClass][cancer][index],
-			tdID = "annotation-" + annotationID + "-" + index,
-			up = $("td#" + tdID + " a.upvote"),
-			down = $("td#" + tdID + " a.downvote"),
-			count = $("td#" + tdID + " span.count");
-
-		// Update the arrows in the tooltip
-		if (direction == "down" || d.vote == "down") down.toggleClass("downvote-on");
-		if (direction == "up" || d.vote == "up") up.toggleClass("upvote-on");
-
-		// Update the arrows in the tooltip
-		if (direction == "up"){
-			d.score += d.vote == "up" ? -1 : d.vote == "down" ? 2 : 1;
-			d.vote = d.vote == "up" ? null : "up";
-		}
-		else if (direction == "down"){
-			d.score += d.vote == "up" ? -2 : d.vote == "down" ? 1 : -1;
-			d.vote = d.vote == "down" ? null : "down";
-		}
-
-		// Finally, update the count
-		count.text(d.score);
-
-		// Create a form to submit as an AJAX request to update the database
-		var formData = new FormData();
-		formData.append( '_id', annotationID );
-		formData.append( 'pmid', pmid );
-		formData.append( 'vote', direction );
-
-
-		$.ajax({
-			// Note: can't use JSON otherwise IE8 will pop open a dialog
-			// window trying to download the JSON as a file
-			url: '/vote/mutation',
-			data: formData,
-			cache: false,
-			contentType: false,
-			processData: false,
-			type: 'POST',
-
-			error: function(xhr) {
-				annotationStatus('Database error: ' + xhr.status);
-			},
-
-			success: function(response) {
-				if(response.error) {
-					annotationStatus('Oops, something bad happened.', warningClasses);
-					return;
-				}
-
-				// Log the status
-				annotationStatus(response.status, successClasses);
+	// Set up the GD3 color palette
+	if (data.datasetColors){
+		var colors = datasets.map(function(d){ return data.datasetColors[d]; });
+		gd3.color.categories(datasets, colors);
+		gd3.color.annotations('Cancer type', datasets, 'discrete', colors);
+	}
+	if (data.sampleAnnotations && data.sampleAnnotations.categories){
+		data.sampleAnnotations.categories.forEach(function(c){
+			var values = Object.keys(data.sampleAnnotations.annotationToColor[c]);
+			if (values.length > 0){
+				var colors = values.map(function(v){return data.sampleAnnotations.annotationToColor[c][v]; });
+				gd3.color.annotations(c, values, 'discrete', colors);
 			}
 		});
-
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	// Draw the five views
 
-	// Define a function to generate the tooltips for the mutation matrix.
-	// You need a function to generate the tooltip function since the annotations can
-	// change over time
-	function sampleAnnotationTooltip(name, includeCancerTy){
-      var annotations = [];
-      if (data.sampleAnnotations && data.sampleAnnotations.categories.length > 0){
-          data.sampleAnnotations.categories.forEach(function(c, i){
-          	if (!includeCancerTy && c == "Cancer type") return;
-          	if (name in data.sampleAnnotations.sampleToAnnotations)
-          		var val = data.sampleAnnotations.sampleToAnnotations[name][i];
-          	else
-          		var val = "No data.";
-          	if (val == "" || val == null) val = "No data.";
-	        annotations.push( c + ": " +  val );
-          });
-          annotations.push("")
-        }
-      return annotations.join("\n<br/>");
-	}
+	// Heatmap: has to come first so that it gets sorted
+	// in the same order as the aberration matrix
+	if (data.heatmap.cells){
+		// Add the cancer type as an annotation for the heatmap
+		if (data.aberrations && data.aberrations.samples){
+			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
+			heatmapAnnotations.categories.push("Cancer type");
+			heatmapAnnotations.annotationToColor["Cancer type"] = {};
+			Object.keys(data.datasetColors).forEach(function(d){
+				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
+			});
+			data.aberrations.samples.forEach(function(s){
+				heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]]
+			});
+			data.heatmap.annotations = heatmapAnnotations;
+		}
 
-	function generateAnnotations(annotations){
-		return function(d, i){
-			var mutationClass = mutationToClass[d.ty],
-				tip  = "<div class='gd3-tooltip' id='" + d.gene + "-" + d.sample + "'>";
-			tip += "<span>Sample: " + d.sample.name + '<br />Type: ' + d.dataset + "<br/>"
-			if (d.mutTys)
-				tip += "Mutation(s): " + d.mutTys.map(function(t){ return mutationToName[t] }).join("; ") + ".\n<br/>";
-			if (d.value)
-				tip += "Value: " + d.value + "<br/>";
-			tip += sampleAnnotationTooltip(d.sample.name, false) + "</span>"
-			if (annotations[d.gene] && annotations[d.gene][mutationClass]){
-				var cancers = Object.keys(annotations[d.gene][mutationClass]);
-				tip += "<br style='clear:both'/>Known aberrations<div class='less-info'>"
-				if (cancers.length <= 2){
-					tip += " in " + cancers.map(invertCancerTy).join(" and ") + ".";
-				}
-				else{
-					tip += " in " + cancers.slice(0, 2).map(invertCancerTy).join(", ") + ", and " + (cancers.length - 2) + " others.";	
-				}
+		// Draw the heatmap
+		heatmap.datum(data.heatmap)
+			.call(gd3.heatmap({
+				style: style.heatmap
+			}));
 
-				tip += "</div>"
 
-				// Add the table of PMIDs with voting
-				tip += "<div class='more-info'><table class='table table-condensed'>\n<tr><th>Cancer</th><th>PMIDs</th><th>Votes</th></tr>\n"
-				cancers.forEach(function(cancer){
-					// Retrieve all the references
-					var refs = annotations[d.gene][mutationClass][cancer];
-					if (refs.length == 0) tip += "<tr><td>" + cancer + "</td><td></td><td></td></tr>";
-					d3.range(0, refs.length).forEach(function(i){
-						var ref = refs[i];
-						tip += "<tr><td>" + (i == 0 ? cancer : "") + "</td>"
-						tip += "<td>" + pmidLink(ref.pmid) + "</td>"
-						if (user){
-							var upvoted = ref.vote == "up",
-								upLinkClass = upvoted ? "upvote upvote-on" : "upvote",
-								downvoted =  ref.vote == "down",
-								downLinkClass = downvoted ? "downvote downvote-on" : "downvote",
-								uplink = "<a class='" + upLinkClass + "' onclick='voteMutation(\"" + d.gene + "\", \"" + mutationClass + "\", \"" + cancer + "\", " + i + ", \"" + ref.pmid + "\", \"" + ref._id + "\", \"up\"); return false;'><span class='glyphicon glyphicon-thumbs-up'</span></a>",
-								downlink = "<a class='" + downLinkClass + "' onclick='voteMutation(\"" + d.gene + "\", \"" + mutationClass + "\", \"" + cancer + "\", " + i + ", \"" + ref.pmid + "\", \"" + ref._id + "\", \"down\"); return false;'><span class='glyphicon glyphicon-thumbs-down'</span></a>";
-						}
-						else{
-							var uplink = "", downlink = "";
-						}
-						var mutationID = "annotation-" + ref._id + "-" + i;
-						tip += "<td id='" + mutationID + "'>" + downlink + "<span class='count'>" + ref.score + "</span>" + uplink + "</td></tr>";
-					});
+		// Add tooltips
+		var cells = heatmap.selectAll('.gd3heatmapCells rect');
+		cells.classed('gd3-tipobj', true);
+		var heatmapTooltips = [];
+		cells.each(function(d) {
+			// Create the tooltip data for the data that will always be present
+			var tooltipData = [
+					{ type: 'text', text: 'Sample: ' + d.x },
+					{ type: 'text', text: 'Value: ' + d.value}
+				];
+
+			// Add the annotations
+			if (data.heatmap.annotations){
+				data.heatmap.annotations.categories.forEach(function(c, i){
+					var value = data.heatmap.annotations.sampleToAnnotations[d.x][i];
+					if (!value) value = "No data";
+					tooltipData.push({type: 'text', text: c + ': ' + value});
 				});
-				tip += "</table>\n</div><br/><a href='/annotations/gene/" + d.gene + "' target='_new'>Click to view details &raquo;</a>"
 			}
 
-			return tip + "</div>\n";
-		}
-	}
+			// Add the tooltip
+			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
+		});
 
-	// Add the mutation matrix
-	var annotations = data.annotations,
-		sampleToIndex;
-	if (data.mutation_matrix.samples.length > 0){
-		var m2Chart = mutation_matrix({style: style.mutation_matrix})
-						.addCoverage()
-						.addMutationLegend()
-						.addSortingMenu()
-						.addTooltips(generateAnnotations(annotations))
-						.addSampleAnnotations(data.sampleAnnotations)
-						.addOnClick(function(d, i){
-							var mutClass = d.ty == "amp" ? "Amp" : d.ty == "del" ? "Del" : "SNV";
-							setAnnotation(d.gene, mutClass, d.dataset, {});
-						});
-		if (showDuplicates) m2Chart.showDuplicates();
+		heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
 
-		m2.datum(data.mutation_matrix);
-		m2Chart(m2);
-		sampleToIndex = m2Chart.sampleOrder();
 	} else {
-		m2.append("b").text("No aberrations to display.")
-		sampleToIndex = {};
+		d3.select(heatmapElement).remove();
+		d3.select("h3#heatmap-title").remove();
 	}
-	///////////////////////////////////////////////////////////////////////////
-	// Add the subnetwork plot
 
-	// Initialize the hash of references to votes
-	var refs = data.subnetwork_data.refs,
-		comments = data.subnetwork_data.comments;
+	// Aberrations
+	if (data.aberrations.samples && data.aberrations.samples.length > 0){
+		data.aberrations.annotations = data.sampleAnnotations;
+		aberrations.datum(data.aberrations)
+			.call(gd3.mutationMatrix({
+				style: style.aberrations
+			}).showColumnCategories(false).showColumnLabels(false));
 
-	// Function for updating the tooltips when a user votes, and storing the
-	// resulting vote in the datbase
-	votePPI = function (network, source, target, pmid, direction){
-		// Extract the voting data and the respective elements
-		var d = refs[network][source][target][pmid],
-			voteID = [network, source, target, pmid].join("-"),
-			up = $("td#" + voteID + " a.upvote"),
-			down = $("td#" + voteID + " a.downvote"),
-			count = $("td#" + voteID + " span.count"),
-			comment = $("td#" + voteID + " span.comment");
+		// Add tooltips
+		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
+		cells.classed('gd3-tipobj', true);
+		var aberrationsTooltips = [];
+		cells.each(function(d) {
+			// Create the tooltip data for the data that will always be present
+			var geneName     = d.rowLabel,
+				mutationType = mutationToName(d.cell.type),
+				mutationClass = mutationToClass(d.cell.type),
+				tooltipData  = [
+					{ type: 'text', text: 'Sample: ' + d.colLabel },
+					{ type: 'text', text: 'Type: ' + d.cell.dataset},
+					{ type: 'text', text: 'Mutation: ' + mutationType }
+				];
 
-		// Update the arrows in the tooltip
-		if (direction == "down" || d.vote == "down") down.toggleClass("downvote-on");
-		if (direction == "up" || d.vote == "up") up.toggleClass("upvote-on");
-
-		// Update the arrows in the tooltip
-		if (direction == "up"){
-			d.score += d.vote == "up" ? -1 : d.vote == "down" ? 2 : 1;
-			d.vote = d.vote == "up" ? null : "up";
-		}
-		else if (direction == "down"){
-			d.score += d.vote == "up" ? -2 : d.vote == "down" ? 1 : -1;
-			d.vote = d.vote == "down" ? null : "down";
-		}
-
-		// Show the comment box if the user has voted one way or the other
-		if (d.vote) comment.show();
-		// Otherwise delete any existing comment
-		else{
-			comments[source][target][network][pmid] = "";
-			comment.val("");
-			comment.hide();
-		}
-
-		// Finally, update the count
-		count.text(d.score);
-
-		// Create a form to submit as an AJAX request to update the database
-		var formData = new FormData();
-		formData.append( 'source', source );
-		formData.append( 'target', target );
-		formData.append( 'network', network );
-		formData.append( 'pmid', pmid );
-		formData.append( 'vote', direction );
-
-		$.ajax({
-			// Note: can't use JSON otherwise IE8 will pop open a dialog
-			// window trying to download the JSON as a file
-			url: '/vote/ppi',
-			data: formData,
-			cache: false,
-			contentType: false,
-			processData: false,
-			type: 'POST',
-
-			error: function(xhr) {
-				annotationStatus('Database error: ' + xhr.status);
-			},
-
-			success: function(response) {
-				if(response.error) {
-					annotationStatus('Oops, something bad happened.', warningClasses);
-					return;
-				}
-
-				// Log the status
-				annotationStatus(response.status, successClasses);
+			// Add the annotations
+			if (data.aberrations.annotations && data.aberrations.categories && data.aberrations.sampleToAnnotations){
+				data.aberrations.annotations.categories.forEach(function(c, i){
+					var value = data.aberrations.annotations.sampleToAnnotations[d.colLabel][i];
+					if (!value) value = "No data";
+					tooltipData.push({type: 'text', text: c + ': ' + value});
+				});
 			}
-		});
 
-	}
+			// Add the references (if necessary)
+			if (data.annotations && data.annotations[geneName]){
+				var annotatedMutationNames = Object.keys(data.annotations[geneName])
+					annotatedMutations = annotatedMutationNames.map(mutationToClass),
+					mutationIndex = annotatedMutations.indexOf(mutationClass);
 
-	commentPPI = function (network, source, target, pmid){
-		// Extract the text of the comment
-		var voteID = [network, source, target, pmid].join("-"),
-			comment = comment = $("td#" + voteID + " span.comment input").val();
+				// Determine if there are references for the current gene
+				// AND its current mutation type
+				if (mutationIndex !== -1){
+					// Find all the cancers for which this gene is known to be mutated. Then add
+					// references for each row
+					var cancerToRefs = data.annotations[geneName][annotatedMutationNames[mutationIndex]],
+						cancerNames  = Object.keys(cancerToRefs).sort(),
+						refTable = [[
+								{type: 'text', text: 'Cancer'},
+								{type: 'text', text: 'PMID'},
+								{type: 'text', text: 'Votes'}
+							].map(gd3.tooltip.datum)
+						];
 
-		comments[source][target][network][pmid] = comment;
-
-		// Create a form to submit as an AJAX request to update the database
-		var formData = new FormData();
-		formData.append( 'source', source );
-		formData.append( 'target', target );
-		formData.append( 'network', network );
-		formData.append( 'comment', comment );
-		formData.append( 'pmid', pmid );
-
-		$.ajax({
-			// Note: can't use JSON otherwise IE8 will pop open a dialog
-			// window trying to download the JSON as a file
-			url: '/comment/ppi',
-			data: formData,
-			cache: false,
-			contentType: false,
-			processData: false,
-			type: 'POST',
-
-			error: function(xhr) {
-				annotationStatus('Database error: ' + xhr.status);
-			},
-
-			success: function(response) {
-				if(response.error) {
-					annotationStatus('Oops, something bad happened.', warningClasses);
-					return;
-				}
-
-				// Log the status
-				annotationStatus(response.status, successClasses);
-			}
-		});
-
-	}
-	// Draw the subnetwork chart with tooltips onmouseover and
-	// preset annotations onclick
-	var subnetChart = subnetwork({style: style.subnetwork})
-					.addNetworkLegend()
-					.addGradientLegend()
-					.addTooltips(function(d, activeNetworks){
-						// Sort the names to ensure source/target are always in the same order
-						// (since we have an undirected graph)
-						var sortedNames = [d.source.name, d.target.name].sort(),
-							source= sortedNames[0],
-							target = sortedNames[1],
-							tip = "<div id='subnet-tooltip'>\n";
-
-						// Add basic information about the edge
-						tip += "Source: " + source + "<br/>Target: " + target + "<br/><br/>";
-
-						// Create a table the (active) networks in which the edge appears,
-						// and list the references for each edge
-						tip += "<table class='table table-condensed'>\n<tr><th>Network</th><th>PMID</th><th>Votes</th></tr>\n"
-						d.networks.filter(function(n){ return activeNetworks[n]; }).forEach(function(n){
-							// Add a row with just the network if there are no references
-							if (d.references[n].length == 0){
-								tip += "<tr><td>" + n + "</td><td></td><td></td></tr>";
-							}
-
-							// Add the references as separate rows
-							d.references[n].forEach(function(ref){
-								var pmid = ref.pmid,
-									voteID = [n, source, target, pmid].join("-"),
-									score = refs[n][source][target][pmid].score;
-
-								// Create a new row with the network name and reference
-								var row = "<tr><td>" + (d.references[n][0] == ref ? n : "") + "</td>";
-								row    += "<td>" + pmidLink(pmid) + "</td>";
-
-								// Add -/+ buttons for users to vote on PMIDs annotating a particular edge,
-								// but only if the user is logged in
-								if (user){
-									var upvoted = refs[n][source][target][pmid].vote == "up",
-										upLinkClass = upvoted ? "upvote upvote-on" : "upvote",
-										downvoted =  refs[n][source][target][pmid].vote == "down",
-										downLinkClass = downvoted ? "downvote downvote-on" : "downvote",
-										uplink = "<a class='" + upLinkClass + "' onclick='votePPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\", \"up\"); return false;'><span class='glyphicon glyphicon-thumbs-up'</span></a>",
-										downlink = "<a class='" + downLinkClass + "' onclick='votePPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\", \"down\"); return false;'><span class='glyphicon glyphicon-thumbs-down'</span></a>";
-								}
-								else{
-									var uplink = "", downlink = "";
-								}
-								var commentDisplay = upvoted || downvoted ? "display:inline;" : "display:none;",
-									comment = comments[source][target][n][pmid];
-								row += "<td id='" + voteID + "'>" + downlink + "<span class='count'>" + score + "</span>" + uplink;
-								row += "<br/><span class='comment' style='" + commentDisplay + "'><input type='text' class='form-control' placeholder='Comment' value='" + comment + "'>"
-								row += "<a class='saveComment' onclick='commentPPI(\"" + n + "\", \"" + source + "\", \"" + target + "\", \"" + pmid + "\")'>Save</a></span></td></tr>";
-
-								// Append the row
-								tip += row;
-							});
+					cancerNames.forEach(function(cancer){
+						cancerToRefs[cancer].forEach(function(ref, i){
+							// only show the cancer name in the first row
+							refTable.push([	
+								{ type: 'text', text: i ? "" : cancerToName(cancer) },
+								{ type: 'link', body: ref.pmid, href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid},
+								{ type: 'vote',
+								  voteDirectionFn: function(){ return ref.vote; },
+								  voteCountFn: function(){ return ref.score; },
+								  upvoteFn: function(){
+								  	// Update the reference vote count
+								  	if (ref.vote == 'down'){
+								  		ref.score += 2;
+								  		ref.vote = 'up';
+								  	} else if (ref.vote == 'up'){
+								  		ref.score -= 1;
+								  		ref.vote = null;
+								  	} else {
+								  		ref.vote = 'up';
+								  		ref.score += 1;
+								  	}
+								  	vote({_id: ref._id, pmid: ref.pmid, vote: 'up'}, '/vote/mutation');
+								  	return ref.vote;
+								  },
+								  downvoteFn: function(){
+								  	if (ref.vote == 'down'){
+								  		ref.score += 1;
+								  		ref.vote = null;
+								  	} else if (ref.vote == 'up'){
+								  		ref.score -= 2;
+								  		ref.vote = 'down'
+								  	} else {
+								  		ref.vote = 'down';
+								  		ref.score -= 1;
+								  	}
+								  	vote({_id: ref._id, pmid: ref.pmid, vote: 'down'}, '/vote/mutation');
+								  	return ref.vote;
+								  }}
+							].map(gd3.tooltip.datum));
 						});
-
-						return tip + "</table>\n</div>\n";
-					})
-					.addOnClick(function(d, i, el){
-						setAnnotation(d.source.name, "interact", d.target.name, {} );
 					});
 
-	subnet.datum(data.subnetwork_data);
-	subnetChart(subnet);
+					// The table is hidden on default, so we show a string describing the 
+					// table before showing it.
+					var knownAberrations = cancerNames.map(cancerToName).join(", ");
+					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + ' in ' + knownAberrations});
+					tooltipData.push({type: 'table', table: refTable, defaultHidden: true});
+				}
+			}
 
-	///////////////////////////////////////////////////////////////////////////
-	// Add a transcript plot selector, where each transcript is grouped by gene
-	var firstGene, firstTranscript;
+			// Add the tooltip
+			aberrationsTooltips.push(tooltipData.map(gd3.tooltip.datum) );
+		});
 
+		aberrations.select('svg').call(gd3.tooltip.make().useData(aberrationsTooltips));
+
+
+	} else {
+		aberrations.html("<b>No aberrations</b>.")
+	}
+
+	// Network
+
+	// Draw network
+	network.datum(data.network)
+		.call(gd3.graph({
+			style: style.network
+		}));
+
+	// Add network tooltips
+	var edges = network.selectAll("g.gd3Link"),
+		networkTooltips = [],
+		refs = data.network.refs,
+		comments = data.network.comments;;
+
+	edges.classed("gd3-tipobj", true);
+	edges.each(function(d) {
+		// Create a table of references for this edge
+		var refTable = [[
+				{type: 'text', text: 'Network'},
+				{type: 'text', text: 'PMID'},
+				{type: 'text', text: 'Votes'}
+			].map(gd3.tooltip.datum)
+		];
+		d.categories.forEach(function(n){
+			if (d.references[n].length > 0){
+				d.references[n].forEach(function(ref, i){
+					ref.score = ref.upvotes.length - ref.downvotes.length;
+					if (ref.upvotes.indexOf(user_id) > -1){
+						ref.vote = 'up';
+					} else if (ref.downvotes.indexOf(user_id) > -1){
+						ref.vote = 'down';
+					} else {
+						ref.vote = null;
+					}
+					// only show the network name in the first row
+					refTable.push([
+						{type: 'text', text: i ? "" : n},
+						{type: 'link', href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid, body: ref.pmid},
+						{type: 'vote',
+						 voteDirectionFn: function(){ return ref.vote; },
+						 voteCountFn: function(){ return ref.score; },
+						 upvoteFn: function(){
+						  	if (ref.vote == 'down'){
+						  		ref.score += 2;
+						  		ref.vote = 'up';
+						  	} else if (ref.vote == 'up'){
+						  		ref.score -= 1;
+						  		ref.vote = null;
+						  	} else {
+						  		ref.vote = 'up';
+						  		ref.score += 1;
+						  	}
+						 	vote({
+						 		source: d.source.name,
+						 		target: d.target.name,
+						 		network: n,
+						 		pmid: ref.pmid,
+						 		vote: 'up'
+						 	}, '/vote/ppi');
+						 },
+						 downvoteFn: function(){
+						  	if (ref.vote == 'down'){
+						  		ref.score += 1;
+						  		ref.vote = null;
+						  	} else if (ref.vote == 'up'){
+						  		ref.score -= 2;
+						  		ref.vote = 'down'
+						  	} else {
+						  		ref.vote = 'down';
+						  		ref.score -= 1;
+						  	}
+						 	vote({
+						 		source: d.source.name,
+						 		target: d.target.name,
+						 		network: n,
+						 		pmid: ref.pmid,
+						 		vote: 'down'
+						 	}, '/vote/ppi')
+						 }}
+					].map(gd3.tooltip.datum));
+				})
+			} else{
+				refTable.push(gd3.tooltip.datum({type: 'text', text: n}));
+			}
+		});
+
+		// Add the tooltip
+		networkTooltips.push([
+			{ type: 'text', text: 'Source: ' + d.source.name },
+			{ type: 'text', text: 'Target: ' + d.target.name },
+			{ type: 'table', table: refTable }
+		].map(gd3.tooltip.datum) );
+	});
+
+	network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
+	// Transcript(s)
+
+	// First populate the dropdown with the transcripts for each gene
 	genes.forEach(function(g, i){
-		if (!data.transcript_data[g]) return;
+		if (!data.transcripts[g]) return;
 
-		var transcripts = Object.keys(data.transcript_data[g]).map(function(t){
-			return { name: t, numMutations: data.transcript_data[g][t].mutations.length };
+		var transcripts = Object.keys(data.transcripts[g]).map(function(t){
+			return { name: t, numMutations: data.transcripts[g][t].mutations.length };
 		});
 		transcripts.sort(function(a, b){ return a.numMutations < b.numMutations ? 1 : -1 });
 
@@ -515,44 +455,12 @@ function view(){
 			.append("option")
 			.attr("value", function(d){ return g + "," + d.name; })
 			.text(function(d){ return d.name + " (" + d.numMutations + " mutations)"; });
-
-		// Store the first gene and transcript for initialization later
-		if (transcripts.length > 0 && !firstGene && !firstTranscript){
-			firstGene = g;
-			firstTranscript = transcripts[0].name;
-		}
 	});
 
-	// Set the default params for the transcript plot
-	var transcriptParams = { style: style.transcript, domainDB: data.domainDBs[0] },
-		transcriptChart = transcript_plot(transcriptParams)
-						.addLegend()
-						.addVerticalPanning()
-						.addTooltips(function(d, i){
-							return d.sample + '<br />Type: ' + d.dataset + "<br/>"
-								   + d.ty.replace(/_/g, ' ') + '<br />'
-								   + d.locus + ': ' + d.aao + '>' + d.aan;
-						})
-						.addOnClickMutations(function(d, i){
-							var fields = {
-								transcript_mutation: true,
-								position: d.locus,
-								mut_ty: d.ty
-							};
-							setAnnotation(d.gene, "SNV", d.dataset, fields);
-						})
-						.addOnClickDomains(function(d, i){
-							var fields = {
-								transcript_domain: true,
-								domain: d.name
-							};
-							setAnnotation(d.gene, "SNV", "", fields);
-						});
-
 	// Watch the transcript selector to update the current transcript plot on change
-	transcriptSelect.on("change", function(){
+	function updateTranscript(){
 		// Parse the selector's value to find the current gene and transcript
-		var arr = $(this).val().split(","),
+		var arr = transcriptSelect.node().value.split(","),
 			geneName = arr[0],
 			transcriptName = arr[1];
 
@@ -560,135 +468,47 @@ function view(){
 		transcript.selectAll("*").remove();
 
 		// Then add the new plot
-		transcript.datum(data.transcript_data[geneName][transcriptName]);
 		transcript.append("h5").text(geneName);
-		transcriptChart(transcript);
-		transcriptChart.filterDatasets(datasetToInclude);
-	});
+		var transcriptPlot = transcript.append("div")
+			.datum(data.transcripts[geneName][transcriptName])
+			.call(gd3.transcript({
+				showLegend: true,
+				style: style.transcript
+			}));
 
-	// Initialize the transcript plot with the first gene and transcript
-	// (if the gene has SNVs)
-	if (firstGene && firstTranscript){
-		transcript.datum(data.transcript_data[firstGene][firstTranscript]);
-		transcript.append("h5").text(firstGene);
-		transcriptChart(transcript);
-		transcriptChart.filterDatasets(datasetToInclude);
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-	// Add a CNA browser selector to choose the genes
-	var heatmapStyle = {
-		annotationFontSize: '12px',
-		cellHeight: 20,
-		cellWidth: 20,
-		fontSize: '14px',
-		fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-		width: parseInt(d3.select(heatmapElement).style('width').split('px')[0]), // subtract off left margin
-		margins: {left: 0, right: 0, top: 0, bottom: 0}
-	};
-
-	// Only render the heatmap at all if there is data for it
-	if (data.heatmap.cells){
-		// Change the name
-		var heatmapTitle = data.heatmap.name.charAt(0).toUpperCase() + data.heatmap.name.slice(1) + " heatmap";
-		d3.select("h3#heatmap-title span.name").text(heatmapTitle);
-
-		// Add cancer type to the sample annotations for the heatmap
-		if (data.sampleAnnotations && data.mutation_matrix.samples.length > 0){
-			// Perform a deep copy of the sample annotation data
-			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
-			$.extend(heatmapAnnotations.categories, data.sampleAnnotations.categories);
-			$.extend(heatmapAnnotations.annotationToColor, data.sampleAnnotations.annotationToColor);
-
-			// Add the cancer types as a heatmap annotation
-			heatmapAnnotations.categories.splice(0, 0, "Cancer type");
-			heatmapAnnotations.annotationToColor["Cancer type"] = {};
-			Object.keys(data.datasetColors).forEach(function(d){
-				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
-			});
-			data.mutation_matrix.samples.forEach(function(s){
-				if (s.name in data.sampleAnnotations.sampleToAnnotations){
-					var currentAnnotations = data.sampleAnnotations.sampleToAnnotations[s.name];
-					heatmapAnnotations.sampleToAnnotations[s.name] = [data.mutation_matrix.sampleToTypes[s._id]].concat(currentAnnotations);
-				}
-			});
-		}
-
-		// Draw the heatmap
-		var heatmapAnnotationFn = generateAnnotations(annotations);
-		var heatmapChart = heatmap({style:heatmapStyle})
-					  .addYLabels()
-					  .addXLabels()
-					  .addLegend(true)
-					  .addSampleAnnotations(heatmapAnnotations)
-					  .addTooltips(function(d, i){
-					  	// return "<div class='heatmap-tooltip'>" + sampleAnnotationTooltip(d.x, true) + "</div>";
-					  	var cancerTy = heatmapAnnotations.sampleToAnnotations[d.x][0],
-					  		datum = {	gene: d.y,
-					  					sample: { name: d.x },
-					  					value: d.value,
-					  					ty: data.heatmap.name.toLowerCase(),
-					  					dataset: cancerTy }
-					  	return heatmapAnnotationFn(datum, -1);
-					  })
-					  .addOnClick(function(d, i){
-					  	// Extract the sample's cancer types
-					  	var cancerTy = heatmapAnnotations.sampleToAnnotations[d.x][0];
-
-					  	// Determine the type of heatmap being shown
-					  	if (data.heatmap.name.toLowerCase() == "expression")
-					  		var mutTy = "Expression";
-					  	else if (data.heatmap.name.toLowerCase() == "methylation")
-					  		var mutTy = "Methylation";
-
-					  	// Set the annotation form
-					  	setAnnotation(d.y, mutTy, cancerTy, {});
-					  })
-
-		d3.select(heatmapElement)
-				  .datum(data.heatmap)
-				  .call(heatmapChart);
-
-		// Have the heatmap update sample order when the mutation matrix does
-		heatmapChart.sampleOrder(m2Chart.sampleOrder());
-		$("ul#sample-sort-list").click(function(event) {
-			heatmapChart.sampleOrder(m2Chart.sampleOrder());	
-		});
-	}
-	else{
-		$(heatmapElement).parent().hide();
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-	// Add a CNA browser selector to choose the genes
-	var cnaChart = cna_browser({ style: style.cnabrowser })
-		.addTooltips()
-		.addOnClick(function(d){
-			var mutClass = d.ty == "amp" ? "Amp" : "Del";
-			setAnnotation(d.gene, mutClass, d.dataset, {});
+		// And add tooltips
+		var mutations = transcriptPlot.selectAll("path.symbols"),
+			transcriptTooltips = [];
+		mutations.classed("gd3-tipobj", true);
+		mutations.each(function(d) {
+			transcriptTooltips.push([
+				{ type: 'text', text: 'Sample: ' + d.sample },
+				{ type: 'text', text: 'Dataset: ' + d.dataset },
+				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
+				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan}
+			].map(gd3.tooltip.datum));
 		});
 
-	function updateCNAChart(){
-		// Retrieve the current gene
-		var geneName = $(this).val();
-
-		// Empty out the CNA browser container
-		cnaBrowser.selectAll("*").remove();
-
-		// Update the CNA browser
-		cnaBrowser.datum(data.cna_browser_data[geneName]);
-		cnaChart(cnaBrowser);
-		cnaChart.filterDatasets(datasetToInclude);
+		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
+	}
+	transcriptSelect.on("change", updateTranscript);
+	if (data.transcripts && Object.keys(data.transcripts).length > 0){
+		updateTranscript();
+	} else {
+		transcriptSelect.remove();
+		transcript.html("<b>No transcript data</b>.")
 	}
 
-	// Create the CNA genes data
-	var cnaGenes = genes.filter(function(g){ return g in data.cna_browser_data; })
-		.map(function(g){
-			return { name: g, numCNAs: data.cna_browser_data[g].segments.length };
+	// Copy number aberrations
+
+	// Populate the dropdown with the names of the genes with CNAs
+	var cnaGenes = genes.filter(function(g){
+			return data.cnas && g in data.cnas;
+		}).map(function(g){
+			return { name: g, numCNAs: data.cnas[g].segments.length };
 		});
 
-	// Watch the CNA browser selector to update the current CNA browser on change
-	cnaBrowserSelect.selectAll(".cna-option")
+	cnasSelect.selectAll(".cna-option")
 		.data(cnaGenes).enter()
 		.append("option")
 		.attr("id", function(d){ return "cna-option-" + d.name; })
@@ -696,73 +516,101 @@ function view(){
 		.attr()
 		.text(function(d){ return d.name + " (" + d.numCNAs + " aberrations)"; })
 
-	cnaBrowserSelect.on("change", updateCNAChart);
+	// Create the CNA genes data
+	function updateCNAChart(){
+		// Retrieve the current gene
+		var geneName = cnasSelect.node().value;
 
-	// Initialize the CNA browser with the first gene
-	if (cnaGenes.length > 0){
-		cnaBrowser.datum(data.cna_browser_data[cnaGenes[0].name]);
-		cnaChart(cnaBrowser);
-		cnaChart.filterDatasets(datasetToInclude);
+		// Empty out the CNA browser container
+		cnas.selectAll("*").remove();
+
+		// Update the CNA browser
+		cnas.datum(data.cnas[geneName])
+			.call(gd3.cna({ style: style.cnas }))
+
+		// And add tooltips
+		var intervals = cnas.selectAll("g.intervals"),
+			cnaTooltips = [];
+		intervals.classed("gd3-tipobj", true);
+		intervals.each(function(d) {
+			cnaTooltips.push([
+				{ type: 'text', text: 'Sample: ' + d.sample },
+				{ type: 'text', text: 'Dataset: ' + d.dataset },
+				{ type: 'text', text: 'Type: ' + mutationToName(d.ty) },
+				{ type: 'text', text: 'Start: ' + d.start },
+				{ type: 'text', text: 'End: ' + d.end }
+			].map(gd3.tooltip.datum));
+		});
+
+		cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
 	}
-	else{
-		cnaBrowserSelect.style("display", "none");
-		d3.select("div#cna-browser").append("b").text("No copy number data for these genes.")
-	}
+
+
+	// Watch the CNA browser selector to update the current CNA browser on change
+	cnasSelect.on("change", updateCNAChart);
+	if (cnaGenes) updateCNAChart();
 
 	///////////////////////////////////////////////////////////////////////////
-	// Update the control panel
+	// Controls for the control panel
 
-  function resizeControlPanel() {
-	var viewportWidth = $(window).width();
-	if(viewportWidth < 600) {
-	  $('div#control-panel').css("width", viewportWidth+"px");
-	  $('div#control-panel').css("right", "0px");
-	  $('div#view').css('padding-top', $('div#control-panel').css('height'));
-	} else {
-	  $('div#control-panel').css("width", "200px");
-	  $('div#control-panel').css("right", "0px");
-	  $('div#view').css('margin-top', '0px');
+	function resizeControlPanel() {
+		var viewportWidth = $(window).width();
+		if(viewportWidth < 600) {
+			$('div#control-panel').css("width", viewportWidth+"px");
+			$('div#control-panel').css("right", "0px");
+			$('div#view').css('padding-top', $('div#control-panel').css('height'));
+		} else {
+			$('div#control-panel').css("width", "200px");
+			$('div#control-panel').css("right", "0px");
+			$('div#view').css('margin-top', '0px');
+		}
 	}
-  }
 
-  $(window).resize(function () {
-	resizeControlPanel();
-  });
+	$(window).resize(resizeControlPanel);
+	$(function() { resizeControlPanel(); });
 
-  $(function() {
-	resizeControlPanel();
-  });
+	$('span#hideControlPanel').click(function(e) {
+		if($('div#controls').css('display') == 'block') {
+			$('div#controls').css('display', 'none');
+			$('div#saveBox').css('display', 'none');
+			$('div#annotation').css('display', 'none');
+		} else {
+			$('div#controls').css('display', 'block');
+			$('div#saveBox').css('display', 'block');
+			$('div#annotation').css('display', 'block');
+		}
+		if($(window).width() < 600) {
+			$('div#view').css('padding-top', $('div#control-panel').css('height'));
+		}
+	});
 
-  $('span#hideControlPanel').click(function(e) {
-	if($('div#controls').css('display') == 'block') {
-	  $('div#controls').css('display', 'none');
-	  $('div#saveBox').css('display', 'none');
-	  $('div#annotation').css('display', 'none');
-	} else {
-	  $('div#controls').css('display', 'block');
-	  $('div#saveBox').css('display', 'block');
-	  $('div#annotation').css('display', 'block');
-	}
-	if($(window).width() < 600) {
-	  $('div#view').css('padding-top', $('div#control-panel').css('height'));
-	}
-  });
+	///////////////////////////////////////////////////////////////////////////
+	// Add a dataset menu to the control panel
 
-	var datasetsPanel = controls.append("div")
-		.attr("class", "panel panel-default")
-		.style("padding", "0px")
+	// Extract info about each dataset
+	var filteredDatasets = [],
+		datasetToColor = data.datasetColors,
+		datasetToSamples = data.aberrations.typeToSamples,
+		datasetData = datasets.map(function(d){
+			return { name: d, color: datasetToColor[d], numSamples: datasetToSamples[d].length };
+		}).sort(function(a, b){ return d3.ascending(a.name, b.name); });
 
-	// Add a heading
+	// Add a container and a heading
+	var controls = d3.select("#control-panel div#controls"),
+		datasetsPanel = controls.append("div")
+			.attr("class", "panel panel-default")
+			.style("padding", "0px")
+
 	var datasetHeading = datasetsPanel.append("div")
 		.attr("class", "panel-heading")
 		.style("padding", "5px")
-			.append("h5")
-			.attr("class", "panel-title")
-			.attr("id", "datasetLink")
-			.style("cursor", "pointer")
-			.style("font-size", "14px")
-			.style("width", "100%")
-			.text("Datasets");
+		.append("h5")
+		.attr("class", "panel-title")
+		.attr("id", "datasetLink")
+		.style("cursor", "pointer")
+		.style("font-size", "14px")
+		.style("width", "100%")
+		.text("Datasets");
 	bootstrapToggle({link: "dataset", target: "Dataset"});
 
 	datasetHeading.append("span")
@@ -773,9 +621,9 @@ function view(){
 	var datasetsBody = datasetsPanel.append("div")
 		.attr("id", "collapseDataset")
 		.attr("class", "panel-collapse collapse in")
-			.append("div")
-			.attr("class", "panel-body")
-			.style("padding", "5px");
+		.append("div")
+		.attr("class", "panel-body")
+		.style("padding", "5px");
 
 	var datasetEls = datasetsBody.append("ul")
 		.attr("id", "datasets")
@@ -784,273 +632,95 @@ function view(){
 		.append("li")
 		.style("cursor", "pointer")
 		.on("click", function(d){
-			// Determine if the dataset is currently active
-			var active = d.active,
-				opacity = active ? 0.5 : 1;
+			// Add/Remove the dataset from the list of filtered datasets
+			var index = filteredDatasets.indexOf(d.name),
+				visible = index == -1;
 
-			// Create a dictionary to update the status of the current dataset
-			d.active = !active;
-			datasetToInclude[d.name] = d.active;
+			if (visible){
+				filteredDatasets.push( d.name );
+			} else{
+				filteredDatasets.splice(index, 1);
+			}
 
 			// Filter the mutation matrix, transcript plot, and CNA browser
-			m2Chart.filterDatasets(datasetToInclude);
-			if (genes.length > 0) transcriptChart.filterDatasets(datasetToInclude);
-
-			if (cnaGenes.length > 0) cnaChart.filterDatasets(datasetToInclude);
+			gd3.dispatch.filterCategory( { categories: filteredDatasets });
 
 			// Fade in/out this dataset
-			d3.select(this).style("opacity", opacity);
+			d3.select(this).style("opacity", visible ? 0.5 : 1);
 		});
 
 	datasetEls.append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
 	datasetEls.append("div").text(function(d){ return d.name + " (" + d.numSamples + ")"; });
 
 	///////////////////////////////////////////////////////////////////////////
-	// Update the annotations
-
-	// Add the genes to the first select
-	annotatedGene.selectAll(".gene-option")
-		.data(genes).enter()
-		.append("option")
-			.attr("value", function(g){ return g; })
-			.text(function(g){ return g; });
-
-	///////////////////////////////////////////////////////////////////////////
-	// Set up the cancers input, with abbreviations
-
-	//	List of cancers with abbreviations from TCGA (http://goo.gl/2A3UuH) and ICGC (http://dcc.icgc.org/projects)
-	var abbrToCancer = data.abbrToCancer,
-		datasetToCancer = data.datasetToCancer,
-		cancerToAbbr = {};
-
-	Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; })
-	cancers = Object.keys(cancerToAbbr);
-
-	// Set up the bloodhound for the typeahead enginge
-	var cancerBloodhound = new Bloodhound({
-		datumTokenizer: function(data){
-			// For each datum, return an array of the value (cancers) and
-			// abbreviations broken up by whitespace
-			var cancerTokens = Bloodhound.tokenizers.whitespace(data.value),
-				abbrTokens = Bloodhound.tokenizers.whitespace(data.abbr)
-			return cancerTokens.concat(abbrTokens);
-		},
-		queryTokenizer: Bloodhound.tokenizers.whitespace,
-		local: $.map(cancers, function(c) { return { value: c, abbr: invertCancerTy(c) }; })
-	});
-	cancerBloodhound.initialize();
-
-	// Compile the template for showing suggestions
-	var templ = Hogan.compile('<p><strong>{{value}}</strong> ({{abbr}})</p>');
-	$(cancerInputElement + " .typeahead").typeahead({highlight: true}, {
-		  name: 'cancers',
-		  displayKey: 'value',
-		  source: cancerBloodhound.ttAdapter(),
-		  templates:{
-			suggestion: function(data){ return templ.render(data); }
-		  }
-	});
-
-	// Create a map of cancers to their abbreviations, and a list of all cancers
-	function invertCancerTy(name){ return name in cancerToAbbr ? cancerToAbbr[name].toUpperCase()  : name; }
-	function getCancerTy(name){
-		return datasetToCancer[name];
-		var lowName = name.toLowerCase()
-		return lowName in abbrToCancer ? abbrToCancer[lowName] : name;
-	}
-
-
-	// Resetter for the annotation menu
-	function resetAnnotation(){
-		interactor.selectAll("*").remove();
-		annotateInput.style("display", "none");
-		cancerInput.style("display", "none");
-		$(interactionElement).val("");
-		$(annotatedGeneElement).val("");
-		$(annotationsElement + " input").val("");
-		$(cancerTypeaheadElement).val("");
-		$(interactorElement).hide().val("");
-		$(transcriptMutationElement + " input").val("")
-		$(transcriptMutationElement).hide();
-		$(transcriptPositionElement + " input").val("");
-		$(transcriptPositionElement).hide();
-		$(transcriptDomainElement + " input").val("");
-		$(transcriptDomainElement).hide();
-		$(commentElement).val("");
-	}
-	$("#reset-annotation").on("click", resetAnnotation);
-
-	// Setter for the current interaction type
-	function setAnnotation( gene, interaction, interactorName, fields ){
-		// Reset the form
-		resetAnnotation();
-
-		// Handle some possible sources of error
-		if (!gene || data.genes.indexOf(gene) == -1){
-			annotationStatus("No such gene: \"" + gene + "\"", warningClasses);
-			return
-		}
-		if (!interaction || annotationClasses.indexOf(interaction) == -1){
-			annotationStatus("No such annotation class: \"" + interaction + "\"", warningClasses);
-			return;
-		}
-		if (!fields) fields = {};
-
-		// Set the gene name and the interaction type, and update
-		// the remainder of the form appropriately
-		$(annotatedGeneElement).val(gene);
-		$(interactionElement).val(interaction);
-		updateInteraction();
-
-		// Make the interaction-specific changes
-		if (interaction == "interact"){
-			$(interactorElement).val(interactorName);
-		}
-		else{
-			$(cancerInputElement + " input").val(getCancerTy(interactorName));
-			if (fields.transcript_mutation){
-				$(transcriptMutationElement + " input").val(fields.mut_ty)
-				$(transcriptMutationElement).show();
-				$(transcriptPositionElement + " input").val(fields.position).show();
-				$(transcriptPositionElement).show();
-			}
-			else if (fields.transcript_domain){
-				//$(transcriptMutationElement).show();
-				//$(transcriptMutationElement + " input").val(fields.mut_ty);
-				$(transcriptDomainElement + " input").val(fields.domain);
-				$(transcriptDomainElement).show();
-			}
-		}
-	}
-
-	// Updater for whenever an interaction type is chosen
-	function updateInteraction(){
-		var val = $(interactionElement).val(),
-			geneName = $(annotatedGeneElement).val();
-
-		annotationStatus("", "");
-
-		if (geneName != "" && val != ""){
-			if (val == "interact"){
-				interactor.selectAll("*").remove();
-				interactor.selectAll(".gene2-option")
-					.data(genes.filter(function(g){ return g != geneName; })).enter()
-					.append("option")
-						.attr("value", function(d){ return d; })
-						.text(function(d){ return d; });
-				interactor.style("display", "inline");
-				cancerInput.style("display", "none");
-			}
-			else{
-				interactor.style("display", "none");
-				cancerInput.style("display", "inline");
-			}
-			annotateInput.style("display", "inline");
-		}
-		else{
-			annotateInput.style("display", "none");
-			cancerInput.style("display", "none");
-		}
-	}
-
-	interaction.on("change", updateInteraction);
-	annotatedGene.on("change", updateInteraction);
-
-	// Define the submit request
-	var infoClasses  = 'alert alert-info',
-		warningClasses = 'alert alert-warning',
-		successClasses = 'alert alert-success';
-
-	$("div#annotation form#annotation-form").on("submit", function(e){
-		// Reset the messages
-		annotationStatus("", "");
-
-		// Retrieve the values of the entries
-		var pmid = $(annotationsElement + " input").val(),
-			gene = $(annotatedGeneElement).val(),
-			interactionClass = $(interactionElement).val(),
-			mutationType = $(transcriptMutationElement + " input").val(),
-			domainName = $(transcriptDomainElement + " input").val(),
-			position = $(transcriptPositionElement + " input").val(),
-			comment = $(commentElement).val();
-
-		// Validate the PMID
-		if (pmid == "" || pmid.length < 7 || isNaN(parseFloat(pmid)) || !isFinite(pmid) ){
-			annotationStatus("Please enter at least one valid PMID (7- or 8-digit number).", warningClasses);
-			return false;
-		}
-
-		// Validate the interaction/annotation
-		var interactorName = interactionClass == "interact" ? $(interactorElement).val() : $(cancerTypeaheadElement).val();
-		if (gene == "" || interactionClass == "" || interactorName == ""){
-			if (interactionClass == "interact"){ var msg = "Please select a pair of genes." }
-			else{ var msg = "Please select a gene and a cancer type." }
-			annotationStatus(msg, warningClasses);
-			return false;
-		}
-
-		// If the entries validate, create a mini-form and then submit via Ajax
-		var formData = new FormData();
-		formData.append( 'support', pmid );
-		formData.append( 'gene', gene );
-		formData.append( 'interaction', interactionClass );
-		formData.append( 'interactor', interactorName );
-		formData.append( 'position', position );
-		formData.append( 'mutationType', mutationType );
-		formData.append( 'domainName', domainName );
-		formData.append( 'comment', comment );
-
-		$.ajax({
-			// Note: can't use JSON otherwise IE8 will pop open a dialog
-			// window trying to download the JSON as a file
-			url: '/save/annotation',
-			data: formData,
-			cache: false,
-			contentType: false,
-			processData: false,
-			type: 'POST',
-
-			error: function(xhr) {
-				annotationStatus('Database error: ' + xhr.status);
-			},
-
-			success: function(response) {
-				if(response.error) {
-					annotationStatus('Oops, something bad happened.', warningClasses);
-					return;
-				}
-
-				// Log the status
-				annotationStatus(response.status, successClasses);
-
-				// Add the data to the current annotations
-				if (interactionClass != "interact"){
-					var cancerTy = interactorName,
-						mClass = interactionClass;
-					if (!annotations[gene]) annotations[gene] = {};
-					if (!annotations[gene][mClass]) annotations[gene][mClass] = {};
-					if (!annotations[gene][mClass][cancerTy]) annotations[gene][mClass][cancerTy] = [];
-					annotations[gene][mClass][cancerTy].push( {_id: response.annotation._id, pmid: pmid, vote: null, score: 0} );
-
-					m2Chart.addTooltips(generateAnnotations(annotations));
-					heatmapAnnotationFn = generateAnnotations(annotations)
-				}
-
-				// Reset the form
-				resetAnnotation();
+	// Add controls
+	var hideViewCheckboxes = [ { checkbox: $('#AberrationsHideCheckbox'), _id: "aberrationsRow" },
+							   { checkbox: $('#DataMatrixHideCheckbox'), _id: "dataMatrixRow" },
+							   { checkbox: $('#NetworkTranscriptHideCheckbox'), _id: "networkTranscriptRow" },
+							   { checkbox: $('#CNAsHideCheckbox'), _id: "cnasRow" }]
+	hideViewCheckboxes.forEach(function(d){
+		d.checkbox.change(function() {
+			if ($(this).is(":checked")){
+				$('#' + d._id).hide();
+			} else {
+				$('#' + d._id).show();
 			}
 		});
+	})
 
-		// Return false because we don't actually want the form to submit
-		return false;
 
-	});
-
-	function annotationStatus(msg, classes) {
-		$("#annotationStatus").attr('class', classes);
-		$('#annotationStatus').html(msg);
-	}
-
+	// Resolve the promise and return
 	deferred.resolve();
-	return deferred.promise()
+
+	return deferred;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AJAX functions
+function populateForm(fields){
+	var formData = new FormData();
+	Object.keys(fields).forEach(function(k){
+		formData.append( k, fields[k] );
+	});
+	return formData;
+}
+
+function vote(fields, url){
+	// Create a form to submit as an AJAX request to update the database
+	var formData = populateForm(fields);
+	$.ajax({
+		// Note: can't use JSON otherwise IE8 will pop open a dialog
+		// window trying to download the JSON as a file
+		url: url,
+		data: formData,
+		cache: false,
+		contentType: false,
+		processData: false,
+		type: 'POST',
+
+		error: function(xhr) {
+			annotationStatus('Database error: ' + xhr.status);
+		},
+
+		success: function(response) {
+			if(response.error) {
+				annotationStatus('Oops, something bad happened.', warningClasses);
+				return;
+			}
+
+			// Log the status
+			annotationStatus(response.status, successClasses);
+		}
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Update the HTML status <div>
+var infoClasses  = 'alert alert-info',
+	warningClasses = 'alert alert-warning',
+	successClasses = 'alert alert-success';
+
+function annotationStatus(msg, classes) {
+	$("#annotationStatus").attr('class', classes);
+	$('#annotationStatus').html(msg);
 }

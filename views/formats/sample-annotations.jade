@@ -1,0 +1,59 @@
+extends ../layout
+block body
+    br
+    div(class="container")
+        h3 Sample annotations file format specifications
+        br
+        h4 Accepted formats
+        ul
+            li
+                | MAGI format (
+                a(href="#magi-format") below
+                | ).
+        hr
+        a(name="magi-format")
+        h4 MAGI Sample Annotations format
+        p
+            | <strong>The Sample Annotations file is a tab-separated file (*.tsv)</strong>
+            | lists the IDs of the samples in a dataset, as well as optional annotations.
+            | Each row contains the data for a single sample. The first column lists the
+            | sample ID, the second column lists the dataset (required when including more
+            | than one column), and any remaining columns list additional annotations.
+            | The first row <em>is a header</em>, with the names of each column. The names of
+            | the annotation columns (3+) will be used as the name of the annotation
+            | category (e.g. <code>expression subtype</code>).
+            br
+            br
+            | We also support uploading an Annotation Colors file, which is a tab-separated
+            | file where each row contains the color mapping for a different sample annotation.
+            | The first column in the file is the category of the annotation (e.g.
+            | <code>expression subtype</code>), the second column is the name of the annotation
+            | (e.g. <code>Basal-like breast</code>), and the third column is a hex color.
+        hr
+        h5 Format example
+        code Sample ID&#9;Dataset&#9;Expression subtype
+        code TCGA-A7-A0CE&#9;BRCA&#9;Basal-like breast<br />
+        code TCGA-43-6647&#9;LUSC&#9;Squamous
+        hr
+        h5 Format description
+        table(class="table table-bordered table-striped")
+            tr
+                th Column
+                th Name (*=required)
+                th Example
+                th Description
+            tr
+                td 1
+                td Sample ID*
+                td TCGA-A7-A0CE
+                td Sample ID
+            tr
+                td 2
+                td Dataset
+                td BRCA
+                td The dataset containing that sample
+            tr
+                td 3+
+                td Annotation
+                td Basal-like breast
+                td Annotation for the sample (categorical or numeric)

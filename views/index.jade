@@ -62,7 +62,7 @@ block body
                      optgroup(label="#{groupName}")
                        -for (var j in group.dbs)
                          -var db = group.dbs[j];
-                         //- The checkbox values are constructed
+                         //- The checkbox values are constructed server side
                          option(value="#{db.checkboxValue}") #{db.title}
 
             div(class="col-lg-1")
@@ -252,7 +252,7 @@ block body
       div(class="text-center")
         div(id="gd3-cna-browser")
         br
-        i CNA browser for amplifications in the EGFR gene in glioblastoma.
+        i CNA browser for amplifications in the CDKN2A gene in glioblastoma.
       br
       | The copy number aberration browser shows the amplified/deleted segments
       | that have been mapped to a particular gene. Since many segments span more than
@@ -270,11 +270,7 @@ block belowTheFold
   script(src='/components/d3/d3.min.js')
   script(src='/components/jquery-form/jquery.form.js')
   script(src='/components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js')
-  //- script(src="components/gd3/dist/js/gd3.min.js")
-  script(src='components/gd3/dist/js/cna-browser.js').
-  script(src='components/gd3/dist/js/transcript-plot.js').
-  script(src='components/gd3/dist/js/mutation-matrix.js').
-  script(src='components/gd3/dist/js/subnetwork.js').
+  script(src="/components/gd3/gd3.js")
   script(src='components/shepherd.js/shepherd.min.js').
   script(src='/js/query-control.js')
   script(src='/js/examples.js')
@@ -358,8 +354,10 @@ block belowTheFold
         buttonWidth: 350,
         filterBehavior: 'both'
       });
-      //- Have all datasets selected by default
+      //- Have all datasets except TCGA STAD selected by default
+      var datasetDeselect = !{JSON.stringify(datasetDeselect)};
       $('#dataset-multiselect').multiselect('selectAll', false);
+      $('#dataset-multiselect').multiselect('deselect', datasetDeselect)
       $('#dataset-multiselect').multiselect('updateButtonText');
       //- Have the reset button uncheck all datasets and set the gene list to cohesin
       $("a#reset").on("click", function(){

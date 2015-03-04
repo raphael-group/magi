@@ -3,20 +3,26 @@ var	mongoose = require( 'mongoose' ),
 	Database = require('../model/db'),
 	Dataset  = require( "../model/datasets" );
 
+// Renders a list of manifests
+exports.manifests = function manifests(req, res){
+	console.log('/manifests');
+	res.render('manifests', { user: req.user });
+}
+
 // Renders list of all datasets
 exports.index = function index(req, res){
 	console.log('/datasets/index')
-	Dataset.datasetGroups({is_standard: true}, function(err, standardGroups){
+	Dataset.datasetGroups({is_public: true}, function(err, publicGroups){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
 
-		// Append the groupClass standard to each group
-		standardGroups.forEach(function(g){
+		// Append the groupClass public to each group
+		publicGroups.forEach(function(g){
 			g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
 		});
 
 
-		var groupData = [{groups: standardGroups, ty: "standard"}];
+		var groupData = [{groups: publicGroups, ty: "public"}];
 
 		// Load the user's datasets (if necessary)
 		if (req.user){
@@ -50,7 +56,7 @@ exports.view = function view(req, res){
 	var MongoDataset = Database.magi.model( 'Dataset' );
 	MongoDataset.findById(dbID, function(err, db){
 		// Throw error (if necessary)
-		if (err){
+		if (!db || err){
 			res.redirect('/datasets');
 			return;
 		}
@@ -58,7 +64,7 @@ exports.view = function view(req, res){
 		// Check if the dataset is standard, and render it if it is
 		// or if the user owns the database (add the "" to make sure)
 		// the id is a string and not an ObjectId
-		if (db.is_standard || (db.user_id + "") == (req.user._id + "")){
+		if (db.is_public || (db.user_id + "") == (req.user._id + "")){
 			res.render('datasets/view', { user: req.user, db: db });
 		}
 		else{

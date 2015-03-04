@@ -55,7 +55,7 @@ exports.view  = function view(req, res){
 		Dataset.datasetlist(dataset_ids, function(err, datasets){
 			// Validate that the user can view ALL the datasets in the query
 			var permissions = datasets.map(function(d){
-				return d.is_standard || (logged_in && (d.user_id + "" == req.user._id));
+				return d.is_public || (logged_in && (d.user_id + "" == req.user._id));
 			})
 
 			if (!permissions.every(function(b){ return b; })){
@@ -74,7 +74,7 @@ exports.view  = function view(req, res){
 
 			// Create a map of dataset ids to their z_index (in the case of duplicate samples)
 			var datasetIDToPrecedence = {};
-			datasets.sort(function(a, b){ return a.is_standard ? 1 : a.updated_at > b.updated_at ? -1 : 1 });
+			datasets.sort(function(a, b){ return a.is_public ? 1 : a.updated_at > b.updated_at ? -1 : 1 });
 			for (var i = 0; i < datasets.length; i++){
 				datasetIDToPrecedence[datasets[i]._id] = i;
 			}
@@ -247,7 +247,7 @@ exports.view  = function view(req, res){
 							// Create nodes using the number of mutations in each gene
 							var nodes = genes.map(function(g){
 								var mutSamples = Object.keys( M[g] );
-								return { name: g, heat: mutSamples.length };
+								return { name: g, value: mutSamples.length };
 							});
 
 							// Add sampleToTypes to each cna_browser gene
@@ -282,15 +282,15 @@ exports.view  = function view(req, res){
 												});
 
 												// Package data into one object
-												var subnetwork_data = { edges: edges, nodes: nodes, refs: refs, comments: comments };
+												var network_data = { edges: edges, nodes: nodes, refs: refs, comments: comments, title: "Mutations" };
 												var pkg = 	{
 																abbrToCancer: abbrToCancer,
 																datasetToCancer: datasetToCancer,
-																subnetwork_data: subnetwork_data,
-																mutation_matrix: mutation_matrix,
-																transcript_data: transcript_data,
+																network: network_data,
+																aberrations: mutation_matrix,
+																transcripts: transcript_data,
 																domainDBs: Object.keys(domainDBs),
-																cna_browser_data: cna_browser_data,
+																cnas: cna_browser_data,
 																datasetColors: datasetColors,
 																annotations: annotations,
 																genes: genes,

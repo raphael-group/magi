@@ -1,0 +1,23 @@
+{
+	"dataset": "GBM",
+	"groupName": "TCGA Pan-Cancer",
+	"cancer": "gbm",
+	"snvs":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/gbm/tcga-pancancer-gbm-snvs.tsv",
+		"format": "MAGI"
+	},
+	"cnas": {
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/gbm/tcga-pancancer-gbm-cnas.tsv",
+		"format": "MAGI"
+	},
+	"datamatrix":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/gbm/tcga-pancancer-gbm-expression.txt",
+		"matrixName": "Expression"
+	},
+	"sampleAnnotations": {
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/tcga-pancancer/gbm/tcga-pancancer-gbm-sample-annotations-purity-gender-survival.tsv"
+	},
+	"annotationColors":{
+		"location": "http://compbio-research.cs.brown.edu/software/magi/data/annotation-colors.tsv"
+	}
+}
