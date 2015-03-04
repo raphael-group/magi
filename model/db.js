@@ -2,7 +2,8 @@
 var mongoose = require( 'mongoose' );
 
 // Create dbURI
-var dbURI = "mongodb://localhost/magi";
+var dbHost = porcess.env.MONGO_HOST || "localhost";
+var dbURI = "mongodb://" + dbHost + "/gd3";
 
 // Create the database connection
 //mongoose.connect(dbURI);

@@ -9,7 +9,8 @@ pathsToDelete = set()
 # Set up the connection to the MongoDB database
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-client = MongoClient("mongodb://localhost:27017/magi")
+dbhost = os.getenv("MONGO_HOST") or "localhost"
+client = MongoClient("mongodb://" + dbhost + ":27017/magi")
 db = client.magi
 
 # Define a custom error to be used if we fail at parsing for any reason
