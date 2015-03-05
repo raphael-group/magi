@@ -2,8 +2,9 @@
 var mongoose = require( 'mongoose' );
 
 // Create dbURI
-var dbHost = porcess.env.MONGO_HOST || "localhost";
-var dbURI = "mongodb://" + dbHost + "/gd3";
+var dbHost = process.env.MONGO_HOST || "localhost";
+var dbName = process.env.MONGO_DB_NAME || "magi";
+var dbURI = "mongodb://" + dbHost + "/" + dbName;
 
 // Create the database connection
 //mongoose.connect(dbURI);
