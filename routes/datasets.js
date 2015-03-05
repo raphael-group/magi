@@ -56,7 +56,7 @@ exports.view = function view(req, res){
 	var MongoDataset = Database.magi.model( 'Dataset' );
 	MongoDataset.findById(dbID, function(err, db){
 		// Throw error (if necessary)
-		if (err){
+		if (!db || err){
 			res.redirect('/datasets');
 			return;
 		}
