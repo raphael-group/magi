@@ -67,7 +67,7 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
 MAGI uses the Google OAuth2 protocol for authentication. To set up authentication on your own personal version of MAGI:
 
 1. Visit the [Google OAuth2 documentation](https://developers.google.com/accounts/docs/OAuth2) and obtain credentials.
-2. Create a JSON file `oauth2.js` in with the following format:
+2. Create a JSON file `oauth2.js` with the following format:
 
         var ids = {
         	google: {
