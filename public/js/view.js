@@ -439,8 +439,11 @@ function view(){
 	// Transcript(s)
 
 	// First populate the dropdown with the transcripts for each gene
+	var numTranscriptsAdded = 0;
+	console.log(data.transcripts)
 	genes.forEach(function(g, i){
-		if (!data.transcripts[g]) return;
+		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length == 0) return;
+		else numTranscriptsAdded += 1;
 
 		var transcripts = Object.keys(data.transcripts[g]).map(function(t){
 			return { name: t, numMutations: data.transcripts[g][t].mutations.length };
@@ -492,7 +495,8 @@ function view(){
 		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
-	if (data.transcripts && Object.keys(data.transcripts).length > 0){
+	console.log(numTranscriptsAdded)
+	if (data.transcripts && numTranscriptsAdded > 0){
 		updateTranscript();
 	} else {
 		transcriptSelect.remove();

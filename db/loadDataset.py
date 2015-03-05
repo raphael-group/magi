@@ -9,8 +9,8 @@ pathsToDelete = set()
 # Set up the connection to the MongoDB database
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-client = MongoClient("mongodb://localhost:27017/magi")
-db = client.magi
+client = MongoClient("mongodb://localhost:27017/magi-paad")
+db = client["magi-paad"]
 
 # Define a custom error to be used if we fail at parsing for any reason
 class MAGIFileParsingException(Exception): pass
@@ -177,7 +177,7 @@ def load_snv_file(filename, dataset, sampleToMuts, geneToCases, sampleWhitelist)
 		# Check if the line is long enough, and pad it with blanks
 		# if it isn't
 		if len(arr) < 2: continue
-		if len(arr) < 8: arr += ["--"] * 8-len(arr)
+		if len(arr) < 8: arr += ["--"] * (8-len(arr))
 		gene, sample, transcript, transcriptLength, locus, mutTy, aao, aan = arr
 
 		mutClass = "snv"
