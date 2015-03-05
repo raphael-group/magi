@@ -32,7 +32,8 @@ function mutation_plot(params){
     									"frame_shift_del": "No. Frameshift Deletions",
     									"nonstop_mutation": "No. Nonstop Mutations",
     									"inactivating": "No. Inactivating",
-    									"mutated_samples": "No. Mutated Samples"
+    									"mutated_samples": "No. Mutated Samples",
+    									"other": "No. Other"
     								  };
     function mutTyToName(ty){ return tyToName[ty] ? tyToName[ty] : ty; }
 	
@@ -246,7 +247,7 @@ function mutation_plot(params){
 					tx = t[0],
 					ty = t[1];
 				tx = Math.min(Math.max(tx, 0), width - data[ty1][ty2].xMax);
-				console.log(data[ty1][ty2].xMax, [tx, ty])
+
 				zoom.translate([tx, ty]);
 
 				// Update the axes
