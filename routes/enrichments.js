@@ -23,14 +23,12 @@ exports.stats = function stats(req, res){
 		},
 		body: data
     }, function (error, response, body) {
-        if (!error && response.statusCode === 200) {
+        if (!error && response && response.statusCode === 200) {
             res.json({data: body, status: "Success!"});
         }
         else {
-            console.log("error: " + error)
-            console.log("response.statusCode: " + response.statusCode)
-            console.log("response.statusText: " + response.statusText)
-            res.send({error: "Error! Status Code: " + response.statusCode + ". Status Text: " + response.statusText})
+            console.error("error: " + error)
+            res.send({error: error});
         }
     });
 }
