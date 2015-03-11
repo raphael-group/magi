@@ -215,7 +215,7 @@ exports.view  = function view(req, res){
 									return { pmid: d.pmid, score: score,  vote: vote, _id: A._id };
 								});
 								annotations[A.gene][A.mutation_class][A.cancer] = refs;
-							})
+							});
 
 							// Assemble data into single Object
 							var mutation_matrix = {

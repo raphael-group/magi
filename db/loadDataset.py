@@ -506,6 +506,16 @@ def run( args ):
 	if not sampleWhitelist:
 		samples = sampleToMuts.keys()
 
+	# Create a mapping of samples to their mutation types
+	sampleToMutations = dict( (s, dict()) for s in samples )
+	allowedTypes = snvTypes | cnaTypes
+	for g, cases in geneToCases.iteritems():
+		for s, muts in cases.iteritems():
+			sampleToMutations[s][g.replace('.', '-')] = list(muts & allowedTypes)
+
+	for s, mutGenes in sampleToMutations.iteritems():
+		sampleToMutations[s] = [ dict(name=g, mutationClasses=classes) for g, classes in mutGenes.iteritems() ]
+
 	mutationTypes = set( t for g, cases in geneToCases.iteritems() for s, muts in cases.iteritems() for t in muts )
 
 	###########################################################################
@@ -592,6 +602,7 @@ def run( args ):
 	dbQuery = dict(title=args.dataset_name, group=args.group_name, is_public=args.is_public, user_id=userID)
 	oldDatasetIds = [ oldDB['_id'] for oldDB in db.datasets.find(dbQuery, {"_id": True}) ]
 	db.mutgenes.remove({"dataset_id": {"$in": oldDatasetIds}})
+	db.samples.remove({"dataset_id": {"$in": oldDatasetIds}})
 	db.datamatricesrow.remove({"dataset_id": {"$in": oldDatasetIds}})
 	db.datasets.remove({"_id": {"$in": oldDatasetIds}})
 
@@ -612,6 +623,11 @@ def run( args ):
 		"data_matrix_name": args.matrix_name
 	})
 	print "Dataset ID:", dataset_id
+
+	# Add mutated samples
+	samplesWithMutations = [ dict(name=s, mutations=sampleToMutations[s], dataset_id=dataset_id)
+							 for s in samples ]
+	db.samples.insert( samplesWithMutations )
 
 	# Save the data matrix rows
 	if dataMatrix and dataMatrixSamples:

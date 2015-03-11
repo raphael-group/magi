@@ -133,6 +133,9 @@ app.post('/', routes.queryhandler);
 app.get('/view', routes.view);
 app.get('/view/:id', routes.view);
 
+// Sample view
+app.get('/sampleView', routes.sampleView);
+
 // Enrichment statistics
 app.get('/enrichments', routes.enrichments);
 app.post('/enrichments/stats', routes.enrichmentStats);

@@ -5,7 +5,9 @@ var mongoose = require( 'mongoose' ),
 // Create GeneSet schema and add it to Mongoose
 var AnnotationSchema = new mongoose.Schema({
 	gene: { type: String, required: true},
-	mutation_class: { type: String, required: false},
+	transcript: { type: String, required: false},
+	change: { type: String, required: false},
+	mutation_class: { type: String, required: true},
 	cancer: { type: String, required: true },
 	position: { type: Number, required: false},
 	domain: { type: {}, required: false},
@@ -110,6 +112,16 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 		return d.promise;
 	}
 
+	function mutationTypeToClass(ty){
+		ty = ty.toLowerCase();
+		if (ty == 'missense') return 'snv';
+		else if (ty == 'nonsense') return 'snv';
+		else if (ty == 'del') return 'del';
+		else if (ty == 'amp') return 'amp';
+		else if (ty == 'fus') return 'fus';
+		else return ty;
+	}
+
 	function processAnnotations(){
 		// Load the lines, but skip the header (the first line)
 		var lines = data.trim().split('\n');
@@ -127,10 +139,14 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 			var fields = lines[i].split('\t'),
 				support = {
 					gene: fields[0],
-					cancer: fields[1],
-					mutation_class: fields[2],
-					pmid: fields[3],
-					comment: fields.length > 4 ? fields[4] : null
+					transcript: fields[1] == '' ? null : fields[1],
+					cancer: fields[2],
+					mutation_type: fields[3],
+					mutation_class: mutationTypeToClass(fields[3]),
+					locus: fields[4] == '' ? null : fields[4],
+					change: fields[5] == '' ? null : fields[5],
+					pmid: fields[6],
+					comment: fields.length > 7 ? fields[8] : null
 				}
 
 			annotations.push( support );
