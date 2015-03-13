@@ -12,9 +12,6 @@ from bson.objectid import ObjectId
 client = MongoClient("mongodb://localhost:27017/magi")
 db = client.magi
 
-# Define a custom error to be used if we fail at parsing for any reason
-class MAGIFileParsingException(Exception): pass
-
 # Make a dictionary of cancers to their IDs, so we can validate
 # the cancer passed as an argument
 cancers = list(db.cancers.find())
@@ -373,6 +370,51 @@ def load_data_matrix(dataMatrixFile, sampleWhitelist):
 	return dataMatrix, dataMatrixSamples
 
 ###############################################################################
+# 
+def identify_mutations_in_samples(samples, snvs, cnas, aberrations):
+	# Initialize the dictionary of samples to mutations
+	sampleToMutations = dict( (s, defaultdict(list)) for s in samples )
+
+	def sample_mutation_type(mut):
+		mut = mut.lower()
+		if mut.startswith("missense"): return "missense"
+		elif mut.startswith("nonsense"): return "nonsense"
+		elif mut.startswith("amp"): return "amp"
+		elif mut.startswith("del"): return "del"
+		else: return mut
+
+	# Load SNVs (if necessary)
+	if snvs:
+		for g, transcriptToMutations in snvs.iteritems():
+			for t, d in transcriptToMutations.iteritems():
+				for m in d['mutations']:
+					mutation = { "gene": g, "class": "snv", "type": sample_mutation_type(m['ty']) }
+					mutation['change'] = "p.{}{}{}".format(m['aao'], m['locus'], m['aan'])
+					sampleToMutations[m['sample']][g].append( mutation )
+
+	# Load CNAs (if necessary)
+	if cnas:
+		for g, datum in cnas.iteritems():
+			for d in datum['segments']:
+				sampleTys = set()
+				for s in d['segments']:
+					if s['ty'] not in sampleTys:
+						mutation = { "gene": g, "class": "cna", "type": sample_mutation_type(s['ty']) }
+						sampleToMutations[s['sample']][g].append( mutation )
+						sampleTys.add( s['ty'] )
+
+	# Load generic aberrations (if necessary)
+	if aberrations:
+		pass # TO-DO: add this later
+
+
+	# Flatten the data structure
+	sampleToMutations = dict( (s, [ dict(name=g, mutations=sampleToMutations[s][g]) for g in datum.keys() ])
+							  for s, datum in sampleToMutations.iteritems())
+
+	return sampleToMutations
+
+###############################################################################
 # Parse arguments
 def get_parser():
 	# Parse arguments
@@ -507,14 +549,7 @@ def run( args ):
 		samples = sampleToMuts.keys()
 
 	# Create a mapping of samples to their mutation types
-	sampleToMutations = dict( (s, dict()) for s in samples )
-	allowedTypes = snvTypes | cnaTypes
-	for g, cases in geneToCases.iteritems():
-		for s, muts in cases.iteritems():
-			sampleToMutations[s][g.replace('.', '-')] = list(muts & allowedTypes)
-
-	for s, mutGenes in sampleToMutations.iteritems():
-		sampleToMutations[s] = [ dict(name=g, mutationClasses=classes) for g, classes in mutGenes.iteritems() ]
+	sampleToMutations = identify_mutations_in_samples(samples, snvs, cnas, aberrations)
 
 	mutationTypes = set( t for g, cases in geneToCases.iteritems() for s, muts in cases.iteritems() for t in muts )
 

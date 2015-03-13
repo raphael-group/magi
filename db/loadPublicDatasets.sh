@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-for db in blca; # brca coadread gbm hnsc kirc laml luad lusc ov ucec;
+for db in blca brca coadread gbm hnsc kirc laml luad lusc ov ucec;
 do
 	# Create a capitalized version as well
 	CANCER_TYPE=`echo $db | tr '[:lower:]' '[:upper:]'`
@@ -27,7 +27,7 @@ do
 		-sf $DATA/tcga-pancancer-$db-snvs.tsv -sft MAGI $CNA_ARG -saf $SAF_ARG \
 		-acf ../data/datasets/magi-format/annotation-colors.tsv
 done
-exit
+
 # TCGA STAD Nature (2014)
 echo "TCGA STAD (Nature 2014)"
 DATA=../data/datasets/magi-format/tcga-publications/stad/

@@ -114,8 +114,8 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 
 	function mutationTypeToClass(ty){
 		ty = ty.toLowerCase();
-		if (ty == 'missense') return 'snv';
-		else if (ty == 'nonsense') return 'snv';
+		if (ty == 'missense') return 'missense';
+		else if (ty == 'nonsense') return 'nonsense';
 		else if (ty == 'del') return 'del';
 		else if (ty == 'amp') return 'amp';
 		else if (ty == 'fus') return 'fus';
@@ -148,7 +148,6 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 					pmid: fields[6],
 					comment: fields.length > 7 ? fields[8] : null
 				}
-
 			annotations.push( support );
 		}
 		console.log( "Loaded " + annotations.length + " annotations." )
@@ -160,6 +159,7 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 					gene: A.gene,
 					cancer: A.cancer,
 					mutation_class: A.mutation_class,
+					change: A.change
 				};
 
 			exports.upsertAnnotation(query, A.pmid, A.comment, null, function(err, annotation){
