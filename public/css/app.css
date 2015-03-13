@@ -420,6 +420,11 @@ span.comment input{ font-size:9pt;display:inline;width:80%;height:20px;}
 span.comment a{cursor:pointer;margin-left:3px;}
 
 
+/* Boostrap changes */
+.popover{
+    max-width: 500px;
+}
+
 
 /* Shepherd.js */
 .shepherd-element.shepherd-theme-arrows.shepherd-transparent-text .shepherd-text {

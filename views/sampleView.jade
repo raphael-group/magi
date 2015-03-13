@@ -9,47 +9,40 @@ block body
 			br
 			div(class="col-lg-8 col-md-8")
 				h4 Mutations
-				table(class="table table-striped", id="variant-table")
+				table(class="table", id="variant-table")
 					thead
 						tr(style="background:#d3d3d3")
+							th Rank
 							th Gene
 							th Mutation class
 							th Locus/Change
 					tbody
 						-for (var i = 0; i < mutations.length; i++)
 							- var m  = mutations[i];
+							- var geneBackground = m.geneReferences.length > 0 ? '#d9edf7' : '#ffffff'
+							- var typeBackground = m.typeReferences && m.typeReferences.length > 0 ? '#d9edf7' : '#ffffff'
+							- var locusBackground = m.locusReferences && m.locusReferences.length > 0 ? '#d9edf7' : '#ffffff'
+
+							mixin refPopover(refs, title)
+								- var rows = refs.map(function(d){ return '<tr><td><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + d.pmid + '" target="_new">' + d.pmid + '</a></td><td>' + d.cancers.join(', ') + '</td></tr>' }).join("");
+								- var tbl = '<table class="table" style="font-size:90%"><tr style="background:#d3d3d3"><th>Pubmed ID</th><th>Cancers</th></tr>' + rows + '</tr></table>'
+								a(href='#', data-title='#{title}', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
+									| #{refs.length}
+
 							tr
-								td
-									-if (m.annotationType == 'gene' && m.referenceCount > 0)
-										span(class="badge") #{m.gene}
-									-else
-										| #{m.gene}
+								td(style="background:#ffffff") #{i+1}
+								td(style="background:#{geneBackground}")
+									| #{m.gene} &nbsp;
 									-if (m.geneReferences.length > 0)
-										-var geneReferences = m.geneReferences.map(function(d){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + d.pmid + '" target="_new" title="' + d.cancers.join(", ") + '">' + d.pmid + '</a>'}).join(', ');
-										small
-											| &nbsp;
-											a(href='#', data-title='#{m.gene} Variant Annotations', data-trigger='focus', data-content='<b>Pubmed IDs</b><br/><small>Scroll over for cancer types</small><br/>#{geneReferences}', data-toggle='popover', class='initialism') (#{m.geneReferences.length})
-								td
-									-if (m.annotationType == 'type')
-										span(class="badge") #{m.type}
-									-else 
-										| #{m.type}
+										+refPopover(m.geneReferences, m.gene + ' Variant Annotations')
+								td(style="background:#{typeBackground}")
+									| #{m.type} &nbsp;
 									-if (m.typeReferences && m.typeReferences.length > 0)
-										-var typeReferences = m.typeReferences.map(function(d){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + d.pmid + '" target="_new" title="' + d.cancers.join(", ") + '">' + d.pmid + '</a>'}).join(', ');
-										small
-											| &nbsp;
-											a(href='#', data-title='#{m.gene} #{m.type} Annotations', data-trigger='focus', data-content='<b>Pubmed IDs</b><br/><small>Scroll over for cancer types</small><br/>#{geneReferences}', data-toggle='popover', class='initialism') (#{m.typeReferences.length})
-								td
-									-if (m.class == 'snv')
-										- if (m.annotationType == 'locus')
-											span(class="badge") #{m.change}
-										- else
-											| #{m.change}
-										-if (m.locusReferences && m.locusReferences.length > 0)
-											-var locusReferences = m.locusReferences.map(function(d){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + d.pmid + '" target="_new" title="' + d.cancers.join(", ") + '">' + d.pmid + '</a>'}).join(', ');
-											small
-												| &nbsp;
-												a(href='#', data-title='#{m.gene} #{m.type} #{m.change} Annotations', data-trigger='focus', data-content='<b>Pubmed IDs</b><br/><small>Scroll over for cancer types</small><br/>#{locusReferences}', data-toggle='popover', class='initialism') (#{m.locusReferences.length})
+										+refPopover(m.typeReferences, m.gene + ' ' + m.type + ' Annotations')
+								td(style="background:#{locusBackground}")
+									| #{m.change} &nbsp;
+									-if (m.locusReferences && m.locusReferences.length > 0) 
+										+refPopover(m.locusReferences, m.gene + ' ' + m.type + ' ' + m.change + ' Annotations')
 
 			div(class="col-lg-4 col-md-4")
 				h4 Sample annotations
@@ -74,6 +67,6 @@ block belowTheFold
 	script(src='/js/dataTableWrapper.js').
 	script(type='text/javascript').
 		//- Convert the tables into DataTables
-		addDataTable({ tableID: "#variant-table", aaSorting: [] });
+		addDataTable({ tableID: "#variant-table", aaSorting: [[0, "asc"]] });
 		//- Set up the popovers
 		$("[data-toggle=popover]").popover({html:true})
