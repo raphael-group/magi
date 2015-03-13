@@ -1,0 +1,79 @@
+extends layout
+block body
+	br
+	div(class="container")
+		-if (error)
+			h3 Sample not found: #{sampleName}
+		-else
+			h3 #{sample.name} (#{cancer.cancer})
+			br
+			div(class="col-lg-8 col-md-8")
+				h4 Mutations
+				table(class="table table-striped", id="variant-table")
+					thead
+						tr(style="background:#d3d3d3")
+							th Gene
+							th Mutation class
+							th Locus/Change
+					tbody
+						-for (var i = 0; i < mutations.length; i++)
+							- var m  = mutations[i];
+							tr
+								td
+									-if (m.annotationType == 'gene' && m.referenceCount > 0)
+										span(class="badge") #{m.gene}
+									-else
+										| #{m.gene}
+									-if (m.geneReferences.length > 0)
+										-var geneReferences = m.geneReferences.map(function(d){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + d.pmid + '" target="_new" title="' + d.cancers.join(", ") + '">' + d.pmid + '</a>'}).join(', ');
+										small
+											| &nbsp;
+											a(href='#', data-title='#{m.gene} Variant Annotations', data-trigger='focus', data-content='<b>Pubmed IDs</b><br/><small>Scroll over for cancer types</small><br/>#{geneReferences}', data-toggle='popover', class='initialism') (#{m.geneReferences.length})
+								td
+									-if (m.annotationType == 'type')
+										span(class="badge") #{m.type}
+									-else 
+										| #{m.type}
+									-if (m.typeReferences && m.typeReferences.length > 0)
+										-var typeReferences = m.typeReferences.map(function(d){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + d.pmid + '" target="_new" title="' + d.cancers.join(", ") + '">' + d.pmid + '</a>'}).join(', ');
+										small
+											| &nbsp;
+											a(href='#', data-title='#{m.gene} #{m.type} Annotations', data-trigger='focus', data-content='<b>Pubmed IDs</b><br/><small>Scroll over for cancer types</small><br/>#{geneReferences}', data-toggle='popover', class='initialism') (#{m.typeReferences.length})
+								td
+									-if (m.class == 'snv')
+										- if (m.annotationType == 'locus')
+											span(class="badge") #{m.change}
+										- else
+											| #{m.change}
+										-if (m.locusReferences && m.locusReferences.length > 0)
+											-var locusReferences = m.locusReferences.map(function(d){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + d.pmid + '" target="_new" title="' + d.cancers.join(", ") + '">' + d.pmid + '</a>'}).join(', ');
+											small
+												| &nbsp;
+												a(href='#', data-title='#{m.gene} #{m.type} #{m.change} Annotations', data-trigger='focus', data-content='<b>Pubmed IDs</b><br/><small>Scroll over for cancer types</small><br/>#{locusReferences}', data-toggle='popover', class='initialism') (#{m.locusReferences.length})
+
+			div(class="col-lg-4 col-md-4")
+				h4 Sample annotations
+				-if (!annotations || annotations.length == 0)
+					b No sample annotation information available.
+				-else
+					table(class="table table-striped")
+						thead
+							tr(style="background:#d3d3d3")
+								th Property
+								th Value
+						tbody
+							-for (var i = 0; i < annotations.length; i++)
+								tr
+									td #{annotations[i].property}
+									td #{annotations[i].value}
+
+block belowTheFold
+	script(src='/components/jquery/dist/jquery.min.js').
+	script(src='/components/bootstrap/dist/js/bootstrap.min.js').
+	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
+	script(src='/js/dataTableWrapper.js').
+	script(type='text/javascript').
+		//- Convert the tables into DataTables
+		addDataTable({ tableID: "#variant-table", aaSorting: [] });
+		//- Set up the popovers
+		$("[data-toggle=popover]").popover({html:true})
