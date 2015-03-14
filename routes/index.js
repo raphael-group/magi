@@ -19,7 +19,8 @@ exports.index = function index(req, res){
 
 		// Store the checkbox IDs of all and the public datasets by group
 		var datasetToCheckboxes = { all: [] },
-			datasetDeselect = [];
+			datasetDeselect = [],
+			samples = [];
 
 		function toCheckboxValue(_id, scope, title, gName){ return ["db", scope, gName, title, _id].join(" "); }
 		function initGroup(groups, scope){
@@ -43,6 +44,11 @@ exports.index = function index(req, res){
 							datasetDeselect.push( db.checkboxValue );
 						}
 					}
+
+					// Record each of the samples (required for sample search)
+					db.samples.forEach(function(s){
+						samples.push( {sample: s, cancer: db.title, groupName: g.name == "" ? "Other" : g.name })
+					});
 				})
 			});
 		}
@@ -55,7 +61,8 @@ exports.index = function index(req, res){
 			groups: standardGroups,
 			datasetToCheckboxes: datasetToCheckboxes,
 			recentQueries: [],
-			datasetDeselect: datasetDeselect
+			datasetDeselect: datasetDeselect,
+			samples: samples
 		};
 		// Load the user's datasets (if necessary)
 		if (req.user){
