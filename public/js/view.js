@@ -194,7 +194,7 @@ function view(){
 		heatmap.datum(data.heatmap)
 			.call(gd3.heatmap({
 				style: style.heatmap
-			}));
+			}).linkRowLabelsToNCBI(true).linkOutXLabels(true));
 
 
 		// Add tooltips
@@ -234,7 +234,7 @@ function view(){
 		aberrations.datum(data.aberrations)
 			.call(gd3.mutationMatrix({
 				style: style.aberrations
-			}).showColumnCategories(false).showColumnLabels(false));
+			}).showColumnCategories(false).showColumnLabels(false).linkRowLabelsToNCBI(true));
 
 		// Add tooltips
 		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
@@ -440,7 +440,6 @@ function view(){
 
 	// First populate the dropdown with the transcripts for each gene
 	var numTranscriptsAdded = 0;
-	console.log(data.transcripts)
 	genes.forEach(function(g, i){
 		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length == 0) return;
 		else numTranscriptsAdded += 1;
@@ -495,7 +494,7 @@ function view(){
 		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
-	console.log(numTranscriptsAdded)
+
 	if (data.transcripts && numTranscriptsAdded > 0){
 		updateTranscript();
 	} else {
