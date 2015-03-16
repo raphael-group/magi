@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 
 # Load required modules
 import sys, os, argparse, json, datetime, urllib2, shutil
