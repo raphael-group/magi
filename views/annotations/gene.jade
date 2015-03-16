@@ -1,38 +1,18 @@
 extends ../layout
 block body
 	div(class="container", id="gene-annotations")
-		h1 #{gene} mutation annotations
-
-		table(class="table table-condensed table-hover", id="gene-annotation-table")
+		br
+		h3 #{gene} mutation annotations
+		br
+		table(class="table table-condensed table-hover", id="gene-annotation-table", style="max-width:600px")
 			thead
 				tr(style="background:#e3e3e3")
-					th Cancer
-					th Mutation Class
-					th Mutation type (optional)
-					th Protein domain (optional)
-					th Position (optional)
-					th PMID
-					th Expert Score
+					th PMIDs
+					th Cancers
 			tbody
-				-for (var i = 0; i < annotations.length; i++)
-					-var A = annotations[i];
-					- for (var j = 0; j < A.references.length; j++)
-						- var ref = A.references[j];
+				-for (var i = 0; i < geneTable.length; i++)
+					-var d = geneTable[i];
 						tr
-							td
-								- if (j == 0)
-									- var cancer = A.cancer.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-									| #{cancer}
-							-if (j == 0 )
-								td #{A.mutation_class}
-								td #{A.mutation_type}
-								td #{A.domain}
-								td #{A.position}
-							- else
-								td
-								td
-								td
-								td
-							td
-								a(href="http://www.ncbi.nlm.nih.gov/pubmed/#{ref.pmid}", target="_new") #{ref.pmid}
-							td(class="text-center") #{ref.upvotes.length - ref.downvotes.length}
+							td 
+								!=d.pmids.map(function(pmid){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '" target="_new">' + pmid + '</a>'}).join(", ")
+							td #{d.cancers.join(", ")}

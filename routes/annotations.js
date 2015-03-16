@@ -13,12 +13,15 @@ exports.gene = function gene(req, res){
 	var gene = req.params.gene || "",
 		Annotation = Database.magi.model( 'Annotation' );
 
-	Annotation.find({gene: gene}, function(err, annotations){
+	Annotation.find({gene: {$in: [gene]}}, function(err, support){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
-
+		var annotations = Annotations.geneTable([gene], support)[gene][''],
+			geneTable = annotations.refs,
+			count = annotations.count;
+		console.log(geneTable)
 		// Render the view
-		res.render('annotations/gene', { user: req.user, annotations: annotations, gene: gene });
+		res.render('annotations/gene', { user: req.user, count: count, geneTable: geneTable, gene: gene });
 	});
 }
 
