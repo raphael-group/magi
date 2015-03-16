@@ -95,22 +95,40 @@ exports.sampleView = function sampleView(req, res){
 
 					// Combine references at the PMID level so that for each 
 					// annotation type (gene, type, locus) we have a list of references
-					// with {pmid: String, cancers: Array }
+					// with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)
+					// level so we have a list of PMIDs that all map to the same cancer type(s)
 					function combineCancers(objects){
 						var objToIndex = [],
-							combined = [];
+							combinedCancer = [];
+
+						// First combine at the cancer level
 						objects.forEach(function(d){
 							d.cancer = d.cancer.toUpperCase();
 							if (typeof(objToIndex[d.pmid]) == 'undefined'){
-								objToIndex[d.pmid] = combined.length;
-								combined.push( { pmid: d.pmid, cancers: [d.cancer] } );
+								objToIndex[d.pmid] = combinedCancer.length;
+								combinedCancer.push( { pmid: d.pmid, cancers: [d.cancer] } );
 							} else {
 								var index = objToIndex[d.pmid];
-								if (combined[index].cancers.indexOf(d.cancer) === -1)
-									combined[index].cancers.push( d.cancer )
+								if (combinedCancer[index].cancers.indexOf(d.cancer) === -1)
+									combinedCancer[index].cancers.push( d.cancer )
 							}
 						});
-						return combined;
+
+						// Then combine at the PMID level
+						var groups = {};
+						combinedCancer.forEach(function(d){
+							var key = d.cancers.sort().join("");
+							if (typeof(groups[key]) === 'undefined') groups[key] = [];
+							groups[key].push(d)
+						});
+
+						var combined = Object.keys(groups).map(function(k){
+							var datum = {pmids: [], cancers: groups[k][0].cancers };
+							groups[k].forEach(function(d){ datum.pmids.push(d.pmid); });
+							return datum;
+						});
+
+						return {refs: combined, count: combinedCancer.length};
 					}
 
 					mutGenes.forEach(function(g){
@@ -138,21 +156,18 @@ exports.sampleView = function sampleView(req, res){
 							if (typeof(annotations[g][m.type]) != 'undefined'){
 								if (typeof(annotations[g][m.type][m.change]) != 'undefined'){
 									m['annotationType'] = 'locus';
-									m['referenceCount'] = annotations[g][m.type][m.change].length;
 									m['locusReferences'] = annotations[g][m.type][m.change];
 									m['typeReferences'] = annotations[g][m.type][""];
 									m['geneReferences'] = annotations[g][""];
 									locusMutations.push(m)
 								} else {
 									m['annotationType'] = 'type';
-									m['referenceCount'] = annotations[g][m.type][""].length;
 									m['typeReferences'] = annotations[g][m.type][""];
 									m['geneReferences'] = annotations[g][""];
 									typeMutations.push(m)
 								}
 							} else {
 								m['annotationType'] = 'gene';
-								m['referenceCount'] = annotations[g][""].length;
 								m['geneReferences'] = annotations[g][""];
 								geneMutations.push( m );
 							}
@@ -160,9 +175,9 @@ exports.sampleView = function sampleView(req, res){
 					});
 
 					// Sort the mutations 
-					locusMutations.sort(function(a, b){ return a.referenceCount > b.referenceCount ? -1 : 1; })
-					typeMutations.sort(function(a, b){ return a.referenceCount > b.referenceCount ? -1 : 1; })
-					geneMutations.sort(function(a, b){ return a.referenceCount > b.referenceCount ? -1 : 1; })
+					locusMutations.sort(function(a, b){ return a.locusReferences.count > b.locusReferences.count ? -1 : 1; })
+					typeMutations.sort(function(a, b){ return a.typeReferences.count > b.typeReferences.count ? -1 : 1; })
+					geneMutations.sort(function(a, b){ return a.geneReferences.count > b.geneReferences.count ? -1 : 1; })
 					var mutations = locusMutations.concat(typeMutations.concat(geneMutations)).map(function(d){
 						// Prettify the mutation types for display
 						if (d.type == 'missense') d.type = 'Missense';

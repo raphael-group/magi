@@ -19,29 +19,29 @@ block body
 					tbody
 						-for (var i = 0; i < mutations.length; i++)
 							- var m  = mutations[i];
-							- var geneBackground = m.geneReferences.length > 0 ? '#d9edf7' : '#ffffff'
-							- var typeBackground = m.typeReferences && m.typeReferences.length > 0 ? '#d9edf7' : '#ffffff'
-							- var locusBackground = m.locusReferences && m.locusReferences.length > 0 ? '#d9edf7' : '#ffffff'
+							- var geneBackground = m.geneReferences && m.geneReferences.refs && m.geneReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
+							- var typeBackground = m.typeReferences && m.typeReferences.refs && m.typeReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
+							- var locusBackground = m.locusReferences && m.locusReferences.refs && m.locusReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
 
-							mixin refPopover(refs, title)
-								- var rows = refs.map(function(d){ return '<tr><td><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + d.pmid + '" target="_new">' + d.pmid + '</a></td><td>' + d.cancers.join(', ') + '</td></tr>' }).join("");
+							mixin refPopover(datum, title)
+								- var rows = datum.refs.map(function(d){ return '<tr><td>' + d.pmids.map(function(pmid){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '" target="_new">' + pmid + '</a>'; }).join(', ') + '</td><td>' + d.cancers.join(', ') + '</td></tr>' }).join("");
 								- var tbl = '<table class="table" style="font-size:90%"><tr style="background:#d3d3d3"><th>Pubmed ID</th><th>Cancers</th></tr>' + rows + '</tr></table>'
 								a(href='#', data-title='#{title}', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
-									| #{refs.length}
+									| #{datum.count}
 
 							tr
 								td(style="background:#ffffff") #{i+1}
 								td(style="background:#{geneBackground}")
 									| #{m.gene} &nbsp;
-									-if (m.geneReferences.length > 0)
+									-if (m.geneReferences.refs.length > 0)
 										+refPopover(m.geneReferences, m.gene + ' Variant Annotations')
 								td(style="background:#{typeBackground}")
 									| #{m.type} &nbsp;
-									-if (m.typeReferences && m.typeReferences.length > 0)
+									-if (m.typeReferences && m.typeReferences.refs.length > 0)
 										+refPopover(m.typeReferences, m.gene + ' ' + m.type + ' Annotations')
 								td(style="background:#{locusBackground}")
 									| #{m.change} &nbsp;
-									-if (m.locusReferences && m.locusReferences.length > 0) 
+									-if (m.locusReferences && m.locusReferences.refs.length > 0) 
 										+refPopover(m.locusReferences, m.gene + ' ' + m.type + ' ' + m.change + ' Annotations')
 
 			div(class="col-lg-4 col-md-4")
