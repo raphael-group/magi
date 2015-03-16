@@ -110,9 +110,9 @@ block body
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#mut_ty').hide()")
                   input(class="form-control toggle", id="mut_ty", placeholder="Mutation type")
                   label(class="toggle")
-                    | Locus
+                    | Protein Sequence Change
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#locus').hide()")
-                  input(class="form-control toggle", id="locus", placeholder="Mutation locus/position.", type="number")
+                  input(class="form-control toggle", id="locus", placeholder="Mutation (e.g. V600E).")
                   label(class="toggle")
                     | Domain
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#domain').hide()")
