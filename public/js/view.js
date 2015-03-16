@@ -487,7 +487,12 @@ function view(){
 				{ type: 'text', text: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
 				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
-				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan}
+				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
+				{ 
+					type: 'link',
+					href: 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName.toLowerCase() + '+' + [d.aao, d.locus, d.aan].join("").toLowerCase(),
+					body: 'Search protein sequence change on Pubmed.'
+				}
 			].map(gd3.tooltip.datum));
 		});
 
