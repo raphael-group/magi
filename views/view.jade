@@ -7,8 +7,12 @@ block body
   div(id="view-page")
     div(id="control-panel")
       h4 Control Panel <span id="hideControlPanel">[-]</span>
-      a(href="#", id="enrichmentStatsLink")
-        | Enrichment statistics
+      div(class="panel panel-default", style="margin-top:5px")
+        div(class="panel-heading", style="padding:5px")
+          a(href="#", id="enrichmentStatsLink", style="color:#000000")
+            h5(class="panel-title", style="cursor:pointer;font-size:14px;")
+              | Enrichment statistics
+              span(style="float:right") [+]
       div(id="controls")
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")

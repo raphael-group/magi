@@ -12,7 +12,7 @@ block body
 				table(class="table", id="variant-table")
 					thead
 						tr(style="background:#d3d3d3")
-							th Rank
+							th Annotation Rank
 							th Gene
 							th Mutation class
 							th Locus/Change
@@ -26,7 +26,7 @@ block body
 							mixin refPopover(datum, title)
 								- var rows = datum.refs.map(function(d){ return '<tr><td>' + d.pmids.map(function(pmid){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '" target="_new">' + pmid + '</a>'; }).join(', ') + '</td><td>' + d.cancers.join(', ') + '</td></tr>' }).join("");
 								- var tbl = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>Pubmed ID</th><th>Cancers</th></tr></thead><tbody>' + rows + '</tbody></table>'
-								a(href='#', data-title='#{title}', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
+								a(href='#', data-title='#{title}', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
 									| #{datum.count}
 
 							tr
