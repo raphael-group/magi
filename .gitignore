@@ -4,6 +4,10 @@ public/components/
 node_modules/
 backups/
 
+# MAGI environment variables
+env.sh
+seo/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
