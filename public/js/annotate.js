@@ -124,7 +124,8 @@ function initializeAnnotations(){
 		abberationSelect.property('value', d.mutation_class);
 		cancerInput.property('value', data.datasetToCancer[d.dataset]);
 		mutationInput.property('value', d.mutation_type ? d.mutation_type : "");
-		locusInput.property('value', d.locus ? d.locus : "");
+		console.log(d.change)
+		locusInput.property('value', d.change ? d.change : "");
 		domainInput.property('value', d.domain ? d.domain : "");
 	});
 

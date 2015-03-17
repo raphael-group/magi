@@ -5,7 +5,9 @@ var mongoose = require( 'mongoose' ),
 // Create GeneSet schema and add it to Mongoose
 var AnnotationSchema = new mongoose.Schema({
 	gene: { type: String, required: true},
-	mutation_class: { type: String, required: false},
+	transcript: { type: String, required: false},
+	change: { type: String, required: false},
+	mutation_class: { type: String, required: true},
 	cancer: { type: String, required: true },
 	position: { type: Number, required: false},
 	domain: { type: {}, required: false},
@@ -110,6 +112,16 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 		return d.promise;
 	}
 
+	function mutationTypeToClass(ty){
+		ty = ty.toLowerCase();
+		if (ty == 'missense') return 'missense';
+		else if (ty == 'nonsense') return 'nonsense';
+		else if (ty == 'del') return 'del';
+		else if (ty == 'amp') return 'amp';
+		else if (ty == 'fus') return 'fus';
+		else return ty;
+	}
+
 	function processAnnotations(){
 		// Load the lines, but skip the header (the first line)
 		var lines = data.trim().split('\n');
@@ -127,12 +139,15 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 			var fields = lines[i].split('\t'),
 				support = {
 					gene: fields[0],
-					cancer: fields[1],
-					mutation_class: fields[2],
-					pmid: fields[3],
-					comment: fields.length > 4 ? fields[4] : null
+					transcript: fields[1] == '' ? null : fields[1],
+					cancer: fields[2],
+					mutation_type: fields[3],
+					mutation_class: mutationTypeToClass(fields[3]),
+					locus: fields[4] == '' ? null : fields[4],
+					change: fields[5] == '' ? null : fields[5],
+					pmid: fields[6],
+					comment: fields.length > 7 ? fields[8] : null
 				}
-
 			annotations.push( support );
 		}
 		console.log( "Loaded " + annotations.length + " annotations." )
@@ -144,6 +159,7 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 					gene: A.gene,
 					cancer: A.cancer,
 					mutation_class: A.mutation_class,
+					change: A.change
 				};
 
 			exports.upsertAnnotation(query, A.pmid, A.comment, null, function(err, annotation){
@@ -155,4 +171,92 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 	}
 
 	loadAnnotationFile().then( processAnnotations ).then( function(){ callback("") } );
+}
+
+//
+exports.geneTable = function (genes, support){
+	// Assemble the annotations into a dictionary index by 
+	// gene (e.g. TP53) and mutation class (e.g. missense or amp)
+	// and then protein change (only applicable for missense/nonsense)
+	// 1) Store the total number of references for the gene/class in "",
+	//    i.e. annotations['TP53'][''] gives the total for TP53 and 
+	//    annotations['TP53']['snv'][''] gives the total for TP53 SNVs.
+	// 2) Count the number per protein change.
+	var annotations = {};
+
+	genes.forEach(function(g){ annotations[g] = { "": [] }; });
+
+	support.forEach(function(A){
+		if (typeof(annotations[A.gene][A.mutation_class]) == 'undefined'){
+			annotations[A.gene][A.mutation_class] = {"" : [] };
+		}
+		if (A.mutation_class == "missense" || A.mutation_class == "nonsense"){
+			if (A.change){
+				if (typeof(annotations[A.gene][A.mutation_class][A.change]) == 'undefined'){
+					annotations[A.gene][A.mutation_class][A.change] = [];
+				}
+
+				A.references.forEach(function(ref){
+					annotations[A.gene][A.mutation_class][A.change].push({ pmid: ref.pmid, cancer: A.cancer });
+				});
+			}
+		}
+		A.references.forEach(function(ref){
+			annotations[A.gene][A.mutation_class][""].push({ pmid: ref.pmid, cancer: A.cancer });
+			annotations[A.gene][""].push({ pmid: ref.pmid, cancer: A.cancer });
+		});
+	});
+
+	// Combine references at the PMID level so that for each 
+	// annotation type (gene, type, locus) we have a list of references
+	// with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)
+	// level so we have a list of PMIDs that all map to the same cancer type(s)
+	function combineCancers(objects){
+		var objToIndex = [],
+			combinedCancer = [];
+
+		// First combine at the cancer level
+		objects.forEach(function(d){
+			d.cancer = d.cancer.toUpperCase();
+			if (typeof(objToIndex[d.pmid]) == 'undefined'){
+				objToIndex[d.pmid] = combinedCancer.length;
+				combinedCancer.push( { pmid: d.pmid, cancers: [d.cancer] } );
+			} else {
+				var index = objToIndex[d.pmid];
+				if (combinedCancer[index].cancers.indexOf(d.cancer) === -1)
+					combinedCancer[index].cancers.push( d.cancer )
+			}
+		});
+
+		// Then combine at the PMID level
+		var groups = {};
+		combinedCancer.forEach(function(d){
+			var key = d.cancers.sort().join("");
+			if (typeof(groups[key]) === 'undefined') groups[key] = [];
+			groups[key].push(d)
+		});
+
+		var combined = Object.keys(groups).map(function(k){
+			var datum = {pmids: [], cancers: groups[k][0].cancers };
+			groups[k].forEach(function(d){ datum.pmids.push(d.pmid); });
+			return datum;
+		});
+
+		return {refs: combined, count: combinedCancer.length};
+	}
+
+	genes.forEach(function(g){
+		Object.keys(annotations[g]).forEach(function(ty){
+			if (ty == ""){
+				annotations[g][ty] = combineCancers(annotations[g][ty]);
+			} else {
+				Object.keys(annotations[g][ty]).forEach(function(c){
+					annotations[g][ty][c] = combineCancers(annotations[g][ty][c]);
+				});
+			}
+		});
+	});
+
+	return annotations;
+
 }

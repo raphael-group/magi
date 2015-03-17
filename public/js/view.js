@@ -194,7 +194,7 @@ function view(){
 		heatmap.datum(data.heatmap)
 			.call(gd3.heatmap({
 				style: style.heatmap
-			}));
+			}).linkRowLabelsToNCBI(true).linkOutXLabels(true));
 
 
 		// Add tooltips
@@ -234,7 +234,7 @@ function view(){
 		aberrations.datum(data.aberrations)
 			.call(gd3.mutationMatrix({
 				style: style.aberrations
-			}).showColumnCategories(false).showColumnLabels(false));
+			}).showColumnCategories(false).showColumnLabels(false).linkRowLabelsToNCBI(true));
 
 		// Add tooltips
 		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
@@ -440,7 +440,10 @@ function view(){
 
 	// First populate the dropdown with the transcripts for each gene
 	var numTranscriptsAdded = 0;
+<<<<<<< HEAD
 	console.log(data.transcripts)
+=======
+>>>>>>> master
 	genes.forEach(function(g, i){
 		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length == 0) return;
 		else numTranscriptsAdded += 1;
@@ -488,14 +491,23 @@ function view(){
 				{ type: 'text', text: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
 				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
-				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan}
+				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
+				{ 
+					type: 'link',
+					href: 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName.toLowerCase() + '+' + [d.aao, d.locus, d.aan].join("").toLowerCase(),
+					body: 'Search protein sequence change on Pubmed.'
+				}
 			].map(gd3.tooltip.datum));
 		});
 
 		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
+<<<<<<< HEAD
 	console.log(numTranscriptsAdded)
+=======
+
+>>>>>>> master
 	if (data.transcripts && numTranscriptsAdded > 0){
 		updateTranscript();
 	} else {

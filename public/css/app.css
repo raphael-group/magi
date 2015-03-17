@@ -15,7 +15,6 @@ h1, h2, h3, h4, h5{
 }
 
 .toggle{ display:none; }
-
 .noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -142,11 +141,11 @@ img#splash-logo{
   margin: 0 auto 50px 0;
 }
 
-button#submit {
+button.submit {
   background: #9DA7D4;
   border-color: #6A73B6;
 }
-button#submit:hover {
+button.submit:hover {
   background: #6A73B6;
 }
 
@@ -159,9 +158,12 @@ div#header{
   margin:0;
   padding:0 15px;
 }
-div#query{
+div.query{
   border-color: #9DA7D4;
 }
+div#input-chooser .twitter-typeahead { width: 100%; } 
+div#input-chooser .tt-dropdown-menu{ min-width:300px;}
+
 div#login{
   margin-top:6px;
   float:right;
@@ -235,7 +237,7 @@ ul#magi-actions li{
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
 }
-ul#magi-actions li#activeAction{ background-color:#9DA7D4;}
+ul#magi-actions li.activeAction{ background-color:#9DA7D4;}
 ul#magi-actions li a{ color:#565975;font-weight:500;font-size:16px; }
 ul#magi-actions li a:hover{ background-color:#9DA7D4; }
 
@@ -243,7 +245,7 @@ ul#magi-actions li a:hover{ background-color:#9DA7D4; }
 div#db-chooser{overflow-y:none;}
 div#db-select{padding-left:0px;}
 div#gene-textarea{margin-top:5px;padding-left:0px;}
-div#query div.instructions ul{padding-left:17px;}
+div.query div.instructions ul{padding-left:17px;}
 
 div#example-queries{ clear:both; }
 div#example-queries a{ margin-right:15px; }
@@ -419,6 +421,11 @@ a.upvote.upvote-on, a.downvote.downvote-on {color: orange; text-shadow: 0px 0px 
 span.comment input{ font-size:9pt;display:inline;width:80%;height:20px;}
 span.comment a{cursor:pointer;margin-left:3px;}
 
+
+/* Boostrap changes */
+.popover{
+    max-width: 500px;
+}
 
 
 /* Shepherd.js */

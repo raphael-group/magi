@@ -23,6 +23,7 @@ block body
 					li(role="presentation", class="#{className}")
 						a(class="gene-link", id="gene-#{genes[i]}") #{genes[i]}
 			br
+			h4 Sample annotations
 			select(id="category", class="form-control")
 			br
 			div(id="contingency-table", style="display:none")
@@ -51,6 +52,7 @@ block body
 			br
 			ul(class="nav nav-tabs")
 			br
+			h4 Sample annotations
 			select(id="cat-category", class="form-control")
 			br
 			div(id="cat-contingency-table", style="display:none")
@@ -73,7 +75,6 @@ block body
 							th Property
 							th Value
 					tbody
-
 
 block belowTheFold
 	//- Dependencies

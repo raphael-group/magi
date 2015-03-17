@@ -7,8 +7,12 @@ block body
   div(id="view-page")
     div(id="control-panel")
       h4 Control Panel <span id="hideControlPanel">[-]</span>
-      a(href="#", id="enrichmentStatsLink")
-        | Enrichment statistics
+      div(class="panel panel-default", style="margin-top:5px")
+        div(class="panel-heading", style="padding:5px")
+          a(href="#", id="enrichmentStatsLink", style="color:#000000")
+            h5(class="panel-title", style="cursor:pointer;font-size:14px;")
+              | Enrichment statistics
+              span(style="float:right") [+]
       div(id="controls")
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")
@@ -73,6 +77,21 @@ block body
 
             div(id="saveErrMsgContainer")
 
+      div(id="annotatedVariants" class="panel panel-default", style="padding:0px;")
+        div(class="panel-heading", style="padding:5px")
+          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotatedVariantsLink")
+            | Annotated variants
+            span(style="float:right") [+]
+
+        div(id="collapseAnnotatedVariants", class="panel-collapse collapse")
+          div(class="panel-body", style="padding:5px;font-size:90%")
+            ul
+              - for (var i = 0; i < data.genes.length; i++)
+                li
+                  | #{data.genes[i]} 
+                  a(href="/annotations/gene/#{data.genes[i]}")
+                    span(class="badge", style="font-size:80%") #{data.geneToAnnotationCount[data.genes[i]]}
+
       div(id="annotation" class="panel panel-default", style="padding:0px;")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotateLink")
@@ -110,9 +129,9 @@ block body
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#mut_ty').hide()")
                   input(class="form-control toggle", id="mut_ty", placeholder="Mutation type")
                   label(class="toggle")
-                    | Locus
+                    | Protein Sequence Change
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#locus').hide()")
-                  input(class="form-control toggle", id="locus", placeholder="Mutation locus/position.", type="number")
+                  input(class="form-control toggle", id="locus", placeholder="Mutation (e.g. V600E).")
                   label(class="toggle")
                     | Domain
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#domain').hide()")
@@ -317,6 +336,7 @@ block belowTheFold
         var linksWithToggles = [{link: "instructions", target: "One"},
                                 {link: "save", target: "Save"},
                                 {link: "annotate", target: "Annotation"},
+                                {link: "annotatedVariants", target: "AnnotatedVariants"},
                                 {link: "options", target: "Options"}];
         function bootstrapToggle(d){
           $("#" + d.link + "Link").click(function(e){

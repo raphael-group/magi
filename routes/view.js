@@ -216,8 +216,9 @@ exports.view  = function view(req, res){
 							if (err) throw new Error(err);
 
 							// Assemble the annotations
-							var annotations = {};
-							genes.forEach(function(g){ annotations[g] = {}; })
+							var annotations = {},
+								geneToAnnotationList = {};
+							genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
 							support.forEach(function(A){
 								if (!annotations[A.gene][A.mutation_class]){
 									annotations[A.gene][A.mutation_class] = {};
@@ -225,10 +226,17 @@ exports.view  = function view(req, res){
 								var refs = A.references.map(function(d){
 									var score = d.upvotes.length - d.downvotes.length,
 										vote = d.upvotes.indexOf(user_id) != -1 ? "up" : d.downvotes.indexOf(user_id) != -1 ? "down" : null;
+									geneToAnnotationList[A.gene][d.pmid] = true;
 									return { pmid: d.pmid, score: score,  vote: vote, _id: A._id };
 								});
 								annotations[A.gene][A.mutation_class][A.cancer] = refs;
-							})
+							});
+
+							// Count the number of PMIDs per gene
+							var geneToAnnotationCount = {};
+							genes.forEach(function(g){
+								geneToAnnotationCount[g] = Object.keys(geneToAnnotationList[g]).length;
+							});
 
 							// Assemble data into single Object
 							var mutation_matrix = {
@@ -296,7 +304,8 @@ exports.view  = function view(req, res){
 																genes: genes,
 																dataset_ids: dataset_ids,
 																heatmap: heatmap,
-																sampleAnnotations: sampleAnnotations
+																sampleAnnotations: sampleAnnotations,
+																geneToAnnotationCount: geneToAnnotationCount
 															};
 
 												// Render view

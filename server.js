@@ -24,9 +24,14 @@ var app = module.exports = express();
 // Use moment for keeping track of times
 app.locals.moment = require('moment');
 app.locals.production = app.get('env') === 'production';
+app.set('port', process.env.PORT || 8000);
 
-// Set the feedback widget ID based on whether we are in dev or production
-app.locals.webengageID = app.get('env') === 'production' ? '~991997c1' : '~47b66aaa';
+// Set the feedback widget ID based on an environment variable WEBENGAGE_ID first,
+if (typeof(process.env.WEBENGAGE_ID) == 'undefined'){
+  console.error('No WebEngage ID set; feedback widget will not work.');
+} else{
+  app.locals.webengageID = process.env.WEBENGAGE_ID;  
+}
 
 // Load models to register their schemas
 var user = require( './model/user' ),
@@ -60,13 +65,18 @@ passport.deserializeUser(function(id, done) {
 // development only
 if (app.get('env') === 'development') {
   app.use(errorHandler());
-  app.set('site url', 'http://localhost:8000/')
+  app.set('site url', 'http://localhost:' + app.get('port') + '/')
 }
 
 // production only
 if (app.get('env') === 'production') {
   // TODO
-  app.set('site url', 'http://paad.cs.brown.edu/')
+  if (typeof(process.env.SITE_URL) != 'undefined'){
+    app.set('site url', process.env.SITE_URL);
+  } else {
+    console.error('Setting the site URL is REQUIRED for production code.');
+    process.exit(1);
+  }
 };
 
 // 
@@ -101,7 +111,6 @@ try {
 }
 
 // all environments
-app.set('port', process.env.PORT || 8000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(compress());
@@ -132,6 +141,9 @@ app.post('/', routes.queryhandler);
 // MAGI view
 app.get('/view', routes.view);
 app.get('/view/:id', routes.view);
+
+// Sample view
+app.get('/sampleView', routes.sampleView);
 
 // Enrichment statistics
 app.get('/enrichments', routes.enrichments);
@@ -196,8 +208,8 @@ app.get('/auth/google/returnTo', function(req, res){
 });
 
 app.get('/auth/google',
-  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile',
-                                            'https://www.googleapis.com/auth/userinfo.email'] }),
+  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login',
+                                            'https://www.googleapis.com/auth/plus.profile.emails.read'] }),
   function(req, res){});
 
 app.get('/auth/google/callback',
@@ -208,15 +220,27 @@ app.get('/auth/google/callback',
   }
 );
 
-// Set up SEO routes
-app.get('/google6c3c5c73e7e145cc.html', function(req, res) {
-    res.sendfile('seo/google6c3c5c73e7e145cc.html');
-});
-app.get('/BingSiteAuth.xml', function(req, res) {
-    res.sendfile('seo/BingSiteAuth.xml');
-});
+// Set up SEO routes: in order to be a "webmaster" for a website
+// using Bing or Google, you need to post a file on your website
+// and point Bing/Google to it.
+if (typeof(process.env.GOOGLE_SEO_ROUTE) != 'undefined' && typeof(process.env.GOOGLE_SEO_ROUTE_NAME) != 'undefined'){
+  app.get(process.env.GOOGLE_SEO_ROUTE_NAME, function(req, res) {
+      res.sendFile(__dirname + process.env.GOOGLE_SEO_ROUTE);
+  });
+} else {
+  console.error('Google SEO route not set.');
+}
+
+if (typeof(process.env.BING_SEO_ROUTE) != 'undefined'){
+  app.get('/BingSiteAuth.xml', function(req, res) {
+      res.sendFile(__dirname + process.env.BING_SEO_ROUTE);
+  });
+} else {
+  console.error('Bing SEO route not set.');
+}
+
 app.get('/sitemap.xml', function(req, res) {
-    res.sendfile('seo/sitemap.xml');
+    res.sendFile(__dirname + '/sitemap.xml');
 });
 
 // Save share hash URI

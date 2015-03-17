@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 
 # Load required modules
 import sys, os, argparse, json, datetime, urllib2, shutil
@@ -9,11 +9,11 @@ pathsToDelete = set()
 # Set up the connection to the MongoDB database
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-client = MongoClient("mongodb://localhost:27017/magi-paad")
-db = client["magi-paad"]
 
-# Define a custom error to be used if we fail at parsing for any reason
-class MAGIFileParsingException(Exception): pass
+dbHost = os.getenv("MONGO_HOST") or "localhost"
+dbName = os.getenv("MONGO_DB_NAME") or "magi"
+client = MongoClient("mongodb://" + dbHost + ":27017/" + dbName)
+db = client[dbName]
 
 # Make a dictionary of cancers to their IDs, so we can validate
 # the cancer passed as an argument
@@ -373,6 +373,51 @@ def load_data_matrix(dataMatrixFile, sampleWhitelist):
 	return dataMatrix, dataMatrixSamples
 
 ###############################################################################
+# 
+def identify_mutations_in_samples(samples, snvs, cnas, aberrations):
+	# Initialize the dictionary of samples to mutations
+	sampleToMutations = dict( (s, defaultdict(list)) for s in samples )
+
+	def sample_mutation_type(mut):
+		mut = mut.lower()
+		if mut.startswith("missense"): return "missense"
+		elif mut.startswith("nonsense"): return "nonsense"
+		elif mut.startswith("amp"): return "amp"
+		elif mut.startswith("del"): return "del"
+		else: return mut
+
+	# Load SNVs (if necessary)
+	if snvs:
+		for g, transcriptToMutations in snvs.iteritems():
+			for t, d in transcriptToMutations.iteritems():
+				for m in d['mutations']:
+					mutation = { "gene": g, "class": "snv", "type": sample_mutation_type(m['ty']) }
+					mutation['change'] = "p.{}{}{}".format(m['aao'], m['locus'], m['aan'])
+					sampleToMutations[m['sample']][g].append( mutation )
+
+	# Load CNAs (if necessary)
+	if cnas:
+		for g, datum in cnas.iteritems():
+			for d in datum['segments']:
+				sampleTys = set()
+				for s in d['segments']:
+					if s['ty'] not in sampleTys:
+						mutation = { "gene": g, "class": "cna", "type": sample_mutation_type(s['ty']) }
+						sampleToMutations[s['sample']][g].append( mutation )
+						sampleTys.add( s['ty'] )
+
+	# Load generic aberrations (if necessary)
+	if aberrations:
+		pass # TO-DO: add this later
+
+
+	# Flatten the data structure
+	sampleToMutations = dict( (s, [ dict(name=g, mutations=sampleToMutations[s][g]) for g in datum.keys() ])
+							  for s, datum in sampleToMutations.iteritems())
+
+	return sampleToMutations
+
+###############################################################################
 # Parse arguments
 def get_parser():
 	# Parse arguments
@@ -506,6 +551,9 @@ def run( args ):
 	if not sampleWhitelist:
 		samples = sampleToMuts.keys()
 
+	# Create a mapping of samples to their mutation types
+	sampleToMutations = identify_mutations_in_samples(samples, snvs, cnas, aberrations)
+
 	mutationTypes = set( t for g, cases in geneToCases.iteritems() for s, muts in cases.iteritems() for t in muts )
 
 	###########################################################################
@@ -592,6 +640,7 @@ def run( args ):
 	dbQuery = dict(title=args.dataset_name, group=args.group_name, is_public=args.is_public, user_id=userID)
 	oldDatasetIds = [ oldDB['_id'] for oldDB in db.datasets.find(dbQuery, {"_id": True}) ]
 	db.mutgenes.remove({"dataset_id": {"$in": oldDatasetIds}})
+	db.samples.remove({"dataset_id": {"$in": oldDatasetIds}})
 	db.datamatricesrow.remove({"dataset_id": {"$in": oldDatasetIds}})
 	db.datasets.remove({"_id": {"$in": oldDatasetIds}})
 
@@ -612,6 +661,11 @@ def run( args ):
 		"data_matrix_name": args.matrix_name
 	})
 	print "Dataset ID:", dataset_id
+
+	# Add mutated samples
+	samplesWithMutations = [ dict(name=s, mutations=sampleToMutations[s], dataset_id=dataset_id)
+							 for s in samples ]
+	db.samples.insert( samplesWithMutations )
 
 	# Save the data matrix rows
 	if dataMatrix and dataMatrixSamples:
