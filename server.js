@@ -25,8 +25,11 @@ var app = module.exports = express();
 app.locals.moment = require('moment');
 app.locals.production = app.get('env') === 'production';
 
-// Set the feedback widget ID based on whether we are in dev or production
-app.locals.webengageID = app.get('env') === 'production' ? '~13410664b' : '~47b66aaa';
+// Set the feedback widget ID based on an environment variable WEBENGAGE_ID first,
+// or else whether we are in dev or production
+// Note: this might be better done as a command-line parameter, but not a big difference
+app.locals.webengageID = process.env.WEBENGAGE_ID || 
+  (app.get('env') === 'production' ? '~13410664b' : '~47b66aaa');
 
 // Load models to register their schemas
 var user = require( './model/user' ),

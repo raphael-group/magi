@@ -9,8 +9,11 @@ pathsToDelete = set()
 # Set up the connection to the MongoDB database
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-client = MongoClient("mongodb://localhost:27017/magi")
-db = client.magi
+
+dbHost = os.getenv("MONGO_HOST") or "localhost"
+dbName = os.getenv("MONGO_DB_NAME") or "magi"
+client = MongoClient("mongodb://" + dbhost + ":27017/" + dbName)
+db = client[dbName]
 
 # Make a dictionary of cancers to their IDs, so we can validate
 # the cancer passed as an argument
