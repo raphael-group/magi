@@ -7,8 +7,6 @@ block body
           h1(class="bannerHeader") Welcome to MAGI
           h4 A tool for Mutation Annotation and Genomic Interpretation
             br
-          div(class="text-right", style="padding-right:30px;color:red")
-            i for the TCGA PAAD AWG
           p MAGI is a tool for annotating, exploring, and analyzing gene sets that may be associated with cancer.
           ul
             li View mutations in and interactions among sets of genes.
@@ -101,10 +99,11 @@ block body
             div(id="gene-textarea", class="col-lg-6")
               h5 Gene set (25 maximum).
               textarea(id="genes-list", name="genes", class="form-control", rows="5", style="margin-top:3px")
-                | TP53
-                | CDKN2A
-                | RNF43
-                | EEF2
+                | STAG1
+                | STAG2
+                | SMC1A
+                | SMC3
+                | RAD21
               br
             div(class="col-lg-1")
             div(class="instructions col-lg-5")
@@ -352,7 +351,7 @@ block belowTheFold
     });
     tour.addStep('submit', {
       text: 'Once you\'ve entered a list of genes and selected a set of datasets, you submit your query here. MAGI will take you to another page to display the mutations.',
-      attachTo: '#submit top',
+      attachTo: '#submit-genes top',
       classes: 'shepherd shepherd-open shepherd-theme-arrows',
       buttons: [
         { text: 'Back', classes: 'shepherd-button-secondary', action: tour.back },

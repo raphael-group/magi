@@ -440,10 +440,6 @@ function view(){
 
 	// First populate the dropdown with the transcripts for each gene
 	var numTranscriptsAdded = 0;
-<<<<<<< HEAD
-	console.log(data.transcripts)
-=======
->>>>>>> master
 	genes.forEach(function(g, i){
 		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length == 0) return;
 		else numTranscriptsAdded += 1;
@@ -503,11 +499,7 @@ function view(){
 		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
-<<<<<<< HEAD
-	console.log(numTranscriptsAdded)
-=======
 
->>>>>>> master
 	if (data.transcripts && numTranscriptsAdded > 0){
 		updateTranscript();
 	} else {
