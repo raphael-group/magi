@@ -9,13 +9,17 @@ var mongoose = require( 'mongoose' ),
 exports.stats = function stats(req, res){
 	console.log('/enrichments/stats');
 
+	var stathost = process.env.ENRICHMENT_HOST || "localhost" 
+	var statport = process.env.ENRICHMENT_PORT || "8888" 
+	
 	// The JSON POST from the server is stored in the req.body,
 	// so convert it to a JSON string
 	var data = JSON.stringify(req.body);
 
+	
 	// Then submit a 
     request({
-        url: 'http://localhost:8888/',
+        url: 'http://' + stathost + ':' + statport + '/',
         method: 'POST',
         json: true,
 		headers: {
