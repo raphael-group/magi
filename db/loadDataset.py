@@ -12,7 +12,7 @@ from bson.objectid import ObjectId
 
 dbHost = os.getenv("MONGO_HOST") or "localhost"
 dbName = os.getenv("MONGO_DB_NAME") or "magi"
-client = MongoClient("mongodb://" + dbhost + ":27017/" + dbName)
+client = MongoClient("mongodb://" + dbHost + ":27017/" + dbName)
 db = client[dbName]
 
 # Make a dictionary of cancers to their IDs, so we can validate
