@@ -22,7 +22,7 @@ Database.magi.model( 'Annotation', AnnotationSchema );
 // upsert an annotation into MongoDB
 exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
 	var Annotation = Database.magi.model( 'Annotation' );
-	console.log(query)
+
 	var support = {ref: pmid, user_id: user_id, comment: comment};
 	Annotation.findOneAndUpdate(
 		query,

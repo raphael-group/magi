@@ -203,7 +203,7 @@ function initializeAnnotations(){
 				locus = locusInput.property('value'),
 				domain = domainInput.property('value'),
 				comment = mutationComment.property('value');
-			console.log(pmid)
+
 			if (!validatePMID(pmid)) return false;
 			var url = '/save/annotation/mutation',
 				formData = populateForm({
