@@ -75,7 +75,7 @@ exports.saveMutation = function saveMutation(req, res){
 				cancer: req.body.cancer,
 				mutation_class: req.body.aberration,
 				mutation_type: req.body.mutation,
-				position: req.body.locus,
+				change: req.body.locus,
 				domain: req.body.domain
 			};
 

@@ -200,7 +200,7 @@ function initializeAnnotations(){
 				aberration = abberationSelect.node().value,
 				cancer = cancerInput.property('value'),
 				mutation = mutationInput.property('value'),
-				locus = mutationInput.property('value'),
+				locus = locusInput.property('value'),
 				domain = domainInput.property('value'),
 				comment = mutationComment.property('value');
 			console.log(pmid)
