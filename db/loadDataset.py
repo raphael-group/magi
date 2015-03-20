@@ -14,6 +14,7 @@ dbHost = os.getenv("MONGO_HOST") or "localhost"
 dbName = os.getenv("MONGO_DB_NAME") or "magi"
 client = MongoClient("mongodb://" + dbHost + ":27017/" + dbName)
 db = client[dbName]
+print "Connected to mongodb://{}:27017/{}".format(dbHost, dbName)
 
 # Make a dictionary of cancers to their IDs, so we can validate
 # the cancer passed as an argument
@@ -117,7 +118,7 @@ def is_int(num):
 	try:
 		int(num)
 		return True
-	except ValueError:
+	except (ValueError, TypeError):
 		return False
 
 # Return true or false based on whether the argument can be converted

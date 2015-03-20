@@ -230,7 +230,10 @@ function view(){
 
 	// Aberrations
 	if (data.aberrations.samples && data.aberrations.samples.length > 0){
-		data.aberrations.annotations = data.sampleAnnotations;
+		console.log(data.aberrations.annotations)
+		if (typeof(data.sampleAnnotations) == "object" && Object.keys(data.sampleAnnotations).length > 0)
+			data.aberrations.annotations = data.sampleAnnotations;
+		console.log(data.aberrations.annotations)
 		aberrations.datum(data.aberrations)
 			.call(gd3.mutationMatrix({
 				style: style.aberrations
