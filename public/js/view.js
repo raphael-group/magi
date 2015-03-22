@@ -230,10 +230,9 @@ function view(){
 
 	// Aberrations
 	if (data.aberrations.samples && data.aberrations.samples.length > 0){
-		console.log(data.aberrations.annotations)
 		if (typeof(data.sampleAnnotations) == "object" && Object.keys(data.sampleAnnotations).length > 0)
 			data.aberrations.annotations = data.sampleAnnotations;
-		console.log(data.aberrations.annotations)
+
 		aberrations.datum(data.aberrations)
 			.call(gd3.mutationMatrix({
 				style: style.aberrations
@@ -255,11 +254,13 @@ function view(){
 				];
 
 			// Add the annotations
-			if (data.aberrations.annotations && data.aberrations.categories && data.aberrations.sampleToAnnotations){
-				data.aberrations.annotations.categories.forEach(function(c, i){
-					var value = data.aberrations.annotations.sampleToAnnotations[d.colLabel][i];
-					if (!value) value = "No data";
-					tooltipData.push({type: 'text', text: c + ': ' + value});
+			var annData = data.aberrations.annotations;
+			if (annData && annData.categories && annData.sampleToAnnotations){
+				annData.categories.forEach(function(c, i){
+					var value = annData.sampleToAnnotations[d.colLabel][i];
+					if (value){
+						tooltipData.push({type: 'text', text: c + ': ' + value});
+					}
 				});
 			}
 
