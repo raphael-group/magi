@@ -16,10 +16,10 @@ $(document).ready(function() {
             numDatasets = $('.multiselect :checked').length;
 
         // Make sure at least one gene is entered
-        if (geneList == ""){
-            status('Please enter at least one gene.', warningClasses);
-            return false;
-        }
+        // if (geneList == ""){
+        //     status('Please enter at least one gene.', warningClasses);
+        //     return false;
+        // }
 
         // Make sure no more than 25 genes are entered
         var genes = geneList.split("\n").filter(function(g){ return g != ""; });

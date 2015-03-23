@@ -9,13 +9,17 @@ var mongoose = require( 'mongoose' ),
 exports.stats = function stats(req, res){
 	console.log('/enrichments/stats');
 
+	var stathost = process.env.ENRICHMENT_HOST || "localhost" 
+	var statport = process.env.ENRICHMENT_PORT || "8888" 
+	
 	// The JSON POST from the server is stored in the req.body,
 	// so convert it to a JSON string
 	var data = JSON.stringify(req.body);
 
+	
 	// Then submit a 
     request({
-        url: 'http://localhost:8888/',
+        url: 'http://' + stathost + ':' + statport + '/',
         method: 'POST',
         json: true,
 		headers: {
@@ -23,14 +27,12 @@ exports.stats = function stats(req, res){
 		},
 		body: data
     }, function (error, response, body) {
-        if (!error && response.statusCode === 200) {
+        if (!error && response && response.statusCode === 200) {
             res.json({data: body, status: "Success!"});
         }
         else {
-            console.log("error: " + error)
-            console.log("response.statusCode: " + response.statusCode)
-            console.log("response.statusText: " + response.statusText)
-            res.send({error: "Error! Status Code: " + response.statusCode + ". Status Text: " + response.statusText})
+            console.error("error: " + error)
+            res.send({error: error});
         }
     });
 }

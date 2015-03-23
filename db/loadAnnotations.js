@@ -1,6 +1,6 @@
 // Load models
-var db = require('../../model/db'),
-	annotations = require('../../model/annotations');
+var db = require('../model/db'),
+	annotations = require('../model/annotations');
 
 // Validate args
 var argv = require('optimist').argv;

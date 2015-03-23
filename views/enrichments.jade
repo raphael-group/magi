@@ -13,35 +13,68 @@ block body
 				ul
 				- for (var i in datasets )
 					li #{datasets[i].title} (#{datasets[i].samples.length} samples)
-		ul(class="nav nav-tabs")
-			- for (var i in genes )
-				- if (i == 0) var className = "active";
-				- else var className = "";
-				li(role="presentation", class="#{className}")
-					a(id="gene-#{genes[i]}") #{genes[i]}
-		br
-		select(id="category", class="form-control")
-		br
-		div(id="contingency-table", style="display:none")
-			h4 Contingency table
-			div(id="samples-removed")
-				| Removed&nbsp;
-				span
-				| &nbsp;samples with missing annotation data.
-			table(class="table table-hover", style="width: auto !important;min-width:300px")
-		br
-		div(id="tests", style="display:none")
-			h4 Statistical tests
-			select(class="form-control")
-		br
-		div(id="test-results", style="display:none")
-			div(id="report") 
-			table(class="table table-hover", style="width:auto !important;min-width:300px")
-				thead
-					tr(style="background:#d3d3d3")
-						th Property
-						th Value
-				tbody
+		div(id="gene-comparisons")
+			h5 Category vs. Mutation status
+			br
+			ul(class="nav nav-tabs")
+				- for (var i in genes )
+					- if (i == 0) var className = "active";
+					- else var className = "";
+					li(role="presentation", class="#{className}")
+						a(class="gene-link", id="gene-#{genes[i]}") #{genes[i]}
+			br
+			h4 Sample annotations
+			select(id="category", class="form-control")
+			br
+			div(id="contingency-table", style="display:none")
+				h4 Contingency table
+				div(id="samples-removed")
+					| Removed&nbsp;
+					span
+					| &nbsp;samples with missing annotation data.
+				table(class="table table-hover", style="width: auto !important;min-width:300px")
+			br
+			div(id="tests", style="display:none")
+				h4 Statistical tests
+				select(class="form-control")
+			br
+			div(id="test-results", style="display:none")
+				div(id="report") 
+				table(class="table table-hover", style="width:auto !important;min-width:300px")
+					thead
+						tr(style="background:#d3d3d3")
+							th Property
+							th Value
+					tbody
+		hr
+		div(id="category-comparisons")
+			h5 Category vs. Category
+			br
+			ul(class="nav nav-tabs")
+			br
+			h4 Sample annotations
+			select(id="cat-category", class="form-control")
+			br
+			div(id="cat-contingency-table", style="display:none")
+				h4 Contingency table
+				div(id="cat-samples-removed")
+					| Removed&nbsp;
+					span
+					| &nbsp;samples with missing annotation data.
+				table(class="table table-hover", style="width: auto !important;min-width:300px")
+			br
+			div(id="cat-tests", style="display:none")
+				h4 Statistical tests
+				select(class="form-control")
+			br
+			div(id="cat-test-results", style="display:none")
+				div(id="cat-report") 
+				table(class="table table-hover", style="width:auto !important;min-width:300px")
+					thead
+						tr(style="background:#d3d3d3")
+							th Property
+							th Value
+					tbody
 
 block belowTheFold
 	//- Dependencies
@@ -72,13 +105,14 @@ block belowTheFold
 			});
 
 		// Select the elements that we're going to modify
-		var categorySelect = d3.select("select#category"),
-			cTable = d3.select('div#contingency-table table'),
-			tests = d3.select('div#tests select'),
-			testResults = d3.select('div#test-results'),
+		var geneComparisons = d3.select("div#gene-comparisons"),
+			categorySelect = geneComparisons.select("select#category"),
+			cTable = geneComparisons.select('div#contingency-table table'),
+			tests = geneComparisons.select('div#tests select'),
+			testResults = geneComparisons.select('div#test-results'),
 			statsTableBody = testResults.select('table tbody'),
-			report = d3.select("div#report"),
-			samplesRemoved = d3.select('div#samples-removed span');
+			report = geneComparisons.select("div#report"),
+			samplesRemoved = geneComparisons.select('div#samples-removed span');
 
 		// Add the onclick enrichment statistics
 		var geneToCategoryToStats = {};
@@ -90,7 +124,6 @@ block belowTheFold
 				if (geneToMutatedSamples[g][s]) mutated += 1;
 				return geneToMutatedSamples[g][s] ? "Mutated" : "Not Mutated";
 			});
-			console.log(g, mutated);
 
 			var promises = discreteCategories.map(function(c, i){
 				var dfd = new jQuery.Deferred(),
@@ -100,7 +133,7 @@ block belowTheFold
 					// Note: can't use JSON otherwise IE8 will pop open a dialog
 					// window trying to download the JSON as a file
 					url: '/enrichments/stats',
-					data: JSON.stringify({X: X, Y: Y}),
+					data: JSON.stringify({request: "contingency", X: X, Y: Y}),
 					dataType: 'json',
 					contentType: 'application/json; charset=utf-8',
 					type: 'POST',
@@ -115,7 +148,6 @@ block belowTheFold
 							console.error('Enrichment stats: Oops, something bad happened.');
 							return;
 						} else{
-							console.log(response)
 							geneToCategoryToStats[g][c] = response.data;
 						}
 						dfd.resolve();
@@ -128,10 +160,10 @@ block belowTheFold
 				// Add onclick functions to show the enrichment results per gene
 				$('a#gene-' + g).on('click', function(){
 					// Update the "active" gene
-					$('a').parent().removeClass('active');
+					$('a.gene-link').parent().removeClass('active');
 					$(this).parent().addClass('active');
-					d3.select('div#contingency-table').style('display', 'none');
-					d3.select('div#tests').style('display', 'none');
+					geneComparisons.select('div#contingency-table').style('display', 'none');
+					geneComparisons.select('div#tests').style('display', 'none');
 					testResults.style('display', 'none');
 
 					//
@@ -150,9 +182,9 @@ block belowTheFold
 
 							// Show the table and the tests, and remove all their previous
 							// elements
-							d3.select('div#contingency-table').style('display', 'inline');
+							geneComparisons.select('div#contingency-table').style('display', 'inline');
 							cTable.selectAll('*').remove();
-							d3.select('div#tests').style('display', '');
+							geneComparisons.select('div#tests').style('display', '');
 							tests.selectAll('*').remove();
 
 							// Record the number of samples removed
@@ -219,8 +251,8 @@ block belowTheFold
 
 						} else {
 							// Hide the table and the tests
-							d3.select('div#contingency-table').style('display', 'none');
-							d3.select('div#tests').style('display', 'none');
+							geneComparisons.select('div#contingency-table').style('display', 'none');
+							geneComparisons.select('div#tests').style('display', 'none');
 						}
 					});
 				});
@@ -232,4 +264,180 @@ block belowTheFold
 			}, function(e) {
 				console.log("My ajax failed");
 			});
+		});
+
+		// Select the elements that we're going to modify
+		var catComparisons = d3.select("div#category-comparisons"),
+			catList = catComparisons.select("ul"),
+			catCategorySelect = catComparisons.select("select#cat-category"),
+			catCTable = catComparisons.select('div#cat-contingency-table table'),
+			catTests = catComparisons.select('div#cat-tests select'),
+			catTestResults = catComparisons.select('div#cat-test-results'),
+			catStatsTableBody = catTestResults.select('table tbody'),
+			catReport = catComparisons.select("div#cat-report"),
+			catSamplesRemoved = catComparisons.select('div#cat-samples-removed span');
+
+		// Set up the category comparison
+		catList.selectAll(".cat-li")
+			.data(discreteCategories).enter()
+			.append("li")
+			.attr("role", "presentation")
+			.attr("class", function(d, i){ return i ? "" : "active"; })
+			.append("a")
+				.attr("class", "cat-link")
+				.attr("id", function(d){ return "cat-" + d.replace(" ", ""); })
+				.text(function(d){ return d; });
+
+		// 
+		var categoryComparison = {},
+			categoryPairs = [];
+		discreteCategories.forEach(function(c1, i){
+			categoryComparison[c1] = {};
+			discreteCategories.forEach(function(c2, j){
+				if (j > i) categoryPairs.push([c1, c2]);
+			})
+		});
+		var promises = categoryPairs.map(function(arr){
+			var c1 = arr[0],
+				c2 = arr[1],
+				dfd = new jQuery.Deferred();
+
+			$.ajax({
+				// Note: can't use JSON otherwise IE8 will pop open a dialog
+				// window trying to download the JSON as a file
+				url: '/enrichments/stats',
+				data: JSON.stringify({request: "partitions", X: categoryValues[c1], Y: categoryValues[c2]}),
+				dataType: 'json',
+				contentType: 'application/json; charset=utf-8',
+				type: 'POST',
+
+				error: function(xhr) {
+					console.error('Error: ' + xhr.status);
+					dfd.resolve();
+				},
+
+				success: function(response) {
+					if(response.error) {
+						console.error('Enrichment stats: Oops, something bad happened.');
+						return;
+					} else{
+						categoryComparison[c1][c2] = response.data;
+						categoryComparison[c2][c1] = response.data;
+					}
+					dfd.resolve();
+				}
+			});
+			return dfd;
+		});
+
+		// Add the onclick behavior
+		$.when.apply( $, promises ).then(function(){
+			// Add onclick functions to show the enrichment results per gene
+			discreteCategories.forEach(function(c){
+				$('a#cat-' + c.replace(" ", "")).on('click', function(){
+					// Update the "active" gene
+					$('a.cat-link').parent().removeClass('active');
+					$(this).parent().addClass('active');
+					catComparisons.select('div#cat-contingency-table').style('display', 'none');
+					catComparisons.select('div#cat-tests').style('display', 'none');
+					catTestResults.style('display', 'none');
+
+					// Update the list of other categories
+					catCategorySelect.selectAll('*').remove();
+					var otherCategories = Object.keys(categoryComparison[c]);
+					var options = catCategorySelect.selectAll('.cat-option')
+						.data(["-- choose category --"].concat(otherCategories)).enter()
+						.append('option')
+						.attr('value', function(d){ return d; })
+						.text(function(d){ return d; });
+
+					catCategorySelect.on('change', function(){
+						var category = catCategorySelect.property('value');
+						if (category !== '-- choose category --'){
+							var datum = categoryComparison[c][category];
+
+							// Show the table and the tests, and remove all their previous
+							// elements
+							catComparisons.select('div#cat-contingency-table').style('display', 'inline');
+							catCTable.selectAll('*').remove();
+							catComparisons.select('div#cat-tests').style('display', '');
+							catTests.selectAll('*').remove();
+
+							// Record the number of samples removed
+							catSamplesRemoved.text(datum.samplesRemoved);
+
+							// Populate the table
+							var thead = catCTable.append('thead'),
+								tbody = catCTable.append('tbody');
+							console.log(datum.table);
+							thead.append('tr')
+								.style('background', '#d3d3d3')
+									.selectAll('.enrichment-th')
+									.data(datum.table[0]).enter()
+									.append('th')
+									.text(function(d){ return d; });
+							
+							tbody.selectAll('.enrichment-tr')
+								.data(datum.table.slice(1, datum.table.length)).enter()
+								.append('tr')
+								.selectAll('.enrichment-td')
+								.data(function(d){ return d; }).enter()
+									.append('td')
+									.style('font-weight', function(d, i){ return i == 0 ? 'bold' : 'normal'; })
+									.style('background', function(d, i){ return i == 0 ? '#d3d3d3' : '#ffffff'; })
+									.style('text-align', function(d, i){ return i == 0 ? 'right' : 'center'; })
+									.text(function(d){ return d; });
+
+							// Add the statistical tests
+							var testNames = Object.keys(datum.stats);
+							var testOptions = catTests.selectAll('.stat-test-option')
+								.data(["-- choose test --"].concat(testNames)).enter()
+								.append('option')
+								.attr('value', function(d){ return d; })
+								.text(function(d){ return d; });
+
+							catTests.on('change', function(){
+								var test = catTests.property('value');
+								if (test !== '-- choose test --'){
+									// Show the test results
+									catTestResults.style('display', 'inline');
+									catTestResults.select('table').style('display', '');
+									catStatsTableBody.selectAll('*').remove();
+
+									// Add the P-value and statistic (if applicable)
+									catReport.html(datum.stats[test].report.html);
+									console.log(datum.stats[test].report.html)
+
+									// Populate the table body
+									var attributes = Object.keys(datum.stats[test]).filter(function(d){ return d !== "report"; });
+									if (attributes.length == 0) catTestResults.select('table').style('display', 'none');
+									catStatsTableBody.selectAll('.stats-table-row')
+										.data(attributes).enter()
+										.append('tr')
+										.selectAll('.stats-table-cell')
+										.data(function(d){ return [d, datum.stats[test][d]]; }).enter()
+										.append('td')
+										.style('font-weight', function(d, i){ return i == 0 ? 'bold' : 'normal'; })
+										.text(function(d){ return d; });
+
+								} else{
+									// Hide the test results
+									catTestResults.style('display', 'none');
+								}
+							});
+
+						} else {
+							// Hide the table and the tests
+							catComparisons.select('div#cat-contingency-table').style('display', 'none');
+							catComparisons.select('div#cat-tests').style('display', 'none');
+						}
+					});
+				});
+
+				// Load the categories for the first gene (which is by default visible) 
+				// by simulating a click on it
+				$('a#cat-' + discreteCategories[0].replace(" ", "")).click();
+			});
+		}, function(e) {
+			console.log("My ajax failed");
 		});

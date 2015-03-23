@@ -6,7 +6,7 @@ block body
         div(class="col-md-8")
           h1(class="bannerHeader") Welcome to MAGI
           h4 A tool for Mutation Annotation and Genomic Interpretation
-          br
+            br
           p MAGI is a tool for annotating, exploring, and analyzing gene sets that may be associated with cancer.
           ul
             li View mutations in and interactions among sets of genes.
@@ -40,13 +40,28 @@ block body
   a(name="input-chooser")
   div(class="container-index", id="input-chooser")
     ul(id="magi-actions", class="nav nav-tabs nav-justified", style="")
-      li(id="activeAction")
-        a(href="/" id="magi-tab-query") Query
+      li(class="query activeAction")
+        a(href="#", id="magi-tab-query-genes") Query gene sets
+      li(class="query")
+        a(href="#", id="magi-tab-query-samples") Query samples
       li
         a(href="/upload" id="magi-tab-upload") Upload Your Data
       li
         a(href="/datasets" id="magi-tab-datasets") View Dataset Summaries
-    div(id="query", class="panel-success panel", style="margin-top:-2px")
+
+    div(id="query-samples", class="query panel-success panel", style="margin-top:-2px;display:none")
+      div(class="panel-body")
+        b Search by sample ID
+        p View the mutations in and clinical information from a single tumor sample.
+        input(class="typeahead form-control", id="sample-typeahead", type="text", placeholder="Sample ID (e.g. TCGA-XX-XXXX).")
+        br
+        br
+        button(type="submit", id="submit-sample", class="btn btn-success submit") Submit query
+        br
+        br
+        div(id="sample-status", class="alert alert-warning", style="display:none")
+
+    div(id="query-genes", class="query panel-success panel", style="margin-top:-2px")
       div(class="panel-body")
         form(method="post", action="/", role="form", id="query-form")
           div(id="db-chooser", class="col-lg-12")
@@ -96,9 +111,10 @@ block body
               ul
                 li Enter up to 25 genes to query.
                 li Genes will be automatically converted to uppercase.
+                li Blank queries will show annotations for all the samples in the datasets selected for your query.
           br(style="clear:both")
           div(id="submit-query", class="text-center")
-            button(type="submit", id="submit", class="btn btn-success") Submit query
+            button(type="submit", id="submit-genes", class="btn btn-success submit") Submit query
             br
             a(href="#", id="reset") Reset
             br
@@ -270,6 +286,8 @@ block belowTheFold
   script(src='/components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js')
   script(src="/components/gd3/gd3.js")
   script(src='components/shepherd.js/shepherd.min.js').
+  script(src='/components/hogan/web/builds/2.0.0/hogan-2.0.0.min.js').
+  script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
   script(src='/js/query-control.js')
   script(src='/js/examples.js')
   script.
@@ -282,7 +300,7 @@ block belowTheFold
     });
     tour.addStep('query-step', {
       text: 'Query a combination of public and private mutation data.',
-      attachTo: '#magi-tab-query top',
+      attachTo: '#magi-tab-query-genes top',
       classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
       buttons: [
         { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
@@ -333,7 +351,7 @@ block belowTheFold
     });
     tour.addStep('submit', {
       text: 'Once you\'ve entered a list of genes and selected a set of datasets, you submit your query here. MAGI will take you to another page to display the mutations.',
-      attachTo: '#submit top',
+      attachTo: '#submit-genes top',
       classes: 'shepherd shepherd-open shepherd-theme-arrows',
       buttons: [
         { text: 'Back', classes: 'shepherd-button-secondary', action: tour.back },
@@ -382,3 +400,58 @@ block belowTheFold
     //- formatted DB
     var datasetToCheckboxes = !{JSON.stringify(datasetToCheckboxes)},
         recentQueries = !{JSON.stringify(recentQueries)};
+
+    //- Update the selected tab onclick
+    $("a#magi-tab-query-genes").on("click", function(e){
+      e.preventDefault();
+      $("div#query-genes").show();
+      $("div#query-samples").hide();
+      $("li.query").removeClass("activeAction");
+      $(this).parent().attr("class", "query activeAction");
+    });
+    $("a#magi-tab-query-samples").on("click", function(e){
+      e.preventDefault();
+      $("div#query-genes").hide();
+      $("div#query-samples").show();
+      $("li.query").removeClass("activeAction");
+      $(this).parent().attr("class", "query activeAction");
+    });
+
+    //- Set up bloodhound for searching for sample names
+    var samples = !{JSON.stringify(samples)};
+    var sampleBloodhound = new Bloodhound({
+      datumTokenizer: function(data){
+        // For each datum, return an array of the value (cancers) and
+        // abbreviations broken up by whitespace
+        var sampleTokens = Bloodhound.tokenizers.whitespace(data.sample),
+            cancerTokens = Bloodhound.tokenizers.whitespace(data.cancer),
+            groupNameTokens = Bloodhound.tokenizers.whitespace(data.groupName);
+        return sampleTokens.concat(cancerTokens.concat(groupNameTokens));
+      },
+      queryTokenizer: Bloodhound.tokenizers.whitespace,
+      local: samples
+    });
+    sampleBloodhound.initialize();
+
+    // Compile the template for showing suggestions
+    var templ = Hogan.compile('<p><strong>{{sample}}</strong> ({{groupName}}: {{cancer}})</p>');
+    $("input#sample-typeahead").typeahead({highlight: true}, {
+      name: 'samples',
+      displayKey: 'sample',
+      source: sampleBloodhound.ttAdapter(),
+      templates:{
+        suggestion: function(data){ return templ.render(data); }
+      }
+    });
+
+    //- Validate and submit the sample query form
+    $("button#submit-sample").on("click", function(e){
+      e.preventDefault();
+      var sampleName = $("input#sample-typeahead").val();
+      if (sampleName != ""){
+        $("#sample-status").hide();
+        window.location.href = '/sampleView?sample=' + sampleName;
+      } else {
+        $("#sample-status").show().html("Please enter a sample name before submitting.")
+      }
+    });

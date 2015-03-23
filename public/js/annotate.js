@@ -124,7 +124,8 @@ function initializeAnnotations(){
 		abberationSelect.property('value', d.mutation_class);
 		cancerInput.property('value', data.datasetToCancer[d.dataset]);
 		mutationInput.property('value', d.mutation_type ? d.mutation_type : "");
-		locusInput.property('value', d.locus ? d.locus : "");
+		console.log(d.change)
+		locusInput.property('value', d.change ? d.change : "");
 		domainInput.property('value', d.domain ? d.domain : "");
 	});
 
@@ -199,10 +200,10 @@ function initializeAnnotations(){
 				aberration = abberationSelect.node().value,
 				cancer = cancerInput.property('value'),
 				mutation = mutationInput.property('value'),
-				locus = mutationInput.property('value'),
+				locus = locusInput.property('value'),
 				domain = domainInput.property('value'),
 				comment = mutationComment.property('value');
-			console.log(pmid)
+
 			if (!validatePMID(pmid)) return false;
 			var url = '/save/annotation/mutation',
 				formData = populateForm({

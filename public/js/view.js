@@ -194,7 +194,7 @@ function view(){
 		heatmap.datum(data.heatmap)
 			.call(gd3.heatmap({
 				style: style.heatmap
-			}));
+			}).linkRowLabelsToNCBI(true).linkOutXLabels(true));
 
 
 		// Add tooltips
@@ -230,11 +230,13 @@ function view(){
 
 	// Aberrations
 	if (data.aberrations.samples && data.aberrations.samples.length > 0){
-		data.aberrations.annotations = data.sampleAnnotations;
+		if (typeof(data.sampleAnnotations) == "object" && Object.keys(data.sampleAnnotations).length > 0)
+			data.aberrations.annotations = data.sampleAnnotations;
+
 		aberrations.datum(data.aberrations)
 			.call(gd3.mutationMatrix({
 				style: style.aberrations
-			}).showColumnCategories(false).showColumnLabels(false));
+			}).showColumnCategories(false).showColumnLabels(false).linkRowLabelsToNCBI(true));
 
 		// Add tooltips
 		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
@@ -252,11 +254,13 @@ function view(){
 				];
 
 			// Add the annotations
-			if (data.aberrations.annotations && data.aberrations.categories && data.aberrations.sampleToAnnotations){
-				data.aberrations.annotations.categories.forEach(function(c, i){
-					var value = data.aberrations.annotations.sampleToAnnotations[d.colLabel][i];
-					if (!value) value = "No data";
-					tooltipData.push({type: 'text', text: c + ': ' + value});
+			var annData = data.aberrations.annotations;
+			if (annData && annData.categories && annData.sampleToAnnotations){
+				annData.categories.forEach(function(c, i){
+					var value = annData.sampleToAnnotations[d.colLabel][i];
+					if (value){
+						tooltipData.push({type: 'text', text: c + ': ' + value});
+					}
 				});
 			}
 
@@ -439,8 +443,10 @@ function view(){
 	// Transcript(s)
 
 	// First populate the dropdown with the transcripts for each gene
+	var numTranscriptsAdded = 0;
 	genes.forEach(function(g, i){
-		if (!data.transcripts[g]) return;
+		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length == 0) return;
+		else numTranscriptsAdded += 1;
 
 		var transcripts = Object.keys(data.transcripts[g]).map(function(t){
 			return { name: t, numMutations: data.transcripts[g][t].mutations.length };
@@ -485,14 +491,20 @@ function view(){
 				{ type: 'text', text: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
 				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
-				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan}
+				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
+				{ 
+					type: 'link',
+					href: 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName.toLowerCase() + '+' + [d.aao, d.locus, d.aan].join("").toLowerCase(),
+					body: 'Search protein sequence change on Pubmed.'
+				}
 			].map(gd3.tooltip.datum));
 		});
 
 		transcriptPlot.select('svg').call(gd3.tooltip.make().useData(transcriptTooltips));
 	}
 	transcriptSelect.on("change", updateTranscript);
-	if (data.transcripts && Object.keys(data.transcripts).length > 0){
+
+	if (data.transcripts && numTranscriptsAdded > 0){
 		updateTranscript();
 	} else {
 		transcriptSelect.remove();

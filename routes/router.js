@@ -4,6 +4,7 @@ var about = require( './about' ),
 	index = require( './index' ),
 	upload = require( './upload' ),
 	view = require( './view' ),
+	sampleView = require( './sampleView' ),
 	enrichments = require( './enrichments' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
@@ -47,6 +48,9 @@ exports.formatAnnotationColors = upload.formatAnnotationColors;
 // Routes for the main view
 exports.view       = view.view;
 exports.queryError = view.queryError;
+
+// Routes for the sample view
+exports.sampleView = sampleView.sampleView;
 
 // Enrichment statistics routes
 exports.enrichments = enrichments.index;

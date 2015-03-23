@@ -2,13 +2,15 @@
 var mongoose = require( 'mongoose' );
 
 // Create dbURI
-var dbURI = "mongodb://localhost/magi";
+var dbHost = process.env.MONGO_HOST || "localhost";
+var dbName = process.env.MONGO_DB_NAME || "magi";
+var dbURI = "mongodb://" + dbHost + "/" + dbName;
 
 // Create the database connection
 //mongoose.connect(dbURI);
 var magi = mongoose.createConnection(dbURI);
 
-var logDB = magi.useDb('magi-logging');
+var logDB = magi.useDb('magi-paad-logging');
 
 exports.magi = magi;
 exports.logDB = logDB;

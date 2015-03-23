@@ -7,8 +7,12 @@ block body
   div(id="view-page")
     div(id="control-panel")
       h4 Control Panel <span id="hideControlPanel">[-]</span>
-      a(href="#", id="enrichmentStatsLink")
-        | Enrichment statistics
+      div(class="panel panel-default", style="margin-top:5px")
+        div(class="panel-heading", style="padding:5px")
+          a(href="#", id="enrichmentStatsLink", style="color:#000000")
+            h5(class="panel-title", style="cursor:pointer;font-size:14px;")
+              | Enrichment statistics
+              span(style="float:right") [+]
       div(id="controls")
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")
@@ -73,6 +77,21 @@ block body
 
             div(id="saveErrMsgContainer")
 
+      div(id="annotatedVariants" class="panel panel-default", style="padding:0px;")
+        div(class="panel-heading", style="padding:5px")
+          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotatedVariantsLink")
+            | Annotated variants
+            span(style="float:right") [+]
+
+        div(id="collapseAnnotatedVariants", class="panel-collapse collapse")
+          div(class="panel-body", style="padding:5px;font-size:90%")
+            ul
+              - for (var i = 0; i < data.genes.length; i++)
+                li
+                  | #{data.genes[i]} 
+                  a(href="/annotations/gene/#{data.genes[i]}")
+                    span(class="badge", style="font-size:80%") #{data.geneToAnnotationCount[data.genes[i]]}
+
       div(id="annotation" class="panel panel-default", style="padding:0px;")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotateLink")
@@ -110,15 +129,13 @@ block body
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#mut_ty').hide()")
                   input(class="form-control toggle", id="mut_ty", placeholder="Mutation type")
                   label(class="toggle")
-                    | Locus
+                    | Protein Sequence Change
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#locus').hide()")
-                  input(class="form-control toggle", id="locus", placeholder="Mutation locus/position.", type="number")
+                  input(class="form-control toggle", id="locus", placeholder="Mutation (e.g. V600E).")
                   label(class="toggle")
                     | Domain
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#domain').hide()")
                   input(class="form-control toggle", id="domain", placeholder="Domain name")
-                  label(class="toggle") PMID
-                  input(class="form-control toggle", id="mutation-pmid", placeholder="PMID", maxlength="8")
                   label(class="toggle")
                     | Comments
                     span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('textarea#mutation-comment').hide()")
@@ -259,24 +276,6 @@ block body
         select(class="form-control", id="cnas-select")
         div(id="cnas")
 
-    br
-    br
-    div(style="margin-left: 20px;min-width: 400px; max-width: 600px; margin-right: 200px")
-      input(id="magiConsentViewToggle", style="display:inline-block;margin-right:5px", type="checkbox")
-      p(style="display:inline-block") I do not want to improve the development of MAGI by sending usage information. <a href="" id="magi-loggingReadMore" style="color:rgb(100,100,100)">(Read More)</a>
-      div(id="magi-loggingReadMoreDiv")
-        blockquote
-          p We don't track identifying information and we anonymize queries. This means that our logs don't track your name or any other
-            | information about who you are, and the genes and datasets you look at are scrambled
-            | to respect research privacy. Logs are made up of anonymized query information and
-            | interaction information, like how visualizations are being used.
-          p Why collect this information? Cancer researchers are hard to observe in-lab due to how
-            | spread out geographically they are, which makes developing usable visualization software
-            | challenging. We use information about how you use the tool to understand how the tool is
-            | being used, to identify usability bottlenecks, and come up with new features.
-
-
-
   script(type="text/javascript").
     var data = !{JSON.stringify(data)},
         showDuplicates = !{showDuplicates};
@@ -335,6 +334,7 @@ block belowTheFold
         var linksWithToggles = [{link: "instructions", target: "One"},
                                 {link: "save", target: "Save"},
                                 {link: "annotate", target: "Annotation"},
+                                {link: "annotatedVariants", target: "AnnotatedVariants"},
                                 {link: "options", target: "Options"}];
         function bootstrapToggle(d){
           $("#" + d.link + "Link").click(function(e){

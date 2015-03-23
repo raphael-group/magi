@@ -62,7 +62,7 @@ exports.datasetGroups = function datasetgroups(query, callback){
 			var groups = [];
 			for (var i = 0; i < res.length; i++){
 				var dbs = res[i].dbs.sort(function(db1, db2){ return db1.title > db2.title; });
-				dbs.forEach(function(db){ db.num_samples = db.samples.length; db.samples = null; })
+				dbs.forEach(function(db){ db.num_samples = db.samples.length; })
 				groups.push( {name: res[i]._id, dbs: dbs } );
 			}
 

@@ -85,7 +85,7 @@ exports.view  = function view(req, res){
 
 			// Create a map of each type to the number of mutated samples
 			var typeToSamples = {};
-			datasets.forEach(function(d){ typeToSamples[d.title] = d.samples;  });
+			datasets.forEach(function(d){ typeToSamples[d.title] = d.samples; });
 
 			Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
 				// Create a list of all the transcripts in the mutated genes
@@ -187,6 +187,19 @@ exports.view  = function view(req, res){
 						}
 					}
 
+					// If no genes were provided, just add all the samples in the case
+					// that there are sample annotations
+					if (genes.length == 0 || (genes.length === 1 && genes[0] === "")){
+						datasets.forEach(function(d){
+							d.samples.forEach(function(s){
+								var _id = s;
+								sampleToTypes[_id] = datasetNames[d.dataset_id];
+								sampleToTypes[s] = d.title;
+								samples.push( {_id: _id, name: s, z_index: 1 } );
+							})
+						});
+					}
+
 					var Genome  = require( "../model/genome" ),
 						missingCNAData = genes.filter(function(g){ return !(g in cna_browser_data); });
 					Genome.addCNARegionData(missingCNAData, function(err, missingRegions){
@@ -203,8 +216,9 @@ exports.view  = function view(req, res){
 							if (err) throw new Error(err);
 
 							// Assemble the annotations
-							var annotations = {};
-							genes.forEach(function(g){ annotations[g] = {}; })
+							var annotations = {},
+								geneToAnnotationList = {};
+							genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
 							support.forEach(function(A){
 								if (!annotations[A.gene][A.mutation_class]){
 									annotations[A.gene][A.mutation_class] = {};
@@ -212,10 +226,17 @@ exports.view  = function view(req, res){
 								var refs = A.references.map(function(d){
 									var score = d.upvotes.length - d.downvotes.length,
 										vote = d.upvotes.indexOf(user_id) != -1 ? "up" : d.downvotes.indexOf(user_id) != -1 ? "down" : null;
+									geneToAnnotationList[A.gene][d.pmid] = true;
 									return { pmid: d.pmid, score: score,  vote: vote, _id: A._id };
 								});
 								annotations[A.gene][A.mutation_class][A.cancer] = refs;
-							})
+							});
+
+							// Count the number of PMIDs per gene
+							var geneToAnnotationCount = {};
+							genes.forEach(function(g){
+								geneToAnnotationCount[g] = Object.keys(geneToAnnotationList[g]).length;
+							});
 
 							// Assemble data into single Object
 							var mutation_matrix = {
@@ -283,7 +304,8 @@ exports.view  = function view(req, res){
 																genes: genes,
 																dataset_ids: dataset_ids,
 																heatmap: heatmap,
-																sampleAnnotations: sampleAnnotations
+																sampleAnnotations: sampleAnnotations,
+																geneToAnnotationCount: geneToAnnotationCount
 															};
 
 												// Render view
