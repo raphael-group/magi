@@ -32,7 +32,8 @@ block body
 							tr
 								td(style="background:#ffffff") #{i+1}
 								td(style="background:#{geneBackground}")
-									| #{m.gene} &nbsp;
+									a(href="/view?genes=#{m.gene}&datasets=#{dataset._id}") #{m.gene}
+									| &nbsp;
 									-if (m.geneReferences.refs.length > 0)
 										+refPopover(m.geneReferences, m.gene + ' Variant Annotations')
 								td(style="background:#{typeBackground}")
