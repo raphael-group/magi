@@ -187,22 +187,34 @@ exports.geneTable = function (genes, support){
 	genes.forEach(function(g){ annotations[g] = { "": [] }; });
 
 	support.forEach(function(A){
-		if (typeof(annotations[A.gene][A.mutation_class]) == 'undefined'){
-			annotations[A.gene][A.mutation_class] = {"" : [] };
+		// We split SNVs into two subclasses: nonsense or missense.
+		// We also remove the "_mutation" suffix sometimes present in the
+		// mutation types
+		var mClass = A.mutation_class.toLowerCase(),
+			mType = A.mutation_type ? A.mutation_type.toLowerCase().replace("_mutation", "") : "";
+		if (mClass == "snv" && (mType == "missense" || mType == "nonsense")){ mClass = mType; }
+		
+		// Add the class if it hasn't been seen before
+		if (typeof(annotations[A.gene][mClass]) == 'undefined'){
+			annotations[A.gene][mClass] = {"" : [] };
 		}
-		if (A.mutation_class == "missense" || A.mutation_class == "nonsense"){
+
+		// If we know the mutaton class, we might also want to add
+		// the protein sequence change
+		if (mClass == "snv" || mClass == "missense" || mClass == "nonsense"){
 			if (A.change){
-				if (typeof(annotations[A.gene][A.mutation_class][A.change]) == 'undefined'){
-					annotations[A.gene][A.mutation_class][A.change] = [];
+				A.change = A.change.replace("p.", "");
+				if (typeof(annotations[A.gene][mClass][A.change]) == 'undefined'){
+					annotations[A.gene][mClass][A.change] = [];
 				}
 
 				A.references.forEach(function(ref){
-					annotations[A.gene][A.mutation_class][A.change].push({ pmid: ref.pmid, cancer: A.cancer });
+					annotations[A.gene][mClass][A.change].push({ pmid: ref.pmid, cancer: A.cancer });
 				});
 			}
 		}
 		A.references.forEach(function(ref){
-			annotations[A.gene][A.mutation_class][""].push({ pmid: ref.pmid, cancer: A.cancer });
+			annotations[A.gene][mClass][""].push({ pmid: ref.pmid, cancer: A.cancer });
 			annotations[A.gene][""].push({ pmid: ref.pmid, cancer: A.cancer });
 		});
 	});
