@@ -204,7 +204,7 @@ function view(){
 		cells.each(function(d) {
 			// Create the tooltip data for the data that will always be present
 			var tooltipData = [
-					{ type: 'text', text: 'Sample: ' + d.x },
+					{ type: 'link', href: '/sampleView?sample=' + d.x, body: 'Sample: ' + d.x },
 					{ type: 'text', text: 'Value: ' + d.value}
 				];
 
@@ -248,7 +248,7 @@ function view(){
 				mutationType = mutationToName(d.cell.type),
 				mutationClass = mutationToClass(d.cell.type),
 				tooltipData  = [
-					{ type: 'text', text: 'Sample: ' + d.colLabel },
+					{ type: 'link', href: '/sampleView?sample=' + d.colLabel, body: 'Sample: ' + d.colLabel },
 					{ type: 'text', text: 'Type: ' + d.cell.dataset},
 					{ type: 'text', text: 'Mutation: ' + mutationType }
 				];
@@ -483,20 +483,29 @@ function view(){
 			}));
 
 		// And add tooltips
+		var aminoAcidCodes = { A: "Ala", B: "Asx", C: "Cys", D: "Asp", E: "Glu", F: "Phe", G: "Gly", H: "His", I: "Ile", K: "Lys", L: "Leu", M: "Met", N: "Asn", P: "Pro", Q: "Gln", R: "Arg", S: "Ser", T: "Thr", V: "Val", W: "Trp", X: "X", Y: "Tyr",Z: "Glx", "*": "*"};
+		function aminoAcidCode(aa){ return aa in aminoAcidCodes ? aminoAcidCodes[aa] : aa; }
+
 		var mutations = transcriptPlot.selectAll("path.symbols"),
 			transcriptTooltips = [];
 		mutations.classed("gd3-tipobj", true);
 		mutations.each(function(d) {
+			"fbxw7%5Btw%5D+AND+(r465h%5Btw%5D+OR+Arg465+%5Btw%5D)"
+			var locusOneCode = d.aao + d.locus + "%5Btw%5D",
+				locusThreeCode = aminoAcidCode(d.aao) + d.locus + "%5Btw%5D",
+				locusHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName + '%5Btw%5D+AND+(' + locusOneCode + "+OR+" + locusThreeCode + ")",
+				changeOneCode = d.aao + d.locus + d.aan + "%5Btw%5D",
+				changeThreeCode = aminoAcidCode(d.aao) + d.locus + aminoAcidCode(d.aan) + "%5Btw%5D",
+				changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")";
+
 			transcriptTooltips.push([
-				{ type: 'text', text: 'Sample: ' + d.sample },
+				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
 				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
 				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
-				{ 
-					type: 'link',
-					href: 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName.toLowerCase() + '+' + [d.aao, d.locus, d.aan].join("").toLowerCase(),
-					body: 'Search protein sequence change on Pubmed.'
-				}
+				{ type: 'link', href: locusHref, body: 'Search locus on Pubmed.' },
+				{ type: 'text', text: ''},
+				{ type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' }
 			].map(gd3.tooltip.datum));
 		});
 
@@ -546,7 +555,7 @@ function view(){
 		intervals.classed("gd3-tipobj", true);
 		intervals.each(function(d) {
 			cnaTooltips.push([
-				{ type: 'text', text: 'Sample: ' + d.sample },
+				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
 				{ type: 'text', text: 'Type: ' + mutationToName(d.ty) },
 				{ type: 'text', text: 'Start: ' + d.start },
