@@ -73,7 +73,10 @@ exports.sampleView = function sampleView(req, res){
 					sample.mutations.forEach(function(d){
 						var g = d.name;
 						d.mutations.forEach(function(m){
-							m.change = m.change.replace("p.", "");
+							// Remove the p. prefix
+							if (typeof(m.change) == 'string'){
+								m.change = m.change.replace("p.", "");
+							}
 							if (typeof(annotations[g][m.type]) != 'undefined'){
 								if (typeof(annotations[g][m.type][m.change]) != 'undefined'){
 									m['annotationType'] = 'locus';
