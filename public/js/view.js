@@ -490,13 +490,17 @@ function view(){
 			transcriptTooltips = [];
 		mutations.classed("gd3-tipobj", true);
 		mutations.each(function(d) {
-			"fbxw7%5Btw%5D+AND+(r465h%5Btw%5D+OR+Arg465+%5Btw%5D)"
+			// Search at the locus level...
 			var locusOneCode = d.aao + d.locus + "%5Btw%5D",
 				locusThreeCode = aminoAcidCode(d.aao) + d.locus + "%5Btw%5D",
 				locusHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName + '%5Btw%5D+AND+(' + locusOneCode + "+OR+" + locusThreeCode + ")",
+				// ...and search at the protein sequence level
 				changeOneCode = d.aao + d.locus + d.aan + "%5Btw%5D",
 				changeThreeCode = aminoAcidCode(d.aao) + d.locus + aminoAcidCode(d.aan) + "%5Btw%5D",
-				changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")";
+				clause1	 = geneName + changeOneCode
+				clause2 = geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")",
+				changeQuery = clause1 + " OR (" + clause2 + ")",
+				changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
 
 			transcriptTooltips.push([
 				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
