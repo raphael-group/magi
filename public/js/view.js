@@ -117,6 +117,14 @@ function view(){
 		else return "Other";
 	}
 
+	function pubmedLink(_id){
+		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+			return 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+		} else{
+			return 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
+		}
+	}
+
 	// Set up the styles for the four views
 	var genes = data.genes,
 		datasets = Object.keys(data.datasetColors);
@@ -289,7 +297,7 @@ function view(){
 							// only show the cancer name in the first row
 							refTable.push([	
 								{ type: 'text', text: i ? "" : cancerToName(cancer) },
-								{ type: 'link', body: ref.pmid, href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid},
+								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
 								{ type: 'vote',
 								  voteDirectionFn: function(){ return ref.vote; },
 								  voteCountFn: function(){ return ref.score; },
@@ -382,7 +390,7 @@ function view(){
 					// only show the network name in the first row
 					refTable.push([
 						{type: 'text', text: i ? "" : n},
-						{type: 'link', href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid, body: ref.pmid},
+						{type: 'link', href: pubmedLink(ref.pmid), body: ref.pmid},
 						{type: 'vote',
 						 voteDirectionFn: function(){ return ref.vote; },
 						 voteCountFn: function(){ return ref.score; },

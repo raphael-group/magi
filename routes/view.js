@@ -220,6 +220,7 @@ exports.view  = function view(req, res){
 								geneToAnnotationList = {};
 							genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
 							support.forEach(function(A){
+								console.log(A)
 								A.mutation_class = A.mutation_class.toUpperCase();
 								if (!annotations[A.gene][A.mutation_class]){
 									annotations[A.gene][A.mutation_class] = {};
@@ -230,7 +231,8 @@ exports.view  = function view(req, res){
 									geneToAnnotationList[A.gene][d.pmid] = true;
 									return { pmid: d.pmid, score: score,  vote: vote, _id: A._id };
 								});
-								annotations[A.gene][A.mutation_class][A.cancer] = refs;
+								var cancer = A.cancer ? A.cancer : "Cancer";
+								annotations[A.gene][A.mutation_class][cancer] = refs;
 							});
 
 							// Count the number of PMIDs per gene

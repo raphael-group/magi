@@ -7,7 +7,7 @@ var	mongoose = require( 'mongoose' ),
 
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
-	console.log('/datasets/gene');
+	console.log('/annotations/gene');
 
 	// Parse params
 	var gene = req.params.gene || "",
@@ -19,7 +19,7 @@ exports.gene = function gene(req, res){
 		var annotations = Annotations.geneTable([gene], support)[gene][''],
 			geneTable = annotations.refs,
 			count = annotations.count;
-		console.log(geneTable)
+
 		// Render the view
 		res.render('annotations/gene', { user: req.user, count: count, geneTable: geneTable, gene: gene });
 	});
@@ -27,7 +27,7 @@ exports.gene = function gene(req, res){
 
 // Renders annotations for the given cancer
 exports.cancer = function cancer(req, res){
-	console.log('/datasets/cancer');
+	console.log('/annotations/cancer');
 
 	// Parse params
 	var cancer = req.params.cancer.split("-").join(" ") || "",

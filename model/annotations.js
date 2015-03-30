@@ -8,10 +8,10 @@ var AnnotationSchema = new mongoose.Schema({
 	transcript: { type: String, required: false},
 	change: { type: String, required: false},
 	mutation_class: { type: String, required: true},
-	cancer: { type: String, required: true },
+	mutation_type: { type: String, required: false},
+	cancer: { type: String, required: false },
 	position: { type: Number, required: false},
 	domain: { type: {}, required: false},
-	mutation_type: { type: String, required: false},
 	references: { type: Array, required: false, default: [] },
 	support: { type: Array, required: false, default: [] },
 	created_at: { type: Date, default: Date.now }
@@ -114,8 +114,8 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 
 	function mutationTypeToClass(ty){
 		ty = ty.toLowerCase();
-		if (ty == 'missense') return 'missense';
-		else if (ty == 'nonsense') return 'nonsense';
+		if (ty == 'missense') return 'snv';
+		else if (ty == 'nonsense') return 'snv';
 		else if (ty == 'del') return 'del';
 		else if (ty == 'amp') return 'amp';
 		else if (ty == 'fus') return 'fus';
@@ -140,7 +140,7 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 				support = {
 					gene: fields[0],
 					transcript: fields[1] == '' ? null : fields[1],
-					cancer: fields[2],
+					cancer: fields[2] == '' ? null : fields[2],
 					mutation_type: fields[3],
 					mutation_class: mutationTypeToClass(fields[3]),
 					locus: fields[4] == '' ? null : fields[4],
@@ -159,6 +159,7 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 					gene: A.gene,
 					cancer: A.cancer,
 					mutation_class: A.mutation_class,
+					mutation_type: A.mutation_type,
 					change: A.change
 				};
 
@@ -229,7 +230,7 @@ exports.geneTable = function (genes, support){
 
 		// First combine at the cancer level
 		objects.forEach(function(d){
-			d.cancer = d.cancer.toUpperCase();
+			d.cancer = d.cancer ? d.cancer.toUpperCase() : "Cancer";
 			if (typeof(objToIndex[d.pmid]) == 'undefined'){
 				objToIndex[d.pmid] = combinedCancer.length;
 				combinedCancer.push( { pmid: d.pmid, cancers: [d.cancer] } );

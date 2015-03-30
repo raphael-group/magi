@@ -4,6 +4,15 @@ block body
 		br
 		h3 #{gene} mutation annotations
 		br
+		- var pubmedLink = function (_id){
+		- 		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+		- 			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+		-		} else{
+		-			var href = 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
+		-		}
+		-		return "<a href='" + href + "' target='_new'>" + _id + "</a>";
+		-	}
+
 		table(class="table table-condensed table-hover", id="gene-annotation-table", style="max-width:600px")
 			thead
 				tr(style="background:#e3e3e3")
@@ -14,5 +23,5 @@ block body
 					-var d = geneTable[i];
 						tr
 							td 
-								!=d.pmids.map(function(pmid){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '" target="_new">' + pmid + '</a>'}).join(", ")
+								!=d.pmids.map(pubmedLink).join(", ")
 							td #{d.cancers.join(", ")}

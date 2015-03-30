@@ -22,9 +22,17 @@ block body
 							- var geneBackground = m.geneReferences && m.geneReferences.refs && m.geneReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
 							- var typeBackground = m.typeReferences && m.typeReferences.refs && m.typeReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
 							- var locusBackground = m.locusReferences && m.locusReferences.refs && m.locusReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
+							- var pubmedLink = function (_id){
+							- 		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+							- 			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+							-		} else{
+							-			var href = 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
+							-		}
+							-		return "<a href='" + href + "' target='_new'>" + _id + "</a>";
+							-	}
 
 							mixin refPopover(datum, title)
-								- var rows = datum.refs.map(function(d){ return '<tr><td>' + d.pmids.map(function(pmid){ return '<a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '" target="_new">' + pmid + '</a>'; }).join(', ') + '</td><td>' + d.cancers.join(', ') + '</td></tr>' }).join("");
+								- var rows = datum.refs.map(function(d){ return '<tr><td>' + d.pmids.map(pubmedLink).join(', ') + '</td><td>' + d.cancers.join(', ') + '</td></tr>' }).join("");
 								- var tbl = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>Pubmed ID</th><th>Cancers</th></tr></thead><tbody>' + rows + '</tbody></table>'
 								a(href='#', data-title='#{title}', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
 									| #{datum.count}
@@ -71,3 +79,8 @@ block belowTheFold
 		addDataTable({ tableID: "#variant-table", aaSorting: [[0, "asc"]] });
 		//- Set up the popovers
 		$("[data-toggle=popover]").popover({html:true, container: 'body'})
+		//- Make sure the popovers are active whenever the table is updated
+		var table = $("#variant-table").DataTable();
+		table.on( 'draw', function () {
+			$("[data-toggle=popover]").popover({html:true, container: 'body'})
+		} );
