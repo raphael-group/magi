@@ -63,7 +63,7 @@ exports.vote = function mutationVote(fields, user_id){
 			throw new Error(err);
 			d.resolve();
 		}
-		console.log(annotation)
+
 		// Update the vote for the reference
 		annotation.references.forEach(function(ref){
 			if (ref.pmid == pmid){

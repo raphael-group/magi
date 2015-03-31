@@ -96,7 +96,7 @@ exports.saveMutation = function saveMutation(req, res){
 				domain: req.body.domain
 			};
 
-		Annotations.upsertAnnotation(query, req.body.pmid, req.body.comment, req.user._id + "", null, function(err, annotation){
+		Annotations.upsertAnnotation(query, req.body.pmid, req.body.comment, req.user._id + "", "Community", function(err, annotation){
 			if (err){
 				res.send({ error: "Annotation could not be parsed. " + err });
 				throw new Error(err);

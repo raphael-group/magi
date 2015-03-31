@@ -99,6 +99,7 @@ block belowTheFold
 		var tbl = addDataTable({
 				tableID: "#gene-annotation-table", aaSorting: [[0, "asc"]]
 			});
+		$("#gene-annotation-table_info").css({'font-weight': 'bold', 'font-size': '110%'});
 		function voteMutation(annotation_id, pmid, vote){
 			// Update the vote count
 			// Create a form to submit as an AJAX request to update the database

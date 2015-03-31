@@ -559,7 +559,7 @@ function view(){
 
 		// Update the CNA browser
 		cnas.datum(data.cnas[geneName])
-			.call(gd3.cna({ style: style.cnas }))
+			.call(gd3.cna({ style: style.cnas }).showScrollers(false))
 
 		// And add tooltips
 		var intervals = cnas.selectAll("g.intervals"),
