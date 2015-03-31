@@ -175,7 +175,7 @@ app.post('/save/annotation/mutation', ensureAuthenticated, routes.annotations.sa
 app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save.ppi);
 app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
-app.post('/vote/mutation', ensureAuthenticated, routes.annotations.mutationVote);
+app.post('/vote/mutation', routes.annotations.mutationVote);
 
 // more information
 app.get('/terms', routes.terms);

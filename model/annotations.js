@@ -14,13 +14,14 @@ var AnnotationSchema = new mongoose.Schema({
 	domain: { type: {}, required: false},
 	references: { type: Array, required: false, default: [] },
 	support: { type: Array, required: false, default: [] },
+	source: { type: String, required: false, default: 'Community'},
 	created_at: { type: Date, default: Date.now }
 });
 
 Database.magi.model( 'Annotation', AnnotationSchema );
 
 // upsert an annotation into MongoDB
-exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
+exports.upsertAnnotation = function(query, pmid, comment, user_id, source, callback ){
 	var Annotation = Database.magi.model( 'Annotation' );
 
 	var support = {ref: pmid, user_id: user_id, comment: comment};
@@ -33,7 +34,7 @@ exports.upsertAnnotation = function(query, pmid, comment, user_id, callback ){
 			var addReference = annotation.references.filter(function(r){ return r.pmid == pmid }).length == 0;
 
 			if (addReference){
-				annotation.references.push( {pmid: pmid, upvotes: [], downvotes: []} )
+				annotation.references.push( {source: source, pmid: pmid, upvotes: [], downvotes: []} )
 				annotation.markModified('references');
 			}
 
@@ -93,7 +94,7 @@ exports.vote = function mutationVote(fields, user_id){
 }
 
 // Loads annotations into the database
-exports.loadAnnotationsFromFile = function(filename, callback){
+exports.loadAnnotationsFromFile = function(filename, source, callback){
 	// Load required modules
 	var fs = require( 'fs' ),
 		Annotation = Database.magi.model( 'Annotation' ),
@@ -110,16 +111,6 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 			data = fileData;
 		});
 		return d.promise;
-	}
-
-	function mutationTypeToClass(ty){
-		ty = ty.toLowerCase();
-		if (ty == 'missense') return 'snv';
-		else if (ty == 'nonsense') return 'snv';
-		else if (ty == 'del') return 'del';
-		else if (ty == 'amp') return 'amp';
-		else if (ty == 'fus') return 'fus';
-		else return ty;
 	}
 
 	function processAnnotations(){
@@ -141,12 +132,13 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 					gene: fields[0],
 					transcript: fields[1] == '' ? null : fields[1],
 					cancer: fields[2] == '' ? null : fields[2],
-					mutation_type: fields[3],
-					mutation_class: mutationTypeToClass(fields[3]),
-					locus: fields[4] == '' ? null : fields[4],
-					change: fields[5] == '' ? null : fields[5],
-					pmid: fields[6],
-					comment: fields.length > 7 ? fields[8] : null
+					mutation_class: fields[3],
+					mutation_type: fields[4],
+					locus: fields[5] == '' ? null : fields[5],
+					change: fields[6] == '' ? null : fields[6],
+					pmid: fields[7],
+					comment: fields.length > 8 ? fields[8] : null,
+					source: source
 				}
 			annotations.push( support );
 		}
@@ -163,7 +155,7 @@ exports.loadAnnotationsFromFile = function(filename, callback){
 					change: A.change
 				};
 
-			exports.upsertAnnotation(query, A.pmid, A.comment, null, function(err, annotation){
+			exports.upsertAnnotation(query, A.pmid, A.comment, null, source, function(err, annotation){
 				if (err) throw new Error(err);
 				d.resolve();
 			})

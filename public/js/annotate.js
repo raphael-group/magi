@@ -177,8 +177,8 @@ function initializeAnnotations(){
 
 	// PMID validator
 	function validatePMID(pmid){
-		if (pmid == "" || pmid.length < 7 || isNaN(parseFloat(pmid)) || !isFinite(pmid) ){
-			annotationStatus("Please enter at least one valid PMID (7- or 8-digit number).", warningClasses);
+		if (pmid == ""){
+			annotationStatus("Please enter at least one valid PMID or PMCID.", warningClasses);
 			return false;
 		}
 		return true;
@@ -197,22 +197,28 @@ function initializeAnnotations(){
 			// Retrieve the values filled out in the form
 			var pmid = mutationPMID.property('value'),
 				gene = geneSelect.node().value,
-				aberration = abberationSelect.node().value,
+				mutationClass = abberationSelect.node().value,
 				cancer = cancerInput.property('value'),
-				mutation = mutationInput.property('value'),
-				locus = locusInput.property('value'),
+				mutationType = mutationInput.property('value'),
+				change = locusInput.property('value'),
 				domain = domainInput.property('value'),
 				comment = mutationComment.property('value');
+
+			// Hard-code amps/dels as CNAs
+			if (mutationClass == 'amp' || mutationClass == 'del'){
+				mutationType = mutationClass == 'amp' ? 'amplification' : 'deletion';
+				mutationClass = 'cna';
+			}
 
 			if (!validatePMID(pmid)) return false;
 			var url = '/save/annotation/mutation',
 				formData = populateForm({
 					pmid: pmid,
 					gene: gene,
-					aberration: aberration,
+					mutationClass: mutationClass,
 					cancer: cancer,
-					mutation: mutation,
-					locus: locus, 
+					mutationType: mutationType,
+					change: change, 
 					domain: domain,
 					comment: comment
 				});

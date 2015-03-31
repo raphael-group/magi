@@ -1,9 +1,11 @@
 extends ../layout
 block body
-	div(class="container", id="gene-annotations")
+	- var user_id = user ? user._id + "" : "";
+	div(class="container annotation-table", id="gene-annotations")
 		br
 		h3 #{gene} mutation annotations
 		br
+		//- Helper javascript functions
 		- var pubmedLink = function (_id){
 		- 		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
 		- 			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
@@ -13,15 +15,173 @@ block body
 		-		return "<a href='" + href + "' target='_new'>" + _id + "</a>";
 		-	}
 
-		table(class="table table-condensed table-hover", id="gene-annotation-table", style="max-width:600px")
+		- var mutation_type = function(n){
+		-		var n = n.toLowerCase();
+		-		if (n == 'missense') return 'Missense';
+		-		else if (n == 'nonsense') return 'Nonsense';
+		-		else if (n == 'in_frame_del') return 'In-Frame Deletion';
+		-		else if (n == 'in_frame_ins') return 'In-Frame Insertion';
+		-		else if (n == 'frame_shift_ins') return 'Frame-Shift Insertion';
+		-		else if (n == 'frame_shift_del') return 'Frame-Shift Deletion';
+		-		else if (n == 'splice_site') return 'Splite-Site';
+		-		else return n.charAt(0).toUpperCase() + n.slice(1);
+		-	}
+
+		- var mutation_class = function(n){
+		-		var n = n.toLowerCase();
+		-		if (n == 'snv') return 'Single Nucleotide Variant';
+		-		else if (n == 'cna') return 'Copy Number Aberration';
+		-		else if (n == 'amp') return 'Copy Number Aberration';
+		-		else if (n == 'del') return 'Copy Number Aberration';
+		-		else return n.charAt(0).toUpperCase() + n.slice(1);
+		-	}
+
+		- var cancerAbbr = function(cancer){
+		-		if (cancer){
+		-			var c = cancer.toLowerCase();
+		-			if (typeof(abbrToCancer[c]) != 'undefined'){
+		-				return "<abbr title='" + abbrToCancer[c] + "'>" + c.toUpperCase() + "</abbr>"
+		-			} else if (typeof(cancerToAbbr[c]) != 'undefined') {
+		-				var abbr = cancerToAbbr[c];
+		-				return "<abbr title='" + abbrToCancer[abbr] + "'>" + abbr.toUpperCase() + "</abbr>"
+		-			} else {
+		-				return cancer;
+		-			}
+		-		} else {
+		-			return "Cancer";
+		-		}
+		-	}
+
+		table(class="table table-condensed", id="gene-annotation-table")
 			thead
 				tr(style="background:#e3e3e3")
-					th PMIDs
-					th Cancers
+					th Associated cancer
+					th Mutation class
+					th Mutation type
+					th Protein sequence change
+					th PMID / PMCID
+					th Source
+					th Votes
 			tbody
-				-for (var i = 0; i < geneTable.length; i++)
-					-var d = geneTable[i];
+				-for (var i = 0; i < annotations.length; i++)
+					- var d = annotations[i];
+					- var cancer = cancerAbbr(d.cancer)
+					- var mutationClass = d.mutation_class ? d.mutation_class : "--";
+					- var mutationType = d.mutation_type ? d.mutation_type : "--";
+					- var proteinSeqChange = d.change ? d.change : "--";
+					- for (var j = 0; j < d.references.length; j++)
+						- var ref = d.references[j];
+						- var numVotes = ref.upvotes.length - ref.downvotes.length;
+						- var downVoteClass = ref.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
+						- var upVoteClass = ref.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
 						tr
-							td 
-								!=d.pmids.map(pubmedLink).join(", ")
-							td #{d.cancers.join(", ")}
+							td !{cancer} 
+							td #{mutation_class(mutationClass)}
+							td #{mutation_type(mutationType)}
+							td #{proteinSeqChange}
+							td !{pubmedLink(ref.pmid)}
+							td !{ref.source}
+							td
+								a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d._id}", pmid="#{ref.pmid}") &#x25BC;&nbsp;
+								span(id="vote-#{d._id}-#{ref.pmid}") #{numVotes}
+								a(href="#", class="upvote  #{upVoteClass}", annotation-id="#{d._id}", pmid="#{ref.pmid}") &#x25B2;
+		br
+		div(id="annotationStatus", class="text-center", style="width:100%;")
+
+
+block belowTheFold
+	script(src='/components/jquery/dist/jquery.min.js').
+	script(src='/components/bootstrap/dist/js/bootstrap.min.js').
+	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
+	script(src='/js/dataTableWrapper.js').
+	script(type='text/javascript').
+		//- Convert the tables into DataTables
+		var tbl = addDataTable({
+				tableID: "#gene-annotation-table", aaSorting: [[0, "asc"]]
+			});
+		function voteMutation(annotation_id, pmid, vote){
+			// Update the vote count
+			// Create a form to submit as an AJAX request to update the database
+			var formData = new FormData();
+			formData.append( "pmid", pmid );
+			formData.append( "_id", annotation_id );
+			formData.append( "vote", vote );
+
+			$.ajax({
+				// Note: can't use JSON otherwise IE8 will pop open a dialog
+				// window trying to download the JSON as a file
+				url: '/vote/mutation',
+				data: formData,
+				cache: false,
+				contentType: false,
+				processData: false,
+				type: 'POST',
+
+				error: function(xhr) {
+					annotationStatus('Database error: ' + xhr.status);
+				},
+
+				success: function(response) {
+					if (response.error) {
+						annotationStatus(response.error, warningClasses);
+						return;
+					}
+
+					// Log the status
+					annotationStatus(response.status, successClasses);
+				}
+			});
+		}
+		$('a.downvote').on('click', function(){
+			var el = $(this),
+				sibling = el.siblings('a'),
+				annotation_id = el.attr('annotation-id'),
+				pmid = el.attr('pmid'),
+				voteCount = $('span#vote-' + annotation_id + '-' + pmid),
+				numVotes = +(voteCount.text());
+
+			voteMutation(annotation_id, pmid, 'down');
+
+			if (sibling.hasClass('upvote-on')){
+				sibling.removeClass('upvote-on');
+				el.addClass('downvote-on'); 
+				voteCount.text(numVotes - 2);
+			} else if (el.hasClass('downvote-on')){
+				el.removeClass('downvote-on');
+				voteCount.text(numVotes + 1);
+			} else{
+				el.addClass('downvote-on');
+				voteCount.text(numVotes - 1);
+			}
+
+		});
+		$('a.upvote').on('click', function(){
+			var el = $(this),
+				sibling = el.siblings('a'),
+				annotation_id = el.attr('annotation-id'),
+				pmid = el.attr('pmid'),
+				voteCount = $('span#vote-' + annotation_id + '-' + pmid),
+				numVotes = +(voteCount.text());
+
+			voteMutation(annotation_id, el.attr('pmid'), 'up');
+
+			if (sibling.hasClass('downvote-on')){
+				sibling.removeClass('downvote-on');
+				el.addClass('upvote-on'); 
+				voteCount.text(numVotes + 2);
+			} else if (el.hasClass('upvote-on')){
+				el.removeClass('upvote-on');
+				voteCount.text(numVotes - 1);
+			} else{
+				el.addClass('upvote-on');
+				voteCount.text(numVotes + 1);
+			}
+		});
+		var infoClasses  = 'alert alert-info',
+			warningClasses = 'alert alert-warning',
+			successClasses = 'alert alert-success';
+
+		function annotationStatus(msg, classes) {
+			$("#annotationStatus").attr('class', classes);
+			$('#annotationStatus').html(msg);
+		}
