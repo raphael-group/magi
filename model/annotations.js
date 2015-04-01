@@ -12,7 +12,7 @@ var AnnotationSchema = new mongoose.Schema({
 	cancer: { type: String, required: false },
 	position: { type: Number, required: false},
 	domain: { type: {}, required: false},
-	references: { type: Array, required: false, default: [] },
+	references: { type: Array, required: true, default: [] },
 	support: { type: Array, required: false, default: [] },
 	source: { type: String, required: false, default: 'Community'},
 	created_at: { type: Date, default: Date.now }
@@ -28,9 +28,14 @@ exports.upsertAnnotation = function(query, pmid, comment, user_id, source, callb
 	Annotation.findOneAndUpdate(
 		query,
 		{$push: {support: support}},
-		{safe: true, upsert: true},
+		{upsert: true},
 		function(err, annotation) {
 			if (err) throw new Error(err);
+			// if (annotation == null){
+			// 	console.log(query)
+			// 	callback(null, null);
+			// 	return;
+			// }
 			var addReference = annotation.references.filter(function(r){ return r.pmid == pmid }).length == 0;
 
 			if (addReference){
@@ -150,10 +155,13 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 			var query = {
 					gene: A.gene,
 					cancer: A.cancer,
-					mutation_class: A.mutation_class,
-					mutation_type: A.mutation_type,
-					change: A.change
+					mutation_class: A.mutation_class
 				};
+
+			if (A.change != null && A.change != '')
+				query.change = A.change;
+			if (A.mutation_type != null && A.mutation_type != '')
+				query.mutation_type = A.mutation_type;
 
 			exports.upsertAnnotation(query, A.pmid, A.comment, null, source, function(err, annotation){
 				if (err) throw new Error(err);
