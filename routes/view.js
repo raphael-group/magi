@@ -220,7 +220,6 @@ exports.view  = function view(req, res){
 								geneToAnnotationList = {};
 							genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
 							support.forEach(function(A){
-								console.log(A)
 								A.mutation_class = A.mutation_class.toUpperCase();
 								if (!annotations[A.gene][A.mutation_class]){
 									annotations[A.gene][A.mutation_class] = {};
