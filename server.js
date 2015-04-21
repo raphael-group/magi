@@ -17,7 +17,7 @@ var express = require('express'),
   mongoose = require('mongoose'),
   passport = require('passport'),
   jsdom    = require('jsdom'),
-  GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+  GoogleStrategy = require('passport-google-openidconnect').Strategy;
 
 var app = module.exports = express();
 
@@ -88,21 +88,22 @@ try {
       clientSecret: config.google.clientSecret || "",
       callbackURL: app.get('site url') + config.google.callbackURLSuffix || ""
     },
-    function(token, tokenSecret, profile, done) {
+    function(iss, sub, profile, accessToken, refreshToken, done) {
+      if (!profile._json) throw new Error("No profile._json when authenticating!");
       User.findOne({ googleId: profile.id }, function (err, user) {
         if (err) console.log( err );
         if (!user) var user = new User();
 
         // Store the user's full name, and his/her first email
-      user.name     = profile.name.givenName + " " + profile.name.familyName;
-      user.email    = profile.emails[0].value;
-      user.googleId = profile.id;
+        user.name     = profile.displayName;
+        user.email    = profile._json.email;
+        user.googleId = profile.id;
 
-      // Save/Update the user
-      user.save(function(err){
-        if (err) done(err, null);
-        else done(err, user);
-      });
+        // Save/Update the user
+        user.save(function(err){
+          if (err) done(err, null);
+          else done(err, user);
+        });
       });
     }
   ));
@@ -208,12 +209,10 @@ app.get('/auth/google/returnTo', function(req, res){
 });
 
 app.get('/auth/google',
-  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login',
-                                            'https://www.googleapis.com/auth/plus.profile.emails.read'] }),
-  function(req, res){});
+  passport.authenticate('google-openidconnect', {scope: ['email']}));
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }), function(req, res) {
+  passport.authenticate('google-openidconnect', { failureRedirect: '/login' }), function(req, res) {
     var redirectTo = req.session.returnTo || '/account';
     delete req.session.returnTo;
     res.redirect(redirectTo);

@@ -27,7 +27,7 @@
     "bower": "latest",
     "formidable": "latest",
     "passport": "latest",
-    "passport-google-oauth": "latest",
+    "passport-google-openidconnect": "latest",
     "moment": "latest",
     "jsdom": "3.x",
     "q": "latest",
