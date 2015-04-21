@@ -9,7 +9,6 @@ var mongoose = require('mongoose'),
 // Renders home page
 exports.index = function index(req, res){
 	console.log('/index')
-	console.log(req.user)
 	Dataset.datasetGroups({is_public: true}, function(err, standardGroups){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
