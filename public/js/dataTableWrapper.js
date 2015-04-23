@@ -5,7 +5,7 @@ function addDataTable(params){
         aoColumns = params.aoColumns || null;
 
     // Add the data table
-    $(tblID).DataTable({
+    var tbl = $(tblID).DataTable({
         "aaSorting": aaSorting,
         "aoColumns": aoColumns,
         "sPaging": "pagination",
@@ -25,7 +25,7 @@ function addDataTable(params){
     $(tblID + "_filter input").insertAfter(tblID + "_filter label");
     $(tblID + "_filter label").remove();
     $(tblID + "_info").insertAfter("div." + tblID.split("#")[1] + "_paging");
-
+    return tbl;
 }
 
 
