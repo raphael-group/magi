@@ -117,6 +117,14 @@ function view(){
 		else return "Other";
 	}
 
+	function pubmedLink(_id){
+		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+			return 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+		} else{
+			return 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
+		}
+	}
+
 	// Set up the styles for the four views
 	var genes = data.genes,
 		datasets = Object.keys(data.datasetColors);
@@ -204,7 +212,7 @@ function view(){
 		cells.each(function(d) {
 			// Create the tooltip data for the data that will always be present
 			var tooltipData = [
-					{ type: 'text', text: 'Sample: ' + d.x },
+					{ type: 'link', href: '/sampleView?sample=' + d.x, body: 'Sample: ' + d.x },
 					{ type: 'text', text: 'Value: ' + d.value}
 				];
 
@@ -248,7 +256,7 @@ function view(){
 				mutationType = mutationToName(d.cell.type),
 				mutationClass = mutationToClass(d.cell.type),
 				tooltipData  = [
-					{ type: 'text', text: 'Sample: ' + d.colLabel },
+					{ type: 'link', href: '/sampleView?sample=' + d.colLabel, body: 'Sample: ' + d.colLabel },
 					{ type: 'text', text: 'Type: ' + d.cell.dataset},
 					{ type: 'text', text: 'Mutation: ' + mutationType }
 				];
@@ -289,7 +297,7 @@ function view(){
 							// only show the cancer name in the first row
 							refTable.push([	
 								{ type: 'text', text: i ? "" : cancerToName(cancer) },
-								{ type: 'link', body: ref.pmid, href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid},
+								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
 								{ type: 'vote',
 								  voteDirectionFn: function(){ return ref.vote; },
 								  voteCountFn: function(){ return ref.score; },
@@ -382,7 +390,7 @@ function view(){
 					// only show the network name in the first row
 					refTable.push([
 						{type: 'text', text: i ? "" : n},
-						{type: 'link', href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + ref.pmid, body: ref.pmid},
+						{type: 'link', href: pubmedLink(ref.pmid), body: ref.pmid},
 						{type: 'vote',
 						 voteDirectionFn: function(){ return ref.vote; },
 						 voteCountFn: function(){ return ref.score; },
@@ -483,20 +491,33 @@ function view(){
 			}));
 
 		// And add tooltips
+		var aminoAcidCodes = { A: "Ala", B: "Asx", C: "Cys", D: "Asp", E: "Glu", F: "Phe", G: "Gly", H: "His", I: "Ile", K: "Lys", L: "Leu", M: "Met", N: "Asn", P: "Pro", Q: "Gln", R: "Arg", S: "Ser", T: "Thr", V: "Val", W: "Trp", X: "X", Y: "Tyr",Z: "Glx", "*": "*"};
+		function aminoAcidCode(aa){ return aa in aminoAcidCodes ? aminoAcidCodes[aa] : aa; }
+
 		var mutations = transcriptPlot.selectAll("path.symbols"),
 			transcriptTooltips = [];
 		mutations.classed("gd3-tipobj", true);
 		mutations.each(function(d) {
+			// Search at the locus level...
+			var locusOneCode = d.aao + d.locus + "%5Btw%5D",
+				locusThreeCode = aminoAcidCode(d.aao) + d.locus + "%5Btw%5D",
+				locusHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName + '%5Btw%5D+AND+(' + locusOneCode + "+OR+" + locusThreeCode + ")",
+				// ...and search at the protein sequence level
+				changeOneCode = d.aao + d.locus + d.aan + "%5Btw%5D",
+				changeThreeCode = aminoAcidCode(d.aao) + d.locus + aminoAcidCode(d.aan) + "%5Btw%5D",
+				clause1	 = geneName + changeOneCode
+				clause2 = geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")",
+				changeQuery = clause1 + " OR (" + clause2 + ")",
+				changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
+
 			transcriptTooltips.push([
-				{ type: 'text', text: 'Sample: ' + d.sample },
+				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
 				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
 				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
-				{ 
-					type: 'link',
-					href: 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + geneName.toLowerCase() + '+' + [d.aao, d.locus, d.aan].join("").toLowerCase(),
-					body: 'Search protein sequence change on Pubmed.'
-				}
+				{ type: 'link', href: locusHref, body: 'Search locus on Pubmed.' },
+				{ type: 'text', text: ''},
+				{ type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' }
 			].map(gd3.tooltip.datum));
 		});
 
@@ -538,7 +559,7 @@ function view(){
 
 		// Update the CNA browser
 		cnas.datum(data.cnas[geneName])
-			.call(gd3.cna({ style: style.cnas }))
+			.call(gd3.cna({ style: style.cnas }).showScrollers(false))
 
 		// And add tooltips
 		var intervals = cnas.selectAll("g.intervals"),
@@ -546,7 +567,7 @@ function view(){
 		intervals.classed("gd3-tipobj", true);
 		intervals.each(function(d) {
 			cnaTooltips.push([
-				{ type: 'text', text: 'Sample: ' + d.sample },
+				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
 				{ type: 'text', text: 'Type: ' + mutationToName(d.ty) },
 				{ type: 'text', text: 'Start: ' + d.start },

@@ -80,7 +80,9 @@ exports.datasetlist = function datasetlist(dataset_ids, callback){
 exports.removeDataset = function removeDataset(query, callback){
 	// Load the modules
 	var Dataset = Database.magi.model( 'Dataset' ),
-		MutGene = Database.magi.model( 'MutGene' );
+		MutGene = Database.magi.model( 'MutGene' ),
+		DataMatrixRow = Database.magi.model( 'DataMatrixRow' ),
+		Sample = Database.magi.model( 'Sample' );
 
 	// Remove the dataset, then remove all mutgenes from that dataset
 	Dataset.remove(query, function(err){
@@ -91,9 +93,19 @@ exports.removeDataset = function removeDataset(query, callback){
 		MutGene.remove({dataset_id: query.dataset_id}, function(err){
 			// Throw an error if it occurred
 			if (err) throw new Error(err);
+			
+			DataMatrixRow.remove({dataset_id: query.dataset_id}, function(err){
+				// Throw an error if it occurred
+				if (err) throw new Error(err);
 
-			// Otherwise call the callback
-			callback("");
+				Sample.remove({ dataset_id: query.dataset_id}, function(err){
+					// Throw an error if it occurred
+					if (err) throw new Error(err);
+
+					// Otherwise call the callback
+					callback("");
+				});
+			});
 		});
 	});
 }

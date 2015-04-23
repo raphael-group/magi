@@ -58,48 +58,38 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
 
 7. Start the server (default port 8000):
 
-        node --harmony server
+        node server
 
 8. View the website at `http://localhost:8000/`.
 
-#### Statistics Enrichment ####
+
+### Statistics Enrichment ###
 
 You will need python 2.7 and the packages in statserver/requirements.txt in order to run the statistics server.  The server is required for MAGI to provide enrichment statistics for various data.  
 
-The statistics server can be run with the following:
+The statistics server can be run to listen on port 9999 with the following:
 
-python statserver/statserver.py --port 8888 &
+python statserver/statserver.py --port 9999 &
 
-#### Configuration ####
+### Configuration ###
 
-MAGI uses several configuration values for normal operation.  They are used for various enhancements and services that MAGI relies on, including Mongo, Google OAuth2, a python service for statistics 
+Users can customize MAGI and integrate it with different APIs by setting environment variables.
 
-| Environment variable  | Default value | Explanation | Range |
-|----------------------:|---------------|-------------|:------|
-| PORT                  | 8000          | The port that the MAGI application listens on                        | 1000-65535               |
-| SITE_URL              | localhost     | The local address of the MAGI web app                                | string                   |
-| NODE_ENV              | development   | The node state                                                       | [development/production] | 
-| GOOGLE_CLIENT_ID      | --            | The ID from OAuth2 credentials from the Google Developer Console     | string                   |
-| GOOGLE_CLIENT_SECRET  | --            | The Secret from OAuth2 credentials from the Google Developer Console | string                   |
-| MONGO_HOST            | localhost     | The IP address of the mongo service                                  | IP address               |
-| MONGO_PORT            | 27017         | The port that mongo listens on                                       | 1000-65535               |
-| MONGO_DB_NAME         | magi          | The database that holds MAGI data                                    | string                   |
-| ENRICHMENT_HOST       | localhost     | The IP address that the enrichment server runs on                    | IP address               |
-| ENRICHMENT_PORT       | 8888          | The port that the statistics server listens on                       | 1000-65535               |
-| WEBENGAGE_ID          | --            | The WebEngage_ID for this site                                       | string                   |
-| GOOGLE_SEO_ROUTE      | --            | The URL for Google to know you are a webmaster                       | URL                      |
-| GOOGLE_SEO_ROUTE_NAME | --            | The base URL for Google to know you are a webmaster                  | URL                      |
-| BING_SEO_ROUTE        | --            | The base URL for Bing to know you are a webmaster                    | URL                      |
+1. **Mode**. You can run MAGI in either development or production mode, by setting the `NODE_ENV` environment variable. For example,
 
-#### Authentication ####
+        export NODE_ENV="development"
+   Development mode has more verbose error reports, while production mode requires a site URL (see below).
 
-MAGI uses the Google OAuth2 protocol for authentication. To set up authentication on your own personal version of MAGI:
+2. **Authentication**. MAGI uses the Google OpenID Connect protocol for authentication. To set up authentication on your own personal version of MAGI, visit the [Google OAuth2 documentation](https://developers.google.com/accounts/docs/OAuth2) and obtain credentials. Then set the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` environment variables. If you do not set up authentication, you will not be able to use the `/upload` feature, and attempting to "Login via Google" will result in server errors. You will, however, be able to view public datasets and upload additional datasets to MongoDB from the command line.
+3. **Site URL**. In development mode, MAGI automatically uses `"localhost"` as the site URL. In production mode, you will need to set a site URL. For example, if you hosting MAGI on `http://magi.cs.brown.edu`, you would do the following:
 
-1. Visit the [Google OAuth2 documentation](https://developers.google.com/accounts/docs/OAuth2) and obtain credentials.  When you apply, list the exact URL of the site as the Javascript origin and the exact URL followed by "auth/google/callback".  
+        export SITE_URL="http://magi.cs.brown.edu"
 
-2. Export the GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.
-
-If you do not set up authentication, you will not be able to use the `/upload` feature, and attempting to "Login via Google" will result in server errors. You will, however, be able to view public datasets and upload additional datasets to MongoDB from the command line.
+4. **Port**. By default, MAGI serves on port 8000, but you can choose your own port by setting the `PORT` environment variable.
+5. **MongoDB**. By default, MAGI assumes that MongoDB is running on the `"localhost"` server using a database named `"magi"`. You can configure to look for data on a different server or in a different database using the `MONGO_HOST` and/or `MONGO_DB_NAME` environment variables.  If you use a non-standard port for Mongo, you can set the `MONGO_PORT` environment variable accordingly. 
+6. **Feedback**. MAGI uses [WebEngage](https://webengage.com/) for collecting feedback from users. If you want to use WebEngage for your own version of MAGI, you first need to set up an account on the WebEngage website. Then, you can configure MAGI to use your account by setting the `WEBENGAGE_ID` environment variable to use your site's WebEngage ID.
+7. **Webmaster tools**. In order to use Google and Bing's webmaster tools, you need to serve a file from your web server. MAGI can be configured to do this automatically by setting the `GOOGLE_SEO_ROUTE`, `GOOGLE_SEO_ROUTE_NAME`, and/or `BING_SEO_ROUTE` environment variables. First, place the files in the MAGI directory, and then point to them using the environment variables.
+8. **Enrichment server** In order to use enrichment statistics, you should run the server above either on the local host or on a separate machine.  The `ENRICHMENT_HOST` should be set to either localhost, or the IP address/host alias of the separate machine, respectively, and the `ENRICHMENT_PORT` value should be set to the port you choose.
 
 ### Support ###
 

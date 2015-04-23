@@ -35,7 +35,8 @@ block body
 							th <br/>SNVs
 							th Inactivating <br/>SNVs
 							th <br/>CNAs
-							th View
+							th View Mutations
+							th View Annotations
 					tbody
 						-for (var i = 0; i < db.summary.most_mutated_genes.length; i++)
 							-var g = db.summary.most_mutated_genes[i];
@@ -47,6 +48,8 @@ block body
 								td #{g.cnas}
 								td
 									a(href="/view?genes=#{g.name}&datasets=#{db._id}") >>
+								td
+									a(href="/annotations/gene/#{g.name}") >>
 		div(id="mutations-plot")
 			h4 Mutations plot
 		hr(style="clear:both")
@@ -100,7 +103,7 @@ block body
 			//- Convert the tables into DataTables
 			addDataTable({
 				tableID: "#mutated-gene-table",
-				aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, null ]
+				aoColumns: [{ "asSorting": [ "asc", "desc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, { "asSorting": [ "desc", "asc" ] }, null, null ]
 			});
 			addDataTable({
 				tableID: "#mutated-pathway-table",
