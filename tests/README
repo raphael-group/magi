@@ -3,11 +3,26 @@ Written in Ruby with the Watir-Webdriver system.
 To run all MAGI tests, run from the tests directory:
 $ rspec . --format documentation
 
-Functionalities currently tested:
+* Requirements
+gem install watir
 
+Running the tests will require watir-webdriver and the chrome webdriver, found here: http://watirwebdriver.com/chrome/.
+
+Functionalities currently tested:
+* Describe these tests in more detail
 Datasets are currently loaded
 Datasets can be uploaded
 Google supports login/logout
 Tutorial runs
+Querying samples and datasets
 
 
+To add:
+
+* How to write new tests
+
+* Known bugs 
+
+* Design (page objects)
+
+eventual goal: make this ready for UG work
