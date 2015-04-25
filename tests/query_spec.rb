@@ -17,22 +17,22 @@ end
 # to run tests, 
 # This tests whether the standard datasets are loaded
 RSpec.describe "MAGI" do
-  # it "can query datasets OV and UCEC" do
-  #   @home_page.nav_home
-  #   datasets = ["OV", "UCEC"]
-  #   query_page = @home_page.query_gene_sets(datasets)
-  #   datasets.each do |set|
-  #     expect(query_page.verify_dataset(set)).to be true
-  #   end
-  # end
+  it "can query datasets OV and UCEC" do
+    @home_page.nav_home
+    datasets = ["OV", "UCEC"]
+    query_page = @home_page.query_gene_sets(datasets)
+    datasets.each do |set|
+      expect(query_page.verify_dataset(set)).to be true
+    end
+  end
 
-  # it "can query for sample TCGA-CU-A0YR" do
-  #   @home_page.nav_home
+  it "can query for sample TCGA-CU-A0YR" do
+    @home_page.nav_home
 
-  #   sample = "TCGA-CU-A0YR"
-  #   query_page = @home_page.query_sample(sample)
-  #   expect(query_page.verify_sample(sample)).to be true
-  # end
+    sample = "TCGA-CU-A0YR"
+    query_page = @home_page.query_sample(sample)
+    expect(query_page.verify_sample(sample)).to be true
+  end
 
   it "can calculate enrichments for a standard query" do
     @home_page.nav_home
@@ -45,10 +45,10 @@ RSpec.describe "MAGI" do
     
     enrichment_page = query_page.nav_to_enrichments
 
-    # stale element here - has problems
     expect(enrichment_page.gene_available?("ARID2")).to be true
     enrichment_page.select_gene("ARID2")
 
+    # stale element here: this check does not verify
     expect(enrichment_page.category_available?("Gender")).to be true
     enrichment_page.select_category("Gender")
 
