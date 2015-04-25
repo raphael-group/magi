@@ -1,28 +1,53 @@
-Written in Ruby with the Watir-Webdriver system.  
+Tests in this folder are written in Ruby with the Watir-Webdriver system.  
 
-To run all MAGI tests, run from the tests directory:
+** Requirements **
+
+These tests require the RSpec and Watir gems, which can be installed with gem install:
+
+> gem install watir
+> gem install rspec
+
+Alternately, if bundler is installed, then run in the tests directory:
+
+> bundle install
+
+These tests also employ the chrome-webdriver application, which is found here: http://watirwebdriver.com/chrome/.  It is necessary for the chrome-webdriver application to be on the system path.
+
+** Running the tests **
+To run all MAGI tests, run from the tests directory: 
 $ rspec . --format documentation
 
-* Requirements
-gem install watir
+To run tests on a specific MAGI page, run:
+$ rspec tests/home_spec.rb --format documentation
 
-Running the tests will require watir-webdriver and the chrome webdriver, found here: http://watirwebdriver.com/chrome/.
+** Functionalities currently tested: **
+Tests are stored in the *.spec.rb files.  The comments correspond to the following:
 
-Functionalities currently tested:
-* Describe these tests in more detail
-Datasets are currently loaded
-Datasets can be uploaded
-Google supports login/logout
-Tutorial runs
-Querying samples and datasets
+home_spec.rb
+* "runs a tutorial": This clicks the tutorial link and then clicks the NEXT button until it does not appear; then it clicks the FINISH button.
 
+login_spec.rb
+* "accepts google logins": After logging in to the login page, the user logins in with a test account, and grants access privileges to MAGI if asked.  The test then checks whether MAGI has returned to the home page and whether the home page recognizes the MAGI user.
+* "cleanly logs out after logging in": Once the MAGI test user is logged in, it logs out by clicking the logout button and checks to see whether the user is set to nothing.
 
-To add:
+upload_spec.rb
+* "has standard databases loaded": the TCGA Pancancer datasets are all loaded (STAD, BLCA, BRCA, COADREAD, GBM, HNSC, KIRC, LAML,  LUAD, LUSC, OV, UCEC).  This is verified from the dataset information page, looking at the dataset column.  
+* "is able to upload a dataset with a manifest file": A test user first logs in via Google, and then navigates to the upload page.  The user then chooses the BLCA Pan-Cancer manifest to be uploaded under the name "BLCA-test" and submits it for upload.  Afterwards, the dataset page is checked to see if "BLCA-test" is uploaded on the dataset page.
 
-* How to write new tests
+query_spec.rb
+* "can query datasets OV and UCEC": This uses the dataset drop-down menu to select datasets OV and UCEC, then clicks the "Submit query" button.  After waiting for loading, it checks the right-hand column to ensure that OV and UCEC are listed.
+* "can query for sample TCGA-CU-A0YR": This uses the "Query samples" tab option to query sample TCGA-CU-A0YR, and then clicks the "Submit query" button.  Then the result page is tested to see if the sample name is contained.
+* "can calculate enrichments for a standard query": The sample query 'SWI-SNF / TCGA Pan-Cancer' is selected and submitted, and the right-hand column is check for all the Pancancer datasets.  The "Enrichment options" link is then selected and the ARID2/Gender options are checked to exist and selected.  Then the page is checked for a contingency table.
 
-* Known bugs 
+** How to write new tests / modify test options **
 
-* Design (page objects)
+To modify the MAGI instance being tested, the BASE_URL variable should be changed to point to the correct MAGI's home page.
 
-eventual goal: make this ready for UG work
+Tests employ the page objects pattern in pageobjects.rb.  Each page object is a subclass of Site, which contains the interactions common to all pages within MAGI.  All interactions specific to a given page within MAGI should be coded in the correct page object, and tests should only interact with the page via the page objects.  For more info, see https://github.com/watir/watir-webdriver/wiki/Page-Objects.
+
+** Known bugs/issues: **
+The test user and test password are in plain text in the test, which is not good security wise.
+
+The enrichment test cannot verify whether or not the drop-down menu contains different categories.
+
+Password-protected sites will fail only after a long time, no good way to test those is known (as of now).

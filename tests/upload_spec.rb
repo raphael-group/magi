@@ -25,7 +25,7 @@ RSpec.describe "MAGI" do
     expect(dataset_page.get_dataset_names).to include(*standard_datasets)
   end
 
-  it "is able to upload dataset" do
+  it "is able to upload a dataset with a manifest file" do
     login_page = @home_page.nav_to_login_page
     login_page.login(test_user, test_pass)
 

@@ -1,12 +1,14 @@
 # page object classes 
 require 'watir-webdriver'
 
+# the MAGI instance to be tested
+BASE_URL = 'http://paad.cs.brown.edu/'
+
 class BrowserContainer
   def initialize(browser)
     @browser = browser
   end  
 end
-
 
 class Site < BrowserContainer
   def URL 
@@ -98,8 +100,6 @@ class Site < BrowserContainer
 
 end
 
-# BASE_URL = ENV["SITE_URL"]
-BASE_URL = 'http://cbio-test.cs.brown.edu/'
 class HomePage < Site
   def URL 
     return BASE_URL
