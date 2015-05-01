@@ -13,6 +13,7 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
    1. Make sure that you make a directory to store the database. The default is `/data/db`,
       so you'll need to make that directory before running `mongod`.
    2. Make sure that the `mongod`, `mongo`, etc. are in your `PATH`.
+* [PyMongo](https://api.mongodb.org/python/current/installation.html) (to load data into MAGI). PyMongo can be installed through `conda` (`conda install pymongo`) or your preferred Python package manager.
 
 ### Setup ###
 
