@@ -169,7 +169,7 @@ def parse_gistic2( input_directory, dataset, amp_cutoff, del_cutoff, cna_consist
 
 # Main function
 def run(args):
-    cna_interval_data = parse_gistic2(args.input_directory, args.dataset, args.amp_cutoff, args.del_cutoff,
+    cna_interval_data, _ = parse_gistic2(args.input_directory, args.dataset, args.amp_cutoff, args.del_cutoff,
                                       args.cna_consistency_threshold, args.range_cna, None, None, None)
 
     if args.output_directory:
@@ -182,9 +182,9 @@ def run(args):
         for g in cna_interval_data.keys():
             for cancer_type in cna_interval_data[g].keys():
                for seg_db in cna_interval_data[g][cancer_type]:
-                    for seg_info in seg_db:
+                    for seg_info in seg_db['segments']:
                         #fout.write("\t".join([str(s) for s in [g, seg_info['pat'], seg_info['type'], seg_info['x0'], seg_info['x1'], seg_info['amp']]])+"\n")
-                        fout.write("\t".join([str(s) for s in [g, seg_info['pat'], seg_info['type'], seg_info['x0'], seg_info['x1']]])+"\n")
+                        fout.write("\t".join([str(s) for s in [g, seg_info['sample'], seg_info['ty'], seg_info['start'], seg_info['end']]])+"\n")
 
         fout.close()    
     return cna_interval_data
