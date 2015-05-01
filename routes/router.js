@@ -8,6 +8,7 @@ var about = require( './about' ),
 	enrichments = require( './enrichments' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
+	annotations_SQL = require('./annotations_sql'),
   log = require('./log'),
   share = require('./share');
 
@@ -82,3 +83,8 @@ exports.extendLog = log.extendLog;
 exports.isLoggingEnabled = log.isLoggingEnabled;
 exports.logConsent = log.logConsent;
 exports.userGaveConsent = log.userGaveConsent;
+
+// test routes for POSTGRESQL
+exports.annotations_SQL = {};
+exports.annotations_SQL.all = annotations_SQL.getAll;
+exports.annotations_SQL.gene = annotations_SQL.gene;
