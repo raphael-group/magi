@@ -74,7 +74,7 @@ python statserver/statserver.py --port 9999 &
 
 ### Configuration ###
 
-Users can customize MAGI and integrate it with different APIs by setting environment variables.
+Users can customize MAGI and integrate it with different APIs by setting Linux environment variables. (For a quick tutorial, see [this blog post on Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-read-and-set-environmental-and-shell-variables-on-a-linux-vps).)
 
 1. **Mode**. You can run MAGI in either development or production mode, by setting the `NODE_ENV` environment variable. For example,
 
