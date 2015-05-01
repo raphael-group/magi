@@ -94,4 +94,4 @@ Users can customize MAGI and integrate it with different APIs by setting Linux e
 
 ### Support ###
 
-MAGI was created and is maintained by the [Raphael research group](http://compbio.cs.brown.edu) in the [Center for Computational Molecular Biology](http://brown.edu/ccmb) and the [Department of Computer Science](http://cs.brown.edu) at [Brown University](http://brown.edu). Please visit the group website to contact us.
+MAGI was created and is maintained by the [Raphael research group](http://compbio.cs.brown.edu) in the [Center for Computational Molecular Biology](http://brown.edu/ccmb) and the [Department of Computer Science](http://cs.brown.edu) at [Brown University](http://brown.edu). We offer support for MAGI on the [MAGI Google Group](https://groups.google.com/forum/#!forum/magi-app), or please visit the group website to contact us.
