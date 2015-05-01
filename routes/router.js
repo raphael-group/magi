@@ -8,6 +8,7 @@ var about = require( './about' ),
 	enrichments = require( './enrichments' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
+	annotations_SQL = require('./annotations_sql'),
   log = require('./log'),
   share = require('./share'),
   requery = require('./requery');
@@ -84,7 +85,13 @@ exports.isLoggingEnabled = log.isLoggingEnabled;
 exports.logConsent = log.logConsent;
 exports.userGaveConsent = log.userGaveConsent;
 
+
 // Requery parameters
 exports.queryGetDatasetsAndGenes = requery.queryGetDatasetsAndGenes;
 // Get session variables for queries
 exports.getSessionLatestQuery = requery.getSessionLatestQuery;
+
+// test routes for POSTGRESQL
+exports.annotations_SQL = {};
+exports.annotations_SQL.all = annotations_SQL.getAll;
+exports.annotations_SQL.gene = annotations_SQL.gene;

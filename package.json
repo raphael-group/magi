@@ -31,7 +31,8 @@
     "moment": "latest",
     "jsdom": "3.x",
     "q": "latest",
-    "request": "latest"
+    "request": "latest",
+    "pg": "latest"
   },
   "repository": {
     "type": "git"
