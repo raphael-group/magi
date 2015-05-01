@@ -18,7 +18,7 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
 
 1. Clone the repository:
 
-        git clone https://<user>@bitbucket.org/raphaellab/magi.git
+        git clone https://github.com/raphael-group/magi.git
         cd magi
 
 2. Install required dependencies:
