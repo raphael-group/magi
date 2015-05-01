@@ -15,6 +15,8 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
    2. Make sure that the `mongod`, `mongo`, etc. are in your `PATH`.
 * [PyMongo](https://api.mongodb.org/python/current/installation.html) (to load data into MAGI). PyMongo can be installed through `conda` (`conda install pymongo`) or your preferred Python package manager.
 
+MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Safari.
+
 ### Setup ###
 
 1. Clone the repository:
