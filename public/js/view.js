@@ -674,7 +674,6 @@ function view(){
 
 		var newSearchDatasets = 'datasets=' + addedList.join('%2C');
 		search[datasetsIndex] = newSearchDatasets;
-		console.log(search[datasetsIndex]);
 
 		return search.join('&');
 	}
@@ -718,7 +717,7 @@ function view(){
 						addBtn.attr('href', hrefFn);
 					});
 
-				addSet.append('span').text(function(d) { return d.split(' ')[4];; }).style('margin-left', '5px');
+				addSet.append('span').text(function(d,i) { return d.split(' ')[4];; }).style('margin-left', '5px');
 			});
 
 	// Add each dataset
