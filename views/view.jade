@@ -14,6 +14,15 @@ block body
               | Enrichment statistics
               span(style="float:right") [+]
       div(id="controls")
+
+      div(id="requeryControls")
+        div(class="panel panel-default", style="margin-top:5px")
+          div(class="panel-heading", style="padding:5px")
+            h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="requeryLink")
+              | Requery datasets
+              span(style="float:right") [+]
+          div(id="collapseRequery", class="panel-collapse collapse", style="padding:5px")
+
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="optionsLink")
@@ -335,7 +344,8 @@ block belowTheFold
                                 {link: "save", target: "Save"},
                                 {link: "annotate", target: "Annotation"},
                                 {link: "annotatedVariants", target: "AnnotatedVariants"},
-                                {link: "options", target: "Options"}];
+                                {link: "options", target: "Options"},
+                                {link: "requery", target: "Requery"}];
         function bootstrapToggle(d){
           $("#" + d.link + "Link").click(function(e){
               e.preventDefault();

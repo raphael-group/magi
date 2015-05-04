@@ -9,7 +9,8 @@ var about = require( './about' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
   log = require('./log'),
-  share = require('./share');
+  share = require('./share'),
+  requery = require('./requery');
 
 //*  Export the routes in each subrouter *//
 
@@ -82,3 +83,6 @@ exports.extendLog = log.extendLog;
 exports.isLoggingEnabled = log.isLoggingEnabled;
 exports.logConsent = log.logConsent;
 exports.userGaveConsent = log.userGaveConsent;
+
+// Requery parameters
+exports.getDatasets = requery.getDatasets;
