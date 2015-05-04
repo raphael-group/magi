@@ -172,12 +172,12 @@ function getSizes() {
   // Get size and locations of visualizations
   vizSizes.mutmtx = {width:$('div#aberrations').width(), height:$('div#aberrations').height()};
   vizLocs.mutmtx = $('div#aberrations').offset();
-  vizSizes.subnet = {width:$('div#subnetwork').width(), height:$('div#subnetwork').height()};
-  vizLocs.subnet = $('div#subnetwork').offset();
-  vizSizes.trnant = {width:$('div#transcript-plot').width(), height:$('div#transcript-plot').height()};
-  vizLocs.trnant = $('div#transcript-plot').offset();
-  vizSizes.cnaviz = {width:$('div#cna-browser').width(), height:$('div#cna-browser').height()};
-  vizLocs.cnaviz = $('div#cna-browser').offset();
+  vizSizes.subnet = {width:$('div#network').width(), height:$('div#network').height()};
+  vizLocs.subnet = $('div#network').offset();
+  vizSizes.trnant = {width:$('div#transcript').width(), height:$('div#transcript').height()};
+  vizLocs.trnant = $('div#transcript').offset();
+  vizSizes.cnaviz = {width:$('div#cnas').width(), height:$('div#cnas').height()};
+  vizLocs.cnaviz = $('div#cnas').offset();
   vizSizes.heatmp = {width:$('div#heatmap').width(), height:$('div#heatmap').height()};
   vizLocs.heatmp = $('div#heatmap').offset();
 
