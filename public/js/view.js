@@ -650,6 +650,77 @@ function view(){
 		.style("float", "right")
 		.text("[+]");
 
+	var requeryPanel = d3.select('#collapseRequery').append('div'),
+			datasetList = requeryPanel.append('ul').classed('list-unstyled', true).style('padding', '5px'),
+			addedList = [];
+
+	function hrefFn() {
+		function getQueryVariable(variable) {
+		    var query = window.location.search.substring(1);
+		    var vars = query.split('&');
+		    for (var i = 0; i < vars.length; i++) {
+		        var pair = vars[i].split('=');
+		        if (decodeURIComponent(pair[0]) == variable) {
+		            return decodeURIComponent(pair[1]);
+		        }
+		    }
+		    console.log('Query variable %s not found', variable);
+		}
+
+		var search = window.location.search.split('&'),
+				datasetsIndex = search.map(function(d,i) {
+					return d.indexOf('datasets') > -1 ? i : -1;
+				}).filter(function(d) { return d > -1; })[0];
+
+		var newSearchDatasets = 'datasets=' + addedList.join('%2C');
+		search[datasetsIndex] = newSearchDatasets;
+		console.log(search[datasetsIndex]);
+
+		return search.join('&');
+	}
+	var addBtn = requeryPanel.append('a')
+			.classed('btn btn-default btn-xs', true)
+			.attr('href', hrefFn)
+			.text('Re-Query')
+			.on('click', function() {
+				if(addedList.length == 0) d3.event.preventDefault();
+			});
+
+	d3.xhr('/requeryGetDatasets')
+			.header('content-type', 'application/json')
+			.get(function(err,res) {
+				var datasets = JSON.parse(res.response);
+
+				var addSet = datasetList.selectAll('li')
+						.data(datasets.datasetToCheckboxes.all)
+						.enter()
+						.append('li')
+							.style('font-size', '90%');
+				addSet.append('input')
+					.attr('type', 'checkbox')
+					.property('checked', function(d) {
+						var hash = d.split(' ')[5];
+						if (window.location.search.indexOf(hash) > -1) {
+							addedList.push(hash);
+							addBtn.attr('href', hrefFn);
+							return true;
+						} else return false;
+					})
+					.on('click', function(d) {
+						var thisEl = d3.select(this),
+								hash = d.split(' ')[5];
+						if(thisEl.property('checked')) {
+							addedList.push(hash);
+						} else {
+							var i = addedList.indexOf(hash);
+							if(i > -1) addedList.splice(i, 1);
+						}
+						addBtn.attr('href', hrefFn);
+					});
+
+				addSet.append('span').text(function(d) { return d.split(' ')[4];; }).style('margin-left', '5px');
+			});
+
 	// Add each dataset
 	var datasetsBody = datasetsPanel.append("div")
 		.attr("id", "collapseDataset")
