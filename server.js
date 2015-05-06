@@ -246,10 +246,10 @@ app.get('/sitemap.xml', function(req, res) {
 app.post('/share', routes.saveShareURL);
 
 // Session logging
+app.get('/logEnabled', routes.isLoggingEnabled);
 if (typeof(process.env.MAGI_LOGGING) != 'undefined' && process.env.MAGI_LOGGING.toLowerCase() == "true") {
   app.post('/startLog', routes.startLog);
   app.post('/extendLog', routes.extendLog);
-  app.get('/logEnabled', routes.isLoggingEnabled);
   app.post('/logConsent', routes.logConsent);
   app.post('/userGaveConsent', routes.userGaveConsent);
 } else {

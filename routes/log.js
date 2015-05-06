@@ -23,7 +23,11 @@ exports.saveLog = function(req, res) {
 }
 
 exports.isLoggingEnabled = function(req, res) {
-  res.send(Log.isLoggingEnabled());
+  if (typeof(process.env.MAGI_LOGGING) != 'undefined' && process.env.MAGI_LOGGING.toLowerCase() == "true") {
+    res.send(true);
+  } else {
+    res.send(false);
+  }
 }
 
 exports.logConsent = function(req, res) {
