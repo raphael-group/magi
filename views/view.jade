@@ -19,9 +19,19 @@ block body
         div(class="panel panel-default", style="margin-top:5px")
           div(class="panel-heading", style="padding:5px")
             h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="requeryLink")
-              | Requery datasets
+              | Re-select datasets
               span(style="float:right") [+]
           div(id="collapseRequery", class="panel-collapse collapse", style="padding:5px")
+            div(style="margin-top:3px" id="magi-datasets")
+              select(id="dataset-multiselect", class="multiselect", name="multiselect", multiple="multiple")
+                 //- -for (var i in groups)
+                 //-   -var group = groups[i];
+                 //-   -var groupName = group.name == "" ? "Other" : group.name;
+                 //-   optgroup(label="#{groupName}")
+                 //-     -for (var j in group.dbs)
+                 //-       -var db = group.dbs[j];
+                 //-       //- The checkbox values are constructed server side
+                 //-       option(value="#{db.checkboxValue}") #{db.title}
 
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")
@@ -313,8 +323,10 @@ block body
             input(class="form-control", type="text", name="shareLink", value="", style="width:100%", readonly)
 
 block belowTheFold
+      link(rel="stylesheet", href="/components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css", type="text/css")
       script(src='/components/jquery/dist/jquery.min.js').
       script(src='/components/bootstrap/dist/js/bootstrap.min.js').
+      script(src='/components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js').
       script(src='/components/d3/d3.min.js').
       script(src='/components/hogan/web/builds/2.0.0/hogan-2.0.0.min.js').
       script(src="/components/gd3/gd3.js")
