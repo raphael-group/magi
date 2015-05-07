@@ -665,25 +665,75 @@ function view(){
 		    }
 		    console.log('Query variable %s not found', variable);
 		}
+
+
+	var loadedGenes = getQueryVariable('genes').split(',');
+
+
 	function hrefFn() {
 		var search = window.location.search.split('&'),
 				datasetsIndex = search.map(function(d,i) {
 					return d.indexOf('datasets') > -1 ? i : -1;
+				}).filter(function(d) { return d > -1; })[0],
+				genesIndex = search.map(function(d,i) {
+					return d.indexOf('genes') > -1 ? i : -1;
 				}).filter(function(d) { return d > -1; })[0];
 
 		var newSearchDatasets = 'datasets=' + addedList.join('%2C');
 		search[datasetsIndex] = newSearchDatasets;
 
-		return search.join('&');
+		search[genesIndex] = 'genes=' + loadedGenes.join('%2C');
+
+		return window.location.pathname+'?'+search.join('&');
 	}
 	var addBtn = requeryPanel.append('a')
 			.classed('btn btn-default btn-xs', true)
 			.attr('href', hrefFn)
-			.text('Re-Query')
+			.text('Reload page and datasets')
 			.on('click', function() {
 				if($('.multiselect :checked').length == 0) d3.event.preventDefault();
 			});
 
+	var geneRequery = d3.select('#requery-gene-select'),
+			addedGeneArea = geneRequery.append('div').style('width', '160px');
+	loadedGenes.forEach(function(g) {
+		var badge = addedGeneArea.append('span')
+						.attr('class', 'requery-gene-select-badge')
+						.style({
+						background: 'rgb(150,150,150)',
+						'border-radius': '5px',
+						color: 'rgb(50,50,50)',
+						display: 'inline-block',
+						'font-size': '11px',
+						'margin': '3px',
+						padding: '3px 8px'
+					});
+		var geneText = badge.append('span').text(g)
+						.style('cursor', 'pointer')
+						.on('click', function() {
+							if(loadedGenes.length <= 1) return;
+							loadedGenes.splice(loadedGenes.indexOf(g), 1);
+							addBtn.attr('href', hrefFn);
+							badge.remove();
+						});
+		var xOut = geneText.append('span').text('✕')
+				.style({
+					background: 'rgb(50,50,50)',
+					'border-radius': '6px',
+					color: 'rgb(150,150,150)',
+					cursor: 'pointer',
+					display: 'none',
+					'font-size': '8px',
+					height: '12px',
+					padding: '1px 0px 3px 3px',
+					width: '12px'
+				});
+		geneText.on('mouseover', function() { xOut.style('display', 'block')})
+						.on('mouseout', function() { xOut.style('display', 'none')});
+		
+	});
+
+	// Add datasets to the multiselect to redefine query
 	d3.xhr('/requeryGetDatasets')
 			.header('content-type', 'application/json')
 			.get(function(err,res) {
@@ -725,7 +775,6 @@ function view(){
 			    // Add already-loaded datasets checked
 			    var loadedDatasets = getQueryVariable('datasets').split(',');
 			    $('#magi-datasets div.btn-group ul li input:not(:checked)').filter(function(i, elem) {
-			    	console.log(elem);
 			    	var tkns = $(elem).val().split(' '),
 			    			dset = tkns[tkns.length-1];
 			    	return loadedDatasets.indexOf(dset) > -1;
@@ -737,6 +786,7 @@ function view(){
 			    });
 			  });
 			});
+
 
 	// Add each dataset
 	var datasetsBody = datasetsPanel.append("div")

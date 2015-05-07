@@ -19,19 +19,12 @@ block body
         div(class="panel panel-default", style="margin-top:5px")
           div(class="panel-heading", style="padding:5px")
             h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="requeryLink")
-              | Re-select datasets
+              | Redo query
               span(style="float:right") [+]
           div(id="collapseRequery", class="panel-collapse collapse", style="padding:5px")
             div(style="margin-top:3px" id="magi-datasets")
               select(id="dataset-multiselect", class="multiselect", name="multiselect", multiple="multiple")
-                 //- -for (var i in groups)
-                 //-   -var group = groups[i];
-                 //-   -var groupName = group.name == "" ? "Other" : group.name;
-                 //-   optgroup(label="#{groupName}")
-                 //-     -for (var j in group.dbs)
-                 //-       -var db = group.dbs[j];
-                 //-       //- The checkbox values are constructed server side
-                 //-       option(value="#{db.checkboxValue}") #{db.title}
+            div(id="requery-gene-select", style="margin-top:10px")
 
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")
