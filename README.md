@@ -66,13 +66,17 @@ MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Sa
 8. View the website at `http://localhost:8000/`.
 
 
-### Statistics Enrichment ###
+### Statistics Engine ###
 
-You will need python 2.7 and the packages in statserver/requirements.txt in order to run the statistics server.  The server is required for MAGI to provide enrichment statistics for various data.  
+The MAGI stats server is required for MAGI to provide enrichment statistics for various data.  To set up the compute engine:
 
-The statistics server can be run to listen on port 9999 with the following:
+1. Clone the MAGI statistics server repository from: https://github.com/raphael-group/magi-stat-server.
+2. Follow the installation instructions. You will need Python 2.7 and the packages in statserver/requirements.txt in order to run the statistics server.  
+3. The statistics server can be run to listen on port 9999 with the following:
 
-python statserver/statserver.py --port 9999 &
+        python statserver/statserver.py --port 9999
+        
+Note that MAGI's statistics server is only required for computing enrichment statistics.
 
 ### Configuration ###
 
