@@ -654,8 +654,7 @@ function view(){
 			datasetList = requeryPanel.append('ul').classed('list-unstyled', true).style('padding', '5px'),
 			addedList = [];
 
-	function hrefFn() {
-		function getQueryVariable(variable) {
+	function getQueryVariable(variable) {
 		    var query = window.location.search.substring(1);
 		    var vars = query.split('&');
 		    for (var i = 0; i < vars.length; i++) {
@@ -666,7 +665,7 @@ function view(){
 		    }
 		    console.log('Query variable %s not found', variable);
 		}
-
+	function hrefFn() {
 		var search = window.location.search.split('&'),
 				datasetsIndex = search.map(function(d,i) {
 					return d.indexOf('datasets') > -1 ? i : -1;
@@ -682,7 +681,7 @@ function view(){
 			.attr('href', hrefFn)
 			.text('Re-Query')
 			.on('click', function() {
-				if(addedList.length == 0) d3.event.preventDefault();
+				if($('.multiselect :checked').length == 0) d3.event.preventDefault();
 			});
 
 	d3.xhr('/requeryGetDatasets')
@@ -690,34 +689,53 @@ function view(){
 			.get(function(err,res) {
 				var datasets = JSON.parse(res.response);
 
-				var addSet = datasetList.selectAll('li')
-						.data(datasets.datasetToCheckboxes.all)
-						.enter()
-						.append('li')
-							.style('font-size', '90%');
-				addSet.append('input')
-					.attr('type', 'checkbox')
-					.property('checked', function(d) {
-						var hash = d.split(' ')[5];
-						if (window.location.search.indexOf(hash) > -1) {
-							addedList.push(hash);
-							addBtn.attr('href', hrefFn);
-							return true;
-						} else return false;
-					})
-					.on('click', function(d) {
-						var thisEl = d3.select(this),
-								hash = d.split(' ')[5];
-						if(thisEl.property('checked')) {
-							addedList.push(hash);
-						} else {
-							var i = addedList.indexOf(hash);
-							if(i > -1) addedList.splice(i, 1);
-						}
-						addBtn.attr('href', hrefFn);
-					});
+				$(document).ready(function(){
+					var requeryMultiselect = d3.select('#dataset-multiselect');
+					for (var i in datasets.groups) {
+						var group = datasets.groups[i],
+								groupName = group.name == "" ? "Other" : group.name;
+								var optGroup = requeryMultiselect.append('optgroup')
+										.attr('id', groupName)
+										.attr('label', groupName);
+								optGroup.selectAll('option')
+												.data(group.dbs)
+												.enter()
+												.append('option')
+														.property('value', function(d) { return d.checkboxValue; })
+														.text(function(d) { return d.title; });
+					}
 
-				addSet.append('span').text(function(d,i) { return d.split(' ')[4];; }).style('margin-left', '5px');
+					//- Initialize the multiselect
+			    $('#dataset-multiselect').multiselect({
+			      enableCaseInsensitiveFiltering: true,
+			      includeSelectAllOption: true,
+			      maxHeight: 400,
+			      buttonWidth: 160,
+			      filterBehavior: 'both',
+			      onChange: function(elem, checked) {
+			      	var values = $('.multiselect :checked').map(function() { return $(this).val(); }).get();
+							addedList = values.map(function(d) {
+								var all = d.split(' ');
+								return all[all.length-1];
+							});
+							addBtn.attr('href', hrefFn);
+			      }
+			    });
+
+			    // Add already-loaded datasets checked
+			    var loadedDatasets = getQueryVariable('datasets').split(',');
+			    $('#magi-datasets div.btn-group ul li input:not(:checked)').filter(function(i, elem) {
+			    	console.log(elem);
+			    	var tkns = $(elem).val().split(' '),
+			    			dset = tkns[tkns.length-1];
+			    	return loadedDatasets.indexOf(dset) > -1;
+			    }).trigger('click');
+
+			    // hack for getting the requery menu to show/hide
+			    $('#magi-datasets').on('click', function() {
+			    	$('#magi-datasets div.btn-group ul').toggle()
+			    });
+			  });
 			});
 
 	// Add each dataset
