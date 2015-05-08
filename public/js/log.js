@@ -121,17 +121,19 @@ function initLogging() {
   });
 
   $(document).mousemove(function(e) {
-    addToLog(e, 'm');
+    var target = e.target;
+    addToLog(e, 'm', target.id, target.tagName);
     if(e.pageX <= 0 || e.pageY <= 0) {
       extendLogEvents();
     }
   });
 
   $(document).click(function(e) {
-    addToLog(e, 'c');
-
-    var target = e.target,
-        parent = $(target).parent();
+    var target = e.target;
+    addToLog(e, 'c', target.id, target.tagName);
+    if(target.tagName == "a") {
+      extendLogEvents();
+    }
 
     resizeEvent();
   });
@@ -242,6 +244,12 @@ function initLogging() {
         datasets = pathTkns[1].replace('datasets=','').split('%2C'),
         showDuplicates = pathTkns[2].replace('showDuplicates=','');
 
+    genes = genes.map(function(g) {
+      var hasher = new jsSHA(g, "TEXT"),
+          hash = hasher.getHash("SHA-1", "HEX");
+      return hash;
+    });
+
     var log = {
       sessionId: MAGI_log.sessionLogStart,//MAGI_sessionLogStart,
       documentSize: documentSize,
@@ -286,12 +294,18 @@ function initLogging() {
   }
 
   // Each log should be ~40 bytes
-  function addToLog(e, event) {
+  function addToLog(e, event, tagId, tagType) {
     if(!loggingEnabled) return;
     var x = e.pageX,
         y = e.pageY,
         time = Date.now();
-    MAGI_log.interactions.push({x:x, y:y, t:time, e:event});
+    MAGI_log.interactions.push({x:x,
+        y:y,
+        t:time,
+        e:event,
+        id:tagId,
+        tt: tagType
+    });
 
     trackTooltips(time);
 
