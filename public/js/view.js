@@ -689,10 +689,16 @@ function view(){
 	var addBtn = requeryPanel.append('a')
 			.classed('btn btn-default btn-xs', true)
 			.attr('href', hrefFn)
-			.text('Reload page and datasets')
+			.text('Redo datasets, and genes')
 			.on('click', function() {
 				if($('.multiselect :checked').length == 0) d3.event.preventDefault();
 			});
+	requeryPanel.append('p')
+			.style({
+				color: 'rgb(125,125,125)',
+				'font-size': '12px'
+			})
+			.text('("redo" will reload the page)');
 
 	var geneRequery = d3.select('#requery-gene-select'),
 			addedGeneArea = geneRequery.append('div').style('width', '160px');
@@ -700,7 +706,7 @@ function view(){
 		var badge = addedGeneArea.append('span')
 						.attr('class', 'requery-gene-select-badge')
 						.style({
-						background: 'rgb(150,150,150)',
+						background: 'rgb(175,175,175)',
 						'border-radius': '5px',
 						color: 'rgb(50,50,50)',
 						display: 'inline-block',
