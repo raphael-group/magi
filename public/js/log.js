@@ -22,8 +22,7 @@
         bytes += value.length * 2;
       } else if (typeof value === 'number') {
         bytes += 8;
-      } else if (typeof value === 'object'
-          && objectList.indexOf(value) === -1) {
+      } else if (typeof value === 'object' && objectList.indexOf(value) === -1){
         objectList.push(value);
 
         for (i in value) {
@@ -50,7 +49,7 @@ var loggingEnabled = false,
     lastSentTime,
     MAGI_log = {};
 
-MAGI_log.sessionLogStart;
+MAGI_log.sessionLogStart = Date.now();
 MAGI_log.interactions = [];
 MAGI_log.resizes = {
   documentSize: [],
@@ -62,7 +61,7 @@ MAGI_log.tooltips = [];
 
 $().ready(function () {
   $.get('/logEnabled', function(res, status) {
-    if(status == "success" && res == true) {
+    if(status == "success" && res === true) {
       loggingEnabled = true;
       initLogging();
     } else {
@@ -313,11 +312,11 @@ function initLogging() {
       var tip = d3.select(this),
           tipOpacity = tip.style('opacity');
 
-    if (tipOpacity != 0) ;
+    if (tipOpacity !== 0) ;
       var tipInfo = {};
       tipInfo.left = tip.style('left');
       tipInfo.top = tip.style('top');
-      tipInfo.width = tip.style('width'),
+      tipInfo.width = tip.style('width');
       tipInfo.height = tip.style('height');
       tipLog.tips.push(tipInfo);
     });
