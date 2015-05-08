@@ -3,21 +3,21 @@
  */
 
 var express = require('express'),
-  path = require('path'),
-  favicon = require('serve-favicon'),
-  logger = require('morgan'),
-  compress = require('compression'),
-  methodOverride = require('method-override'),
-  bodyParser = require('body-parser'),
-  multer = require('multer'),
-  errorHandler = require('errorhandler'),
-  cookieParser = require('cookie-parser'),
-  cookieSession = require('cookie-session'),
-  Database       = require('./model/db'),
-  mongoose = require('mongoose'),
-  passport = require('passport'),
-  jsdom    = require('jsdom'),
-  GoogleStrategy = require('passport-google-openidconnect').Strategy;
+    path = require('path'),
+    favicon = require('serve-favicon'),
+    logger = require('morgan'),
+    compress = require('compression'),
+    methodOverride = require('method-override'),
+    bodyParser = require('body-parser'),
+    multer = require('multer'),
+    errorHandler = require('errorhandler'),
+    cookieParser = require('cookie-parser'),
+    cookieSession = require('cookie-session'),
+    Database       = require('./model/db'),
+    mongoose = require('mongoose'),
+    passport = require('passport'),
+    jsdom    = require('jsdom'),
+    GoogleStrategy = require('passport-google-openidconnect').Strategy;
 
 var app = module.exports = express();
 
