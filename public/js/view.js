@@ -696,7 +696,7 @@ function view(){
 
 	var geneRequery = d3.select('#requery-gene-select'),
 			addedGeneArea = geneRequery.append('div').style('width', '160px');
-	loadedGenes.forEach(function(g) {
+	function addBadge(g) {
 		var badge = addedGeneArea.append('span')
 						.attr('class', 'requery-gene-select-badge')
 						.style({
@@ -706,10 +706,11 @@ function view(){
 						display: 'inline-block',
 						'font-size': '11px',
 						'margin': '3px',
-						padding: '3px 8px'
+						padding: '3px 2px 3px 8px'
 					});
 		var geneText = badge.append('span').text(g)
 						.style('cursor', 'pointer')
+						.style('display', 'block')
 						.on('click', function() {
 							if(loadedGenes.length <= 1) return;
 							loadedGenes.splice(loadedGenes.indexOf(g), 1);
@@ -722,15 +723,43 @@ function view(){
 					'border-radius': '6px',
 					color: 'rgb(150,150,150)',
 					cursor: 'pointer',
-					display: 'none',
+					display: 'inline-block',
 					'font-size': '8px',
 					height: '12px',
 					padding: '1px 0px 3px 3px',
-					width: '12px'
+					width: '12px',
+					visibility: 'hidden'
 				});
-		geneText.on('mouseover', function() { xOut.style('display', 'block')})
-						.on('mouseout', function() { xOut.style('display', 'none')});
+		geneText.on('mouseover', function() { xOut.style('visibility', 'visible')})
+						.on('mouseout', function() { xOut.style('visibility', 'hidden')});
 		
+	}
+	loadedGenes.forEach(addBadge);
+
+	d3.select('#requery-gene-select-addBtn').on('click', function() {
+		d3.event.preventDefault();
+		var geneInput = d3.select('#requery-gene-select-addInput'),
+				gene = geneInput.property('value');
+		if(gene == '') return;
+
+		loadedGenes.push(gene);
+		addBtn.attr('href', hrefFn);
+		addBadge(gene);
+		geneInput.property('value', '');
+	});
+	d3.select('#requery-gene-select-addInput').on('keypress', function() {
+		console.log(d3.event.keyCode)
+		if(d3.event.keyCode == 13) {
+			d3.event.preventDefault();
+			var geneInput = d3.select('#requery-gene-select-addInput'),
+					gene = geneInput.property('value');
+			if(gene == '') return;
+
+			loadedGenes.push(gene);
+			addBtn.attr('href', hrefFn);
+			addBadge(gene);
+			geneInput.property('value', '');
+		}
 	});
 
 	// Add datasets to the multiselect to redefine query
