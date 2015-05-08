@@ -30,7 +30,7 @@ app.set('port', process.env.PORT || 8000);
 if (typeof(process.env.WEBENGAGE_ID) == 'undefined'){
   console.error('No WebEngage ID set; feedback widget will not work.');
 } else{
-  app.locals.webengageID = process.env.WEBENGAGE_ID;  
+  app.locals.webengageID = process.env.WEBENGAGE_ID;
 }
 
 // Load models to register their schemas
@@ -58,14 +58,14 @@ passport.serializeUser(function(user, done) {
 passport.deserializeUser(function(id, done) {
  User.findOne({ googleId: id}, function(err, user){
      if(!err) done(null, user);
-     else done(err, null)
- })
+     else done(err, null);
+ });
 });
 
 // development only
 if (app.get('env') === 'development') {
   app.use(errorHandler());
-  app.set('site url', 'http://localhost:' + app.get('port') + '/')
+  app.set('site url', 'http://localhost:' + app.get('port') + '/');
 }
 
 // production only
@@ -77,9 +77,9 @@ if (app.get('env') === 'production') {
     console.error('Setting the site URL is REQUIRED for production code.');
     process.exit(1);
   }
-};
+}
 
-// 
+//
 try {
     var config   = require('./oauth2.js');
   // config passport to use Google OAuth2
@@ -92,7 +92,7 @@ try {
       if (!profile._json) throw new Error("No profile._json when authenticating!");
       User.findOne({ googleId: profile.id }, function (err, user) {
         if (err) console.log( err );
-        if (!user) var user = new User();
+        if (!user) user = new User();
 
         // Store the user's full name, and his/her first email
         user.name     = profile.displayName;
@@ -190,7 +190,7 @@ app.get('/cancers', routes.cancers);
 app.get('/login', routes.login);
 app.get('/logout', routes.logout);
 app.get('/account', ensureAuthenticated, routes.account);
-app.post('/user/update', ensureAuthenticated, routes.user.update)
+app.post('/user/update', ensureAuthenticated, routes.user.update);
 
 // Render errors
 app.get("/401", function(req, res){
@@ -202,7 +202,7 @@ app.get("/401", function(req, res){
 // this route extracts the previous url (returnTo) and stores it in the session
 // so it will get rerouted on authentication
 app.get('/auth/google/returnTo', function(req, res){
-  console.log(req.header('Referer'))
+  console.log(req.header('Referer'));
   var backURL = req.header('Referer') || '/account';
   req.session.returnTo = backURL;
   res.redirect('/auth/google');
@@ -275,11 +275,11 @@ function ensureAuthenticated(req, res, next) {
 
 // Handle save figure requests
 app.post('/saveSVG', function(req, res) {
-  if(req.body['html'] != undefined) {
-    res.send(req.body['html']);
-  } else if (req.body['img'] != undefined) {
+  if(req.body.html !== undefined) {
+    res.send(req.body.html);
+  } else if (req.body.img !== undefined) {
     res.writeHead(200, {'Content-Type': 'image/png' });
-    res.end(req.body['img'], 'binary');
+    res.end(req.body.img, 'binary');
     res.send();
   }
 });
@@ -287,8 +287,8 @@ app.post('/saveSVG', function(req, res) {
 // Not needed as of the moment; delete if not needed for PDF generation
 function saveSVG(req, res) {
   var bowerDir = 'public/components/',
-      fileName = req.body['fileName'],
-      svgHTML = req.body['html'];
+      fileName = req.body.fileName,
+      svgHTML = req.body.html;
 
   // run the jsdom headless browser
   var runHeadless = function (errors, window) {
@@ -302,7 +302,7 @@ function saveSVG(req, res) {
 
     res.send('complete');
 
-    console.log('----')
+    console.log('----');
     console.log((svgNode.outerHTML).substring(0, 120));
     console.log('Size of svgNode: ' + Buffer.byteLength(svgNode.outerHTML, 'utf8') + " bytes");
     console.log(typeof svgNode.outerHTML);
