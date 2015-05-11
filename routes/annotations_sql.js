@@ -17,6 +17,7 @@ exports.getAll = function gene(req, res) {
     });
 }
 
+// todo: add post route to add genes
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
 	console.log('/annotations/gene_sql');
@@ -25,10 +26,15 @@ exports.gene = function gene(req, res){
 	var gene = req.params.gene.toUpperCase() || ""
 //		Annotation = Database.magi.model( 'Annotation' ),
 //		Cancer = Database.magi.model( 'Cancer' );
-
-	annotations.dump(gene, function(err, result) {
+	annotations.getAnnotations([gene], function(err, result) {
 		if(!err) {
 			res.render('annotations/blanktable', result);
 		}
 	});
+}
+
+exports.addAnnotation = function gene(req, res) {
+	console.log('/annotations/add_gene')
+	
+	// 
 }

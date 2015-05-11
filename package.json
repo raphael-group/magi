@@ -32,7 +32,8 @@
     "jsdom": "3.x",
     "q": "latest",
     "request": "latest",
-    "pg": "latest"
+    "pg": "latest",
+    "sql": "latest"
   },
   "repository": {
     "type": "git"

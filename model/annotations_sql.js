@@ -1,22 +1,31 @@
 // Import required modules                                                                                                                                   
 Database = require('./db_sql');
+var sql = require("sql");
 
-//                                                                                                                                                           
+sql.setDialect('postgres')
+                                                                                                                                                           
+// define tables here:
 // initialize table                                                                                                                                          
 
+var aberrations = sql.define({
+	name: 'aberrations',
+	columns: [
+		{name: 'gene', 		dataType: 'varchar(15)'},
+		{name: 'transcript',	dataType: 'varchar(20)'},
+		{name: 'mut_class', 	dataType: 'varchar(15)'},
+		{name: 'mut_type',	dataType: 'varchar(15)'},
+         	{name: 'protein_seq_change', dataType: 'varchar(15)'},
+ 		{name: 'reference',	dataType: 'varchar(25)'}, 
+                {name: 'source', 	dataType: 'varchar(20)'},
+		{name: 'is_germline',	dataType: 'boolean'},
+  		{name: 'measurement_type', 	dataType: 'varchar(10)'},
+		{name: 'comment',	dataType: 'varchar(5000)',},
+  		{name: 'user_id',	dataType: 'varchar(20)'}]
+});
+
 exports.init = function() {
-    Database.sql_query("CREATE TABLE IF NOT EXISTS aberrations " +
-              "(gene varchar(15), " + //ref gene table?                                                                                                      
-              "transcript varchar(20), " +
-              "mut_class varchar(15), " + // ref a small table 
-              "mut_type varchar(15), " + // ref a small table                                                                                                
-              "protein_seq_change varchar(15), " +
-              "reference varchar(25), " +
-              "source varchar(20), " +
-              "is_germline boolean, " +
-              "measurement_type varchar(10), " +
-              "comment varchar(5000), " +
-              "user_id varchar(20));", [],  // key is gene, mut_class, ref, source, user_id?                                                       
+    	query = aberrations.create().ifNotExists()
+	Database.execute(query,
 		function(err, result) {
 			if (!err) {
 				console.log("Initialized aberrations table in postgres");
@@ -25,7 +34,8 @@ exports.init = function() {
 }
 
 exports.dumpAll = function(callback){
-    Database.sql_query('SELECT gene, mut_class, reference, source, user_id FROM aberrations', [],
+	query = aberrations.select(aberrations.gene).select(aberrations.mut_class)
+    Database.execute(query,
                  function(err, result) {
                      if (err) {
                          console.log("Error dumping gene annotation table: " + err);
@@ -40,11 +50,11 @@ exports.dumpAll = function(callback){
 
 exports.getAnnotations = function (genes, callback) {
 	console.log("in model:", genes)
-	query = "SELECT gene, mut_class, reference, source, user_id FROM aberrations " +
-		"WHERE gene IN $1 ORDER BY gene;"
-	Database.sql_query(query, genes, function(err, result) {
+	query = aberrations.where(aberrations.gene.in(genes)).select(aberrations.gene).select(aberrations.mut_class)
+	Database.execute(query, function(err, result) {
 		if (err) {
 			console.log("Error getting annotations for specific genes");
+			console.log(err)
 			return
 		}
 		pkg_result = {
