@@ -295,7 +295,7 @@ function view(){
 					cancerNames.forEach(function(cancer){
 						cancerToRefs[cancer].forEach(function(ref, i){
 							// only show the cancer name in the first row
-							refTable.push([	
+							refTable.push([
 								{ type: 'text', text: i ? "" : cancerToName(cancer) },
 								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
 								{ type: 'vote',
@@ -334,7 +334,7 @@ function view(){
 						});
 					});
 
-					// The table is hidden on default, so we show a string describing the 
+					// The table is hidden on default, so we show a string describing the
 					// table before showing it.
 					var knownAberrations = cancerNames.map(cancerToName).join(", ");
 					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + ' in ' + knownAberrations});
@@ -689,7 +689,7 @@ function view(){
 	var addBtn = requeryPanel.append('a')
 			.classed('btn btn-default btn-xs', true)
 			.attr('href', hrefFn)
-			.text('Redo datasets, and genes')
+			.text('Run query')
 			.on('click', function() {
 				if($('.multiselect :checked').length == 0) d3.event.preventDefault();
 			});
@@ -698,7 +698,7 @@ function view(){
 				color: 'rgb(125,125,125)',
 				'font-size': '12px'
 			})
-			.text('("redo" will reload the page)');
+			.text('("run" will reload the page)');
 
 	var geneRequery = d3.select('#requery-gene-select'),
 			addedGeneArea = geneRequery.append('div').style('width', '160px');
@@ -738,7 +738,7 @@ function view(){
 				});
 		geneText.on('mouseover', function() { xOut.style('visibility', 'visible')})
 						.on('mouseout', function() { xOut.style('visibility', 'hidden')});
-		
+
 	}
 	loadedGenes.forEach(addBadge);
 

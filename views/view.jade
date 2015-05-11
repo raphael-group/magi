@@ -19,7 +19,7 @@ block body
         div(class="panel panel-default", style="margin-top:5px")
           div(class="panel-heading", style="padding:5px")
             h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="requeryLink")
-              | Redo query
+              | Query
               span(style="float:right") [+]
           div(id="collapseRequery", class="panel-collapse collapse", style="padding:5px")
             div(style="margin-top:3px" id="magi-datasets")
@@ -103,7 +103,7 @@ block body
             ul
               - for (var i = 0; i < data.genes.length; i++)
                 li
-                  | #{data.genes[i]} 
+                  | #{data.genes[i]}
                   a(href="/annotations/gene/#{data.genes[i]}")
                     span(class="badge", style="font-size:80%") #{data.geneToAnnotationCount[data.genes[i]]}
 
