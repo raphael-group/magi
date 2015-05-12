@@ -62,6 +62,7 @@ exports.addAnnotation = function gene(req, res) {
 		annotations.upsert(query, function(err, annotation){
 			if (err){
 				res.send({ error: "Annotation could not be parsed. " + err });
+				// todo: handle error: interpret or pass up if critical (no database, no table)
 				throw new Error(err);
 			}
 			res.send({ status: "Annotation saved successfully!", annotation: { _id: annotation._id } });

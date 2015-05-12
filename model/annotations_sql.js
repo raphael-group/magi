@@ -7,20 +7,21 @@ sql.setDialect('postgres')
 // define tables here:
 // initialize table                                                                                                                                          
 
+// todo: make sure the primary keys make sense
 var aberrations = sql.define({
 	name: 'aberrations',
 	columns: [
-		{name: 'gene', 		dataType: 'varchar(15)'},
+		{name: 'gene', 		dataType: 'varchar(15)', notNull: true, primaryKey: true},
 		{name: 'transcript',	dataType: 'varchar(20)'},
-		{name: 'mut_class', 	dataType: 'varchar(15)'},
+		{name: 'mut_class', 	dataType: 'varchar(15)', notNull: true, primaryKey: true},
 		{name: 'mut_type',	dataType: 'varchar(15)'},
          	{name: 'protein_seq_change', dataType: 'varchar(15)'},
- 		{name: 'reference',	dataType: 'varchar(25)'}, 
-                {name: 'source', 	dataType: 'varchar(20)'},
+ 		{name: 'reference',	dataType: 'varchar(25)', notNull: true, primaryKey: true}, 
+                {name: 'source', 	dataType: 'varchar(20)', notNull: true},
 		{name: 'is_germline',	dataType: 'boolean'},
   		{name: 'measurement_type', 	dataType: 'varchar(10)'},
 		{name: 'comment',	dataType: 'varchar(5000)',},
-  		{name: 'user_id',	dataType: 'varchar(20)'}]
+  		{name: 'user_id',	dataType: 'varchar(100)', notNull: true, primaryKey: true}]
 });
 
 exports.init = function() {
@@ -29,6 +30,9 @@ exports.init = function() {
 		function(err, result) {
 			if (!err) {
 				console.log("Initialized aberrations table in postgres");
+			} else {
+				console.log("Error creating aberrations table: ", err)
+				throw new Error(err)
 			}
 		});		
 }
@@ -69,14 +73,19 @@ exports.upsert = function(anno, callback){
     // todo: prepared statements                                                                                                                             
     // don't need this unpacking step, but requires persistent client                                                                                        
     
-    query = aberrations.insert(aberrations.gene.value(anno.gene),
- 		aberrations.mut_class.value(anno.mutation_class))
+    query = aberrations.insert(
+		aberrations.gene.value(anno.gene),
+ 		aberrations.mut_class.value(anno.mutation_class),
+		aberrations.reference.value(anno.pmid),
+		aberrations.source.value(anno.source),
+		aberrations.user_id.value(anno.user_id))
 
     console.log("upserting ", anno.gene);
     sql_result = Database.execute(query, function(err, result) {
         if (err) {
             console.log("Error upserting gene annotation: " + err);
-            return //FIXME - where should errors be handled?                                                                                                 
+		console.log("full query:", query.string) 
+	        callback(err, null)
         }                                                                                                                                                    
         callback(null, result) // what is result of upsert?                                                                                                  
     }); // check status                                                                                                                                      
