@@ -94,8 +94,13 @@ exports.getSessionLatestQuery = requery.getSessionLatestQuery;
 // test routes for POSTGRESQL
 exports.annotations_SQL = {};
 exports.annotations_SQL.saveMutation = annotations_SQL.saveMutation
+<<<<<<< HEAD
 exports.annotations_SQL.gene = annotations_SQL.gene;
 
+=======
+exports.annotations_SQL.gene = annotations_SQL.gene
+exports.annotations_SQL.mutationVote = annotations_SQL.mutationVote;
+>>>>>>> wrote query for counting annotations; modified gene annotations view for flat answer
 // exports.annotations.cancer = annotations.cancer;
 // exports.annotations.save.mutation = annotations.saveMutation;
 // exports.annotations.save.ppi = annotations.savePPI;
