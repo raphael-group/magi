@@ -57,7 +57,8 @@ votes = sql.define({
 	{name: 'anno_id', dataType: 'integer', primaryKey: true},
 	{name: 'anno_type',	dataType: annoTypeName, notNull:true, primaryKey: true},
 	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
-	{name: 'direction', dataType: 'integer', notNull: true},
+	{name: 'upvote', dataType: 'smallint', notNull: true},  // integrity check: only one vote at a time
+	{name: 'downvote', dataType: 'smallint', notNull: true},
 	{name: 'comment', dataType: 'varchar(100)'}]
 })
 

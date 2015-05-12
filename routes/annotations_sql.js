@@ -83,3 +83,26 @@ exports.saveMutation = function saveMutation(req, res) {
     }
     // 
 }
+
+// Save a vote on a mutation
+exports.mutationVote = function mutationVote(req, res){
+    // Only allow logged in users to vote
+    if (req.isAuthenticated()){
+	if (!req.body){
+	    res.send({error: 'Empty vote body.'})
+	    return;
+	}
+
+	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
+	Annotations.vote(req.body, req.user._id + "")
+	    .then(function(){
+		res.send({ status: "Mutation vote saved successfully!" });
+	    })
+	    .fail(function(){
+		res.send({ error: "Mutation vote could not be parsed." });
+	    });
+    }
+    else{
+	res.send({ error: "You must be logged in to vote." });
+    }
+}
