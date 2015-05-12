@@ -1,6 +1,8 @@
 var pg = require("pg");
-var conString = 'postgres://postgres@' + process.env.POSTGRES_PORT_5432_TCP_ADDR + ':5432/';
+var conString = 'postgres://postgres@' + process.env.POSTGRES_HOST + ':' + 
+process.env.POSTGRES_PORT + '/magi';
 
+console.log('connection:', conString);
 exports.execute = execute
 exports.sql_query = sql_query
 
@@ -11,7 +13,6 @@ function execute(query, cb){
 
 function sql_query(text, values, cb){
     // gets a client from the client pool                  
-    console.log("text = ", text, ", values = ", values)
     pg.connect(conString, function(err, client, done) {
         if(err) {
             return console.error('error fetching client from pool', err);
