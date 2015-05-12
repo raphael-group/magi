@@ -5,28 +5,8 @@ var sql = require("sql");
 
 //initialize table
 tables = Schemas.tables
-exports.init = function() {
-    handle_err = function(table, err) {
-	    if (!err) {
-		console.log("SQL Initialized", table.getName(), "table in postgres");
-	    } else {
-		console.log("Error creating", table.getName(), "table:", err)
-		throw new Error(err)
-	    }
-    }
 
-    // create annotation table, then everything else
-    anno_create = Schemas.annotations.create().ifNotExists()
-    Database.execute(anno_create, function(err, result) {
-	handle_err(Schemas.annotations, err)
-	tables.forEach(function (thisTable) {
-	    table_create = thisTable.create().ifNotExists() 
-	    Database.execute(table_create, function(err, result) {
-		handle_err(thisTable, err)
-	    })
-	})
-    })
-}
+exports.init = Schemas.initDatabase
 
 exports.dumpAll = function(callback){
     aberrations = tables.aberrations
@@ -60,7 +40,7 @@ exports.getAnnotations = function (genes, callback) {
     });
 };
 
-// upsert an aberration annotation into MongoDB                                                                                                              
+// upsert an aberration annotation into SQL                              
 exports.upsert = function(anno, callback){
     aberrations = tables.aberrations
     // todo: prepared statements                                                                                                                                query = aberrations.insert(aberrations.gene.value(anno.gene))
