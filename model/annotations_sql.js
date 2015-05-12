@@ -68,11 +68,12 @@ exports.getAnnotations = function (genes, callback) {
 exports.upsert = function(anno, callback){
     // todo: prepared statements                                                                                                                             
     // don't need this unpacking step, but requires persistent client                                                                                        
+    
+    query = aberrations.insert(aberrations.gene.value(anno.gene),
+ 		aberrations.mut_class.value(anno.mutation_class))
 
-    unpacked = [anno.gene, anno.mut_class, anno.reference, anno.source, anno.user_id];
-    query_str = 'INSERT INTO aberrations (gene, mut_class, reference, source, user_id) VALUES ($1, $2, $3, $4, $5)';
     console.log("upserting ", anno.gene);
-    sql_result = Database.sql_query(query_str, unpacked, function(err, result) {
+    sql_result = Database.execute(query, function(err, result) {
         if (err) {
             console.log("Error upserting gene annotation: " + err);
             return //FIXME - where should errors be handled?                                                                                                 
