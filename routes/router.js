@@ -88,6 +88,7 @@ exports.userGaveConsent = log.userGaveConsent;
 exports.annotations_SQL = {};
 exports.annotations_SQL.saveMutation = annotations_SQL.saveMutation
 exports.annotations_SQL.gene = annotations_SQL.gene
+exports.annotations_SQL.mutationVote = annotations_SQL.mutationVote;
 // exports.annotations.cancer = annotations.cancer;
 // exports.annotations.save.mutation = annotations.saveMutation;
 // exports.annotations.save.ppi = annotations.savePPI;

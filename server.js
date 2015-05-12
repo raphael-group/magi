@@ -176,18 +176,12 @@ app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
 app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save.ppi);
 app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
-app.post('/vote/mutation', routes.annotations.mutationVote);
+//app.post('/vote/mutation', routes.annotations.mutationVote);
 
 // SQL subtitute annotation views
 app.get('/annotations/gene/:gene', routes.annotations_SQL.gene);
 app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations_SQL.saveMutation);
-
-//app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
-//app.post('/save/annotation/mutation', ensureAuthenticated, routes.annotations.save.mutation);
-//app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save.ppi);
-//app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
-//app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
-//app.post('/vote/mutation', routes.annotations.mutationVote);
+app.post('/vote/mutation', routes.annotations_SQL.mutationVote);
 
 // more information
 app.get('/terms', routes.terms);

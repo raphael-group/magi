@@ -69,22 +69,21 @@ block body
 					- var mutationClass = d.mutation_class ? d.mutation_class : "--";
 					- var mutationType = d.mutation_type ? d.mutation_type : "--";
 					- var proteinSeqChange = d.change ? d.change : "--";
-					- for (var j = 0; j < d.references.length; j++)
-						- var ref = d.references[j];
-						- var numVotes = ref.upvotes.length - ref.downvotes.length;
-						- var downVoteClass = ref.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
-						- var upVoteClass = ref.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
-						tr
-							td !{cancer} 
-							td #{mutation_class(mutationClass)}
-							td #{mutation_type(mutationType)}
-							td #{proteinSeqChange}
-							td !{pubmedLink(ref.pmid)}
-							td !{ref.source}
-							td
-								a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d._id}", pmid="#{ref.pmid}") &#x25BC;&nbsp;
-								span(id="vote-#{d._id}-#{ref.pmid}") #{numVotes}
-								a(href="#", class="upvote  #{upVoteClass}", annotation-id="#{d._id}", pmid="#{ref.pmid}") &#x25B2;
+					- var numVotes = d.upvotes.length - d.downvotes.length;
+					- var pmid_ref = d.reference
+					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
+					- var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
+					tr
+						td !{cancer} 
+						td #{mutation_class(mutationClass)}
+						td #{mutation_type(mutationType)}
+						td #{proteinSeqChange}
+						td !{pubmedLink(pmid_ref)}
+						td !{d.source}
+						td 
+							a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d._id}", pmid="#{pmid_ref}") &#x25BC;&nbsp;								
+							span(id="vote-#{d._id}-#{pmid_ref}") #{numVotes}
+							a(href="#", class="upvote  #{upVoteClass}", annotation-id="#{d._id}", pmid="#{pmid_ref}") &#x25B2;
 		br
 		div(id="annotationStatus", class="text-center", style="width:100%;")
 
