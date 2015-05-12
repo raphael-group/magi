@@ -23,6 +23,10 @@ exports.dumpAll = function(callback){
     });
 };
 
+// todo: Vote for a mutation
+exports.vote = function mutationVote(fields, user_id){
+}
+
 exports.getAnnotations = function (genes, callback) {
     aberrations = tables.aberrations
     console.log("in model:", genes)
@@ -61,29 +65,29 @@ sql_result = Database.execute(query, function(err, result) {
 
 }
 
-/*
-// Vote for a mutation                                                                                                                                       
-exports.vote = function mutationVote(fields, user_id){
-}
-// Loads annotations into the database                                                                                                                       
+// todo:  Loads annotations into the database
 exports.loadAnnotationsFromFile = function(filename, source, callback){
 }
-//                                                                                                                                                           
+                                                                                                                                                          // todo: assemble annotations 
 exports.geneTable = function (genes, support){
-// Assemble the annotations into a dictionary index by                                                                                                   
-// gene (e.g. TP53) and mutation class (e.g. missense or amp)                                                                                                // and then protein change (only applicable for missense/nonsense)                                                                                       
-// 1) Store the total number of references for the gene/class in "",                                                                                     
-// i.e. annotations['TP53'][''] gives the total for TP53 and                                                                                             
-// annotations['TP53']['snv'][''] gives the total for TP53 SNVs.                                                                                         
-// 2) Count the number per protein change.                                                                                                               
-// Combine references at the PMID level so that for each                                                                                                 
-// annotation type (gene, type, locus) we have a list of references                                                                                      
-// with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)                                                                             
-// level so we have a list of PMIDs that all map to the same cancer type(s)                                                                              
-function combineCancers(objects){
-});
-});
-return annotations;
+    // Assemble the annotations into a dictionary index by                                                                                                   
+    // gene (e.g. TP53) and mutation class (e.g. missense or amp)                                                                                                // and then protein change (only applicable for missense/nonsense)                                                                                       
+    // 1) Store the total number of references for the gene/class in "",                                                                                     
+    // i.e. annotations['TP53'][''] gives the total for TP53 and                                                                                             
+    // annotations['TP53']['snv'][''] gives the total for TP53 SNVs.                                                                                         
+    // 2) Count the number per protein change.                                                                                                               
+    // Combine references at the PMID level so that for each                                                                                                 
+    // annotation type (gene, type, locus) we have a list of references                                                                                      
+    // with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)                                                                             
+    // level so we have a list of PMIDs that all map to the same cancer type(s)  
+
+    // todo: subfunction                                                         	// Combine references at the PMID level so that for each 
+    // annotation type (gene, type, locus) we have a list of references
+    // with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)
+    // level so we have a list of PMIDs that all map to the same cancer type(s)
+    
+    function combineCancers(objects){
+    }
+//return annotations;
 }
 
-*/
