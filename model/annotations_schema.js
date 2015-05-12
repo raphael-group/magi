@@ -9,7 +9,15 @@ annoTypeName = "anno_sub_type"
 //annoTypes = ["aber", "ppi"]
 
 // define tables here:
-// todo: enforce uniqueness of secondary (non-null) keys with constraints
+annotations = sql.define({
+    name: 'annos',
+    columns: [
+	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
+	{name: 'u_id', dataType: 'serial', primaryKey: true},
+ 	{name: 'reference',	dataType: 'varchar(25)', notNull: true}, 
+	{name: 'type', dataType: annoTypeName, primaryKey: true, notNull: true}]	
+})
+
 aberrations = sql.define({
     name: 'aberrations',
     columns: [
@@ -24,7 +32,6 @@ aberrations = sql.define({
 	{name: 'comment',	dataType: 'varchar(5000)',},
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true},
 	{name: 'anno_id', dataType: 'integer', primaryKey: true}]
-    //	 references: {table:'annos', column: 'u_id'}}]
 })
 
 interactions = sql.define({
@@ -40,16 +47,6 @@ interactions = sql.define({
 	{name: 'tissue',	dataType: 'varchar(30)'},
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'ppi'", notNull:true},
 	{name: 'anno_id', dataType: 'integer', primaryKey: true}]
-//	 references: {table:'annos', column: 'u_id'}}]
-})
-
-annotations = sql.define({
-    name: 'annos',
-    columns: [
-	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
-	{name: 'u_id', dataType: 'serial', primaryKey: true},
- 	{name: 'reference',	dataType: 'varchar(25)', notNull: true}, 
-	{name: 'type', dataType: annoTypeName, primaryKey: true, notNull: true}]	
 })
 
 votes = sql.define({
@@ -62,8 +59,6 @@ votes = sql.define({
 	{name: 'comment', dataType: 'varchar(100)'}]
 })
 
-// order matters
-subannos = [aberrations, interactions, votes]
 exports.annotations = annotations
 exports.aberrations = aberrations
 exports.interactions = interactions
@@ -78,7 +73,7 @@ exports.initDatabase = function() {
     }
 
     // create type first - no support for NOT EXISTS/CREATE OR REPLACE 
-    // hence this abomination
+    // hence this mess
     wholeTypeStr = "DO LANGUAGE plpgsql $$ BEGIN " +
 	"IF NOT EXISTS (select 1 FROM pg_type " +
 	"WHERE typname='" + annoTypeName + "') " + 
@@ -96,9 +91,10 @@ exports.initDatabase = function() {
 	    annoCreateQuery = annotations.create().ifNotExists()
 	    Database.execute(annoCreateQuery, function(err, result) {
 		handle_err(annotations, err)
-		console.log("SQL Initialized", annotations.getName(), "table");
+		console.log("Annotations: postgres init'ed", annotations.getName(), "table");
 
 		// create subannotation and votes table
+		subannos = [aberrations, interactions, votes]
 		subannos.forEach( function (thisTable) {
 		    createQuery = thisTable.create().ifNotExists() 
 		    Database.execute(createQuery, function(err, result) {
@@ -110,7 +106,7 @@ exports.initDatabase = function() {
 			    " REFERENCES annos ( u_id, type )"
 			Database.sql_query(alterStr, [], function(err, res) {
 			    handle_err(thisTable, err)
-			    console.log("Postgres Initialized", thisTable.getName(), "table");
+			    console.log("Annotations: postgres init'ed", thisTable.getName(), "table");
 			})
 		    })
 		})
