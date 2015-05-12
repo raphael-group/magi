@@ -4,65 +4,57 @@ Schemas = require('./annotations_schema.js');
 var sql = require("sql");
 
 //initialize table
-tables = Schemas.tables
-
 exports.init = Schemas.initDatabase
 
-exports.dumpAll = function(callback){
-    aberrations = tables.aberrations
-    query = aberrations.select(aberrations.gene).select(aberrations.mut_class)
-    Database.execute(query, function(err, result) {
-	if (err) {
-	    console.log("Error dumping gene annotation table: " + err);
-	    return
-	}
-	pkg_result = {
-	    rows: result.rows
-	};
-	callback(null, pkg_result)
-    });
-};
+// find all annotations given a structure with regexp
+exports.find = function(query, callback /*(err, results) */) {
+    
+}
 
 // todo: Vote for a mutation
 exports.vote = function mutationVote(fields, user_id){
 }
 
-exports.getAnnotations = function (genes, callback) {
-    aberrations = tables.aberrations
-    console.log("in model:", genes)
-    query = aberrations.where(aberrations.gene.in(genes)).select(aberrations.gene).select(aberrations.mut_class)
-    Database.execute(query, function(err, result) {
-	if (err) {
-	    console.log("Error getting annotations for specific genes");
-	    console.log(err)
-	    return
-	}
-	pkg_result = {
-	    rows:result.rows
-	};
-	callback(null, pkg_result);
-    });
-};
-
 // upsert an aberration annotation into SQL                              
-exports.upsert = function(anno, callback){
-    aberrations = tables.aberrations
-    // todo: prepared statements                                                                                                                                query = aberrations.insert(aberrations.gene.value(anno.gene))
-//    aberrations.mut_class.value(anno.mutation_class),
-//    aberrations.reference.value(anno.pmid),
-//    aberrations.source.value(anno.source),
-//    aberrations.user_id.value(anno.user_id))
+exports.upsert = function(data, callback){
+    abers = Schemas.aberrations
+    annos = Schemas.annotations
 
-console.log("upserting ", anno.gene);
-sql_result = Database.execute(query, function(err, result) {
-    if (err) {
-        console.log("Error upserting gene annotation: " + err);
-	console.log("full query:", query.string) 
-	callback(err, null)
-    }                                                                                                                                                    
-    callback(null, result) // what is result of upsert?                                                                                                  
-}); // check status                                                                                                                                      
+    annoInsertQuery = annos.insert([{
+	user_id : data.user_id,
+	reference : data.pmid,
+	type : "aber" }]).returning(annos.u_id)
 
+    handleErr = function(err, subresult, query) {
+	if (err == null && subresult.rows.length == 0) {
+	    err = Error("Did not return annotation ID")
+	}
+	if (err) {
+            console.log("Error upserting gene annotation: " + err);
+	    console.log("Debug: full query:", query.string) 
+	    callback(err, null)
+	}
+    }
+
+    // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
+    Database.execute(annoInsertQuery, function(err, subresult) {
+	handleErr(err, subresult, annoInsertQuery) 
+	u_id = subresult.rows[0].u_id
+
+	aberInsertQuery = abers.insert(
+	    abers.gene.value(data.gene),
+	    abers.mut_class.value(data.mutation_class),
+	    abers.mut_type.value(data.mutation_type),
+	    abers.protein_seq_change.value(data.change),
+	    abers.comment.value(data.comment),
+	    abers.source.value(data.source),
+	    abers.anno_id.value(u_id)).returning(abers.anno_id) // we can re turn more if we want
+
+	Database.execute(aberInsertQuery, function(err, result) {
+	    handleErr(err, result, aberInsertQuery)
+	    callback(null, result.rows[0]) // what do we want to return?
+	})
+    })
 }
 
 // todo:  Loads annotations into the database

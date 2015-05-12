@@ -181,7 +181,7 @@ app.post('/vote/mutation', routes.annotations.mutationVote);
 // SQL subtitute annotation views
 app.get('/annotations/gene_sql_dump/', routes.annotations_SQL.all);
 app.get('/annotations/gene_sql/:gene', routes.annotations_SQL.gene);
-app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations_SQL.addAnnotation);
+app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations_SQL.saveMutation);
 //app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
 //app.post('/save/annotation/mutation', ensureAuthenticated, routes.annotations.save.mutation);
 //app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save.ppi);

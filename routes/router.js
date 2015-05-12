@@ -87,5 +87,5 @@ exports.userGaveConsent = log.userGaveConsent;
 // test routes for POSTGRESQL
 exports.annotations_SQL = {};
 exports.annotations_SQL.all = annotations_SQL.getAll;
-exports.annotations_SQL.addAnnotation = annotations_SQL.addAnnotation
+exports.annotations_SQL.saveMutation = annotations_SQL.saveMutation
 exports.annotations_SQL.gene = annotations_SQL.gene;
