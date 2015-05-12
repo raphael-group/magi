@@ -33,13 +33,9 @@ exports.gene = function gene(req, res){
     });
 }
 
-exports.addAnnotation = function gene(req, res) {
-    console.log('/annotations/gene_sql/add')
-    console.log('req:', req)
-    console.log('req.body:', req.body)
+exports.saveMutation = function saveMutation(req, res) {
+    console.log('/annotations/gene_sql/add ("proxy for: /save/annotation/mutation")')
     
-    console.log("proxy for: /save/annotation/mutation")
-
     // Load the posted form
     var form = new formidable.IncomingForm({});
 
@@ -48,11 +44,11 @@ exports.addAnnotation = function gene(req, res) {
 	// Add the annotation
 	var query = {
 	    gene: req.body.gene,
-	    cancer: req.body.cancer,
+	    cancer: req.body.cancer, // not used
 	    mutation_class: req.body.mutationClass,
 	    mutation_type: req.body.mutationType,
 	    change: req.body.change,
-	    domain: req.body.domain,
+	    domain: req.body.domain, // not used
 	    pmid: req.body.pmid,
 	    comment: req.body.comment,
 	    user_id: req.user._id,
@@ -65,7 +61,7 @@ exports.addAnnotation = function gene(req, res) {
 		// todo: handle error: interpret or pass up if critical (no database, no table)
 		throw new Error(err);
 	    }
-	    res.send({ status: "Annotation saved successfully!", annotation: { _id: annotation._id } });
+	    res.send({ status: "Annotation saved successfully!", annotation: { _id: annotation.u_id } });
 	});
     }
     else{
