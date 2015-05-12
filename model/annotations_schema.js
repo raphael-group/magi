@@ -55,8 +55,8 @@ votes = sql.define({
     name: 'votes',
     columns: [
 	{name: 'anno_id', dataType: 'integer', primaryKey: true},
-	{name: 'anno_type',	dataType: annoTypeName, notNull:true},
-	{name: 'user_id', dataType: 'varchar(40)', notNull: true},
+	{name: 'anno_type',	dataType: annoTypeName, notNull:true, primaryKey: true},
+	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
 	{name: 'direction', dataType: 'integer', notNull: true},
 	{name: 'comment', dataType: 'varchar(100)'}]
 })

@@ -1,40 +1,54 @@
 // Load required modules
-var	mongoose = require( 'mongoose' ),
+var mongoose = require( 'mongoose' ),
 formidable = require('formidable'),
 annotations  = require( "../model/annotations_sql" ),
 PPIs = require( "../model/ppis" ),
-Database = require('../model/db_sql');
+Database = require('../model/db')
 
 // Create the table if it doesn't exist already
 annotations.init()
 
-// Renders annotations for the whole table:
-exports.getAll = function gene(req, res) {
-    annotations.dumpAll(function(err, result) {
-	if(!err) {
-	    res.render('annotations/blanktable', result);
-	}	
-    });
-}
-
 // todo: add post route to add genes
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
-    console.log('/annotations/gene_sql');
+    console.log('SQL proxy for: /annotations/gene, gene =', req.params.gene);
 
     // Parse params
-    var gene = req.params.gene.toUpperCase() || ""
-    //		Annotation = Database.magi.model( 'Annotation' ),
-    //		Cancer = Database.magi.model( 'Cancer' );
-    annotations.getAnnotations([gene], function(err, result) {
-	if(!err) {
-	    res.render('annotations/blanktable', result);
-	}
+    var geneRequested = req.params.gene.toUpperCase() || "",
+    Cancer = Database.magi.model( 'Cancer' );
+
+    annotations.geneFind({gene: geneRequested}, function(err, result) {
+	// Throw error (if necessary)
+	if (err) throw new Error(err);
+
+	// todo: check what annotations should look like on return and change render page
+	console.log("annotations returned: ", result)
+	Cancer.find({}, function(err, cancers){
+	    if (err) throw new Error(err);
+	    
+	    // Make a map of cancers to abbreviations and vice versa
+	    var abbrToCancer = {},
+	    cancerToAbbr = {};
+	    cancers.forEach(function(c){
+		abbrToCancer[c.abbr] = c.cancer;
+		cancerToAbbr[c.cancer.toLowerCase()] = c.abbr;
+	    })
+
+	    // Render the view
+	    var pkg = {
+		user: req.user,
+		annotations: result,
+		gene: geneRequested,
+		abbrToCancer: abbrToCancer,
+		cancerToAbbr: cancerToAbbr
+	    };
+	    res.render('annotations/gene', pkg);
+	});
     });
 }
 
 exports.saveMutation = function saveMutation(req, res) {
-    console.log('/annotations/gene_sql/add ("proxy for: /save/annotation/mutation")')
+    console.log('SQL proxy for: /save/annotation/mutation')
     
     // Load the posted form
     var form = new formidable.IncomingForm({});

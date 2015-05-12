@@ -7,12 +7,33 @@ var sql = require("sql");
 exports.init = Schemas.initDatabase
 
 // find all annotations given a structure with regexp
-exports.find = function(query, callback /*(err, results) */) {
-    
+exports.geneFind = function(query, callback /*(err, results) */) {
+    abers = Schemas.aberrations
+    annos = Schemas.annotations
+    console.log("query in geneFind: ", query)
+    selQuery = abers.where(query).from(abers.join(annos).join(votes))
+
+    // todo: fill out references, and up/down votes
+    Database.execute(selQuery, function(err, result) {
+	if (err) {
+            console.log("Error selecting gene annotations: " + err);
+	    console.log("Debug: full query:", selQuery.string) 
+	    callback(err, null)
+	} 
+	callback(null, result.rows)
+    })
 }
 
 // todo: Vote for a mutation
 exports.vote = function mutationVote(fields, user_id){
+    annos = Schemas.annotations
+    votes = Schemas.votes
+
+/*    annoInsertQuery = annos.insert([{
+	user_id : data.user_id,
+	reference : data.pmid,
+	type : "aber" }]).returning(annos.u_id)
+    */
 }
 
 // upsert an aberration annotation into SQL                              
