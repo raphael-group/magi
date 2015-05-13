@@ -88,7 +88,7 @@ block body
             ul
               - for (var i = 0; i < data.genes.length; i++)
                 li
-                  | #{data.genes[i]} 
+                  | #{data.genes[i]}
                   a(href="/annotations/gene/#{data.genes[i]}")
                     span(class="badge", style="font-size:80%") #{data.geneToAnnotationCount[data.genes[i]]}
 
@@ -312,6 +312,7 @@ block belowTheFold
       script(src='components/shepherd.js/shepherd.min.js').
       script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
       script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
+      script(src='/components/jssha/src/sha1.js'). // req for log.js
       script(src='/js/save.js').
       script(src='/js/view.js').
       script(src='/js/annotate.js').
