@@ -18,20 +18,13 @@ exports.geneFind = function(query, callback /*(err, results) */) {
     voteSubQueryText = 
 	" (SELECT U.anno_id, upvotes, downvotes FROM " +
 	" (SELECT anno_id, array_agg(voter_id) AS upvotes " +
-	" FROM votes WHERE upvote = 1 group by anno_id)" +
-	" AS U JOIN " +                          
+	" FROM votes WHERE direction = 1 group by anno_id)" +
+	" AS U FULL OUTER JOIN " +                          
 	" (SELECT anno_id, array_agg(voter_id) AS downvotes FROM votes " +
-	" WHERE downvote = 1 group by anno_id) as D " +
+	" WHERE direction = -1 group by anno_id) as D " +
 	" ON U.anno_id = D.anno_id) "
    
     selAnnosQuery = abers
-//	.select(
-     	// annos.u_id, 
-     	// annos.reference,
-     	// abers.gene,
-     	// abers.mut_class,
-     	// abers.mut_type,
-     	// abers.protein_seq_change)
 	.from(abers.join(annos).on(abers.anno_id.equals(annos.u_id)))
 	.where(query)
 
@@ -51,6 +44,15 @@ exports.geneFind = function(query, callback /*(err, results) */) {
 	    callback(err, null)	    
 	} 
 	
+	// convert null votes to []
+	for (var i = 0; i < result.rows.length; i++) {
+	    if (result.rows[i].upvotes == null) {
+		result.rows[i].upvotes = []
+	    }
+	    if (result.rows[i].downvotes == null) {
+		result.rows[i].downvotes = []
+	    }
+	}
 	callback(null, result.rows)
     })
 }
@@ -62,27 +64,40 @@ exports.vote = function mutationVote(fields, user_id){
     // Set up the promise
     var Q = require( 'q' ),
     d = Q.defer();
-
+    
+    console.log("Incoming: ", fields)
     //Create and execute the query
-    var anno_id = fields.annotation_id, // FIXME: not guaranteed unique - better to use anno_id,
-    valence;
+    var anno_id = fields._id, // FIXME: not guaranteed unique - better to use anno_id,
+    valence = (fields.vote == "up") ? 1 : -1 ;
 
-    // todo: change existing vote if necessary
-    if (fields.vote == "up") {
-	valence = 1 
-    } else if (fields.vote == "down") {
-	valence = -1
-    }
+    // change existing vote if necessary
+    voteUpdateQuery = votes.update({
+	direction : valence
+    })
+	.where(votes.voter_id.equals(user_id),
+	       votes.anno_type.equals("aber"),
+	       votes.anno_id.equals(anno_id))
 
-    voteQuery = votes.insert(votes.voter_id.value(user_id),
+    voteInsertQuery = votes.insert(votes.voter_id.value(user_id),
 		 votes.direction.value(valence),
 		 votes.anno_type.value("aber"),
-		 votes.u_id.value(anno_id))
-    Database.execute(voteQuery, function (err, result) {
+		 votes.anno_id.value(anno_id))
+
+    // todo: operate as transaction
+    Database.execute(voteUpdateQuery, function (err, result) {
 	// Throw error and resolve if necessary
-	if (err){
+	if (err) {
 	    console.log("Error voting for mutation:", err)
 	    throw new Error(err);
+	} else if (result.rowCount == 0 ){
+	    Database.execute(voteInsertQuery, function (err, result) {
+		if (err) {
+		    console.log("Error voting for mutation:", err)
+		    throw new Error(err);
+		}
+	    })
+	} else {
+	    console.log("vote submission Result: ", result)
 	}
 	console.log("User", user_id, "voted for anno #",  anno_id);
 	d.resolve();
@@ -111,7 +126,8 @@ exports.upsert = function(data, callback){
 	    callback(err, null)
 	}
     }
-
+    
+    // todo: test update case
     // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
     Database.execute(annoInsertQuery, function(err, subresult) {
 	handleErr(err, subresult, annoInsertQuery) 
