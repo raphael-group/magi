@@ -81,9 +81,9 @@ block body
 						td !{pubmedLink(pmid_ref)}
 						td !{d.source}
 						td 
-							a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d._id}", pmid="#{pmid_ref}") &#x25BC;&nbsp;								
-							span(id="vote-#{d._id}-#{pmid_ref}") #{numVotes}
-							a(href="#", class="upvote  #{upVoteClass}", annotation-id="#{d._id}", pmid="#{pmid_ref}") &#x25B2;
+							a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25BC;&nbsp;								
+							span(id="vote-#{d.u_id}-#{pmid_ref}") #{numVotes}
+							a(href="#", class="upvote  #{upVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25B2;
 		br
 		div(id="annotationStatus", class="text-center", style="width:100%;")
 
