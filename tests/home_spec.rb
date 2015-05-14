@@ -4,6 +4,9 @@ require './pageobjects.rb'
 test_user = "cbio.tester"
 test_pass = "Adenine=Uracil"
 
+# substitute with :firefox to test firefox
+# for IE testing run on windows with :ie
+# for safari/mobile browsers, check watirwebdriver.com for information
 site = Site.new(Watir::Browser.new :chrome)
 RSpec.configure do |config|
   config.before(:each) {@home_page = site.home_page.open}
