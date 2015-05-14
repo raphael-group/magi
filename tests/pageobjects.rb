@@ -2,7 +2,7 @@
 require 'watir-webdriver'
 
 # the MAGI instance to be tested
-BASE_URL = 'http://paad.cs.brown.edu/'
+BASE_URL = 'http://cbio-test.cs.brown.edu/'
 
 class BrowserContainer
   def initialize(browser)
@@ -229,6 +229,18 @@ class DatasetsPage < Site
     return t.text.include(name)
   end
 
+  def remove_dataset(name)
+    t = get_dataset_names
+    idx = t.index(name)
+    if idx == nil 
+      return false
+    end
+    trashLink = @browser.spans(:class => "glyphicon-trash")[idx]
+    if !trashLink.exists?
+      return false
+    end
+    trashLink.click
+  end
 end
 
 class LoginPage < Site

@@ -13,7 +13,7 @@ site = Site.new(Watir::Browser.new :chrome)
 
 RSpec.configure do |config|
   config.before(:each) {@home_page = site.home_page.open}
- # config.after(:suite) {site.close}
+  config.after(:suite) {site.close}
 end
 
 # to run tests, 
@@ -39,6 +39,10 @@ RSpec.describe "MAGI" do
     expect(home.is_home?).to be true
 
     dataset_page = home.nav_to_datasets_page
-    expect(dataset_page.get_dataset_names).to include(test_name)
+    dataset_names = dataset_page.get_dataset_names
+    expect(dataset_names).to include(test_name)
+    if dataset_names.index(test_name) != nil 
+      dataset_page.remove_dataset(test_name)
+    end
   end
 end
