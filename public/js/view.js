@@ -687,7 +687,7 @@ function view(){
 		return window.location.pathname+'?'+search.join('&');
 	}
 	var addBtn = requeryPanel.append('a')
-			.classed('btn btn-default btn-xs', true)
+			.classed('btn btn-primary btn-xs', true)
 			.attr('href', hrefFn)
 			.text('Run query')
 			.on('click', function() {
@@ -736,8 +736,8 @@ function view(){
 					width: '12px',
 					visibility: 'hidden'
 				});
-		geneText.on('mouseover', function() { xOut.style('visibility', 'visible')})
-						.on('mouseout', function() { xOut.style('visibility', 'hidden')});
+		geneText.on('mouseover', function() { xOut.style('visibility', 'visible'); })
+						.on('mouseout', function() { xOut.style('visibility', 'hidden'); });
 
 	}
 	loadedGenes.forEach(addBadge);
@@ -746,7 +746,9 @@ function view(){
 		d3.event.preventDefault();
 		var geneInput = d3.select('#requery-gene-select-addInput'),
 				gene = geneInput.property('value');
-		if(gene == '') return;
+
+		if(gene === undefined || gene === '') return;
+		gene = gene.toUpperCase();
 
 		loadedGenes.push(gene);
 		addBtn.attr('href', hrefFn);
@@ -754,12 +756,13 @@ function view(){
 		geneInput.property('value', '');
 	});
 	d3.select('#requery-gene-select-addInput').on('keypress', function() {
-		console.log(d3.event.keyCode)
 		if(d3.event.keyCode == 13) {
 			d3.event.preventDefault();
 			var geneInput = d3.select('#requery-gene-select-addInput'),
 					gene = geneInput.property('value');
-			if(gene == '') return;
+
+			if(gene === undefined || gene === '') return;
+			gene = gene.toUpperCase();
 
 			loadedGenes.push(gene);
 			addBtn.attr('href', hrefFn);
