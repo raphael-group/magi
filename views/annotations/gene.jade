@@ -135,51 +135,67 @@ block belowTheFold
 				}
 			});
 		}
-		$('a.downvote').on('click', function(){
-			var el = $(this),
-				sibling = el.siblings('a'),
-				annotation_id = el.attr('annotation-id'),
-				pmid = el.attr('pmid'),
-				voteCount = $('span#vote-' + annotation_id + '-' + pmid),
-				numVotes = +(voteCount.text());
 
-			voteMutation(annotation_id, pmid, 'down');
+		// Make sure to re-bind the onclick functionality whenever the table changes
+		tbl.on( 'draw', function () {
+			upvote();
+			downvote();
+		} );
 
-			if (sibling.hasClass('upvote-on')){
-				sibling.removeClass('upvote-on');
-				el.addClass('downvote-on'); 
-				voteCount.text(numVotes - 2);
-			} else if (el.hasClass('downvote-on')){
-				el.removeClass('downvote-on');
-				voteCount.text(numVotes + 1);
-			} else{
-				el.addClass('downvote-on');
-				voteCount.text(numVotes - 1);
-			}
+		function downvote(){
+			$('a.downvote').on('click', function(){
+				var el = $(this),
+					sibling = el.siblings('a'),
+					annotation_id = el.attr('annotation-id'),
+					pmid = el.attr('pmid'),
+					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
+					numVotes = +(voteCount.text());
 
-		});
-		$('a.upvote').on('click', function(){
-			var el = $(this),
-				sibling = el.siblings('a'),
-				annotation_id = el.attr('annotation-id'),
-				pmid = el.attr('pmid'),
-				voteCount = $('span#vote-' + annotation_id + '-' + pmid),
-				numVotes = +(voteCount.text());
+				voteMutation(annotation_id, pmid, 'down');
 
-			voteMutation(annotation_id, el.attr('pmid'), 'up');
+				if (sibling.hasClass('upvote-on')){
+					sibling.removeClass('upvote-on');
+					el.addClass('downvote-on'); 
+					voteCount.text(numVotes - 2);
+				} else if (el.hasClass('downvote-on')){
+					el.removeClass('downvote-on');
+					voteCount.text(numVotes + 1);
+				} else{
+					el.addClass('downvote-on');
+					voteCount.text(numVotes - 1);
+				}
 
-			if (sibling.hasClass('downvote-on')){
-				sibling.removeClass('downvote-on');
-				el.addClass('upvote-on'); 
-				voteCount.text(numVotes + 2);
-			} else if (el.hasClass('upvote-on')){
-				el.removeClass('upvote-on');
-				voteCount.text(numVotes - 1);
-			} else{
-				el.addClass('upvote-on');
-				voteCount.text(numVotes + 1);
-			}
-		});
+			});
+		}
+
+		function upvote(){
+			$('a.upvote').on('click', function(){
+				var el = $(this),
+					sibling = el.siblings('a'),
+					annotation_id = el.attr('annotation-id'),
+					pmid = el.attr('pmid'),
+					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
+					numVotes = +(voteCount.text());
+
+				voteMutation(annotation_id, el.attr('pmid'), 'up');
+
+				if (sibling.hasClass('downvote-on')){
+					sibling.removeClass('downvote-on');
+					el.addClass('upvote-on'); 
+					voteCount.text(numVotes + 2);
+				} else if (el.hasClass('upvote-on')){
+					el.removeClass('upvote-on');
+					voteCount.text(numVotes - 1);
+				} else{
+					el.addClass('upvote-on');
+					voteCount.text(numVotes + 1);
+				}
+			});
+		}
+
+		downvote();
+		upvote();
+
 		var infoClasses  = 'alert alert-info',
 			warningClasses = 'alert alert-warning',
 			successClasses = 'alert alert-success';

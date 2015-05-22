@@ -9,32 +9,32 @@ block body
             br
           p MAGI is a tool for annotating, exploring, and analyzing gene sets that may be associated with cancer.
           ul
-            li View mutations in and interactions among sets of genes.
+            li View aberrations in and interactions among sets of genes.
             li
               a(href="/upload") Upload your mutation data
               | &nbsp;to view in combination with&nbsp;
-              a(href="http://www.nature.com/tcga/", target="_new") TCGA Pan-Cancer data
-              |.
-
-            li Collaboratively annotate mutations and interactions while exploring your data.
+              a(href="http://www.nature.com/tcga/", target="_new") TCGA Pan-Cancer data&nbsp;
+              | , and generate dataset summaries.
+            li Collaboratively annotate aberrations and interactions while exploring your data.
+            li View the aberrations in a tumor sample, prioritized by their annotations.
           a(type="button" class="btn btn-tour dropdown-toggle" href="#" style="margin-bottom:15px;") Get the tour
         div(class="col-md-4")
           div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
-            a(href="#", id="circle_cna")
-              img(src="img/circle_cna.png" style="width:100%;height:100%;")
-              | <br /> CNAs
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
-            a(href="#", id="circle_mutmtx")
+            a(href="#aberrations", id="circle_mutmtx")
               img(src="img/circle_mutmtx.png" style="width:100%;height:100%;")
-              | <br /> Mutation Matrices
+              | <br /> Aberrations
           div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
-            a(href="#", id="circle_subnet")
+            a(href="#subnetwork", id="circle_subnet")
               img(src="img/circle_subnet.png" style="width:100%;height:100%;")
               | <br /> Networks
           div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
-            a(href="#", id="circle_transcript")
+            a(href="#snvs", id="circle_transcript")
               img(src="img/circle_transcript.png" style="width:100%;height:100%;")
-              | <br /> Transcripts
+              | <br /> Single nucleotide variants
+          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+            a(href="#cnas", id="circle_cna")
+              img(src="img/circle_cna.png" style="width:100%;height:100%;")
+              | <br /> Copy number aberrations
 
   br
   a(name="input-chooser")
@@ -156,43 +156,43 @@ block body
       hr
       div(id="splash-img")
         div
-          a(href="#", id="circle_cna")
-            img(src="img/circle_cna.png")
-            | <br /><br /> Copy Number Aberations
-        div
-          a(href="#", id="circle_mutmtx")
+          a(href="#aberrations", id="circle_mutmtx")
             img(src="img/circle_mutmtx.png")
-            | <br /><br /> Mutation Matrices
+            | <br /><br /> Aberrations
         div
-          a(href="#", id="circle_subnet")
+          a(href="#subnetwork", id="circle_subnet")
             img(src="img/circle_subnet.png")
             | <br /><br /> Networks
         div
-          a(href="#", id="circle_transcript")
+          a(href="#snvs", id="circle_transcript")
             img(src="img/circle_transcript.png")
-            | <br /><br /> Transcripts
+            | <br /><br /> Single Nucleotide Variants
+        div
+          a(href="#cnas", id="circle_cna")
+            img(src="img/circle_cna.png")
+            | <br /><br /> Copy Number Aberations
       br
       br
     a(name="component-descriptions")
     div(id="component-descriptions")
-      a(name="mutation-matrix")
+      a(name="aberrations")
       h4
-        a(href="/#mutation-matrix") <span class="glyphicon glyphicon-link"></span>
-        | &nbsp; Mutation Matrix
+        a(href="/#aberrations") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Aberrations
       br
       div(class="text-center")
         div(id="multi-cancer-m2")
         br
-        i Mutation matrix of multiple cancer types.
+        i Aberrations view of multiple cancer types.
       br
       div(class="text-center")
         div(id="single-cancer-m2")
         br
-        i Mutation matrix of a single cancer type.
+        i Aberrations view of a single cancer type.
       br
-      | Mutation matrices show the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns).
+      | The aberrations view shows the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns) as a matrix.
       | Each cell in the mutation matrix contains shape, which represents whether or not a gene is mutated in the given sample.
-      | Mutation matrices are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
+      | Matrices are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
       | For a cohort with multiple cancer types each cell is colored by the cancer type of the sample,
       | while for a cohort with one cancer type each cell is colored by whether or not the gene is the only
       | gene to harbor a mutation in that sample.
@@ -231,24 +231,24 @@ block body
       | .
       br
       br
-      a(name="transcript-plot")
+      a(name="snvs")
       h4
-        a(href="/#transcript-plot") <span class="glyphicon glyphicon-link"></span>
-        | &nbsp; Transcript plot
+        a(href="/#snvs") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Transcript view
       br
       div(class="text-center")
         div(id="gd3-transcript-plot")
         br
-        i Transcript plot for the SMAD4 transcript ENST00000342988 in multiple cancer types.
+        i Transcript view for the SMAD4 transcript ENST00000342988 in multiple cancer types.
       br
-      | The transcript plot shows locations at which mutations occur in a gene's transcript.
+      | The transcript view shows locations at which mutations occur in a gene's transcript.
       | Mutations are color-coded by cancer type, and different mutation types (e.g. missense, nonsense)
       | are represented by different symbols. In addition, protein domains from different databases
       | are shown along the length of the transcript.
       br
       br
-      | The mutation data for the transcript plot is the same as for the&nbsp;
-      a(href="#mutation-matrix") mutation matrix
+      | The mutation data for the transcript view is the same as for the&nbsp;
+      a(href="#mutation-matrix") aberrations view
       | . Protein domains are provided for the&nbsp;
       a(href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml") Conserved Domain
       | ,&nbsp;
@@ -258,15 +258,15 @@ block body
       | &nbsp; databases.
       br
       br
-      a(name="cna-browser")
+      a(name="cnas")
       h4
-        a(href="/#cna-browser") <span class="glyphicon glyphicon-link"></span>
-        | &nbsp; Copy Number Aberration (CNA) Browser
+        a(href="/#cnas") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Copy number aberrations
       br
       div(class="text-center")
         div(id="gd3-cna-browser")
         br
-        i CNA browser for amplifications in the CDKN2A gene in glioblastoma.
+        i CNA view for amplifications in the CDKN2A gene in glioblastoma.
       br
       | The copy number aberration browser shows the amplified/deleted segments
       | that have been mapped to a particular gene. Since many segments span more than
@@ -304,6 +304,16 @@ block belowTheFold
       classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
       buttons: [
         { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ],
+      scrollTo: true
+    });
+    tour.addStep('submit', {
+      text: 'You can also view <i>all</i> the mutations in individual tumor samples, prioritized by their annotations in the MAGI database.',
+      attachTo: '#magi-tab-query-samples top',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows',
+      buttons: [
+        { text: 'Back', classes: 'shepherd-button-secondary', action: tour.back },
         { text: 'Next', action: tour.next }
       ],
       scrollTo: true
