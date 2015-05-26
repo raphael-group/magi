@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" enable-background="new 0 0 200 200" xml:space="preserve">
+<g>
+	<rect x="155.338" fill="#2C7ABA" width="22.19" height="20">
+	<title>x: TCGA-FD-A3B5
+y: STAG2
+value: -0.73</title>
+	</rect>
+	<rect x="177.528" fill="#093A79" width="22.191" height="20">
+	<title>x: TCGA-H4-A2HQ
+y: STAG2
+value: 1.07</title>
+	</rect>
+	<rect x="88.764" fill="#1C68AE" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AA
+y: STAG2
+value: -0.22</title>
+	</rect>
+	<rect x="110.955" fill="#0F57A1" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AF
+y: STAG2
+value: 0.26</title>
+	</rect>
+	<rect x="66.573" fill="#08509B" width="22.191" height="20">
+	<title>x: TCGA-CF-A3MI
+y: STAG2
+value: 0.46</title>
+	</rect>
+	<rect x="22.191" fill="#1D6AB0" width="22.191" height="20">
+	<title>x: TCGA-FD-A3NA
+y: STAG2
+value: -0.28</title>
+	</rect>
+	<rect fill="#2070B4" width="22.191" height="20">
+	<title>x: TCGA-BL-A13J
+y: STAG2
+value: -0.44</title>
+	</rect>
+	<rect x="133.146" fill="#115AA3" width="22.191" height="20">
+	<title>x: TCGA-DK-A3IS
+y: STAG2
+value: 0.19</title>
+	</rect>
+	<rect x="44.382" fill="#0E56A0" width="22.191" height="20">
+	<title>x: TCGA-CF-A27C
+y: STAG2
+value: 0.29</title>
+	</rect>
+	<rect x="155.338" y="20" fill="#2A79B9" width="22.19" height="20">
+	<title>x: TCGA-FD-A3B5
+y: SMC1A
+value: -0.683757</title>
+	</rect>
+	<rect x="177.528" y="20" fill="#084E97" width="22.191" height="20">
+	<title>x: TCGA-H4-A2HQ
+y: SMC1A
+value: 0.526243</title>
+	</rect>
+	<rect x="88.764" y="20" fill="#3583BE" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AA
+y: SMC1A
+value: -0.973757</title>
+	</rect>
+	<rect x="110.955" y="20" fill="#1058A2" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AF
+y: SMC1A
+value: 0.226243</title>
+	</rect>
+	<rect x="66.573" y="20" fill="#08519B" width="22.191" height="20">
+	<title>x: TCGA-CF-A3MI
+y: SMC1A
+value: 0.446243</title>
+	</rect>
+	<rect x="22.191" y="20" fill="#125BA4" width="22.191" height="20">
+	<title>x: TCGA-FD-A3NA
+y: SMC1A
+value: 0.156243</title>
+	</rect>
+	<rect y="20" fill="#1E6CB2" width="22.191" height="20">
+	<title>x: TCGA-BL-A13J
+y: SMC1A
+value: -0.343757</title>
+	</rect>
+	<rect x="133.146" y="20" fill="#145DA5" width="22.191" height="20">
+	<title>x: TCGA-DK-A3IS
+y: SMC1A
+value: 0.106243</title>
+	</rect>
+	<rect x="44.382" y="20" fill="#1B67AE" width="22.191" height="20">
+	<title>x: TCGA-CF-A27C
+y: SMC1A
+value: -0.203757</title>
+	</rect>
+	<rect x="155.338" y="40" fill="#579FCE" width="22.19" height="20">
+	<title>x: TCGA-FD-A3B5
+y: STAG1
+value: -1.805908</title>
+	</rect>
+	<rect x="177.528" y="40" fill="#115AA3" width="22.191" height="20">
+	<title>x: TCGA-H4-A2HQ
+y: STAG1
+value: 0.184092</title>
+	</rect>
+	<rect x="88.764" y="40" fill="#4191C6" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AA
+y: STAG1
+value: -1.355908</title>
+	</rect>
+	<rect x="110.955" y="40" fill="#084B93" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AF
+y: STAG1
+value: 0.604092</title>
+	</rect>
+	<rect x="66.573" y="40" fill="#094990" width="22.191" height="20">
+	<title>x: TCGA-CF-A3MI
+y: STAG1
+value: 0.654092</title>
+	</rect>
+	<rect x="22.191" y="40" fill="#0F57A1" width="22.191" height="20">
+	<title>x: TCGA-FD-A3NA
+y: STAG1
+value: 0.254092</title>
+	</rect>
+	<rect y="40" fill="#0A529D" width="22.191" height="20">
+	<title>x: TCGA-BL-A13J
+y: STAG1
+value: 0.394092</title>
+	</rect>
+	<rect x="133.146" y="40" fill="#155EA6" width="22.191" height="20">
+	<title>x: TCGA-DK-A3IS
+y: STAG1
+value: 0.074092</title>
+	</rect>
+	<rect x="44.382" y="40" fill="#1B67AD" width="22.191" height="20">
+	<title>x: TCGA-CF-A27C
+y: STAG1
+value: -0.185908</title>
+	</rect>
+	<rect x="155.338" y="60" fill="#2C7ABA" width="22.19" height="20">
+	<title>x: TCGA-FD-A3B5
+y: SMC3
+value: -0.72295</title>
+	</rect>
+	<rect x="177.528" y="60" fill="#1A65AC" width="22.191" height="20">
+	<title>x: TCGA-H4-A2HQ
+y: SMC3
+value: -0.13295</title>
+	</rect>
+	<rect x="88.764" y="60" fill="#3482BE" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AA
+y: SMC3
+value: -0.93295</title>
+	</rect>
+	<rect x="110.955" y="60" fill="#093A7A" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AF
+y: SMC3
+value: 1.06705</title>
+	</rect>
+	<rect x="66.573" y="60" fill="#08509A" width="22.191" height="20">
+	<title>x: TCGA-CF-A3MI
+y: SMC3
+value: 0.46705</title>
+	</rect>
+	<rect x="22.191" y="60" fill="#084C95" width="22.191" height="20">
+	<title>x: TCGA-FD-A3NA
+y: SMC3
+value: 0.56705</title>
+	</rect>
+	<rect y="60" fill="#1963AA" width="22.191" height="20">
+	<title>x: TCGA-BL-A13J
+y: SMC3
+value: -0.08295</title>
+	</rect>
+	<rect x="133.146" y="60" fill="#09468C" width="22.191" height="20">
+	<title>x: TCGA-DK-A3IS
+y: SMC3
+value: 0.72705</title>
+	</rect>
+	<rect x="44.382" y="60" fill="#2070B4" width="22.191" height="20">
+	<title>x: TCGA-CF-A27C
+y: SMC3
+value: -0.44295</title>
+	</rect>
+	<rect x="155.338" y="80" fill="#3D8CC3" width="22.19" height="20">
+	<title>x: TCGA-FD-A3B5
+y: RAD21
+value: -1.21</title>
+	</rect>
+	<rect x="177.528" y="80" fill="#094083" width="22.191" height="20">
+	<title>x: TCGA-H4-A2HQ
+y: RAD21
+value: 0.9</title>
+	</rect>
+	<rect x="88.764" y="80" fill="#2877B8" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AA
+y: RAD21
+value: -0.63</title>
+	</rect>
+	<rect x="110.955" y="80" fill="#094184" width="22.191" height="20">
+	<title>x: TCGA-DK-A1AF
+y: RAD21
+value: 0.88</title>
+	</rect>
+	<rect x="66.573" y="80" fill="#1E6CB1" width="22.191" height="20">
+	<title>x: TCGA-CF-A3MI
+y: RAD21
+value: -0.34</title>
+	</rect>
+	<rect x="22.191" y="80" fill="#1761A9" width="22.191" height="20">
+	<title>x: TCGA-FD-A3NA
+y: RAD21
+value: -0.03</title>
+	</rect>
+	<rect y="80" fill="#0C549E" width="22.191" height="20">
+	<title>x: TCGA-BL-A13J
+y: RAD21
+value: 0.35</title>
+	</rect>
+	<rect x="133.146" y="80" fill="#094489" width="22.191" height="20">
+	<title>x: TCGA-DK-A3IS
+y: RAD21
+value: 0.78</title>
+	</rect>
+	<rect x="44.382" y="80" fill="#084D96" width="22.191" height="20">
+	<title>x: TCGA-CF-A27C
+y: RAD21
+value: 0.54</title>
+	</rect>
+	<rect x="44.662" y="100" fill="#0C549F" width="22.191" height="20">
+	<title>x: TCGA-A7-A0CH
+y: STAG2
+value: 0.34</title>
+	</rect>
+	<rect x="155.617" y="100" fill="#145DA6" width="22.191" height="20">
+	<title>x: TCGA-B6-A0I9
+y: STAG2
+value: 0.09</title>
+	</rect>
+	<rect x="177.809" y="100" fill="#1963AA" width="22.191" height="20">
+	<title>x: TCGA-E2-A1B4
+y: STAG2
+value: -0.08</title>
+	</rect>
+	<rect x="0.28" y="100" fill="#0C549E" width="22.191" height="20">
+	<title>x: TCGA-E9-A1R0
+y: STAG2
+value: 0.35</title>
+	</rect>
+	<rect x="22.472" y="100" fill="#09529D" width="22.19" height="20">
+	<title>x: TCGA-A2-A0SX
+y: STAG2
+value: 0.41</title>
+	</rect>
+	<rect x="44.662" y="120" fill="#0B539E" width="22.191" height="20">
+	<title>x: TCGA-A7-A0CH
+y: SMC1A
+value: 0.376243</title>
+	</rect>
+	<rect x="155.617" y="120" fill="#093B7C" width="22.191" height="20">
+	<title>x: TCGA-B6-A0I9
+y: SMC1A
+value: 1.026243</title>
+	</rect>
+	<rect x="177.809" y="120" fill="#093F82" width="22.191" height="20">
+	<title>x: TCGA-E2-A1B4
+y: SMC1A
+value: 0.916243</title>
+	</rect>
+	<rect x="0.28" y="120" fill="#08509A" width="22.191" height="20">
+	<title>x: TCGA-E9-A1R0
+y: SMC1A
+value: 0.476243</title>
+	</rect>
+	<rect x="22.472" y="120" fill="#094489" width="22.19" height="20">
+	<title>x: TCGA-A2-A0SX
+y: SMC1A
+value: 0.786243</title>
+	</rect>
+	<rect x="44.662" y="140" fill="#093D7F" width="22.191" height="20">
+	<title>x: TCGA-A7-A0CH
+y: STAG1
+value: 0.974092</title>
+	</rect>
+	<rect x="155.617" y="140" fill="#1C69AF" width="22.191" height="20">
+	<title>x: TCGA-B6-A0I9
+y: STAG1
+value: -0.235908</title>
+	</rect>
+	<rect x="177.809" y="140" fill="#3684BF" width="22.191" height="20">
+	<title>x: TCGA-E2-A1B4
+y: STAG1
+value: -0.995908</title>
+	</rect>
+	<rect x="0.28" y="140" fill="#084C95" width="22.191" height="20">
+	<title>x: TCGA-E9-A1R0
+y: STAG1
+value: 0.564092</title>
+	</rect>
+	<rect x="22.472" y="140" fill="#08509A" width="22.19" height="20">
+	<title>x: TCGA-A2-A0SX
+y: STAG1
+value: 0.474092</title>
+	</rect>
+	<rect x="44.662" y="160" fill="#165FA7" width="22.191" height="20">
+	<title>x: TCGA-A7-A0CH
+y: SMC3
+value: 0.03705</title>
+	</rect>
+	<rect x="155.617" y="160" fill="#165FA7" width="22.191" height="20">
+	<title>x: TCGA-B6-A0I9
+y: SMC3
+value: 0.03705</title>
+	</rect>
+	<rect x="177.809" y="160" fill="#2070B4" width="22.191" height="20">
+	<title>x: TCGA-E2-A1B4
+y: SMC3
+value: -0.44295</title>
+	</rect>
+	<rect x="0.28" y="160" fill="#09488F" width="22.191" height="20">
+	<title>x: TCGA-E9-A1R0
+y: SMC3
+value: 0.66705</title>
+	</rect>
+	<rect x="22.472" y="160" fill="#08336F" width="22.19" height="20">
+	<title>x: TCGA-A2-A0SX
+y: SMC3
+value: 1.26705</title>
+	</rect>
+	<rect x="44.662" y="180" fill="#1E6CB1" width="22.191" height="20">
+	<title>x: TCGA-A7-A0CH
+y: RAD21
+value: -0.32</title>
+	</rect>
+	<rect x="155.617" y="180" fill="#09488E" width="22.191" height="20">
+	<title>x: TCGA-B6-A0I9
+y: RAD21
+value: 0.69</title>
+	</rect>
+	<rect x="177.809" y="180" fill="#072A62" width="22.191" height="20">
+	<title>x: TCGA-E2-A1B4
+y: RAD21
+value: 1.52</title>
+	</rect>
+	<rect x="0.28" y="180" fill="#1B67AD" width="22.191" height="20">
+	<title>x: TCGA-E9-A1R0
+y: RAD21
+value: -0.18</title>
+	</rect>
+	<rect x="22.472" y="180" fill="#08316D" width="22.19" height="20">
+	<title>x: TCGA-A2-A0SX
+y: RAD21
+value: 1.31</title>
+	</rect>
+	<rect x="111.236" y="100" fill="#094083" width="22.19" height="20">
+	<title>x: TCGA-AA-3821
+y: STAG2
+value: 0.898818</title>
+	</rect>
+	<rect x="66.854" y="100" fill="#1A66AC" width="22.191" height="20">
+	<title>x: TCGA-A6-2678
+y: STAG2
+value: -0.151182</title>
+	</rect>
+	<rect x="133.427" y="100" fill="#0E56A0" width="22.19" height="20">
+	<title>x: TCGA-AA-3555
+y: STAG2
+value: 0.278818</title>
+	</rect>
+	<rect x="89.045" y="100" fill="#0A529D" width="22.191" height="20">
+	<title>x: TCGA-AG-4001
+y: STAG2
+value: 0.398818</title>
+	</rect>
+	<rect x="111.236" y="120" fill="#155EA6" width="22.19" height="20">
+	<title>x: TCGA-AA-3821
+y: SMC1A
+value: 0.06</title>
+	</rect>
+	<rect x="66.854" y="120" fill="#155EA6" width="22.191" height="20">
+	<title>x: TCGA-A6-2678
+y: SMC1A
+value: 0.06</title>
+	</rect>
+	<rect x="133.427" y="120" fill="#084F9A" width="22.19" height="20">
+	<title>x: TCGA-AA-3555
+y: SMC1A
+value: 0.48</title>
+	</rect>
+	<rect x="89.045" y="120" fill="#1660A8" width="22.191" height="20">
+	<title>x: TCGA-AG-4001
+y: SMC1A
+value: 0.01</title>
+	</rect>
+	<rect x="111.236" y="140" fill="#1F6EB3" width="22.19" height="20">
+	<title>x: TCGA-AA-3821
+y: STAG1
+value: -0.38</title>
+	</rect>
+	<rect x="66.854" y="140" fill="#3685BF" width="22.191" height="20">
+	<title>x: TCGA-A6-2678
+y: STAG1
+value: -1.01</title>
+	</rect>
+	<rect x="133.427" y="140" fill="#2170B4" width="22.19" height="20">
+	<title>x: TCGA-AA-3555
+y: STAG1
+value: -0.45</title>
+	</rect>
+	<rect x="89.045" y="140" fill="#0B549E" width="22.191" height="20">
+	<title>x: TCGA-AG-4001
+y: STAG1
+value: 0.36</title>
+	</rect>
+	<rect x="111.236" y="160" fill="#0E56A0" width="22.19" height="20">
+	<title>x: TCGA-AA-3821
+y: SMC3
+value: 0.28</title>
+	</rect>
+	<rect x="66.854" y="160" fill="#2675B7" width="22.191" height="20">
+	<title>x: TCGA-A6-2678
+y: SMC3
+value: -0.58</title>
+	</rect>
+	<rect x="133.427" y="160" fill="#1F6EB3" width="22.19" height="20">
+	<title>x: TCGA-AA-3555
+y: SMC3
+value: -0.38</title>
+	</rect>
+	<rect x="89.045" y="160" fill="#084E98" width="22.191" height="20">
+	<title>x: TCGA-AG-4001
+y: SMC3
+value: 0.51</title>
+	</rect>
+	<rect x="111.236" y="180" fill="#09488E" width="22.19" height="20">
+	<title>x: TCGA-AA-3821
+y: RAD21
+value: 0.688974</title>
+	</rect>
+	<rect x="66.854" y="180" fill="#135CA5" width="22.191" height="20">
+	<title>x: TCGA-A6-2678
+y: RAD21
+value: 0.118974</title>
+	</rect>
+	<rect x="133.427" y="180" fill="#2272B5" width="22.19" height="20">
+	<title>x: TCGA-AA-3555
+y: RAD21
+value: -0.491026</title>
+	</rect>
+	<rect x="89.045" y="180" fill="#083572" width="22.191" height="20">
+	<title>x: TCGA-AG-4001
+y: RAD21
+value: 1.208974</title>
+	</rect>
+</g>
+</svg>
