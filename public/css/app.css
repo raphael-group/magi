@@ -51,7 +51,7 @@ div.banner .container-fluid {
   background: #fff;
   border-left: 10px solid #8cc63f;
   border-right: 10px solid #8cc63f;
-  padding: 35px 15px;
+  padding: 30px 10px 15px 15px;
   max-width: 820px;
 }
 div.banner::before {
@@ -67,10 +67,13 @@ div.banner::before {
 
 h1.bannerHeader {
   color: #6b73b5;
-  font-size: 55px;
+  font-size: 410%;
   font-weight:bold;
+  margin-right:10px;
+  float:left;
 }
-
+div.banner h4{font-size:140%;padding-top:10px}
+div.banner ul{padding-left:15px}
 div.vizIndexTopPreview {
   display:inline-block;
   margin: 0 10px 10px 0;
@@ -238,6 +241,7 @@ ul#magi-actions li{
 ul#magi-actions li.activeAction{ background-color:#9DA7D4;}
 ul#magi-actions li a{ color:#565975;font-weight:500;font-size:16px; }
 ul#magi-actions li a:hover{ background-color:#9DA7D4; }
+ul#magi-actions li a:focus{ background-color:#9DA7D4; }
 
 /* Styling index page (choosing genes or datasets) */
 div#db-chooser{overflow-y:none;}
