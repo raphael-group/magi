@@ -84,6 +84,12 @@ $(document).ready(function(){
 			.datum(data.single_cancer_aberrations)
 			.call( gd3.mutationMatrix(params) );
 
+		// Add the heatmap
+		d3.select("#gd3-heatmap")
+			.style("border", "1px solid #eee")
+			.datum(data.heatmap)
+			.call( gd3.heatmap(params).showAnnotations(false) );
+
 		// Add the subnetwork
 		params.style.width = 500;
 		data.network.title = "Mutations";
