@@ -71,6 +71,18 @@ h1.bannerHeader {
   font-weight:bold;
 }
 
+div.vizIndexTopPreview {
+  display:inline-block;
+  margin: 0 10px 10px 0;
+  max-width:100px;
+  text-align:center;
+  vertical-align: top;
+}
+div.vizIndexTopPreview a img{
+  height: 100%;
+  width: 100%;
+}
+
 img.circleThumb {
   border: 4px solid #ddd;
   max-width: 115px;

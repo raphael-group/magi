@@ -3,12 +3,13 @@ block body
   div(class="banner")
     div(class="container-fluid")
       div(class="row")
-        div(class="col-md-8")
+        div(class="col-md-12")
           h1(class="bannerHeader") Welcome to MAGI
           h4 A tool for Mutation Annotation and Genomic Interpretation
-            br
-            br
-            br
+          br
+          br
+      div(class="row")
+        div(class="col-md-6")
           p MAGI is a tool for annotating, exploring, and analyzing gene sets that may be associated with cancer.
           ul
             li View aberrations in and interactions among sets of genes.
@@ -19,31 +20,33 @@ block body
               | , and generate dataset summaries.
             li Collaboratively annotate aberrations and interactions while exploring your data.
             li View the aberrations in a tumor sample, prioritized by their annotations.
+          br
           a(type="button" class="btn btn-tour dropdown-toggle" href="#" style="margin-bottom:15px;") Get the tour
-        div(class="col-md-4")
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+
+        div(class="col-md-6")
+          div(class="vizIndexTopPreview")
             a(href="#", id="circle_aberration")
-              img(src="img/thumb/aberration.svg" style="width:100%;height:100%;" class="img-circle circleThumb")
+              img(src="img/thumb/aberration.svg" class="img-circle circleThumb")
               | <br /> Aberrations
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+          div(class="vizIndexTopPreview")
             a(href="#", id="circle_network")
-              img(src="img/thumb/network.svg" style="width:100%;height:100%;" class="img-circle circleThumb")
+              img(src="img/thumb/network.svg" class="img-circle circleThumb")
               | <br /> Networks
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+          div(class="vizIndexTopPreview")
             a(href="#", id="circle_heatmap")
-              img(src="img/thumb/heatmap.svg" style="width:100%;height:100%;" class="img-circle circleThumb")
+              img(src="img/thumb/heatmap.svg" class="img-circle circleThumb")
               | <br /> Heatmaps
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+          div(class="vizIndexTopPreview")
             a(href="#", id="circle_transcript")
-              img(src="img/thumb/transcript.svg" style="width:100%;height:100%;" class="img-circle circleThumb")
+              img(src="img/thumb/transcript.svg" class="img-circle circleThumb")
               | <br /> Single Nucleotide Variants
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+          div(class="vizIndexTopPreview")
             a(href="#", id="circle_annotation")
-              img(src="img/thumb/annotation.svg" style="width:100%;height:100%;" class="img-circle circleThumb")
+              img(src="img/thumb/annotation.svg" class="img-circle circleThumb")
               | <br /> Annotations
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
+          div(class="vizIndexTopPreview")
             a(href="#", id="circle_cna")
-              img(src="img/thumb/cna.svg" style="width:100%;height:100%;" class="img-circle circleThumb")
+              img(src="img/thumb/cna.svg" class="img-circle circleThumb")
               | <br /> Copy Number Aberrations
 
   br
