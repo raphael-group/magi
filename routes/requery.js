@@ -1,4 +1,4 @@
-var mongoose = require('mongoose'), 
+var mongoose = require('mongoose'),
     Dataset  = require( "../model/datasets" ),
     Database = require('../model/db');
 
@@ -21,14 +21,14 @@ exports.getDatasets = function(req, res) {
     }
     function initGroup(groups, scope) {
       // Assign each group a scope (public/private), and sort the dbs
-      groups.forEach(function(g){ g.groupClass = scope; })
+      groups.forEach(function(g){ g.groupClass = scope; });
       groups.forEach(function(g){
         g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
       });
 
       // Assign each dataset a checkbox ID
       groups.forEach(function(g){
-        var groupName = g.name == "" ? "other" : g.name.toLowerCase();
+        var groupName = g.name === "" ? "other" : g.name.toLowerCase();
         if (scope == "public") datasetToCheckboxes[groupName] = [];
         g.dbs.forEach(function(db){
           datasetToCheckboxes.all.push( db.checkboxValue = toCheckboxValue(db._id, scope, db.title, groupName) );
@@ -43,13 +43,13 @@ exports.getDatasets = function(req, res) {
 
           // Record each of the samples (required for sample search)
           db.samples.forEach(function(s){
-            samples.push( {sample: s, cancer: db.title, groupName: g.name == "" ? "Other" : g.name })
+            samples.push( {sample: s, cancer: db.title, groupName: g.name === "" ? "Other" : g.name });
           });
-        })
+        });
       });
     }
 
-    initGroup( standardGroups, 'public' )
+    initGroup( standardGroups, 'public' );
 
 
     var viewData = {
@@ -84,4 +84,4 @@ exports.getDatasets = function(req, res) {
       res.send(JSON.stringify(viewData));
     }
   });
-}
+};
