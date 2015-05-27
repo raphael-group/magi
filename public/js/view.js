@@ -650,7 +650,7 @@ function view(){
 		.style("float", "right")
 		.text("[+]");
 
-	var requeryPanel = d3.select('#collapseRequery').append('div'),
+	var requeryPanel = d3.select('#navbar-query').append('div'),//.select('#collapseRequery').append('div'),
 			datasetList = requeryPanel.append('ul').classed('list-unstyled', true).style('padding', '5px'),
 			addedList = [];
 
@@ -686,22 +686,14 @@ function view(){
 
 		return window.location.pathname+'?'+search.join('&');
 	}
-	var addBtn = requeryPanel.append('a')
-			.classed('btn btn-primary btn-xs', true)
+	var addBtn = d3.select('#magi-nav-queryBtn')
 			.attr('href', hrefFn)
-			.text('Run query')
 			.on('click', function() {
-				if($('.multiselect :checked').length == 0) d3.event.preventDefault();
+				if($('.multiselect :checked').length === 0) d3.event.preventDefault();
 			});
-	requeryPanel.append('p')
-			.style({
-				color: 'rgb(125,125,125)',
-				'font-size': '12px'
-			})
-			.text('("run" will reload the page)');
 
 	var geneRequery = d3.select('#requery-gene-select'),
-			addedGeneArea = geneRequery.append('div').style('width', '160px');
+			addedGeneArea = d3.select('#requery-gene-badge-container')
 	function addBadge(g) {
 		var badge = addedGeneArea.append('span')
 						.attr('class', 'requery-gene-select-badge')
@@ -795,10 +787,11 @@ function view(){
 
 					//- Initialize the multiselect
 			    $('#dataset-multiselect').multiselect({
+						buttonClass: 'btn btn-xs',
 			      enableCaseInsensitiveFiltering: true,
 			      includeSelectAllOption: true,
 			      maxHeight: 400,
-			      buttonWidth: 160,
+			      buttonWidth: 90,
 			      filterBehavior: 'both',
 			      onChange: function(elem, checked) {
 			      	var values = $('.multiselect :checked').map(function() { return $(this).val(); }).get();
