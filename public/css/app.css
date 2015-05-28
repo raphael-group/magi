@@ -202,10 +202,6 @@ div.page-header{
   margin-top: 10px;
   padding: 5px 15px;
 }
-<<<<<<< HEAD
-.twitter-typeahead > .form-control{
-  width: inherit !important;
-}
 a#navbar-query-btn {
   background: rgb(235,235,235);
   color: rgb(31,31,31);
@@ -213,7 +209,6 @@ a#navbar-query-btn {
   margin-left: 5px;
 }
 div#navbar-query {
-<<<<<<< HEAD
   position:absolute;
   top:55px;
   left:-5px;
