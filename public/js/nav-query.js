@@ -51,6 +51,9 @@ function initQueryWidget(data) {
 
 
   function initGenes() {
+    var geneList = data.genes;
+    console.log(geneList.length);
+
     var geneRequery = d3.select('#requery-gene-select'),
         addedGeneArea = d3.select('#requery-gene-badge-container');
 
@@ -77,35 +80,64 @@ function initQueryWidget(data) {
     }
     loadedGenes.forEach(addBadge);
 
-    d3.select('#requery-gene-select-addBtn').on('click', function() {
-      d3.event.preventDefault();
+    // Gene input entry autocomplete
+    var substringMatcher = function(strs) {
+      return function findMatches(q, cb) {
+        var matches, substringRegex;
+
+        // an array that will be populated with substring matches
+        matches = [];
+
+        // regex used to determine if a string contains the substring `q`
+        substrRegex = new RegExp(q, 'i');
+
+        // iterate through the pool of strings and for any string that
+        // contains the substring `q`, add it to the `matches` array
+        $.each(strs, function(i, str) {
+          if (substrRegex.test(str)) {
+            matches.push(str);
+          }
+        });
+
+        cb(matches);
+      };
+    };
+
+    $('#requery-gene-select-addInput').typeahead({
+      hint: true,
+      highlight: true,
+      minLength: 1
+    },
+    {
+      name: 'genes',
+      source: substringMatcher(geneList)
+    });
+
+    function geneInputValidation() {
       var geneInput = d3.select('#requery-gene-select-addInput'),
           gene = geneInput.property('value');
 
-      if(gene === undefined || gene === '') return;
-      gene = gene.toUpperCase();
-
-      loadedGenes.push(gene);
-      queryBtn.attr('href', magiQueryHrefFn);
-      addBadge(gene);
-      geneInput.property('value', '');
-    });
-
-    d3.select('#requery-gene-select-addInput').on('keypress', function() {
-      if(d3.event.keyCode == 13) {
-        d3.event.preventDefault();
-        var geneInput = d3.select('#requery-gene-select-addInput'),
-            gene = geneInput.property('value');
-
-        if(gene === undefined || gene === '') return;
-        gene = gene.toUpperCase();
-
+      if(loadedGenes.indexOf(gene) < 0) {
         loadedGenes.push(gene);
         queryBtn.attr('href', magiQueryHrefFn);
         addBadge(gene);
-        geneInput.property('value', '');
       }
-    });
+
+      if(gene === undefined || gene === '' || geneList.indexOf(gene) < 0) return;
+
+      geneInput.property('value', '');
+    }
+
+    d3.select('#requery-gene-select-addBtn').on('keypress', function() {
+          if(d3.event.keyCode == 13) {
+            d3.event.preventDefault();
+            geneInputValidation();
+          }
+        })
+        .on('click', function () {
+          d3.event.preventDefault();
+          geneInputValidation();
+        });
   }
 
   function initDatasets() {
