@@ -16,39 +16,35 @@ var queryNoStyle = {
       color: '#777'
     },
     queryStyle = {
-      background: 'rgb(81,81,81)',
+      background: 'rgb(255,255,255)',
       color: 'rgb(31,31,31)'
     };
 
-if(window.location.pathname === '/') {
-  d3.select('#navbar-query').remove();
-  d3.select('#navbar-query-btn').style(queryNoStyle);
-} else {
-  var navbarQuery = d3.select('#navbar-query');
-  d3.select('#navbar-query-btn')
-      .attr('href', '#')
-      .on('click', function() {
-        if(d3.event) d3.event.preventDefault();
-        var isVisible = navbarQuery.style('display') !== 'none';
-        navbarQuery.style('display', isVisible ? 'none' : 'block');
+var navbarQuery = d3.selectAll('.navbar-query');
+d3.select('#navbar-query-btn')
+    .attr('href', '#')
+    .on('click', function() {
+      if(d3.event) d3.event.preventDefault();
+      var isVisible = navbarQuery.style('display') !== 'none';
+      navbarQuery.style('display', isVisible ? 'none' : 'block');
+      d3.select("div#body").style('margin-top', isVisible ? '50px' : '80px');
 
-        d3.select(this).style(isVisible ? queryNoStyle : queryStyle);
-      });
-  // get datasets and genes from URI if they are present
-  var uriDatasetStr = getQueryVariable('datasets'),
-      uriGeneStr = getQueryVariable('genes'),
-      loadedDatasets = uriDatasetStr ? uriDatasetStr.split(',') : [],
-      loadedGenes = uriGeneStr ? uriGeneStr.split(',') : [];
+      d3.select(this).style(isVisible ? queryNoStyle : queryStyle);
+    });
+// get datasets and genes from URI if they are present
+var uriDatasetStr = getQueryVariable('datasets'),
+    uriGeneStr = getQueryVariable('genes'),
+    loadedDatasets = uriDatasetStr ? uriDatasetStr.split(',') : [],
+    loadedGenes = uriGeneStr ? uriGeneStr.split(',') : [];
 
-  var addedList = [];
+var addedList = [];
 
-  d3.xhr('/queryGetDatasetsAndGenes')
-      .header('content-type', 'application/json')
-      .get(function(err,res) {
-          var data = JSON.parse(res.responseText);
-          initQueryWidget(data);
-      });
-}
+d3.xhr('/queryGetDatasetsAndGenes')
+    .header('content-type', 'application/json')
+    .get(function(err,res) {
+        var data = JSON.parse(res.responseText);
+        initQueryWidget(data);
+    });
 
 function initQueryWidget(data) {
   // TODO in the future if more complex querying is needed, magiQueryHrefFN
@@ -71,7 +67,6 @@ function initQueryWidget(data) {
 
   function initGenes() {
     var geneList = data.genes;
-    console.log(geneList.length);
 
     var geneRequery = d3.select('#requery-gene-select'),
         addedGeneArea = d3.select('#requery-gene-badge-container'),
@@ -183,14 +178,11 @@ function initQueryWidget(data) {
 
     //- Initialize the multiselect
     $('#dataset-multiselect').multiselect({
-      buttonClass: 'btn btn-xs',
-      buttonText: function(options, select) {
-        return 'datasets';
-      },
+      buttonClass: 'btn btn-xs requery-dataset-select',
       enableCaseInsensitiveFiltering: true,
       includeSelectAllOption: true,
       maxHeight: 400,
-      buttonWidth: 90,
+      buttonWidth: 200,
       filterBehavior: 'both',
       onChange: function(elem, checked) {
         var values = $('#navbar-query .multiselect :checked').map(function() { return $(this).val(); }).get();
@@ -208,6 +200,9 @@ function initQueryWidget(data) {
           dset = tkns[tkns.length-1];
       return loadedDatasets.indexOf(dset) > -1;
     }).trigger('click');
+
+    // Show the multiselect
+    $('#magi-datasets').css('visibility', '');
 
     // hack for getting the requery menu to show/hide
     $('#magi-datasets').on('click', function() {

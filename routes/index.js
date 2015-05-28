@@ -62,7 +62,8 @@ exports.index = function index(req, res){
 			datasetToCheckboxes: datasetToCheckboxes,
 			recentQueries: [],
 			datasetDeselect: datasetDeselect,
-			samples: samples
+			samples: samples,
+			skip_requery: true
 		};
 		// Load the user's datasets (if necessary)
 		if (req.user){

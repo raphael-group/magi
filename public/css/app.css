@@ -1,5 +1,4 @@
 /* app css stylesheet */
-
 html,body{
   margin: 0;
   padding: 0;
@@ -203,18 +202,32 @@ div.page-header{
   margin-top: 10px;
   padding: 5px 15px;
 }
+.twitter-typeahead > .form-control{
+  width: inherit !important;
+}
 a#navbar-query-btn {
-  background: rgb(81,81,81);
+  background: rgb(235,235,235);
   color: rgb(31,31,31);
   border-radius: 7.5px 7.5px 0 0;
   margin-left: 5px;
 }
 div#navbar-query {
-  background: rgb(81,81,81);
-  border-radius: 0 7.5px 7.5px 7.5px;
+  position:absolute;
+  top:55px;
+  left:-5px;
+  z-index:10000;
+  height:38px;
+  width:100%;
+  background: rgb(235, 235, 235);
+  border-radius: 1px 1px 1px 1px;
+  border-bottom:1px solid #8cc63f;
   margin: 0 0 5px 5px;
   padding: 0px 15px 5px 5px;
 }
+div#navbar-query-connector{
+  z-index:10000;position:absolute;left:143px;top:38px;background:rgb(235, 235, 235);height:17px;width:68px
+}
+.requery-dataset-select{background:#fff!important;border:1px solid rgb(205, 205, 205);}
 span.requery-gene-select-badge {
   background: rgb(175,175,175);
   border-radius: 5px;
