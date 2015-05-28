@@ -22,6 +22,7 @@ var queryNoStyle = {
 
 if(window.location.pathname === '/') {
   d3.select('#navbar-query').remove();
+  d3.select('#navbar-query-btn').style(queryNoStyle);
 } else {
   var navbarQuery = d3.select('#navbar-query');
   d3.select('#navbar-query-btn')
@@ -183,6 +184,9 @@ function initQueryWidget(data) {
     //- Initialize the multiselect
     $('#dataset-multiselect').multiselect({
       buttonClass: 'btn btn-xs',
+      buttonText: function(options, select) {
+        return 'datasets';
+      },
       enableCaseInsensitiveFiltering: true,
       includeSelectAllOption: true,
       maxHeight: 400,
