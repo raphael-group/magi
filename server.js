@@ -144,7 +144,8 @@ app.get('/view', routes.view);
 app.get('/view/:id', routes.view);
 
 // Requery commands via MAGI view
-app.get('/requeryGetDatasets', routes.getDatasets);
+app.get('/queryGetDatasetsAndGenes', routes.queryGetDatasetsAndGenes);
+app.get('/requeryGetGenes', routes.getGenes);
 
 // Sample view
 app.get('/sampleView', routes.sampleView);

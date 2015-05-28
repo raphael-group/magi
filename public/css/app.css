@@ -198,6 +198,28 @@ div.page-header{
   padding:0;margin:0;border:0;
 }
 
+span.requery-gene-select-badge {
+  background: rgb(175,175,175);
+  border-radius: 5px;
+  color: rgb(50,50,50);
+  display: inline-block;
+  font-size: 11px;
+  margin: 3px;
+  padding: 3px 2px 3px 8px;
+}
+span.requery-gene-select-badge-xout {
+  background: rgb(50,50,50);
+  border-radius: 6px;
+  color: rgb(150,150,150);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 8px;
+  height: 12px;
+  padding: 1px 0px 3px 3px;
+  width: 12px;
+  visibility: hidden;
+}
+
 /* Footer */
 ul#more-info, ul#even-more-info{list-style-type: none;padding-left:0px;}
 ul#more-info li, ul#even-more-info li{display:inline;padding-left:5px;padding-right:5px;}

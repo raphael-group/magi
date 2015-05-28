@@ -58,13 +58,13 @@ exports.enrichments = enrichments.index;
 exports.enrichmentStats = enrichments.stats;
 
 // Datasets
-exports.datasets = {}
+exports.datasets = {};
 exports.datasets.index = datasets.index;
-exports.datasets.view = datasets.view
+exports.datasets.view = datasets.view;
 exports.datasets.manifests = datasets.manifests;
 
 // Annotations
-exports.annotations = { save: {}}
+exports.annotations = { save: {} };
 exports.annotations.gene = annotations.gene;
 exports.annotations.cancer = annotations.cancer;
 exports.annotations.save.mutation = annotations.saveMutation;
@@ -85,4 +85,5 @@ exports.logConsent = log.logConsent;
 exports.userGaveConsent = log.userGaveConsent;
 
 // Requery parameters
-exports.getDatasets = requery.getDatasets;
+exports.queryGetDatasetsAndGenes = requery.queryGetDatasetsAndGenes;
+exports.getGenes = requery.getGenes;
