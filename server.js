@@ -30,7 +30,7 @@ app.set('port', process.env.PORT || 8000);
 if (typeof(process.env.WEBENGAGE_ID) == 'undefined'){
   console.error('No WebEngage ID set; feedback widget will not work.');
 } else{
-  app.locals.webengageID = process.env.WEBENGAGE_ID;  
+  app.locals.webengageID = process.env.WEBENGAGE_ID;
 }
 
 // Load models to register their schemas
@@ -79,7 +79,7 @@ if (app.get('env') === 'production') {
   }
 };
 
-// 
+//
 try {
     var config   = require('./oauth2.js');
   // config passport to use Google OAuth2
@@ -144,7 +144,8 @@ app.get('/view', routes.view);
 app.get('/view/:id', routes.view);
 
 // Requery commands via MAGI view
-app.get('/requeryGetDatasets', routes.getDatasets);
+app.get('/queryGetDatasetsAndGenes', routes.queryGetDatasetsAndGenes);
+app.get('/requeryGetGenes', routes.getGenes);
 
 // Sample view
 app.get('/sampleView', routes.sampleView);
