@@ -55,10 +55,12 @@ function initQueryWidget(data) {
     console.log(geneList.length);
 
     var geneRequery = d3.select('#requery-gene-select'),
-        addedGeneArea = d3.select('#requery-gene-badge-container');
+        addedGeneArea = d3.select('#requery-gene-badge-container'),
+        addedGeneList = d3.select('#requery-gene-badge-list');
 
     function addBadge(g) {
-      var badge = addedGeneArea.append('span')
+      var badgeLi = addedGeneList.append('li'),
+          badge = badgeLi.append('span')
               .attr('class', 'requery-gene-select-badge');
       var geneText = badge.append('span').text(g)
               .style('cursor', 'pointer')
@@ -67,7 +69,7 @@ function initQueryWidget(data) {
                 if(loadedGenes.length <= 1) return;
                 loadedGenes.splice(loadedGenes.indexOf(g), 1);
                 queryBtn.attr('href', magiQueryHrefFn);
-                badge.remove();
+                badgeLi.remove();
               });
 
       var xOut = geneText.append('span')
@@ -76,7 +78,6 @@ function initQueryWidget(data) {
 
       geneText.on('mouseover', function() { xOut.style('visibility', 'visible'); })
               .on('mouseout', function() { xOut.style('visibility', 'hidden'); });
-
     }
     loadedGenes.forEach(addBadge);
 
