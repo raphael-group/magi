@@ -11,10 +11,28 @@ function getQueryVariable(variable) {
   console.log('Query variable %s not found', variable);
 }
 
+var queryNoStyle = {
+      background: 'none',
+      color: '#777'
+    },
+    queryStyle = {
+      background: 'rgb(81,81,81)',
+      color: 'rgb(31,31,31)'
+    };
+
 if(window.location.pathname === '/') {
   d3.select('#navbar-query').remove();
-  console.log('hi');
 } else {
+  var navbarQuery = d3.select('#navbar-query');
+  d3.select('#navbar-query-btn')
+      .attr('href', '#')
+      .on('click', function() {
+        if(d3.event) d3.event.preventDefault();
+        var isVisible = navbarQuery.style('display') !== 'none';
+        navbarQuery.style('display', isVisible ? 'none' : 'block');
+
+        d3.select(this).style(isVisible ? queryNoStyle : queryStyle);
+      });
   // get datasets and genes from URI if they are present
   var uriDatasetStr = getQueryVariable('datasets'),
       uriGeneStr = getQueryVariable('genes'),
@@ -124,7 +142,9 @@ function initQueryWidget(data) {
         addBadge(gene);
       }
 
-      if(gene === undefined || gene === '' || geneList.indexOf(gene) < 0) return;
+      if(gene === undefined || gene === '' || geneList.indexOf(gene) < 0) {
+        return;
+      }
 
       geneInput.property('value', '');
     }

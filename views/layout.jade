@@ -18,56 +18,61 @@ html
 
   body()
     block header
-      div(class="navbar navbar-default" role="navigation")
-        div(class="navbar-header")
-          button(type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-              data-target="#magi-navbar-collapse")
-            span(class="sr-only") Toggle navigation
-            span(class="icon-bar")
-            span(class="icon-bar")
-            span(class="icon-bar")
-          a(class="navbar-brand" href="/") MAGI
+      div(class="navbar navbar-default navbar-fixed-top" role="navigation")
+        div(class="container-fluid")
+          div(class="navbar-header")
+            button(type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                data-target="#magi-navbar-collapse")
+              span(class="sr-only") Toggle navigation
+              span(class="icon-bar")
+              span(class="icon-bar")
+              span(class="icon-bar")
+            a(class="navbar-brand" href="/") MAGI
 
-        div(class="collapse navbar-collapse" id="magi-navbar-collapse")
-          ul(class="nav navbar-nav")
-            li
-              a(href="/upload") Upload
-            li
-              a(href="/#magi-tab-query-genes") Query
-            li
-              a(href="/#db-chooser" id="nav-instructions") Instructions
-            li
-              a(href="/cancers") Cancers
-            li
-              a(href="/support") Support
-            li
-              a(href="#" id="give-feedback") Feedback
-            li
-              div(id="navbar-query")
-                div(style="margin-top:3px; display: inline-block;" id="magi-datasets")
-                  select(id="dataset-multiselect", class="multiselect", name="multiselect", multiple="multiple")
-                div(id="requery-gene-select", style="margin:10px 0 0 10px; display: inline-block;")
-                  form(class="form-inline" id="requery-gene-select-addForm")
-                    input(type="text" class="form-control typeahead" id="requery-gene-select-addInput" placeholder="GENE" style="height: 20px;width: 75px")
-                    a(href="" class="btn btn-default btn-xs", id="requery-gene-select-addBtn" style="width: 50px") Add
-                div(class="btn-group" style="display: inline-block; margin-right: 10px")
-                  button(type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false")
-                    | genes <span class="caret"></span>
-                  ul(id="requery-gene-badge-list" class="dropdown-menu" role="menu" style="min-width: 100px;")
-                a(class="btn btn-primary btn-xs" id="magi-nav-queryBtn")
-                  | Run query
-          ul(class="nav navbar-nav navbar-right", style="color:grey")
-            li
-              //- Ask the user to login or show his/her name
-              - if (user)
-                div(style="padding-top:14px;margin-right:5px")
-                  | Welcome,&nbsp;
-                  a(href="/account") #{user.name}
-                  | &nbsp;|&nbsp;
-                  a(href="/logout") Logout
-              - else
-                a(href="/auth/google/returnTo")
-                  button(type="button" class="btn btn-default btn-xs") Login via Google
+          div(class="collapse navbar-collapse" id="magi-navbar-collapse")
+            div(class="nav navbar-left")
+              div(class="row")
+                ul(class="nav navbar-nav")
+                  li
+                    a(href="/#magi-tab-query" id="navbar-query-btn") Query
+                  li
+                    a(href="/upload") Upload
+                  li
+                    a(href="/#db-chooser" id="nav-instructions") Instructions
+                  li
+                    a(href="/cancers") Cancers
+                  li
+                    a(href="/support") Support
+                  li
+                    a(href="#" id="give-feedback") Feedback
+              div(class="row")
+                div(id="navbar-query")
+                  div(style="margin-top:3px; display: inline-block;" id="magi-datasets")
+                    select(id="dataset-multiselect", class="multiselect", name="multiselect", multiple="multiple")
+                  div(id="requery-gene-select", style="margin:10px 0 0 10px; display: inline-block;")
+                    form(class="form-inline" id="requery-gene-select-addForm")
+                      input(type="text" class="form-control typeahead" id="requery-gene-select-addInput" placeholder="GENE" style="height: 20px;width: 75px")
+                      a(href="" class="btn btn-primary btn-xs", id="requery-gene-select-addBtn" style="width: 25px; margin-right: 5px") <strong>+</strong>
+                  div(class="btn-group" style="display: inline-block; margin-right: 10px")
+                    button(type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false")
+                      | genes <span class="caret"></span>
+                    ul(id="requery-gene-badge-list" class="dropdown-menu" role="menu" style="min-width: 100px;")
+                  a(class="btn btn-primary btn-xs" id="magi-nav-queryBtn")
+                    | Run query
+
+
+            ul(class="nav navbar-nav navbar-right", style="color:grey")
+              li
+                //- Ask the user to login or show his/her name
+                - if (user)
+                  div(style="padding-top:14px;margin-right:5px")
+                    | Welcome,&nbsp;
+                    a(href="/account") #{user.name}
+                    | &nbsp;|&nbsp;
+                    a(href="/logout") Logout
+                - else
+                  a(href="/auth/google/returnTo")
+                    button(type="button" class="btn btn-default btn-xs") Login via Google
 
     block body
 
