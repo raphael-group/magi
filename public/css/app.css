@@ -176,7 +176,7 @@ div.page-header{
 }
 
 
-ul.nav li a {
+#topNavList ul.nav li a {
   margin-top: 10px;
   padding: 5px 15px;
 }
@@ -405,16 +405,21 @@ table.gd3-tooltip-table tr{
 }
 
 /* Typeahead.js styling */
+.tt-menu {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 0 0 7.5px 7.5px;
+}
 .tt-query,
 .tt-hint {
-width: 160px;
-font-size: 14px;
+  width: 160px;
+  font-size: 14px;
 }
 
 .tt-query {
--webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
--moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
 
 .tt-hint {
@@ -422,36 +427,40 @@ color: #999
 }
 
 .tt-dropdown-menu {
-max-height: 150px;
-overflow-y: auto;
-width: 160px;
-margin-top: 12px;
-padding: 8px 0;
-background-color: #fff;
-border: 1px solid #ccc;
-border: 1px solid rgba(0, 0, 0, 0.2);
--webkit-border-radius: 8px;
--moz-border-radius: 8px;
-border-radius: 8px;
--webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
--moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  max-height: 150px;
+  overflow-y: auto;
+  width: 160px;
+  margin-top: 12px;
+  padding: 8px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  box-shadow: 0 5px 10px rgba(0,0,0,.2);
 }
 
 .tt-suggestion {
-padding: 3px 20px;
-font-size: 12px;
-line-height: 24px;
+  border-top: 1px solid #ccc;
+  cursor: pointer;
+  padding: 3px 20px;
+  font-size: 12px;
+  line-height: 24px;
+}
+.tt-suggestion:hover{
+  background: rgb(235,235,235);
 }
 
 .tt-suggestion.tt-is-under-cursor {
-color: #fff;
-background-color: #0097cf;
-
+  color: #fff;
+  background-color: #0097cf;
 }
 
 .tt-suggestion p {
-margin: 0;
+  margin: 0;
 }
 
 /* Up- and downvoting styles. */
