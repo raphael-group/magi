@@ -66,9 +66,9 @@ block body
 				-for (var i = 0; i < annotations.length; i++)
 					- var d = annotations[i];
 					- var cancer = cancerAbbr(d.cancer)
-					- var mutationClass = d.mutation_class ? d.mutation_class : "--";
-					- var mutationType = d.mutation_type ? d.mutation_type : "--";
-					- var proteinSeqChange = d.change ? d.change : "--";
+					- var mutationClass = d.mut_class ? d.mut_class : "--";
+					- var mutationType = d.mut_type ? d.mut_type : "--";
+					- var proteinSeqChange = d.protein_seq_change ? d.protein_seq_change : "--";
 					- var numVotes = d.upvotes.length - d.downvotes.length;
 					- var pmid_ref = d.reference
 					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";

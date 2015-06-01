@@ -21,23 +21,24 @@ annotations = sql.define({
 	 notNull: true}]	
 })
 aberrations = sql.define({
-    name: 'aberrations',
+    name: 'aber_annos',
     columns: [
 	{name: 'gene', 		dataType: 'varchar(15)', notNull: true},
+	{name: 'cancer',        dataType: 'varchar(40)'},
 	{name: 'transcript',	dataType: 'varchar(20)'}, // not used
 	{name: 'mut_class', 	dataType: 'varchar(15)', notNull: true}, // todo: mutation table and foreign key?
 	{name: 'mut_type',	dataType: 'varchar(35)'},
         {name: 'protein_seq_change', dataType: 'varchar(15)'},
         {name: 'source', 	dataType: 'varchar(20)', notNull: true},
-	{name: 'is_germline',	dataType: 'boolean'}, // not used
-  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
+//	{name: 'is_germline',	dataType: 'boolean'}, // not used
+//  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
 	{name: 'comment',	dataType: 'varchar(5000)',},
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true}, // todo: make this a constraint
 	{name: 'anno_id', dataType: 'integer', primaryKey: true}]
 })
 
 interactions = sql.define({
-    name: 'ppis',
+    name: 'ppi_annos',
     columns: [
 	{name: 'source',	dataType: 'varchar(15)', notNull: true},
 	{name: 'target',	dataType: 'varchar(15)', notNull: true},
@@ -45,7 +46,6 @@ interactions = sql.define({
 	{name: 'type',	 dataType: 'varchar(15)'},
 	{name: 'weight', dataType: 'float'},
 	{name: 'directed',	dataType: 'boolean'},
-	{name: 'reference',	dataType: 'varchar(25)', notNull: true},
 	{name: 'tissue',	dataType: 'varchar(30)'},
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'ppi'", notNull:true},
 	{name: 'anno_id', dataType: 'integer', primaryKey: true}]

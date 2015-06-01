@@ -180,6 +180,7 @@ app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 
 // SQL subtitute annotation views
 app.get('/annotations/gene/:gene', routes.annotations_SQL.gene);
+//app.get('/annotations/cancer/:cancer', routes.annotations_SQL.cancer);
 app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations_SQL.saveMutation);
 app.post('/vote/mutation', routes.annotations_SQL.mutationVote);
 
