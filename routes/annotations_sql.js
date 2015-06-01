@@ -58,10 +58,10 @@ exports.saveMutation = function saveMutation(req, res) {
 	// Add the annotation
 	var query = {
 	    gene: req.body.gene,
-	    cancer: req.body.cancer, // not used
-	    mutation_class: req.body.mutationClass,
-	    mutation_type: req.body.mutationType,
-	    change: req.body.change,
+	    cancer: req.body.cancer, 
+	    mut_class: req.body.mutationClass,
+	    mut_type: req.body.mutationType,
+	    protein_seq_change: req.body.change,
 	    domain: req.body.domain, // not used
 	    pmid: req.body.pmid,
 	    comment: req.body.comment,
@@ -106,3 +106,22 @@ exports.mutationVote = function mutationVote(req, res){
 	res.send({ error: "You must be logged in to vote." });
     }
 }
+
+// Renders annotations for the given cancer
+exports.cancer = function cancer(req, res){
+    // todo: this route how
+	console.log('/annotations/cancer');
+
+	// Parse params
+	var cancer = req.params.cancer.split("-").join(" ") || "",
+		Annotation = Database.magi.model( 'Annotation' );
+
+	annotation.geneFind({cancer: { $regex : new RegExp('^' + cancer + '$', 'i') }}, function(err, annotations){
+		// Throw error (if necessary)
+		if (err) throw new Error(err);
+
+		// Render the view
+		res.render('annotations/cancer', { user: req.user, annotations: annotations, cancer: cancer });
+	});
+}
+
