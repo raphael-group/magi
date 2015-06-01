@@ -7,14 +7,12 @@ var sql = require("sql");
 exports.init = Schemas.initDatabase
 
 // find all annotations given a structure with regexp
-exports.geneFind = function(query, callback /*(err, results) */) {
+exports.geneFind = function(query, callback) {
     abers = Schemas.aberrations
     annos = Schemas.annotations
     votes = Schemas.votes
 
-    console.log("query in geneFind: ", query)
-
-    // todo: update $2 depending on how many args are passed in
+    // Retrieve upvotes and downvotes for every annotation 
     voteSubQueryText = 
 	" (SELECT U.anno_id, upvotes, downvotes FROM " +
 	" (SELECT anno_id, array_agg(voter_id) AS upvotes " +
@@ -24,18 +22,17 @@ exports.geneFind = function(query, callback /*(err, results) */) {
 	" WHERE direction = -1 group by anno_id) as D " +
 	" ON U.anno_id = D.anno_id) "
    
+    // Selects the desired annotations according to the given filter
     selAnnosQuery = abers
 	.from(abers.join(annos).on(abers.anno_id.equals(annos.u_id)))
 	.where(query)
-
     selQuerySplit = selAnnosQuery.toQuery().text.split("WHERE")
 
+    // Join the upvote/downvote table within the annotation selection
     wholeQueryText = selQuerySplit[0] + " LEFT JOIN " + 
 	voteSubQueryText + " AS vote_ballots  " + 
 	" ON vote_ballots.anno_id = annos.u_id WHERE " +
 	selQuerySplit[1]
-    // todo: fill out references, and up/down votes
-    console.log("WHOLE QUERY:", wholeQueryText)
 
     Database.sql_query(wholeQueryText, selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
@@ -65,7 +62,6 @@ exports.vote = function mutationVote(fields, user_id){
     var Q = require( 'q' ),
     d = Q.defer();
     
-    console.log("Incoming: ", fields)
     //Create and execute the query
     var anno_id = fields._id, // FIXME: not guaranteed unique - better to use anno_id,
     valence = (fields.vote == "up") ? 1 : -1 ;
@@ -132,11 +128,12 @@ exports.upsert = function(data, callback){
     Database.execute(annoInsertQuery, function(err, subresult) {
 	handleErr(err, subresult, annoInsertQuery) 
 	u_id = subresult.rows[0].u_id
-
+//	console.log("Returned on upsert u_id: ", u_id)
 	aberInsertQuery = abers.insert(
 	    abers.gene.value(data.gene),
-	    abers.mut_class.value(data.mutation_class),
-	    abers.mut_type.value(data.mutation_type),
+	    abers.cancer.value(data.cancer),
+	    abers.mut_class.value(data.mut_class),
+	    abers.mut_type.value(data.mut_type),
 	    abers.protein_seq_change.value(data.change),
 	    abers.comment.value(data.comment),
 	    abers.source.value(data.source),
@@ -149,8 +146,82 @@ exports.upsert = function(data, callback){
     })
 }
 
-// todo:  Loads annotations into the database
+// Loads annotations into the database
 exports.loadAnnotationsFromFile = function(filename, source, callback){
+    // Load required modules
+    var fs = require( 'fs' ),
+    Q  = require( 'q' );
+
+    // Read in the file asynchronously
+    var data;
+    function loadAnnotationFile(){
+	var d = Q.defer();
+	fs.readFile(filename, 'utf-8', function (err, fileData) {
+	    // Exit if there's an error, else callback
+	    if (err) console.log(err)
+	    d.resolve();
+	    data = fileData;
+	});
+	return d.promise;
+    }
+
+    function processAnnotations(){
+	// Load the lines, but skip the header (the first line)
+	var lines = data.trim().split('\n');
+
+	// Make sure there're some lines in the file
+	if (lines.length < 2){
+	    console.log("Empty file (or just header). Exiting.")
+	    process.exit(1);
+	}
+
+	// Create objects to represent each annotation
+	var annotations = [];
+	for (var i = 1; i < lines.length; i++){
+	    // Parse the line
+	    var fields = lines[i].split('\t'),
+	    support = {
+		gene: fields[0],
+		transcript: fields[1] == '' ? null : fields[1], // not used
+		cancer: fields[2] == '' ? null : fields[2],
+		mutation_class: fields[3],
+		mutation_type: fields[4],
+		locus: fields[5] == '' ? null : fields[5], // not used
+		change: fields[6] == '' ? null : fields[6],
+		reference: fields[7], //pmid
+		comment: fields.length > 8 ? fields[8] : null,
+		source: source
+	    }
+	    annotations.push( support );
+	}
+	console.log( "Loaded " + annotations.length + " annotations." )
+
+	// Save all the annotations
+	return Q.allSettled( annotations.map(function(A){
+	    var d = Q.defer();
+
+	    var query = {
+		gene: A.gene,
+//		cancer: A.cancer,
+		change: A.change,
+		mut_class: A.mutation_class,
+		mut_type: A.mutation_type,
+		pmid: A.reference,
+		comment: A.comment,		
+		source: source,
+		user_id: "admin_user"
+	    };
+
+	    exports.upsert(query, function(err, annotation){
+		console.log("in callback: err=", err, ", anno=",annotation)
+		if (err) throw new Error(err);
+		d.resolve();
+	    })
+	    return d.promise;
+	}));
+    }
+
+    loadAnnotationFile().then( processAnnotations ).then( function(){ callback("") } );
 }
                                                                                                                                                           // todo: assemble annotations 
 exports.geneTable = function (genes, support){

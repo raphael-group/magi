@@ -7,6 +7,8 @@ console.log('connection:', conString);
 exports.execute = execute
 exports.executeAppend = executeAppend
 exports.sql_query = sql_query
+
+
 //  a query built by SQL package
 function execute(query, cb){
     q = query.toQuery()
@@ -26,11 +28,11 @@ function executeAppend(query, suffix, cb){
     }
 }
 
-// a straight parametrized query
+// a straight parametrized query that uses the client pool
 function sql_query(text, values, cb){
     // gets a client from the client pool                  
-    console.log("plaintext query is:", text)
-    console.log("plaintext values are:", values)
+//    console.log("plaintext query is:", text)
+//    console.log("plaintext values are:", values)
     pg.connect(conString, function(err, client, done) {
         if(err) {
             return console.error('error fetching client from pool', err);
