@@ -35,9 +35,9 @@ html
                 div(id="topNavList")
                   ul(class="nav navbar-nav")
                     li
-                      a(href="/#magi-tab-query" id="navbar-query-btn") Query
-                    li
                       a(href="/upload") Upload
+                    li
+                      a(href="/#magi-tab-query" id="#{ skip_requery ? '' : 'navbar-query-btn' }") Query
                     li
                       a(href="/#db-chooser" id="nav-instructions") Instructions
                     li
@@ -46,21 +46,6 @@ html
                       a(href="/support") Support
                     li
                       a(href="#" id="give-feedback") Feedback
-              div(class="row")
-                div(id="navbar-query")
-                  div(style="margin-top:3px; display: inline-block;" id="magi-datasets")
-                    select(id="dataset-multiselect", class="multiselect", name="multiselect", multiple="multiple")
-                  div(id="requery-gene-select", style="margin:10px 0 0 10px; display: inline-block;")
-                    form(class="form-inline" id="requery-gene-select-addForm")
-                      input(type="text" class="form-control typeahead" id="requery-gene-select-addInput" placeholder="GENE" style="height: 20px;width: 75px")
-                      a(href="" class="btn btn-primary btn-xs", id="requery-gene-select-addBtn" style="width: 25px; margin-right: 5px") <strong>+</strong>
-                  div(class="btn-group" style="display: inline-block; margin-right: 10px")
-                    button(type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false")
-                      | genes <span class="caret"></span>
-                    ul(id="requery-gene-badge-list" class="dropdown-menu" role="menu" style="min-width: 100px;")
-                  a(class="btn btn-primary btn-xs" id="magi-nav-queryBtn")
-                    | Run query
-
 
             ul(class="nav navbar-nav navbar-right", style="color:grey")
               li
@@ -75,13 +60,34 @@ html
                   a(href="/auth/google/returnTo")
                     button(type="button" class="btn btn-default btn-xs") Login via Google
 
-    div(id="layoutTopPadding")
-    block body
+      -if (!skip_requery)
+        -var body_margin_top = "80px";
+        div(id="navbar-query-connector", class="navbar-query")
+        div(id="navbar-query", class="navbar-query")
+          div(style="margin-left:20px")
+            div(style="display: inline-block;" id="magi-datasets")
+              label(style="margin-right:5px") Dataset(s)
+              select(id="dataset-multiselect", class="multiselect", name="multiselect", multiple="multiple", style="display:none")
+            div(id="requery-gene-select", style="margin:10px 0 0 10px; display: inline-block;")
+              form(class="form-inline" id="requery-gene-select-addForm")
+                input(type="text" class="form-control typeahead" id="requery-gene-select-addInput" placeholder="Add gene." style="height: 22px;width: 100px")
+                a(href="" class="btn btn-primary btn-xs", id="requery-gene-select-addBtn" style="width: 25px; margin-right: 5px") <strong>+</strong>
+            div(class="btn-group" style="display: inline-block; margin-right: 10px")
+              button(type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false")
+                | genes <span class="caret"></span>
+              ul(id="requery-gene-badge-list" class="dropdown-menu" role="menu" style="min-width: 100px;")
+            a(class="btn btn-primary btn-xs" id="magi-nav-queryBtn")
+              | Run query
+      -else
+        -var body_margin_top = "50px";
+
+    div(id="body", style="margin-top:#{body_margin_top}")
+      block body
 
     block footer
       hr
       div(id="footer", class="container")
-        p(class="col-lg-4 text-left") Updated: April 21st, 2015
+        p(class="col-lg-4 text-left") Updated: May 28th, 2015
         p(class="col-lg-4 text-center") Copyright 2014-2015. All rights reserved.
         ul(id="more-info", class="col-lg-4 text-right")
           li
@@ -97,10 +103,13 @@ html
             a(href="/terms", target="_new") Terms
 script(src='/components/jquery/dist/jquery.min.js')
 script(src='/components/bootstrap/dist/js/bootstrap.min.js')
-script(src='/components/bootstrap/js/dropdown.js')
-script(src='/components/d3/d3.min.js')
-script(src='/components/typeahead.js/dist/typeahead.bundle.min.js')
-script(src='/js/nav-query.js')
+-if (!skip_requery)
+  link(rel="stylesheet", href="/components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css", type="text/css")
+  script(src='/components/bootstrap/js/dropdown.js')
+  script(src='/components/d3/d3.min.js')
+  script(src='/components/typeahead.js/dist/typeahead.bundle.min.js')
+  script(src='/components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js').
+  script(src='/js/nav-query.js')
 script(id="_webengage_script_tag" type="text/javascript").
   var _weq = _weq || {};
   _weq['webengage.licenseCode'] = '#{webengageID}';

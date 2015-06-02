@@ -3,47 +3,61 @@ block body
   div(class="banner")
     div(class="container-fluid")
       div(class="row")
-        div(class="col-md-8")
-          h1(class="bannerHeader") Welcome to MAGI
-          h4 A tool for Mutation Annotation and Genomic Interpretation
-            br
+        div(class="col-md-6")
+          h1(class="bannerHeader") MAGI
+          h4 Mutation Annotation & <br/>Genome Interpretation
+          br(style="clear:both;height:0px")
           p MAGI is a tool for annotating, exploring, and analyzing gene sets that may be associated with cancer.
           ul
-            li View mutations in and interactions among sets of genes.
+            li View aberrations in and interactions among gene sets.
             li
               a(href="/upload") Upload your mutation data
-              | &nbsp;to view in combination with&nbsp;
-              a(href="http://www.nature.com/tcga/", target="_new") TCGA Pan-Cancer data
-              |.
+              ul
+                li
+                  | View in combination with&nbsp;
+                  a(href="http://www.nature.com/tcga/", target="_new") TCGA Pan-Cancer data.
+                li Generate dataset summaries.
+            li Collaboratively annotate aberrations and interactions while exploring your data.
+            li View the aberrations in a tumor sample, prioritized by their annotations.
+          br
 
-            li Collaboratively annotate mutations and interactions while exploring your data.
-          a(type="button" class="btn btn-tour dropdown-toggle" href="#" style="margin-bottom:15px;") Get the tour
-        div(class="col-md-4")
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
-            a(href="#", id="circle_cna")
-              img(src="img/circle_cna.png" style="width:100%;height:100%;")
-              | <br /> CNAs
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
-            a(href="#", id="circle_mutmtx")
-              img(src="img/circle_mutmtx.png" style="width:100%;height:100%;")
-              | <br /> Mutation Matrices
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
-            a(href="#", id="circle_subnet")
-              img(src="img/circle_subnet.png" style="width:100%;height:100%;")
+        div(class="col-md-6")
+          div(class="vizIndexTopPreview")
+            a(onclick="javascript:void(0)", id="circle_aberration")
+              img(src="img/thumb/aberration.svg" class="img-circle circleThumb")
+              | <br /> Aberrations
+          div(class="vizIndexTopPreview")
+            a(onclick="javascript:void(0)", id="circle_network")
+              img(src="img/thumb/network.svg" class="img-circle circleThumb")
               | <br /> Networks
-          div(style="display:inline-block;max-width:100px;margin-right:10px;vertical-align: top;text-align:center;")
-            a(href="#", id="circle_transcript")
-              img(src="img/circle_transcript.png" style="width:100%;height:100%;")
-              | <br /> Transcripts
+          div(class="vizIndexTopPreview")
+            a(onclick="javascript:void(0)", id="circle_heatmap")
+              img(src="img/thumb/heatmap.svg" class="img-circle circleThumb")
+              | <br /> Heatmaps
+          div(class="vizIndexTopPreview")
+            a(onclick="javascript:void(0)", id="circle_transcript")
+              img(src="img/thumb/transcript.svg" class="img-circle circleThumb")
+              | <br /> Single Nucleotide Variants
+          div(class="vizIndexTopPreview")
+            a(onclick="javascript:void(0)", id="circle_annotation")
+              img(src="img/thumb/annotation.svg" class="img-circle circleThumb")
+              | <br /> Annotations
+          div(class="vizIndexTopPreview")
+            a(onclick="javascript:void(0)", id="circle_cna")
+              img(src="img/thumb/cna.svg" class="img-circle circleThumb")
+              | <br /> Copy Number Aberrations
+      div(class="row")
+        div(class="col-md-12 text-center")
+          a(type="button", class="btn btn-tour dropdown-toggle", onclick="javascript:void(0)") Get the tour
 
   br
   a(name="input-chooser")
   div(class="container-index", id="input-chooser")
     ul(id="magi-actions", class="nav nav-tabs nav-justified", style="")
       li(class="query activeAction")
-        a(href="#", id="magi-tab-query-genes") Query gene sets
+        a(onclick="javascript:void(0)", id="magi-tab-query-genes") Query gene sets
       li(class="query")
-        a(href="#", id="magi-tab-query-samples") Query samples
+        a(onclick="javascript:void(0)", id="magi-tab-query-samples") Query samples
       li
         a(href="/upload" id="magi-tab-upload") Upload Your Data
       li
@@ -116,7 +130,7 @@ block body
           div(id="submit-query", class="text-center")
             button(type="submit", id="submit-genes", class="btn btn-success submit") Submit query
             br
-            a(href="#", id="reset") Reset
+            a(onclick="javascript:void(0)", id="reset") Reset
             br
             br
             div(id="status")
@@ -154,45 +168,54 @@ block body
         | associated with cancer.
       p The tool was authored by the <a href="http://compbio.cs.brown.edu/">Raphael Lab</a> at Brown University.
       hr
-      div(id="splash-img")
-        div
-          a(href="#", id="circle_cna")
-            img(src="img/circle_cna.png")
-            | <br /><br /> Copy Number Aberations
-        div
-          a(href="#", id="circle_mutmtx")
-            img(src="img/circle_mutmtx.png")
-            | <br /><br /> Mutation Matrices
-        div
-          a(href="#", id="circle_subnet")
-            img(src="img/circle_subnet.png")
+      div(class="row")
+        div(class="col-sm-2" class="text-center")
+          a(onclick="javascript:void(0)", id="circle_aberration")
+            img(src="img/thumb/aberration.svg" class="img-circle circleThumb")
+            | <br /><br /> Aberrations
+        div(class="col-sm-2" class="text-center")
+          a(onclick="javascript:void(0)", id="circle_network")
+            img(src="img/thumb/network.svg" class="img-circle circleThumb")
             | <br /><br /> Networks
-        div
-          a(href="#", id="circle_transcript")
-            img(src="img/circle_transcript.png")
-            | <br /><br /> Transcripts
+        div(class="col-sm-2" class="text-center")
+          a(onclick="javascript:void(0)", id="circle_transcript")
+            img(src="img/thumb/heatmap.svg" class="img-circle circleThumb")
+            | <br /><br /> Heatmaps
+        div(class="col-sm-2" class="text-center")
+          a(onclick="javascript:void(0)", id="circle_transcript")
+            img(src="img/thumb/transcript.svg" class="img-circle circleThumb")
+            | <br /><br /> Single Nucleotide Variants
+        div(class="col-sm-2" class="text-center")
+          a(onclick="javascript:void(0)", id="circle_annotation")
+            img(src="img/thumb/annotation.svg" class="img-circle circleThumb")
+            | <br /><br /> Annotations
+        div(class="col-sm-2" class="text-center")
+          a(onclick="javascript:void(0)", id="circle_cna")
+            img(src="img/thumb/cna.svg" class="img-circle circleThumb")
+            | <br /><br /> Copy Number Aberrations
+
       br
       br
     a(name="component-descriptions")
     div(id="component-descriptions")
-      a(name="mutation-matrix")
+      a(name="aberrations")
       h4
-        a(href="/#mutation-matrix") <span class="glyphicon glyphicon-link"></span>
-        | &nbsp; Mutation Matrix
+        a(href="/#aberrations") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Aberrations
       br
       div(class="text-center")
         div(id="multi-cancer-m2")
         br
-        i Mutation matrix of multiple cancer types.
+        i Aberrations view of multiple cancer types.
       br
       div(class="text-center")
         div(id="single-cancer-m2")
         br
-        i Mutation matrix of a single cancer type.
+        i Aberrations view of a single cancer type.
       br
-      | Mutation matrices show the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns).
+      | The aberrations view shows the pattern of mutations in a set of genes (rows) in a cohort of tumor samples (columns) as a matrix.
       | Each cell in the mutation matrix contains shape, which represents whether or not a gene is mutated in the given sample.
-      | Mutation matrices are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
+      | Matrices are colored in different ways, depending on if the tumor cohort includes multiple cancers or not.
       | For a cohort with multiple cancer types each cell is colored by the cancer type of the sample,
       | while for a cohort with one cancer type each cell is colored by whether or not the gene is the only
       | gene to harbor a mutation in that sample.
@@ -203,10 +226,10 @@ block body
       | .
       br
       br
-      a(name="subnetwork")
+      a(name="network")
       h4
-        a(href="/#subnetwork") <span class="glyphicon glyphicon-link"></span>
-        | &nbsp; Subnetwork
+        a(href="/#network") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Network
       br
       div(class="text-center")
         div(id="gd3-subnetwork-plot")
@@ -231,24 +254,37 @@ block body
       | .
       br
       br
-      a(name="transcript-plot")
+      a(name="heatmap")
       h4
-        a(href="/#transcript-plot") <span class="glyphicon glyphicon-link"></span>
-        | &nbsp; Transcript plot
+        a(href="/#heatmap") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Heatmap
+      br
+      div(class="text-center")
+        div(id="gd3-heatmap")
+        br
+        i Heatmap of gene expression data for genes in the cohesin complex.
+      br
+      | MAGI generates heatmaps for continuous valued data (e.g. gene expression, DNA methylation).
+      br
+      br
+      a(name="snvs")
+      h4
+        a(href="/#snvs") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Single Nucleotide Variants (SNVs)
       br
       div(class="text-center")
         div(id="gd3-transcript-plot")
         br
-        i Transcript plot for the SMAD4 transcript ENST00000342988 in multiple cancer types.
+        i Transcript view for the SMAD4 transcript ENST00000342988 in multiple cancer types.
       br
-      | The transcript plot shows locations at which mutations occur in a gene's transcript.
+      | The transcript view shows locations at which mutations occur in a gene's transcript.
       | Mutations are color-coded by cancer type, and different mutation types (e.g. missense, nonsense)
       | are represented by different symbols. In addition, protein domains from different databases
       | are shown along the length of the transcript.
       br
       br
-      | The mutation data for the transcript plot is the same as for the&nbsp;
-      a(href="#mutation-matrix") mutation matrix
+      | The mutation data for the transcript view is the same as for the&nbsp;
+      a(onclick="javascript:void(0)", class="cnaToAberrations") aberrations view
       | . Protein domains are provided for the&nbsp;
       a(href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml") Conserved Domain
       | ,&nbsp;
@@ -258,24 +294,42 @@ block body
       | &nbsp; databases.
       br
       br
-      a(name="cna-browser")
+      a(name="annotation")
       h4
-        a(href="/#cna-browser") <span class="glyphicon glyphicon-link"></span>
-        | &nbsp; Copy Number Aberration (CNA) Browser
+        a(href="/#annotation") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Annotation
+      br
+      div(class="text-center")
+        img(src="img/annotations-screenshot.png")
+        br
+        i Screenshot of the MAGI annotations interface.
+      br
+      | MAGI includes an interface for users to add annotations to aberrations or interactions 
+      | in the browser while they are exploring their data. Here we show an example of how 
+      | users can click on mutations in the transcript view to prepopulate the annotation form 
+      | with information about the mutation. Users can click on any of the data points in the 
+      | MAGI visualizations to prepopulate the form. Note that users must be logged in to 
+      | add new annotations or vote on existing annotations.
+      br
+      br
+      a(name="cnas")
+      h4
+        a(href="/#cnas") <span class="glyphicon glyphicon-link"></span>
+        | &nbsp; Copy number aberrations (CNAs)
       br
       div(class="text-center")
         div(id="gd3-cna-browser")
         br
-        i CNA browser for amplifications in the CDKN2A gene in glioblastoma.
+        i CNA view for amplifications in the CDKN2A gene in glioblastoma.
       br
       | The copy number aberration browser shows the amplified/deleted segments
       | that have been mapped to a particular gene. Since many segments span more than
-      | the length of the gene, the segments are shown in the context of a 
+      | the length of the gene, the segments are shown in the context of a
       | chromosome arm. Segments are colored by cancer type.
       br
       br
       | The mutation data for the CNA browser is the same as for the&nbsp;
-      a(href="#mutation-matrix") mutation matrix
+      a(onclick="javascript:void(0)", class="cnaToAberrations") aberrations view
       | .
 
 block belowTheFold
@@ -304,6 +358,16 @@ block belowTheFold
       classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
       buttons: [
         { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ],
+      scrollTo: true
+    });
+    tour.addStep('submit', {
+      text: 'You can also view <i>all</i> the mutations in individual tumor samples, prioritized by their annotations in the MAGI database.',
+      attachTo: '#magi-tab-query-samples top',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows',
+      buttons: [
+        { text: 'Back', classes: 'shepherd-button-secondary', action: tour.back },
         { text: 'Next', action: tour.next }
       ],
       scrollTo: true
@@ -386,15 +450,18 @@ block belowTheFold
     function scrollToAnchor(aid){
       var aTag = $("a[name='"+ aid +"']");
       $('html,body').animate( {scrollTop: aTag.offset().top }, 'slow');
-      setTimeout(function() {window.location.hash = aid;}, 300);
     }
     $("a#nav-instructions").on("click", function(){ scrollToAnchor("component-descriptions")});
     $("a#about").on("click", function(){ scrollToAnchor("sec-about")});
     $("a#search").on("click", function(){ scrollToAnchor("input-chooser")});
-    $("a#circle_cna").on("click", function(){ scrollToAnchor("cna-browser")});
-    $("a#circle_mutmtx").on("click", function(){ scrollToAnchor("mutation-matrix")});
-    $("a#circle_subnet").on("click", function(){ scrollToAnchor("subnetwork")});
-    $("a#circle_transcript").on("click", function(){ scrollToAnchor("transcript-plot")});
+
+    $("a#circle_aberration").on("click", function(){ scrollToAnchor("aberrations")});
+    $("a#circle_annotation").on("click", function(){ scrollToAnchor("annotation")});
+    $("a#circle_cna").on("click", function(){ scrollToAnchor("cnas")});
+    $("a#circle_heatmap").on("click", function(){ scrollToAnchor("heatmap")});
+    $("a#circle_network").on("click", function(){ scrollToAnchor("network")});
+    $("a#circle_transcript").on("click", function(){ scrollToAnchor("snvs")});
+    $("a.cnaToAberrations").on("click", function(){ scrollToAnchor("aberrations")});
 
     //- The example queries are mapped to databases by the server passing in
     //- formatted DB
