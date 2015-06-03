@@ -8,9 +8,10 @@
     "jquery-form": "3.x",
     "DataTables": "latest",
     "typeahead.js": "latest",
-    "hogan": "latest",
+    "handlebars": "latest",
     "bootstrap-multiselect": "latest",
-    "shepherd.js": "latest",
+    "tether-shepherd": "latest",
+    "tether": "latest",
     "jquery-mousewheel": "~3.1.12",
     "d3-tip": "latest",
     "jssha": "~1.6.0"
