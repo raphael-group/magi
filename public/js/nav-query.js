@@ -70,7 +70,8 @@ function initQueryWidget(data) {
 
 
   function initGenes() {
-    var geneList = data.genes;
+    var geneList = data.genes,
+        geneToMutations = data.geneToMutations;
 
     var geneRequery = d3.select('#requery-gene-select'),
         addedGeneArea = d3.select('#requery-gene-badge-container'),
@@ -114,7 +115,7 @@ function initQueryWidget(data) {
         // contains the substring `q`, add it to the `matches` array
         $.each(strs, function(i, str) {
           if (substrRegex.test(str)) {
-            matches.push({ gene: str, mutations: 0});
+            matches.push({ gene: str, mutations: geneToMutations[str]});
           }
         });
 
