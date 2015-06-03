@@ -16,7 +16,7 @@ var queryNoStyle = {
       color: '#777'
     },
     queryStyle = {
-      background: 'rgb(255,255,255)',
+      background: 'rgb(235,235,235)',
       color: 'rgb(31,31,31)'
     };
 
