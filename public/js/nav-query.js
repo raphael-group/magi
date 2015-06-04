@@ -71,7 +71,7 @@ function initQueryWidget(data) {
 
   function initGenes() {
     var geneList = data.genes,
-        geneToMutations = data.geneToMutations;
+        geneToDatasets = data.geneToDatasets;
 
     var geneRequery = d3.select('#requery-gene-select'),
         addedGeneArea = d3.select('#requery-gene-badge-container'),
@@ -81,9 +81,10 @@ function initQueryWidget(data) {
       var badgeLi = addedGeneList.append('li'),
           badge = badgeLi.append('span')
               .attr('class', 'requery-gene-select-badge');
+
       var geneText = badge.append('span').text(g)
               .style('cursor', 'pointer')
-              .style('display', 'block')
+              // .style('display', 'block')
               .on('click', function() {
                 if(loadedGenes.length <= 1) return;
                 loadedGenes.splice(loadedGenes.indexOf(g), 1);
@@ -115,7 +116,7 @@ function initQueryWidget(data) {
         // contains the substring `q`, add it to the `matches` array
         $.each(strs, function(i, str) {
           if (substrRegex.test(str)) {
-            matches.push({ gene: str, mutations: geneToMutations[str]});
+            matches.push({ gene: str, datasets: geneToDatasets[str]});
           }
         });
 
@@ -138,7 +139,7 @@ function initQueryWidget(data) {
             'Unable to find any genes that match the current query.',
           '</div>'
         ].join('\n'),
-        suggestion: Handlebars.compile('<div><strong>{{gene}}</strong> ({{mutations}} mutations)</div>')
+        suggestion: Handlebars.compile('<div><strong>{{gene}}</strong> ({{datasets}} datasets)</div>')
       }
     });
 
