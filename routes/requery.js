@@ -79,24 +79,20 @@ exports.queryGetDatasetsAndGenes = function(req, res) {
 
     MutGene.aggregate(
           { $match: { 'dataset_id' : { $in : dbIdList} } },
-          { $group: {_id: '$gene', mutations: {$sum: 1}}},
+          { $group: {_id: '$gene', datasets: {$sum: 1}}},
           function(err, geneData){
             if (err) console.log(err)
             var genes = [],
-                geneToMutations = {};
+                geneToDatasets = {};
+                
             geneData.forEach(function(d){
               genes.push(d._id);
-              geneToMutations[d._id] = d.mutations;
+              geneToDatasets[d._id] = d.datasets;
             });
-            res.send({genes: genes, geneToMutations: geneToMutations, datasets: responseData })
+            res.send({genes: genes, geneToDatasets: geneToDatasets, datasets: responseData })
           }
     )
 
-    // MutGene.find({ 'dataset_id' : { $in : dbIdList} })
-    //     .distinct('gene', function(error, genes) {
-    //         var finalResponseData = {genes: genes, datasets: responseData };
-    //         res.send(finalResponseData);
-    //     });
   }
 
   getDatasetResponseData(getGeneResponseData);
