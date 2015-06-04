@@ -78,26 +78,15 @@ function initQueryWidget(data) {
         addedGeneList = d3.select('#requery-gene-badge-list');
 
     function addBadge(g) {
-      var badgeLi = addedGeneList.append('li'),
-          badge = badgeLi.append('span')
-              .attr('class', 'requery-gene-select-badge');
-
-      var geneText = badge.append('span').text(g)
-              .style('cursor', 'pointer')
-              // .style('display', 'block')
-              .on('click', function() {
+      var badgeLi = addedGeneList.append('li')
+            .classed('requery-gene-badge-list-item', true)
+            .text(g)
+            .on('click', function() {
                 if(loadedGenes.length <= 1) return;
                 loadedGenes.splice(loadedGenes.indexOf(g), 1);
                 queryBtn.attr('href', magiQueryHrefFn);
                 badgeLi.remove();
-              });
-
-      var xOut = geneText.append('span')
-              .attr('class', 'requery-gene-select-badge-xout')
-              .text('✕');
-
-      geneText.on('mouseover', function() { xOut.style('visibility', 'visible'); })
-              .on('mouseout', function() { xOut.style('visibility', 'hidden'); });
+            });
     }
     loadedGenes.forEach(addBadge);
 

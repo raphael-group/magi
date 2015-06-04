@@ -235,6 +235,32 @@ span.requery-gene-select-badge {
   margin: 3px;
   padding: 3px 2px 3px 8px;
 }
+.requery-gene-badge-list-item {
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  padding: 3px 0 3px 5px;
+}
+.requery-gene-badge-list-item:first-child {
+  border-top: 1px solid #eee;
+}
+.requery-gene-badge-list-item:hover{
+  color: rgb(200,200,200);
+}
+.requery-gene-badge-list-item::after {
+  background: rgb(235,235,235);
+  border-radius: 15px;
+  color: rgb(255,255,255);
+  content: '×';
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 10px;
+  margin-left: 3px;
+  padding: 0px 5px 2px 5px;
+}
+.requery-gene-badge-list-item:hover::after {
+  color: rgb(30,30,30);
+}
+
 span.requery-gene-select-badge-xout {
   background: rgb(50,50,50);
   border-radius: 6px;
