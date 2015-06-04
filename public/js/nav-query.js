@@ -1,4 +1,9 @@
 // Parse URI to get variables if they are present
+
+// Global variable that tracks how tall the navbar is.
+// Default is 90 when the requery bar is showing.
+var navbarHeight = 81;
+
 function getQueryVariable(variable) {
   var query = window.location.search.substring(1);
   var vars = query.split('&');
@@ -8,7 +13,6 @@ function getQueryVariable(variable) {
       return decodeURIComponent(pair[1]);
     }
   }
-  console.log('Query variable %s not found', variable);
 }
 
 var queryNoStyle = {
@@ -27,8 +31,8 @@ d3.select('#navbar-query-btn')
       if(d3.event) d3.event.preventDefault();
       var isVisible = navbarQuery.style('display') !== 'none';
       navbarQuery.style('display', isVisible ? 'none' : 'block');
-      d3.select("div#body").style('margin-top', isVisible ? '50px' : '80px');
-
+      d3.select("div#body").style('margin-top', isVisible ? '0px' : '30px');
+      navbarHeight = isVisible ? 46 : 81;
       d3.select(this).style(isVisible ? queryNoStyle : queryStyle);
     });
 // get datasets and genes from URI if they are present
@@ -66,7 +70,8 @@ function initQueryWidget(data) {
 
 
   function initGenes() {
-    var geneList = data.genes;
+    var geneList = data.genes,
+        geneToMutations = data.geneToMutations;
 
     var geneRequery = d3.select('#requery-gene-select'),
         addedGeneArea = d3.select('#requery-gene-badge-container'),
@@ -110,7 +115,7 @@ function initQueryWidget(data) {
         // contains the substring `q`, add it to the `matches` array
         $.each(strs, function(i, str) {
           if (substrRegex.test(str)) {
-            matches.push(str);
+            matches.push({ gene: str, mutations: geneToMutations[str]});
           }
         });
 
@@ -125,7 +130,16 @@ function initQueryWidget(data) {
     },
     {
       name: 'genes',
-      source: substringMatcher(geneList)
+      display: 'gene',
+      source: substringMatcher(geneList),
+      templates: {
+        empty: [
+          '<div class="empty-message">',
+            'Unable to find any genes that match the current query.',
+          '</div>'
+        ].join('\n'),
+        suggestion: Handlebars.compile('<div><strong>{{gene}}</strong> ({{mutations}} mutations)</div>')
+      }
     });
 
     function geneInputValidation() {

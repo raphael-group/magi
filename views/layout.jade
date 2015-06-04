@@ -18,7 +18,7 @@ html
 
   body()
     block header
-      div(class="navbar navbar-default navbar-fixed-top" role="navigation")
+      div(class="navbar navbar-default" role="navigation")
         div(class="container-fluid")
           div(class="navbar-header")
             button(type="button" class="navbar-toggle collapsed" data-toggle="collapse"
@@ -61,7 +61,7 @@ html
                     button(type="button" class="btn btn-default btn-xs") Login via Google
 
       -if (!skip_requery)
-        -var body_margin_top = "80px";
+        -var body_margin_top = "45px";
         div(id="navbar-query-connector", class="navbar-query")
         div(id="navbar-query", class="navbar-query")
           div(style="margin-left:20px")
@@ -82,7 +82,7 @@ html
             a(class="btn btn-primary btn-xs" id="magi-nav-queryBtn")
               | Run query
       -else
-        -var body_margin_top = "50px";
+        -var body_margin_top = "0px";
 
     div(id="body", style="margin-top:#{body_margin_top}")
       block body
@@ -90,7 +90,7 @@ html
     block footer
       hr
       div(id="footer", class="container")
-        p(class="col-lg-4 text-left") Updated: May 28th, 2015
+        p(class="col-lg-4 text-left") Updated: June 3rd, 2015
         p(class="col-lg-4 text-center") Copyright 2014-2015. All rights reserved.
         ul(id="more-info", class="col-lg-4 text-right")
           li
@@ -106,12 +106,13 @@ html
             a(href="/terms", target="_new") Terms
 script(src='/components/jquery/dist/jquery.min.js')
 script(src='/components/bootstrap/dist/js/bootstrap.min.js')
+script(src='/components/handlebars/handlebars.min.js')
+link(rel="stylesheet", href="/components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css", type="text/css")
+script(src='/components/typeahead.js/dist/typeahead.bundle.min.js')
+script(src='/components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js').
+script(src='/components/d3/d3.min.js')
 -if (!skip_requery)
-  link(rel="stylesheet", href="/components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css", type="text/css")
   script(src='/components/bootstrap/js/dropdown.js')
-  script(src='/components/d3/d3.min.js')
-  script(src='/components/typeahead.js/dist/typeahead.bundle.min.js')
-  script(src='/components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js').
   script(src='/js/nav-query.js')
 script(id="_webengage_script_tag" type="text/javascript").
   var _weq = _weq || {};
