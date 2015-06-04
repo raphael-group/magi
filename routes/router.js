@@ -86,4 +86,3 @@ exports.userGaveConsent = log.userGaveConsent;
 
 // Requery parameters
 exports.queryGetDatasetsAndGenes = requery.queryGetDatasetsAndGenes;
-exports.getGenes = requery.getGenes;

@@ -84,7 +84,7 @@ exports.queryGetDatasetsAndGenes = function(req, res) {
             if (err) console.log(err)
             var genes = [],
                 geneToDatasets = {};
-                
+
             geneData.forEach(function(d){
               genes.push(d._id);
               geneToDatasets[d._id] = d.datasets;
@@ -96,34 +96,4 @@ exports.queryGetDatasetsAndGenes = function(req, res) {
   }
 
   getDatasetResponseData(getGeneResponseData);
-};
-
-exports.getGenes = function(req, res) {
-  var MutGene = Database.magi.model( 'MutGene' );
-
-  function getGeneList(datasets) {
-    var dbIds = [];
-
-    datasets.forEach(function(d) {
-      d.dbs.forEach(function(db) {
-        dbIds.push(db._id);
-      });
-    });
-
-
-    MutGene.find({ 'dataset_id' : { $in : dbIds} }).distinct('gene', function(error, genes) {
-        res.send(genes);
-    });
-  }
-
-  Dataset.datasetGroups({is_public: true}, function(err, datasets) {
-    if (err) throw new Error(err);
-    else if (req.user){
-      Dataset.datasetGroups({user_id: req.user._id}, function(err, privateDatasets){
-        if (err) throw new Error(err);
-        datasets = datasets.concat(privateDatasets);
-      });
-    }
-    getGeneList(datasets);
-  });
 };
