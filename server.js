@@ -143,6 +143,9 @@ app.post('/', routes.queryhandler);
 app.get('/view', routes.view);
 app.get('/view/:id', routes.view);
 
+// Requery commands via MAGI view
+app.get('/queryGetDatasetsAndGenes', routes.queryGetDatasetsAndGenes);
+
 // Sample view
 app.get('/sampleView', routes.sampleView);
 

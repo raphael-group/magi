@@ -9,7 +9,8 @@ var about = require( './about' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
   log = require('./log'),
-  share = require('./share');
+  share = require('./share'),
+  requery = require('./requery');
 
 //*  Export the routes in each subrouter *//
 
@@ -57,13 +58,13 @@ exports.enrichments = enrichments.index;
 exports.enrichmentStats = enrichments.stats;
 
 // Datasets
-exports.datasets = {}
+exports.datasets = {};
 exports.datasets.index = datasets.index;
-exports.datasets.view = datasets.view
+exports.datasets.view = datasets.view;
 exports.datasets.manifests = datasets.manifests;
 
 // Annotations
-exports.annotations = { save: {}}
+exports.annotations = { save: {} };
 exports.annotations.gene = annotations.gene;
 exports.annotations.cancer = annotations.cancer;
 exports.annotations.save.mutation = annotations.saveMutation;
@@ -82,3 +83,6 @@ exports.extendLog = log.extendLog;
 exports.isLoggingEnabled = log.isLoggingEnabled;
 exports.logConsent = log.logConsent;
 exports.userGaveConsent = log.userGaveConsent;
+
+// Requery parameters
+exports.queryGetDatasetsAndGenes = requery.queryGetDatasetsAndGenes;

@@ -295,7 +295,7 @@ function view(){
 					cancerNames.forEach(function(cancer){
 						cancerToRefs[cancer].forEach(function(ref, i){
 							// only show the cancer name in the first row
-							refTable.push([	
+							refTable.push([
 								{ type: 'text', text: i ? "" : cancerToName(cancer) },
 								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
 								{ type: 'vote',
@@ -334,7 +334,7 @@ function view(){
 						});
 					});
 
-					// The table is hidden on default, so we show a string describing the 
+					// The table is hidden on default, so we show a string describing the
 					// table before showing it.
 					var knownAberrations = cancerNames.map(cancerToName).join(", ");
 					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + ' in ' + knownAberrations});

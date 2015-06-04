@@ -106,13 +106,12 @@ function initializeAnnotations(){
 	cancerBloodhound.initialize();
 
 	// Compile the template for showing suggestions
-	var templ = Hogan.compile('<p><strong>{{value}}</strong> ({{abbr}})</p>');
 	$("input#cancer-typeahead").typeahead({highlight: true}, {
 		name: 'cancers',
 		displayKey: 'value',
 		source: cancerBloodhound.ttAdapter(),
 		templates:{
-			suggestion: function(data){ return templ.render(data); }
+			suggestion: Handlebars.compile('<p><strong>{{value}}</strong> ({{abbr}})</p>')
 		}
 	});
 

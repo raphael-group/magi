@@ -1,5 +1,4 @@
 /* app css stylesheet */
-
 html,body{
   margin: 0;
   padding: 0;
@@ -198,6 +197,83 @@ div.page-header{
   padding:0;margin:0;border:0;
 }
 
+
+#topNavList ul.nav li a {
+  margin-top: 10px;
+  padding: 5px 15px;
+}
+a#navbar-query-btn {
+  background: rgb(235,235,235);
+  color: rgb(31,31,31);
+  border-radius: 7.5px 7.5px 0 0;
+  margin-left: 5px;
+}
+div#navbar-query {
+  position:absolute;
+  top:52px;
+  left:-5px;
+  z-index:1000;
+  height:38px;
+  width:100%;
+  background: rgb(235, 235, 235);
+  border-radius: 1px 1px 1px 1px;
+  border-bottom:1px solid #8cc63f;
+  margin: 0 0 5px 5px;
+  padding: 0px 15px 5px 5px;
+}
+div#navbar-query-connector{
+  z-index:1000;position:absolute;left:143px;top:38px;background:rgb(235, 235, 235);height:17px;width:68px
+}
+form#requery-gene-select-addForm .twitter-typeahead{display:inline !important;position: static!important;}
+.requery-dataset-select{background:#fff!important;border:1px solid rgb(205, 205, 205);}
+span.requery-gene-select-badge {
+  background: rgb(175,175,175);
+  border-radius: 5px;
+  color: rgb(50,50,50);
+  display: inline-block;
+  font-size: 11px;
+  margin: 3px;
+  padding: 3px 2px 3px 8px;
+}
+.requery-gene-badge-list-item {
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  padding: 3px 0 3px 5px;
+}
+.requery-gene-badge-list-item:first-child {
+  border-top: 1px solid #eee;
+}
+.requery-gene-badge-list-item:hover{
+  color: rgb(200,200,200);
+}
+.requery-gene-badge-list-item::after {
+  background: rgb(235,235,235);
+  border-radius: 15px;
+  color: rgb(255,255,255);
+  content: '×';
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 10px;
+  margin-left: 3px;
+  padding: 0px 5px 2px 5px;
+}
+.requery-gene-badge-list-item:hover::after {
+  color: rgb(30,30,30);
+}
+
+span.requery-gene-select-badge-xout {
+  background: rgb(50,50,50);
+  border-radius: 6px;
+  color: rgb(150,150,150);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 8px;
+  height: 12px;
+  padding: 1px 0px 3px 3px;
+  width: 12px;
+  visibility: hidden;
+}
+
 /* Footer */
 ul#more-info, ul#even-more-info{list-style-type: none;padding-left:0px;}
 ul#more-info li, ul#even-more-info li{display:inline;padding-left:5px;padding-right:5px;}
@@ -305,7 +381,7 @@ table.uploadDataTable * * * {
 
 
 /* Styling for visualizations */
-div#loading{background:#fff;width:100%;height:100%;position:fixed;left:0px;top:51px;z-index:1000;opacity:0.8;padding-left:45%;padding-top:18%}
+div#loading{background:#fff;width:100%;height:100%;position:fixed;left:0px;top:51px;z-index:1001;opacity:0.8;padding-left:45%;padding-top:18%}
 div#view-page{ opacity:0;min-height:800px; }
 div#control-panel{width:200px;border:#333 solid 10px;position:absolute;right:0px;background:#333;max-height:100%;overflow-y:scroll;}
 .fixed {position: fixed; top: 0; z-index: 1;right:0px;}
@@ -368,16 +444,21 @@ table.gd3-tooltip-table tr{
 }
 
 /* Typeahead.js styling */
+.tt-menu {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 0 0 7.5px 7.5px;
+}
 .tt-query,
 .tt-hint {
-width: 160px;
-font-size: 14px;
+  width: 160px;
+  font-size: 14px;
 }
 
 .tt-query {
--webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
--moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
 
 .tt-hint {
@@ -385,36 +466,40 @@ color: #999
 }
 
 .tt-dropdown-menu {
-max-height: 150px;
-overflow-y: auto;
-width: 160px;
-margin-top: 12px;
-padding: 8px 0;
-background-color: #fff;
-border: 1px solid #ccc;
-border: 1px solid rgba(0, 0, 0, 0.2);
--webkit-border-radius: 8px;
--moz-border-radius: 8px;
-border-radius: 8px;
--webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
--moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  max-height: 150px;
+  overflow-y: auto;
+  width: 160px;
+  margin-top: 12px;
+  padding: 8px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  box-shadow: 0 5px 10px rgba(0,0,0,.2);
 }
 
 .tt-suggestion {
-padding: 3px 20px;
-font-size: 12px;
-line-height: 24px;
+  border-top: 1px solid #ccc;
+  cursor: pointer;
+  padding: 3px 20px;
+  font-size: 12px;
+  line-height: 24px;
+}
+.tt-suggestion:hover{
+  background: rgb(235,235,235);
 }
 
 .tt-suggestion.tt-is-under-cursor {
-color: #fff;
-background-color: #0097cf;
-
+  color: #fff;
+  background-color: #0097cf;
 }
 
 .tt-suggestion p {
-margin: 0;
+  margin: 0;
 }
 
 /* Up- and downvoting styles. */

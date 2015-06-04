@@ -14,6 +14,16 @@ block body
               | Enrichment statistics
               span(style="float:right") [+]
       div(id="controls")
+
+      div(id="requeryControls")
+        div(class="panel panel-default", style="margin-top:5px")
+          div(class="panel-heading", style="padding:5px")
+            h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="requeryLink")
+              | Query
+              span(style="float:right") [+]
+          div(id="collapseRequery", class="panel-collapse collapse", style="padding:5px")
+
+
       div(id="viz-options", class="panel panel-default")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="optionsLink")
@@ -304,13 +314,7 @@ block body
             input(class="form-control", type="text", name="shareLink", value="", style="width:100%", readonly)
 
 block belowTheFold
-      script(src='/components/jquery/dist/jquery.min.js').
-      script(src='/components/bootstrap/dist/js/bootstrap.min.js').
-      script(src='/components/d3/d3.min.js').
-      script(src='/components/hogan/web/builds/2.0.0/hogan-2.0.0.min.js').
       script(src="/components/gd3/gd3.js")
-      script(src='components/shepherd.js/shepherd.min.js').
-      script(src='/components/typeahead.js/dist/typeahead.bundle.min.js').
       script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
       script(src='/components/jssha/src/sha1.js'). // req for log.js
       script(src='/js/save.js').
@@ -322,11 +326,11 @@ block belowTheFold
         $(document).ready(function(){
           var jControlPanel = $('#control-panel');
           $(window).bind('scroll', function() {
-            if ($(window).scrollTop() > 45) {
+            if ($(window).scrollTop() > navbarHeight) {
               jControlPanel.addClass('fixed').css("position", "fixed").css("top", 0);
             }
             else {
-              jControlPanel.css("top", 50-$(window).scrollTop());
+              jControlPanel.css("top", navbarHeight + 5 - $(window).scrollTop());
               jControlPanel.removeClass('fixed').css("position", "fixed");
             }
           });
@@ -336,7 +340,8 @@ block belowTheFold
                                 {link: "save", target: "Save"},
                                 {link: "annotate", target: "Annotation"},
                                 {link: "annotatedVariants", target: "AnnotatedVariants"},
-                                {link: "options", target: "Options"}];
+                                {link: "options", target: "Options"},
+                                {link: "requery", target: "Requery"}];
         function bootstrapToggle(d){
           $("#" + d.link + "Link").click(function(e){
               e.preventDefault();
