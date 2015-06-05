@@ -76,23 +76,11 @@ exports.queryGetDatasetsAndGenes = function(req, res) {
 
   function getGeneResponseData(responseData, dbIdList) {
     var MutGene = Database.magi.model('MutGene');
-
-    MutGene.aggregate(
-          { $match: { 'dataset_id' : { $in : dbIdList} } },
-          { $group: {_id: '$gene', datasets: {$sum: 1}}},
-          function(err, geneData){
-            if (err) console.log(err)
-            var genes = [],
-                geneToDatasets = {};
-
-            geneData.forEach(function(d){
-              genes.push(d._id);
-              geneToDatasets[d._id] = d.datasets;
-            });
-            res.send({genes: genes, geneToDatasets: geneToDatasets, datasets: responseData })
-          }
-    )
-
+    MutGene.find({ 'dataset_id' : { $in : dbIdList} })
+      .distinct('gene', function(error, genes) {
+        var finalResponseData = {genes: genes, datasets: responseData };
+        res.send(finalResponseData);
+      });
   }
 
   getDatasetResponseData(getGeneResponseData);

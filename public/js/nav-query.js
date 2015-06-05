@@ -70,8 +70,7 @@ function initQueryWidget(data) {
 
 
   function initGenes() {
-    var geneList = data.genes,
-        geneToDatasets = data.geneToDatasets;
+    var geneList = data.genes;
 
     var geneRequery = d3.select('#requery-gene-select'),
         addedGeneArea = d3.select('#requery-gene-badge-container'),
@@ -105,7 +104,7 @@ function initQueryWidget(data) {
         // contains the substring `q`, add it to the `matches` array
         $.each(strs, function(i, str) {
           if (substrRegex.test(str)) {
-            matches.push({ gene: str, datasets: geneToDatasets[str]});
+            matches.push({ gene: str});
           }
         });
 
@@ -128,7 +127,7 @@ function initQueryWidget(data) {
             'Unable to find any genes that match the current query.',
           '</div>'
         ].join('\n'),
-        suggestion: Handlebars.compile('<div><strong>{{gene}}</strong> ({{datasets}} datasets)</div>')
+        suggestion: Handlebars.compile('<div><strong>{{gene}}</strong></div>')
       }
     });
 
