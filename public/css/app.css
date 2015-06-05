@@ -226,6 +226,7 @@ div#navbar-query-connector{
 }
 form#requery-gene-select-addForm .twitter-typeahead{display:inline !important;position: static!important;}
 .requery-dataset-select{background:#fff!important;border:1px solid rgb(205, 205, 205);}
+
 span.requery-gene-select-badge {
   background: rgb(175,175,175);
   border-radius: 5px;
@@ -272,6 +273,26 @@ span.requery-gene-select-badge-xout {
   padding: 1px 0px 3px 3px;
   width: 12px;
   visibility: hidden;
+}
+
+div.requery-geneSuggestion {
+  font-weight: bold;
+}
+div.requery-geneSuggestion::before {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  color: #333;
+  content: 'add';
+  font-size: 11px;
+  font-weight: bold;
+  margin-right: 3px;
+  padding: 0px 5px 2px 5px;
+}
+
+div.requery-geneSuggestion:hover::before {
+  background: #ccc;
+  border: 1px solid #999;
 }
 
 /* Footer */

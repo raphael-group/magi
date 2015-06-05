@@ -70,7 +70,8 @@ function initQueryWidget(data) {
 
 
   function initGenes() {
-    var geneList = data.genes;
+    var geneList = data.genes,
+        geneListLowerCase = geneList.map(function(d) { return d.toLowerCase(); });
 
     var geneRequery = d3.select('#requery-gene-select'),
         addedGeneArea = d3.select('#requery-gene-badge-container'),
@@ -113,12 +114,12 @@ function initQueryWidget(data) {
     };
 
     $('#requery-gene-select-addInput').typeahead({
-      hint: true,
-      highlight: true,
+      hint: false,
+      highlight: false,
       minLength: 1
     },
     {
-      name: 'genes',
+      // name: 'genes',
       display: 'gene',
       source: substringMatcher(geneList),
       templates: {
@@ -127,36 +128,29 @@ function initQueryWidget(data) {
             'Unable to find any genes that match the current query.',
           '</div>'
         ].join('\n'),
-        suggestion: Handlebars.compile('<div><strong>{{gene}}</strong></div>')
+        suggestion: Handlebars.compile('<div class="requery-geneSuggestion">{{gene}}</div>')
       }
     });
 
-    function geneInputValidation() {
-      var geneInput = d3.select('#requery-gene-select-addInput'),
-          gene = geneInput.property('value');
-
-      if(loadedGenes.indexOf(gene) < 0) {
-        loadedGenes.push(gene);
-        queryBtn.attr('href', magiQueryHrefFn);
-        addBadge(gene);
-      }
-
-      if(gene === undefined || gene === '' || geneList.indexOf(gene) < 0) {
-        return;
-      }
-
-      geneInput.property('value', '');
-    }
-
-    d3.select('#requery-gene-select-addBtn').on('keypress', function() {
-          if(d3.event.keyCode == 13) {
-            d3.event.preventDefault();
-            geneInputValidation();
+    $('#requery-gene-select-addInput')
+        .on('typeahead:selected', function(evt, item) {
+          // do what you want with the item here
+          if(loadedGenes.indexOf(item.gene) < 0) {
+            loadedGenes.push(item.gene);
+            queryBtn.attr('href', magiQueryHrefFn);
+            addBadge(item.gene);
           }
-        })
-        .on('click', function () {
-          d3.event.preventDefault();
-          geneInputValidation();
+          $('#requery-gene-select-addInput')
+              .typeahead('val', '');
+
+          d3.select('#requery-gene-select-addInput')
+              .transition()
+                .duration(250)
+                .style('background', '#3cb878')
+              .transition()
+                .delay(250)
+                .duration(350)
+                .style('background', 'white');
         });
   }
 
@@ -206,12 +200,6 @@ function initQueryWidget(data) {
 
     // Show the multiselect
     $('#magi-datasets').css('visibility', '');
-
-    // hack for getting the requery menu to show/hide
-    $('#magi-datasets').on('click', function() {
-      $('#magi-datasets div.btn-group ul').toggle();
-    });
-
   }
 
 

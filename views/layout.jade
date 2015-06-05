@@ -73,10 +73,9 @@ html
                 div(class="input-group")
                   input(type="text" class="form-control typeahead btn-xs" id="requery-gene-select-addInput" placeholder="Add gene." style="height:22px;width: 100px")
                   div(class="input-group-btn")
-                    button(type="button", class="btn btn-primary btn-xs", id="requery-gene-select-addBtn") +
                     button(type="button", class="btn btn-default btn-xs dropdown-toggle", data-toggle="dropdown", aria-expanded="false")
                       | <span class="caret"></span>
-                    ul(id="requery-gene-badge-list" class="dropdown-menu" role="menu" style="min-width: 100px;")
+                    ul(id="requery-gene-badge-list" class="dropdown-menu dropdown-menu-left" role="menu" style="min-width: 100px;")
 
             a(class="btn btn-primary btn-xs" id="magi-nav-queryBtn")
               | Run query
