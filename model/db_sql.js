@@ -1,14 +1,16 @@
 var pg = require("pg");
-var conString = 'postgres://postgres@' + process.env.POSTGRES_HOST + ':' + 
-    process.env.POSTGRES_PORT + '/magi';
 
-console.log('connection:', conString);
+pgDbName = 'magi'
+var conString = 'postgres://postgres@' + process.env.POSTGRES_HOST + ':' + 
+    process.env.POSTGRES_PORT + '/' + pgDbName;
+
+console.log('Connecting to postgres at address', conString);
 
 exports.execute = execute
 exports.executeAppend = executeAppend
 exports.sql_query = sql_query
-
-
+exports.verify_connection = verify_connection;
+//
 //  a query built by SQL package
 function execute(query, cb){
     q = query.toQuery()
@@ -35,7 +37,7 @@ function sql_query(text, values, cb){
 //    console.log("plaintext values are:", values)
     pg.connect(conString, function(err, client, done) {
         if(err) {
-            return console.error('error fetching client from pool', err);
+            return console.error("error fetching client from pool:", err);
         }
         query = client.query(text, values, function(err, result) {
             done(); // releases the client back to the pool                                                                                                  
@@ -44,6 +46,21 @@ function sql_query(text, values, cb){
     })
 }
 
+// returns a promise: use with .then().fail()
+function verify_connection() {
+    var Q = require('q');
+    d = Q.defer();
+    pg.connect(conString, function(err, client, done) {
+	if (err) {
+	    d.reject(err);   
+	} else if (!client) {
+	    d.reject(new Error('Null client returned'));
+	} else {
+	    done();
+	    d.resolve();
+	}});
+    return d.promise;
+}
 // todo: add transactions
 
 // todo: support client model

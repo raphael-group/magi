@@ -1,6 +1,7 @@
 // Load models
 //var db = require('../model/db'),
 	annotations = require('../model/annotations_sql');
+	pg = require('../model/db_sql');
 
 // Validate args
 var argv = require('optimist').argv;
@@ -14,11 +15,14 @@ if (!( argv.annotations_file)){
 var path   = require( 'path' ),
 	filepath = path.normalize(__dirname + '/' + argv.annotations_file);
 
-//var mongoose = require( 'mongoose' );
-annotations.loadAnnotationsFromFile( filepath, argv.source, function(err){
-	if (err) throw new Error(err);
-	
-	// Finish up
-//	mongoose.disconnect();	
-});
-
+// test connection to postgres
+pg.verify_connection()
+    .then( function () {
+	annotations.loadAnnotationsFromFile( filepath, argv.source, function(err){
+	    if (err) throw new Error(err);	
+	})})
+    .fail( function (err) {
+	console.log("Connection failed:", err);
+	console.log("Check POSTGRES environment variables.");
+	process.exit(1);
+    }).done(); // TODO: rollback?
