@@ -8,14 +8,27 @@ Database = require('../model/db')
 // Create the table if it doesn't exist already
 annotations.init()
 
+// on init: create map between cancers and abbrs
+var abbrToCancer = {}, cancerToAbbr = {};
+Cancer = Database.magi.model( 'Cancer' );
+
+Cancer.find({}, function(err, cancers){
+    if (err) throw new Error(err);
+	
+    // Make a map of cancers to abbreviations and vice versa
+    cancers.forEach(function(c){
+	abbrToCancer[c.abbr] = c.cancer;
+	cancerToAbbr[c.cancer.toLowerCase()] = c.abbr;
+    })
+})
+
 // todo: add post route to add genes
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
     console.log('SQL proxy for: /annotations/gene, gene =', req.params.gene);
 
     // Parse params
-    var geneRequested = req.params.gene.toUpperCase() || "",
-    Cancer = Database.magi.model( 'Cancer' );
+    var geneRequested = req.params.gene.toUpperCase() || ""
 
     annotations.geneFind({gene: geneRequested}, function(err, result) {
 	// Throw error (if necessary)
@@ -23,27 +36,16 @@ exports.gene = function gene(req, res){
 
 	// todo: check what annotations should look like on return and change render page
 	console.log("annotations returned: ", result)
-	Cancer.find({}, function(err, cancers){
-	    if (err) throw new Error(err);
-	    
-	    // Make a map of cancers to abbreviations and vice versa
-	    var abbrToCancer = {},
-	    cancerToAbbr = {};
-	    cancers.forEach(function(c){
-		abbrToCancer[c.abbr] = c.cancer;
-		cancerToAbbr[c.cancer.toLowerCase()] = c.abbr;
-	    })
 
-	    // Render the view
-	    var pkg = {
-		user: req.user,
-		annotations: result,
-		gene: geneRequested,
-		abbrToCancer: abbrToCancer,
-		cancerToAbbr: cancerToAbbr
-	    };
-	    res.render('annotations/gene', pkg);
-	});
+	// Render the view
+	var pkg = {
+	    user: req.user,
+	    annotations: result,
+	    gene: geneRequested,
+	    abbrToCancer: abbrToCancer,
+	    cancerToAbbr: cancerToAbbr
+	};
+	res.render('annotations/gene', pkg);
     });
 }
 
@@ -56,6 +58,12 @@ exports.saveMutation = function saveMutation(req, res) {
     // We ignore this if the user isn't logged in
     if (req.user && req.body){
 	// Add the annotation
+
+	// prefer abbreviation to full name given by form
+	if (req.body.cancer != "undefined" &&
+	    req.body.cancer.toLowerCase() in cancerToAbbr) {
+	    req.body.cancer = cancerToAbbr[req.body.cancer.toLowerCase()];
+	}
 	var query = {
 	    gene: req.body.gene,
 	    cancer: req.body.cancer, 
@@ -63,13 +71,14 @@ exports.saveMutation = function saveMutation(req, res) {
 	    mut_class: req.body.mutationClass,
 	    mut_type: req.body.mutationType,
 	    protein_seq_change: req.body.change,
-	    domain: req.body.domain, // not used
+	    domain: req.body.domain, // not used: which field should this go in?
 	    pmid: req.body.pmid,
 	    comment: req.body.comment,
 	    user_id: req.user._id,
 	    source: "Community"
 	};
 
+	// TODO: test behavior on attempting to upsert identical annotation?
 	annotations.upsert(query, function(err, annotation){
 	    if (err){
 		res.send({ error: "Annotation could not be parsed. " + err });
@@ -82,10 +91,11 @@ exports.saveMutation = function saveMutation(req, res) {
     else{
 	res.send({ error: "You must be logged in to annotate." });
     }
-    // 
+    
 }
 
 // Save a vote on a mutation
+// FIXME: link here is not working...
 exports.mutationVote = function mutationVote(req, res){
     // Only allow logged in users to vote
     if (req.isAuthenticated()){
