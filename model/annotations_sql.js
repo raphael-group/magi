@@ -132,6 +132,7 @@ exports.upsert = function(data, callback){
 	aberInsertQuery = abers.insert(
 	    abers.gene.value(data.gene),
 	    abers.cancer.value(data.cancer),
+	    abers.transcript.value(data.transcript),
 	    abers.mut_class.value(data.mut_class),
 	    abers.mut_type.value(data.mut_type),
 	    abers.protein_seq_change.value(data.change),
@@ -194,7 +195,7 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 	    }
 	    annotations.push( support );
 	}
-	console.log( "Loaded " + annotations.length + " annotations." )
+	console.log( "Loading " + annotations.length + " annotations from file..." )
 
 	// Save all the annotations
 	return Q.allSettled( annotations.map(function(A){
@@ -202,8 +203,9 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 
 	    var query = {
 		gene: A.gene,
-//		cancer: A.cancer,
+		cancer: A.cancer,
 		change: A.change,
+		transcript: A.transcript,
 		mut_class: A.mutation_class,
 		mut_type: A.mutation_type,
 		pmid: A.reference,
@@ -213,7 +215,6 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 	    };
 
 	    exports.upsert(query, function(err, annotation){
-		console.log("in callback: err=", err, ", anno=",annotation)
 		if (err) throw new Error(err);
 		d.resolve();
 	    })

@@ -25,10 +25,10 @@ aberrations = sql.define({
     columns: [
 	{name: 'gene', 		dataType: 'varchar(15)', notNull: true},
 	{name: 'cancer',        dataType: 'varchar(40)'},
-	{name: 'transcript',	dataType: 'varchar(20)'}, // not used
-	{name: 'mut_class', 	dataType: 'varchar(15)', notNull: true}, // todo: mutation table and foreign key?
+	{name: 'transcript',	dataType: 'varchar(20)'}, 
+	{name: 'mut_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
 	{name: 'mut_type',	dataType: 'varchar(35)'},
-        {name: 'protein_seq_change', dataType: 'varchar(15)'},
+        {name: 'protein_seq_change', dataType: 'varchar(30)'},
         {name: 'source', 	dataType: 'varchar(20)', notNull: true},
 //	{name: 'is_germline',	dataType: 'boolean'}, // not used
 //  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
