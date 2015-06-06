@@ -59,6 +59,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	var query = {
 	    gene: req.body.gene,
 	    cancer: req.body.cancer, 
+	    transcript: req.body.transcript,
 	    mut_class: req.body.mutationClass,
 	    mut_type: req.body.mutationType,
 	    protein_seq_change: req.body.change,
