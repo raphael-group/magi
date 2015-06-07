@@ -13,26 +13,24 @@ exports.geneFind = function(query, callback) {
     votes = Schemas.votes
 
     // Retrieve upvotes and downvotes for every annotation 
-    voteSubQueryText = 
-	" (SELECT U.anno_id, upvotes, downvotes FROM " +
-	" (SELECT anno_id, array_agg(voter_id) AS upvotes " +
+    upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
 	" FROM votes WHERE direction = 1 group by anno_id)" +
-	" AS U FULL OUTER JOIN " +                          
-	" (SELECT anno_id, array_agg(voter_id) AS downvotes FROM votes " +
-	" WHERE direction = -1 group by anno_id) as D " +
-	" ON U.anno_id = D.anno_id) "
+	" AS U";
+
+    downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
+	" FROM votes WHERE direction = -1 group by anno_id) as D ";
    
     // Selects the desired annotations according to the given filter
     selAnnosQuery = abers
 	.from(abers.join(annos).on(abers.anno_id.equals(annos.u_id)))
 	.where(query)
-    selQuerySplit = selAnnosQuery.toQuery().text.split("WHERE")
+    selQuerySplit = selAnnosQuery.toQuery().text.split("WHERE");
 
     // Join the upvote/downvote table within the annotation selection
     wholeQueryText = selQuerySplit[0] + " LEFT JOIN " + 
-	voteSubQueryText + " AS vote_ballots  " + 
-	" ON vote_ballots.anno_id = annos.u_id WHERE " +
-	selQuerySplit[1]
+	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
+	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " + 
+	selQuerySplit[1];
 
     Database.sql_query(wholeQueryText, selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {

@@ -34,9 +34,6 @@ exports.gene = function gene(req, res){
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
-	// todo: check what annotations should look like on return and change render page
-	console.log("annotations returned: ", result)
-
 	// Render the view
 	var pkg = {
 	    user: req.user,
