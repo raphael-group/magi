@@ -176,7 +176,7 @@ app.get('/manifests', routes.datasets.manifests);
 //app.get('/annotations/gene/:gene', routes.annotations.gene);
 app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
 //app.post('/save/annotation/mutation', ensureAuthenticated, routes.annotations.save.mutation);
-app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save.ppi);
+//app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save.ppi);
 app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 //app.post('/vote/mutation', routes.annotations.mutationVote);
@@ -186,6 +186,7 @@ app.get('/annotations/gene/:gene', routes.annotations_SQL.gene);
 //app.get('/annotations/cancer/:cancer', routes.annotations_SQL.cancer);
 app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations_SQL.saveMutation);
 app.post('/vote/mutation', routes.annotations_SQL.mutationVote);
+app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations_SQL.save_ppi);
 
 // more information
 app.get('/terms', routes.terms);
