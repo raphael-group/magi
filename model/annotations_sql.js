@@ -101,13 +101,14 @@ exports.vote = function mutationVote(fields, user_id){
 }
 
 // upsert an aberration annotation into SQL                              
-exports.upsert = function(data, callback){
+exports.upsertAber = function(data, callback){
     abers = Schemas.aberrations
     annos = Schemas.annotations
 
     annoInsertQuery = annos.insert([{
 	user_id : data.user_id,
 	reference : data.pmid,
+	comment : data.comment,
 	type : "aber" }]).returning(annos.u_id)
 
     handleErr = function(err, subresult, query) {
@@ -134,7 +135,6 @@ exports.upsert = function(data, callback){
 	    abers.mut_class.value(data.mut_class),
 	    abers.mut_type.value(data.mut_type),
 	    abers.protein_seq_change.value(data.change),
-	    abers.comment.value(data.comment),
 	    abers.source.value(data.source),
 	    abers.anno_id.value(u_id)).returning(abers.anno_id) // we can re turn more if we want
 
@@ -212,7 +212,7 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 		user_id: "admin_user"
 	    };
 
-	    exports.upsert(query, function(err, annotation){
+	    exports.upsertAber(query, function(err, annotation){
 		if (err) throw new Error(err);
 		d.resolve();
 	    })
@@ -222,26 +222,51 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 
     loadAnnotationFile().then( processAnnotations ).then( function(){ callback("") } );
 }
-                                                                                                                                                          // todo: assemble annotations 
-exports.geneTable = function (genes, support){
-    // Assemble the annotations into a dictionary index by                                                                                                   
-    // gene (e.g. TP53) and mutation class (e.g. missense or amp)                                                                                                // and then protein change (only applicable for missense/nonsense)                                                                                       
-    // 1) Store the total number of references for the gene/class in "",                                                                                     
-    // i.e. annotations['TP53'][''] gives the total for TP53 and                                                                                             
-    // annotations['TP53']['snv'][''] gives the total for TP53 SNVs.                                                                                         
-    // 2) Count the number per protein change.                                                                                                               
-    // Combine references at the PMID level so that for each                                                                                                 
-    // annotation type (gene, type, locus) we have a list of references                                                                                      
-    // with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)                                                                             
-    // level so we have a list of PMIDs that all map to the same cancer type(s)  
+                                                                                             
+// ************************************
+// PPIs
+exports.upsertPPI = function(data, callback) {
+    ppis = Schemas.interactions
+    annos = Schemas.annotations
+    console.log("Retrieved record: ", data)
 
-    // todo: subfunction                                                         	// Combine references at the PMID level so that for each 
-    // annotation type (gene, type, locus) we have a list of references
-    // with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)
-    // level so we have a list of PMIDs that all map to the same cancer type(s)
-    
-    function combineCancers(objects){
+    // insert into the annos
+    annoInsertQuery = annos.insert([{
+	user_id : data.user_id,
+	reference : data.pmid,
+	comment : data.comment,
+	type : "ppi" }]).returning(annos.u_id)
+
+    handleErr = function(err, subresult, query) {
+	if (err == null && subresult.rows.length == 0) {
+	    err = Error("Did not return ppi annotation ID")
+	}
+	if (err) {
+            console.log("Error upserting ppi annotation: " + err);
+	    console.log("Debug: full query:", query.string) 
+	    callback(err, null)
+	}
     }
-//return annotations;
-}
 
+    console.log("Submitting query: ", annoInsertQuery.string)
+    // todo: test update case
+    // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
+    Database.execute(annoInsertQuery, function(err, subresult) {
+	// retrieve the unique ID for the annotation
+	handleErr(err, subresult, annoInsertQuery) 
+	u_id = subresult.rows[0].u_id
+	console.log("Returned on upsert ppi u_id: ", u_id)
+
+	ppiInsertQuery = ppis.insert(
+	    ppis.source.value(data.source),
+	    ppis.target.value(data.target),
+	    // nothing else can be specified currently in front end
+	    // database, type, weight, directed, tissue all blank
+	    ppis.anno_id.value(u_id)).returning(ppis.anno_id) // we can return more if we want
+
+	Database.execute(ppiInsertQuery, function(err, result) {
+	    handleErr(err, result, ppiInsertQuery)
+	    callback(null, result.rows[0])
+	})
+    })   
+}

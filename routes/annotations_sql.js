@@ -61,6 +61,10 @@ exports.saveMutation = function saveMutation(req, res) {
 	    req.body.cancer.toLowerCase() in cancerToAbbr) {
 	    req.body.cancer = cancerToAbbr[req.body.cancer.toLowerCase()];
 	}
+
+	// more direct?
+//	query = req.body;
+
 	var query = {
 	    gene: req.body.gene,
 	    cancer: req.body.cancer, 
@@ -76,7 +80,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	};
 
 	// TODO: test behavior on attempting to upsert identical annotation?
-	annotations.upsert(query, function(err, annotation){
+	annotations.upsertAber(query, function(err, annotation){
 	    if (err){
 		res.send({ error: "Annotation could not be parsed. " + err });
 		// todo: handle error: interpret or pass up if critical (no database, no table)
@@ -133,3 +137,23 @@ exports.cancer = function cancer(req, res){
 	});
 }
 
+exports.savePPI = function savePPI(req, res){
+	console.log("sql proxy for: /save/annotation/ppi")
+
+	if (req.user && req.body){
+	    /* fields already in req.body: source, target, pmid, comment */
+	    query = req.body;
+	    query.anno_source = "Community"
+	    query.user_id = req.user._id + ""
+	    annotations.upsertPPI(query, function(err, annotation){
+		if (err) {
+		    res.send({ error: "Interaction could not be parsed." });
+		    throw new Error(err)
+		}
+		res.send({ status: "Interaction saved successfully!" , annotation: { _id: annotation.u_id }});	    
+	    })
+	} else {
+	    res.send({ error: "You must be logged in to annotate." });
+	}
+	return;
+}

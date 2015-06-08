@@ -16,10 +16,12 @@ annotations = sql.define({
     columns: [
 	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
 	{name: 'u_id', dataType: 'serial', primaryKey: true},
+	{name: 'comment',	dataType: 'varchar(5000)',},
  	{name: 'reference',	dataType: 'varchar(25)', notNull: true}, 
 	{name: 'type', dataType: annoTypeName, primaryKey: true, 
 	 notNull: true}]	
 })
+
 aberrations = sql.define({
     name: 'aber_annos',
     columns: [
@@ -32,10 +34,11 @@ aberrations = sql.define({
         {name: 'source', 	dataType: 'varchar(20)', notNull: true},
 //	{name: 'is_germline',	dataType: 'boolean'}, // not used
 //  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
-	{name: 'comment',	dataType: 'varchar(5000)',},
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true}, // todo: make this a constraint
 	{name: 'anno_id', dataType: 'integer', primaryKey: true}]
 })
+// todo: maintain unique key constraint with the source?
+//aberrations.unique = ["gene", "cancer", "mut_class", "mut_type", 
 
 interactions = sql.define({
     name: 'ppi_annos',
@@ -72,6 +75,10 @@ function initDatabase() {
 	}
     }
 
+    typeConstraint = {};
+    typeConstraint[aberrations.getName()] = "aber";
+    typeConstraint[interactions.getName()] = "ppi";
+
     // create type first - no support for NOT EXISTS/CREATE OR REPLACE 
     // hence this mess
     wholeTypeStr = "DO LANGUAGE plpgsql $$ BEGIN " +
@@ -86,7 +93,6 @@ function initDatabase() {
 	    console.log("Error creating annotation type:", err)
 	    throw new Error(err)
 	} else {
-
 	    // create annotation table, then everything else
 	    annoCreateQuery = annotations.create().ifNotExists()
 	    Database.execute(annoCreateQuery, function(err, result) {
@@ -95,20 +101,29 @@ function initDatabase() {
 
 		// create subannotation and votes table
 		subannos = [aberrations, interactions, votes]
+
+		// key value constraint
+		addTypeValueConstraintFn = function (table) {
+		    return "CHECK (anno_type = '" +
+			typeConstraint[table.getName()] + "')"
+		}
+
 		subannos.forEach( function (thisTable) {
 		    createQuery = thisTable.create().ifNotExists() 
-		    // todo: add constraint for sub anno_types
+		    // foreign key constraint
 		    constraint = "FOREIGN KEY ( anno_id, anno_type )" +
 			" REFERENCES annos ( u_id, type ) ON DELETE CASCADE"
-
+		    if (thisTable.getName() in typeConstraint) {
+			constraint += ", " + addTypeValueConstraintFn(thisTable)
+		    }
 		    Database.executeAppend(createQuery, constraint, function(err, result) {
 			handle_err(thisTable, err)
 			console.log("Annotations: postgres init'ed", thisTable.getName(), "table");
 		    })
 		})
-	    })
+	    });
 	}
-    })
+    });
 }
 
 // export table schemas
