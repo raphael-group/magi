@@ -51,6 +51,39 @@ d3.xhr('/queryGetDatasetsAndGenes')
     });
 
 function initQueryWidget(data) {
+  // first add recent queries to the menu bar if they exist
+  if(data.recentQueries) {
+    d3.select('#requery-recent-queries-title').style('display', 'inline-block');
+    var queries = d3.select('#requery-recent-queries')
+            .style('display', 'inline-block')
+            .style('margin-left', '5px')
+            .selectAll('a')
+              .data(data.recentQueries)
+              .enter()
+              .append('a');
+    queries.each(function(d,i) {
+      var datasets = d.datasets.map(function(d) {
+            if(!d || d.split(' ').length < 6) return null;
+            return d.split(' ')[5];
+          }),
+          genes = d.genes,
+          thisEl = d3.select(this),
+          title = 'genes:'+genes.join(',') + '; ' + datasets.length + ' datasets';
+
+      var hrefDatasets = 'datasets=' + datasets.join('%2C'),
+          hrefGenes = 'genes=' + genes.join('%2C'),
+          search = 'view?'+[hrefGenes, hrefDatasets].join('&');
+
+      thisEl.attr('title', title)
+          .attr('href', search)
+          .style('margin-left', '3px')
+          .text('['+(i+1)+']');
+    });
+  } else {
+    d3.select('#requery-recent-queries-title').remove();
+    d3.select('#requery-recent-queries').remove();
+  }
+
   // TODO in the future if more complex querying is needed, magiQueryHrefFN
   //    should be promoted to its own global module so that adding query
   //    parameters can be done in a systematic, complete fashion
