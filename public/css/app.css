@@ -278,7 +278,7 @@ span.requery-gene-select-badge-xout {
 div.requery-geneSuggestion {
   font-weight: bold;
 }
-div.requery-geneSuggestion::before {
+div.requery-geneSuggestion::after {
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -286,7 +286,7 @@ div.requery-geneSuggestion::before {
   content: 'add';
   font-size: 11px;
   font-weight: bold;
-  margin-right: 3px;
+  margin-left: 3px;
   padding: 0px 5px 2px 5px;
 }
 
