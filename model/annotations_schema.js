@@ -18,8 +18,7 @@ annotations = sql.define({
 	{name: 'u_id', dataType: 'serial', primaryKey: true},
 	{name: 'comment',	dataType: 'varchar(5000)',},
  	{name: 'reference',	dataType: 'varchar(25)', notNull: true}, 
-	{name: 'type', dataType: annoTypeName, primaryKey: true, 
-	 notNull: true}]	
+	{name: 'type', dataType: annoTypeName, notNull: true}],
 })
 
 aberrations = sql.define({
@@ -34,8 +33,8 @@ aberrations = sql.define({
         {name: 'source', 	dataType: 'varchar(20)', notNull: true},
 //	{name: 'is_germline',	dataType: 'boolean'}, // not used
 //  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
-	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true}, // todo: make this a constraint
-	{name: 'anno_id', dataType: 'integer', primaryKey: true}]
+	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true},
+	{name: 'anno_id', dataType: 'serial', primaryKey: true, references: {table: 'annos', column: 'u_id'}}]
 })
 // todo: maintain unique key constraint with the source?
 //aberrations.unique = ["gene", "cancer", "mut_class", "mut_type", 
@@ -51,7 +50,7 @@ interactions = sql.define({
 	{name: 'directed',	dataType: 'boolean'},
 	{name: 'tissue',	dataType: 'varchar(30)'},
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'ppi'", notNull:true},
-	{name: 'anno_id', dataType: 'integer', primaryKey: true}]
+	{name: 'anno_id', dataType: 'serial', primaryKey: true, references: {table: 'annos', column: 'u_id'}}]
 })
 
 votes = sql.define({
@@ -95,6 +94,7 @@ function initDatabase() {
 	} else {
 	    // create annotation table, then everything else
 	    annoCreateQuery = annotations.create().ifNotExists()
+
 	    Database.execute(annoCreateQuery, function(err, result) {
 		handle_err(annotations, err)
 		console.log("Annotations: postgres init'ed", annotations.getName(), "table");
@@ -110,16 +110,14 @@ function initDatabase() {
 
 		subannos.forEach( function (thisTable) {
 		    createQuery = thisTable.create().ifNotExists() 
-		    // foreign key constraint
-		    constraint = "FOREIGN KEY ( anno_id, anno_type )" +
-			" REFERENCES annos ( u_id, type ) ON DELETE CASCADE"
+
 		    if (thisTable.getName() in typeConstraint) {
-			constraint += ", " + addTypeValueConstraintFn(thisTable)
+			constraint = addTypeValueConstraintFn(thisTable)
 		    }
 		    Database.executeAppend(createQuery, constraint, function(err, result) {
 			handle_err(thisTable, err)
 			console.log("Annotations: postgres init'ed", thisTable.getName(), "table");
-		    })
+		    });
 		})
 	    });
 	}
