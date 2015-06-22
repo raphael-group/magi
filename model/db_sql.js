@@ -19,6 +19,11 @@ function execute(query, cb){
 
 // a query built by SQL package, with an extra modifier appended
 function executeAppend(query, suffix, cb){
+    if (!suffix) {
+	execute(query, cb);
+	return
+    }
+
     q = query.toQuery()
     cmd = q.text.split(" ", 1)[0]
     

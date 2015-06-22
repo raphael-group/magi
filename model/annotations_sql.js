@@ -6,33 +6,17 @@ var sql = require("sql");
 //initialize table
 exports.init = Schemas.initDatabase
 
-// find all annotations given a structure with regexp
+// find all mutation annotations given a structure with regexp
+// and the ids of users who have submitted upvotes/downvotes on each
 exports.geneFind = function(query, callback) {
     abers = Schemas.aberrations
     annos = Schemas.annotations
     votes = Schemas.votes
 
-    // Retrieve upvotes and downvotes for every annotation 
-    upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
-	" FROM votes WHERE direction = 1 group by anno_id)" +
-	" AS U";
-
-    downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
-	" FROM votes WHERE direction = -1 group by anno_id) as D ";
-   
     // Selects the desired annotations according to the given filter
-    selAnnosQuery = abers
-	.from(abers.join(annos).on(abers.anno_id.equals(annos.u_id)))
-	.where(query)
-    selQuerySplit = selAnnosQuery.toQuery().text.split("WHERE");
+    selAnnosQuery = annos.from(annos.joinTo(abers)).where(query);
 
-    // Join the upvote/downvote table within the annotation selection
-    wholeQueryText = selQuerySplit[0] + " LEFT JOIN " + 
-	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
-	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " + 
-	selQuerySplit[1];
-
-    Database.sql_query(wholeQueryText, selAnnosQuery.toQuery().values, function(err, result) {
+    Database.sql_query(joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting gene annotations: " + err);
 	    console.log("Debug: full query:", selQuery.string) 
@@ -51,6 +35,59 @@ exports.geneFind = function(query, callback) {
 	callback(null, result.rows)
     })
 }
+
+// join a query with the list of all user_ids who have voted on a particular annotation
+function joinVoteListsToQuery(query) {
+    // Retrieve upvotes and downvotes for every annotation 
+    upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
+	" FROM votes WHERE direction =  1 group by anno_id) AS U";
+
+    downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
+	" FROM votes WHERE direction = -1 group by anno_id) as D ";
+   
+    selQuerySplit = query.toQuery().text.split("WHERE");
+
+    // Join the upvote/downvote table within the annotation selection
+    wholeQueryText = selQuerySplit[0] + " LEFT JOIN " + 
+	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
+	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " + 
+	selQuerySplit[1];
+    
+    return wholeQueryText;
+}
+
+// find all mutation annotations given a structure with regexp
+// and the ids of users who have submitted upvotes/downvotes on each
+exports.ppiFind = function(query, callback) {
+    ppis = Schemas.interactions
+    annos = Schemas.annotations
+    votes = Schemas.votes
+
+    // Selects the desired annotations according to the given filter
+    selPpisQuery = ppis
+	.from(ppis.join(annos).on(ppis.anno_id.equals(annos.u_id)))
+	.where(query)
+
+    Database.sql_query(joinVoteListsToQuery(selPpisQuery), selAnnosQuery.toQuery().values, function(err, result) {
+	if (err) {
+            console.log("Error selecting ppi annotations: " + err);
+	    console.log("Debug: full query:", selQuery.string) 
+	    callback(err, null)	    
+	} 
+	
+	// convert null votes to []
+	for (var i = 0; i < result.rows.length; i++) {
+	    if (result.rows[i].upvotes == null) {
+		result.rows[i].upvotes = []
+	    }
+	    if (result.rows[i].downvotes == null) {
+		result.rows[i].downvotes = []
+	    }
+	}
+	callback(null, result.rows)
+    })
+}
+
 
 // todo: Vote for a mutation
 exports.vote = function mutationVote(fields, user_id){

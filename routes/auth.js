@@ -1,7 +1,21 @@
 // Load required modules
 var mongoose = require('mongoose'),
-	Dataset = require( "../model/datasets" ),
-	Database = require('../model/db');
+Dataset = require( "../model/datasets" ),
+Database = require('../model/db'),
+SQL_annos = require("../model/annotations_sql.js");
+
+var abbrToCancer = {}, cancerToAbbr = {};
+Cancer = Database.magi.model( 'Cancer' );
+
+Cancer.find({}, function(err, cancers){
+    if (err) throw new Error(err);
+	
+    // Make a map of cancers to abbreviations and vice versa
+    cancers.forEach(function(c){
+	abbrToCancer[c.abbr] = c.cancer;
+	cancerToAbbr[c.cancer.toLowerCase()] = c.abbr;
+    })
+})
 
 // Renders account information, including the user's uploaded datasets
 exports.account = function(req, res){
@@ -13,9 +27,23 @@ exports.account = function(req, res){
 				// Throw error (if necessary)
 				if (err) throw new Error(err);
 
+			    // here call to postgres for all annotations:
+			    SQL_annos.geneFind({user_id: user._id}, function(err, geneAnnos) {
+				if (err) throw new Error(err);
+				console.log("User's gene anno #: " + geneAnnos.length);
+				if (geneAnnos.length > 0) {
+				    console.log(geneAnnos[0]);
+				}
 				// Render index page
-				res.render('account', { user: user, groups: groups, skip_requery: true });
 
+				res.render('account', 
+					   { user: user, 
+					     groups: groups, 
+					     geneAnnos: geneAnnos,
+					     abbrToCancer: abbrToCancer,
+					     cancerToAbbr: cancerToAbbr,
+					     skip_requery: true});
+			    });
 			});
 		};
 	});

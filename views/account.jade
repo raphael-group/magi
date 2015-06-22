@@ -49,6 +49,96 @@ block body
       a(href="/upload") Upload your first dataset.
     hr
     br
+
+    div(id="user-annotations")
+      // todo: make DRY with annotations/gene.jade
+      - var pubmedLink = function (_id){
+      - 		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+      - 			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+      -		} else{
+      -			var href = 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
+      -		}
+      -		return "<a href='" + href + "' target='_new'>" + _id + "</a>";
+      -	}
+
+      - var mutation_type = function(n){
+      -		var n = n.toLowerCase();
+      -		if (n == 'missense') return 'Missense';
+      -		else if (n == 'nonsense') return 'Nonsense';
+      -		else if (n == 'in_frame_del') return 'In-Frame Deletion';
+      -		else if (n == 'in_frame_ins') return 'In-Frame Insertion';
+      -		else if (n == 'frame_shift_ins') return 'Frame-Shift Insertion';
+      -		else if (n == 'frame_shift_del') return 'Frame-Shift Deletion';
+      -		else if (n == 'splice_site') return 'Splite-Site';
+      -		else return n.charAt(0).toUpperCase() + n.slice(1);
+      -	}
+
+      - var mutation_class = function(n){
+      -		var n = n.toLowerCase();
+      -		if (n == 'snv') return 'Single Nucleotide Variant';
+      -		else if (n == 'cna') return 'Copy Number Aberration';
+      -		else if (n == 'amp') return 'Copy Number Aberration';
+      -		else if (n == 'del') return 'Copy Number Aberration';
+      -		else return n.charAt(0).toUpperCase() + n.slice(1);
+      -	}
+      - var cancerAbbr = function(cancer){
+      -		if (cancer){
+      -			var c = cancer.toLowerCase();
+      -			if (typeof(abbrToCancer[c]) != 'undefined'){
+      -				return "<abbr title='" + abbrToCancer[c] + "'>" + c.toUpperCase() + "</abbr>"
+      -			} else if (typeof(cancerToAbbr[c]) != 'undefined') {
+      -				var abbr = cancerToAbbr[c];
+      -				return "<abbr title='" + abbrToCancer[abbr] + "'>" + abbr.toUpperCase() + "</abbr>"
+      -			} else {
+      -				return cancer;
+      -			}
+      -		} else {
+      -			return "Cancer";
+      -		}
+      -	}
+
+    - if (geneAnnos.length > 0) 
+      h4 Your Mutation Annotations 
+      // todo: DRY with gene.jade
+      table(class="table table-condensed", id="gene-annotation-table")
+        thead
+          tr(style="background:#e3e3e3")
+            th Gene
+            th Associated cancer
+            th Mutation class
+            th Mutation type
+            th Protein sequence change
+            th PMID / PMCID
+            th Source
+            th Votes
+        tbody
+          -for (var i = 0; i < geneAnnos.length; i++)          
+            - var d = geneAnnos[i];
+            - var gene = d.gene
+            - var cancer = cancerAbbr(d.cancer)
+            - var mutationClass = d.mut_class ? d.mut_class : "--";
+            - var mutationType = d.mut_type ? d.mut_type : "--";
+            - var proteinSeqChange = d.protein_seq_change ? d.protein_seq_change : "--";
+            - var numVotes = d.upvotes.length - d.downvotes.length;
+            - var pmid_ref = d.reference
+            - var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
+            - var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
+            tr
+              td !{gene}
+              td !{cancer}
+              td #{mutation_class(mutationClass)}
+              td #{mutation_type(mutationType)}
+              td #{proteinSeqChange}
+              td !{pubmedLink(pmid_ref)}
+              td !{d.source}
+              td
+                span(id="vote-#{d.u_id}-#{pmid_ref}") #{numVotes}
+    - else
+      | You have not annotated any genes. &nbsp;
+
+    hr
+    br
+
     div(id="additional-info", style="width:60%")
       h4 Tell us about yourself
       br
