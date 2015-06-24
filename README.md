@@ -101,3 +101,9 @@ Users can customize MAGI and integrate it with different APIs by setting Linux e
 ### Support ###
 
 MAGI was created and is maintained by the [Raphael research group](http://compbio.cs.brown.edu) in the [Center for Computational Molecular Biology](http://brown.edu/ccmb) and the [Department of Computer Science](http://cs.brown.edu) at [Brown University](http://brown.edu). We offer support for MAGI on the [MAGI Google Group](https://groups.google.com/forum/#!forum/magi-app), or please visit the group website to contact us.
+
+### Citation ###
+
+If you use MAGI in your work please cite
+
+>>> M.D.M. Leiserson, C.C. Gramazio, J. Hu, H-T. Wu, D.H. Laidlaw, B.J. Raphael. MAGI: visualization and collaborative annotation of genomic aberrations. *Nature Methods* **12**, 483-484 (2015). [Publink](http://www.nature.com/nmeth/journal/v12/n6/full/nmeth.3412.html).
