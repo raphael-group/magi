@@ -6,35 +6,44 @@ var mongoose = require( 'mongoose' ),
 	fs = require('fs'),
 	request = require('request');
 
+// Compute enrichment given a JSON object. Expected to be called from AJAX
+// as it returns a JSON object.
 exports.stats = function stats(req, res){
 	console.log('/enrichments/stats');
 
-	var stathost = process.env.ENRICHMENT_HOST || "localhost" 
-	var statport = process.env.ENRICHMENT_PORT || "8888" 
-	
-	// The JSON POST from the server is stored in the req.body,
-	// so convert it to a JSON string
-	var data = JSON.stringify(req.body);
+	// Parse the given data
+	var pathToScript = 'stats/computeEnrichments.py'
+	var args = new Array('-r', JSON.stringify(req.body));
 
-	
-	// Then submit a 
-    request({
-        url: 'http://' + stathost + ':' + statport + '/',
-        method: 'POST',
-        json: true,
-		headers: {
-			"content-type": "application/json",
-		},
-		body: data
-    }, function (error, response, body) {
-        if (!error && response && response.statusCode === 200) {
-            res.json({data: body, status: "Success!"});
-        }
-        else {
-            console.error("error: " + error)
-            res.send({error: error});
-        }
-    });
+	// Spawn the child process to compute the enrichments. The only output
+	// to stdout is a JSON dump of the response
+	var error = null,
+		finished = false,
+		stderr = '',
+		stdout = '';
+
+	var enrichments = require('child_process').spawn(pathToScript, args)
+		.on('exit', function(code, signal){
+			// If successful, parse the stdout into a JSON object
+			if (code == 0) {
+				res.json({data: JSON.parse(stdout), status: "Success!"});
+			// Otherwise forward the error
+			} else{
+				error = 'return code: ' + code + ', signal: ' + signal;
+				console.error(error);
+				res.send({error: error});
+			}
+		}).on('error', function(err) {
+			error = err;
+		});
+	enrichments.stdout.on('data', function(data){
+		if (Buffer.isBuffer(data)) data = data.toString();
+		stdout += data;
+	});
+	enrichments.stderr.on('data', function(data){
+		if (Buffer.isBuffer(data)) data = data.toString();
+		stderr += data;
+	});
 }
 
 exports.index  = function enrichments(req, res){

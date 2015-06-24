@@ -13,7 +13,9 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
    1. Make sure that you make a directory to store the database. The default is `/data/db`,
       so you'll need to make that directory before running `mongod`.
    2. Make sure that the `mongod`, `mongo`, etc. are in your `PATH`.
-* [PyMongo](https://api.mongodb.org/python/current/installation.html) (to load data into MAGI). PyMongo can be installed through `conda` (`conda install pymongo`) or your preferred Python package manager.
+* [Python](https://www.python.org/). Tested with version 2.7.x.
+    * [PyMongo](https://api.mongodb.org/python/current/installation.html) to load data into MAGI.
+    * [Numpy](http://www.numpy.org/), [SciPy](http://scikit-learn.org/stable/), and [Scikit-Learn](http://www.scipy.org/) to compute the statistical association of mutations with different sample annotations/categories, or the (dis)similarity of different sample annotations/categories.
 
 MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Safari.
 
@@ -65,19 +67,6 @@ MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Sa
 
 8. View the website at `http://localhost:8000/`.
 
-
-### Statistics Engine ###
-
-The MAGI stats server is required for MAGI to provide enrichment statistics for various data.  To set up the compute engine:
-
-1. Clone the MAGI statistics server repository from: https://github.com/raphael-group/magi-stat-server.
-2. Follow the installation instructions. You will need Python 2.7 and the packages in statserver/requirements.txt in order to run the statistics server.  
-3. The statistics server can be run to listen on port 9999 with the following:
-
-        python statserver/statserver.py --port 9999
-        
-Note that MAGI's statistics server is only required for computing enrichment statistics.
-
 ### Configuration ###
 
 Users can customize MAGI and integrate it with different APIs by setting Linux environment variables. (For a quick tutorial, see [this blog post on Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-read-and-set-environmental-and-shell-variables-on-a-linux-vps).)
@@ -96,7 +85,6 @@ Users can customize MAGI and integrate it with different APIs by setting Linux e
 5. **MongoDB**. By default, MAGI assumes that MongoDB is running on the `"localhost"` server using a database named `"magi"`. You can configure to look for data on a different server or in a different database using the `MONGO_HOST` and/or `MONGO_DB_NAME` environment variables.  If you use a non-standard port for Mongo, you can set the `MONGO_PORT` environment variable accordingly. 
 6. **Feedback**. MAGI uses [WebEngage](https://webengage.com/) for collecting feedback from users. If you want to use WebEngage for your own version of MAGI, you first need to set up an account on the WebEngage website. Then, you can configure MAGI to use your account by setting the `WEBENGAGE_ID` environment variable to use your site's WebEngage ID.
 7. **Webmaster tools**. In order to use Google and Bing's webmaster tools, you need to serve a file from your web server. MAGI can be configured to do this automatically by setting the `GOOGLE_SEO_ROUTE`, `GOOGLE_SEO_ROUTE_NAME`, and/or `BING_SEO_ROUTE` environment variables. First, place the files in the MAGI directory, and then point to them using the environment variables.
-8. **Enrichment server** In order to use enrichment statistics, you should run the server above either on the local host or on a separate machine.  The `ENRICHMENT_HOST` should be set to either localhost, or the IP address/host alias of the separate machine, respectively, and the `ENRICHMENT_PORT` value should be set to the port you choose.
 
 ### Support ###
 
