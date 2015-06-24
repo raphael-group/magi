@@ -14,7 +14,7 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
       so you'll need to make that directory before running `mongod`.
    2. Make sure that the `mongod`, `mongo`, etc. are in your `PATH`.
 * [PyMongo](https://api.mongodb.org/python/current/installation.html) (to load data into MAGI). PyMongo can be installed through `conda` (`conda install pymongo`) or your preferred Python package manager.
-
+* [Postgres](https://wiki.postgresql.org/wiki/Detailed_installation_guides) 
 MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Safari.
 
 ### Setup ###
@@ -34,9 +34,10 @@ MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Sa
         git clone https://github.com/raphael-group/gd3
         cd ../../
 
-4. Start MongoDB:
+4. Start MongoDB and create a Postgresql database:
 
         mongod &
+	postgres createdb magi # the database name
 
 5. Download the [latest tarball of data files](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (~300Mb) from the Raphael group website, and untar in the MAGI directory.
 
@@ -97,6 +98,9 @@ Users can customize MAGI and integrate it with different APIs by setting Linux e
 6. **Feedback**. MAGI uses [WebEngage](https://webengage.com/) for collecting feedback from users. If you want to use WebEngage for your own version of MAGI, you first need to set up an account on the WebEngage website. Then, you can configure MAGI to use your account by setting the `WEBENGAGE_ID` environment variable to use your site's WebEngage ID.
 7. **Webmaster tools**. In order to use Google and Bing's webmaster tools, you need to serve a file from your web server. MAGI can be configured to do this automatically by setting the `GOOGLE_SEO_ROUTE`, `GOOGLE_SEO_ROUTE_NAME`, and/or `BING_SEO_ROUTE` environment variables. First, place the files in the MAGI directory, and then point to them using the environment variables.
 8. **Enrichment server** In order to use enrichment statistics, you should run the server above either on the local host or on a separate machine.  The `ENRICHMENT_HOST` should be set to either localhost, or the IP address/host alias of the separate machine, respectively, and the `ENRICHMENT_PORT` value should be set to the port you choose.
+9. ** Postgres server **  The `POSTGRES_DBNAME`, `POSTGRES_HOST`, `POSTGRES_NAME`, and `POSTGRES_USER` should be set to the database name, host machine, port, and postgres user that was used to create the database.  
+
+Defaults are assumed if values are not provided.  If you did not specify a dbname, "magi" is assumed by default. Localhost is assumed to be the postgres host.  If you did not specify a port, it is assumed that postgres runs on port 5432 by default.  If you did not specify a user, the user defaults to postgres.  
 
 ### Support ###
 
