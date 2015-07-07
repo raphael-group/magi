@@ -32,7 +32,8 @@ exports.index = function index(req, res){
 
 			// Assign each dataset a checkbox ID
 			groups.forEach(function(g){
-				var groupName = g.name == "" ? "other" : g.name.toLowerCase();
+				var groupName = g.name === null || g.name === "" ? "other" : g.name.toLowerCase();
+
 				if (scope == "public") datasetToCheckboxes[groupName] = [];
 				g.dbs.forEach(function(db){
 					datasetToCheckboxes.all.push( db.checkboxValue = toCheckboxValue(db._id, scope, db.title, groupName) );
@@ -47,7 +48,7 @@ exports.index = function index(req, res){
 
 					// Record each of the samples (required for sample search)
 					db.samples.forEach(function(s){
-						samples.push( {sample: s, cancer: db.title, groupName: g.name == "" ? "Other" : g.name })
+						samples.push( {sample: s, cancer: db.title, groupName: g.name === null || g.name === "" ? "Other" : g.name })
 					});
 				})
 			});

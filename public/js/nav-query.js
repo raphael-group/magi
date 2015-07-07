@@ -167,7 +167,7 @@ function initQueryWidget(data) {
     var requeryMultiselect = d3.select('#dataset-multiselect');
     for (var i in datasets.groups) {
       var group = datasets.groups[i],
-          groupName = group.name === "" ? "Other" : group.name;
+          groupName = group.name === null || group.name === "" ? "Other" : group.name;
           var optGroup = requeryMultiselect.append('optgroup')
               .attr('id', groupName)
               .attr('label', groupName);
