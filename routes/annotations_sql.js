@@ -14,7 +14,7 @@ Cancer = Database.magi.model( 'Cancer' );
 
 Cancer.find({}, function(err, cancers){
     if (err) throw new Error(err);
-	
+
     // Make a map of cancers to abbreviations and vice versa
     cancers.forEach(function(c){
 	abbrToCancer[c.abbr] = c.cancer;
@@ -30,7 +30,7 @@ exports.gene = function gene(req, res){
     // Parse params
     var geneRequested = req.params.gene.toUpperCase() || ""
 
-    annotations.geneFind({gene: geneRequested}, function(err, result) {
+    annotations.geneFind({gene: geneRequested}, 'right', function(err, result) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
@@ -48,7 +48,7 @@ exports.gene = function gene(req, res){
 
 exports.saveMutation = function saveMutation(req, res) {
     console.log('SQL proxy for: /save/annotation/mutation')
-    
+
     // Load the posted form
     var form = new formidable.IncomingForm({});
 
@@ -67,7 +67,7 @@ exports.saveMutation = function saveMutation(req, res) {
 
 	var query = {
 	    gene: req.body.gene,
-	    cancer: req.body.cancer, 
+	    cancer: req.body.cancer,
 	    transcript: req.body.transcript,
 	    mut_class: req.body.mutationClass,
 	    mut_type: req.body.mutationType,
@@ -92,7 +92,7 @@ exports.saveMutation = function saveMutation(req, res) {
     else{
 	res.send({ error: "You must be logged in to annotate." });
     }
-    
+
 }
 
 // Save a vote on a mutation
@@ -150,7 +150,7 @@ exports.savePPI = function savePPI(req, res){
 		    res.send({ error: "Interaction could not be parsed." });
 		    throw new Error(err)
 		}
-		res.send({ status: "Interaction saved successfully!" , annotation: { _id: annotation.u_id }});	    
+		res.send({ status: "Interaction saved successfully!" , annotation: { _id: annotation.u_id }});
 	    })
 	} else {
 	    res.send({ error: "You must be logged in to annotate." });
