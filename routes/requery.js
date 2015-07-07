@@ -27,7 +27,7 @@ exports.queryGetDatasetsAndGenes = function(req, res) {
 
         // Assign each dataset a checkbox ID
         groups.forEach(function(g){
-          var groupName = g.name === "" ? "other" : g.name.toLowerCase();
+          var groupName = g.name === null || g.name === "" ? "other" : g.name.toLowerCase();
           if (scope == "public") datasetToCheckboxes[groupName] = [];
 
           // Generate a hash ID provided dataset id, scope, title, and name
