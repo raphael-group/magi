@@ -17,7 +17,7 @@ annotations = sql.define({
 	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
 	{name: 'u_id', dataType: 'serial', primaryKey: true},
 	{name: 'comment',	dataType: 'varchar(5000)',},
- 	{name: 'reference',	dataType: 'varchar(25)', notNull: true}, 
+ 	{name: 'reference',	dataType: 'varchar(25)', notNull: true},
 	{name: 'type', dataType: annoTypeName, notNull: true}],
 })
 
@@ -26,7 +26,7 @@ aberrations = sql.define({
     columns: [
 	{name: 'gene', 		dataType: 'varchar(15)', notNull: true},
 	{name: 'cancer',        dataType: 'varchar(40)'},
-	{name: 'transcript',	dataType: 'varchar(20)'}, 
+	{name: 'transcript',	dataType: 'varchar(20)'},
 	{name: 'mut_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
 	{name: 'mut_type',	dataType: 'varchar(35)'},
         {name: 'protein_seq_change', dataType: 'varchar(30)'},
@@ -37,7 +37,7 @@ aberrations = sql.define({
 	{name: 'anno_id', dataType: 'serial', primaryKey: true, references: {table: 'annos', column: 'u_id'}}]
 })
 // todo: maintain unique key constraint with the source?
-//aberrations.unique = ["gene", "cancer", "mut_class", "mut_type", 
+//aberrations.unique = ["gene", "cancer", "mut_class", "mut_type",
 
 interactions = sql.define({
     name: 'ppi_annos',
@@ -61,7 +61,7 @@ votes = sql.define({
 	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
 	// integrity check: only one vote at a time
 	{name: 'direction', dataType: 'smallint', notNull: true},
-//	{name: 'upvote', dataType: 'smallint', notNull: true},  
+//	{name: 'upvote', dataType: 'smallint', notNull: true},
 //	{name: 'downvote', dataType: 'smallint', notNull: true},
 	{name: 'comment', dataType: 'varchar(100)'}]
 })
@@ -78,13 +78,13 @@ function initDatabase() {
     typeConstraint[aberrations.getName()] = "aber";
     typeConstraint[interactions.getName()] = "ppi";
 
-    // create type first - no support for NOT EXISTS/CREATE OR REPLACE 
+    // create type first - no support for NOT EXISTS/CREATE OR REPLACE
     // hence this mess
     wholeTypeStr = "DO LANGUAGE plpgsql $$ BEGIN " +
 	"IF NOT EXISTS (select 1 FROM pg_type " +
-	"WHERE typname='" + annoTypeName + "') " + 
-	"THEN CREATE TYPE " + annoTypeName + 
-	" AS ENUM('aber', 'ppi');" + 
+	"WHERE typname='" + annoTypeName + "') " +
+	"THEN CREATE TYPE " + annoTypeName +
+	" AS ENUM('aber', 'ppi');" +
 	" END IF; END; $$;"
 
     Database.sql_query(wholeTypeStr, [], function(err, result) {
@@ -109,7 +109,7 @@ function initDatabase() {
 		}
 
 		subannos.forEach( function (thisTable) {
-		    createQuery = thisTable.create().ifNotExists() 
+		    createQuery = thisTable.create().ifNotExists()
 
 		    if (thisTable.getName() in typeConstraint) {
 			constraint = addTypeValueConstraintFn(thisTable)
@@ -129,5 +129,3 @@ exports.annotations = annotations
 exports.aberrations = aberrations
 exports.interactions = interactions
 exports.votes = votes
-
-

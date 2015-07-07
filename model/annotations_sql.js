@@ -1,4 +1,4 @@
-// Import required modules                                                                                                                               
+// Import required modules
 Database = require('./db_sql');
 Schemas = require('./annotations_schema.js');
 var sql = require("sql");
@@ -8,21 +8,26 @@ exports.init = Schemas.initDatabase
 
 // find all mutation annotations given a structure with regexp
 // and the ids of users who have submitted upvotes/downvotes on each
-exports.geneFind = function(query, callback) {
+exports.geneFind = function(query, dir, callback) {
     abers = Schemas.aberrations
     annos = Schemas.annotations
     votes = Schemas.votes
 
     // Selects the desired annotations according to the given filter
-    selAnnosQuery = annos.from(annos.joinTo(abers)).where(query);
+    if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
+        selAnnosQuery = annos.from(annos.joinTo(abers)).where(query);
+    } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
+      selAnnosQuery = abers.from(abers.joinTo(annos)).where(query);
+    }
+
 
     Database.sql_query(joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting gene annotations: " + err);
-	    console.log("Debug: full query:", selQuery.string) 
-	    callback(err, null)	    
-	} 
-	
+	    console.log("Debug: full query:", selQuery.string)
+	    callback(err, null)
+	}
+
 	// convert null votes to []
 	for (var i = 0; i < result.rows.length; i++) {
 	    if (result.rows[i].upvotes == null) {
@@ -38,21 +43,21 @@ exports.geneFind = function(query, callback) {
 
 // join a query with the list of all user_ids who have voted on a particular annotation
 function joinVoteListsToQuery(query) {
-    // Retrieve upvotes and downvotes for every annotation 
+    // Retrieve upvotes and downvotes for every annotation
     upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
 	" FROM votes WHERE direction =  1 group by anno_id) AS U";
 
     downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
 	" FROM votes WHERE direction = -1 group by anno_id) as D ";
-   
+
     selQuerySplit = query.toQuery().text.split("WHERE");
 
     // Join the upvote/downvote table within the annotation selection
-    wholeQueryText = selQuerySplit[0] + " LEFT JOIN " + 
+    wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
 	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
-	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " + 
+	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
 	selQuerySplit[1];
-    
+
     return wholeQueryText;
 }
 
@@ -71,10 +76,10 @@ exports.ppiFind = function(query, callback) {
     Database.sql_query(joinVoteListsToQuery(selPpisQuery), selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting ppi annotations: " + err);
-	    console.log("Debug: full query:", selQuery.string) 
-	    callback(err, null)	    
-	} 
-	
+	    console.log("Debug: full query:", selQuery.string)
+	    callback(err, null)
+	}
+
 	// convert null votes to []
 	for (var i = 0; i < result.rows.length; i++) {
 	    if (result.rows[i].upvotes == null) {
@@ -96,7 +101,7 @@ exports.vote = function mutationVote(fields, user_id){
     // Set up the promise
     var Q = require( 'q' ),
     d = Q.defer();
-    
+
     //Create and execute the query
     var anno_id = fields._id, // FIXME: not guaranteed unique - better to use anno_id,
     valence = (fields.vote == "up") ? 1 : -1 ;
@@ -137,7 +142,7 @@ exports.vote = function mutationVote(fields, user_id){
     return d.promise;
 }
 
-// upsert an aberration annotation into SQL                              
+// upsert an aberration annotation into SQL
 exports.upsertAber = function(data, callback){
     abers = Schemas.aberrations
     annos = Schemas.annotations
@@ -154,15 +159,15 @@ exports.upsertAber = function(data, callback){
 	}
 	if (err) {
             console.log("Error upserting gene annotation: " + err);
-	    console.log("Debug: full query:", query.string) 
+	    console.log("Debug: full query:", query.string)
 	    callback(err, null)
 	}
     }
-    
+
     // todo: test update case
     // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
     Database.execute(annoInsertQuery, function(err, subresult) {
-	handleErr(err, subresult, annoInsertQuery) 
+	handleErr(err, subresult, annoInsertQuery)
 	u_id = subresult.rows[0].u_id
 //	console.log("Returned on upsert u_id: ", u_id)
 	aberInsertQuery = abers.insert(
@@ -244,7 +249,7 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 		mut_class: A.mutation_class,
 		mut_type: A.mutation_type,
 		pmid: A.reference,
-		comment: A.comment,		
+		comment: A.comment,
 		source: source,
 		user_id: "admin_user"
 	    };
@@ -259,7 +264,7 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 
     loadAnnotationFile().then( processAnnotations ).then( function(){ callback("") } );
 }
-                                                                                             
+
 // ************************************
 // PPIs
 exports.upsertPPI = function(data, callback) {
@@ -280,7 +285,7 @@ exports.upsertPPI = function(data, callback) {
 	}
 	if (err) {
             console.log("Error upserting ppi annotation: " + err);
-	    console.log("Debug: full query:", query.string) 
+	    console.log("Debug: full query:", query.string)
 	    callback(err, null)
 	}
     }
@@ -290,7 +295,7 @@ exports.upsertPPI = function(data, callback) {
     // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
     Database.execute(annoInsertQuery, function(err, subresult) {
 	// retrieve the unique ID for the annotation
-	handleErr(err, subresult, annoInsertQuery) 
+	handleErr(err, subresult, annoInsertQuery)
 	u_id = subresult.rows[0].u_id
 	console.log("Returned on upsert ppi u_id: ", u_id)
 
@@ -305,5 +310,5 @@ exports.upsertPPI = function(data, callback) {
 	    handleErr(err, result, ppiInsertQuery)
 	    callback(null, result.rows[0])
 	})
-    })   
+    })
 }
