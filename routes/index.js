@@ -32,9 +32,8 @@ exports.index = function index(req, res){
 
 			// Assign each dataset a checkbox ID
 			groups.forEach(function(g){
-				console.log(g)
 				var groupName = g.name === null || g.name === "" ? "other" : g.name.toLowerCase();
-				console.log(groupName)
+
 				if (scope == "public") datasetToCheckboxes[groupName] = [];
 				g.dbs.forEach(function(db){
 					datasetToCheckboxes.all.push( db.checkboxValue = toCheckboxValue(db._id, scope, db.title, groupName) );
