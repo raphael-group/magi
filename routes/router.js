@@ -8,6 +8,7 @@ var about = require( './about' ),
 	enrichments = require( './enrichments' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
+	annotations_SQL = require('./annotations_sql'),
   log = require('./log'),
   share = require('./share'),
   requery = require('./requery');
@@ -84,5 +85,19 @@ exports.isLoggingEnabled = log.isLoggingEnabled;
 exports.logConsent = log.logConsent;
 exports.userGaveConsent = log.userGaveConsent;
 
+
 // Requery parameters
 exports.queryGetDatasetsAndGenes = requery.queryGetDatasetsAndGenes;
+
+// test routes for POSTGRESQL
+exports.annotations_SQL = {};
+exports.annotations_SQL.saveMutation = annotations_SQL.saveMutation;
+exports.annotations_SQL.gene = annotations_SQL.gene;
+exports.annotations_SQL.mutationVote = annotations_SQL.mutationVote;
+exports.annotations_SQL.cancer = annotations_SQL.cancer;
+exports.annotations_SQL.save_ppi = annotations_SQL.savePPI;
+
+// exports.annotations.cancer = annotations.cancer;
+// exports.annotations.ppiVote = annotations.ppiVote;
+// exports.annotations.ppiComment = annotations.ppiComment;
+// mutation comment?

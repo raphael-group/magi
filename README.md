@@ -36,9 +36,10 @@ MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Sa
         git clone https://github.com/raphael-group/gd3
         cd ../../
 
-4. Start MongoDB:
+4. Start MongoDB and create a Postgresql database:
 
         mongod &
+	postgres createdb magi # the database name
 
 5. Download the [latest tarball of data files](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (~300Mb) from the Raphael group website, and untar in the MAGI directory.
 
@@ -55,7 +56,7 @@ MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Sa
         node loadKnownGeneSets.js --gene_set_file=../data/pathways/kegg/kegg-pathways.tsv --dataset="KEGG"
         node loadKnownGeneSets.js --gene_set_file=../data/pathways/pindb/pindb-complexes.tsv --dataset="PINdb"
         node loadPPIs.js --ppi_file=../data/ppis/hint-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/hprd-annotated.tsv 
+        node loadPPIs.js --ppi_file=../data/ppis/hprd-annotated.tsv
         node loadPPIs.js --ppi_file=../data/ppis/iref9-annotated.tsv
         node loadPPIs.js --ppi_file=../data/ppis/multinet.tsv
         sh loadPublicDatasets.sh
@@ -82,9 +83,12 @@ Users can customize MAGI and integrate it with different APIs by setting Linux e
         export SITE_URL="http://magi.cs.brown.edu"
 
 4. **Port**. By default, MAGI serves on port 8000, but you can choose your own port by setting the `PORT` environment variable.
-5. **MongoDB**. By default, MAGI assumes that MongoDB is running on the `"localhost"` server using a database named `"magi"`. You can configure to look for data on a different server or in a different database using the `MONGO_HOST` and/or `MONGO_DB_NAME` environment variables.  If you use a non-standard port for Mongo, you can set the `MONGO_PORT` environment variable accordingly. 
+5. **MongoDB**. By default, MAGI assumes that MongoDB is running on the `"localhost"` server using a database named `"magi"`. You can configure to look for data on a different server or in a different database using the `MONGO_HOST` and/or `MONGO_DB_NAME` environment variables.  If you use a non-standard port for Mongo, you can set the `MONGO_PORT` environment variable accordingly.
 6. **Feedback**. MAGI uses [WebEngage](https://webengage.com/) for collecting feedback from users. If you want to use WebEngage for your own version of MAGI, you first need to set up an account on the WebEngage website. Then, you can configure MAGI to use your account by setting the `WEBENGAGE_ID` environment variable to use your site's WebEngage ID.
 7. **Webmaster tools**. In order to use Google and Bing's webmaster tools, you need to serve a file from your web server. MAGI can be configured to do this automatically by setting the `GOOGLE_SEO_ROUTE`, `GOOGLE_SEO_ROUTE_NAME`, and/or `BING_SEO_ROUTE` environment variables. First, place the files in the MAGI directory, and then point to them using the environment variables.
+8. ** Postgres server **  The `POSTGRES_DBNAME`, `POSTGRES_HOST`, `POSTGRES_NAME`, and `POSTGRES_USER` should be set to the database name, host machine, port, and postgres user that was used to create the database.  
+
+Defaults are assumed if values are not provided.  If you did not specify a dbname, "magi" is assumed by default. Localhost is assumed to be the postgres host.  If you did not specify a port, it is assumed that postgres runs on port 5432 by default.  If you did not specify a user, the user defaults to postgres.  
 
 ### Support ###
 
