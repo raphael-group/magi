@@ -9,9 +9,9 @@ $(document).ready(
 
 		var promise = view();
 		promise.done(function(){
-			d3.select("div#loading").style("display", "none")
+			d3.select("div#loading").style("display", "none");
 			d3.select("div#view-page").transition().duration(1000).style("opacity", 1);
-			d3.select("div#view-page").style("height", "auto")
+			d3.select("div#view-page").style("height", "auto");
 		});
 	}
 );
@@ -55,7 +55,7 @@ function view(){
 		interactionElement = "div#annotation select#interaction",
 		interactorElement = "div#annotation select#interactor",
 		cancerInputElement = "div#annotation div#cancers",
-		cancerTypeaheadElement = "div#annotation div#cancers input#cancer-typeahead"
+		cancerTypeaheadElement = "div#annotation div#cancers input#cancer-typeahead",
 		annotationsElement = "div#annotation div#annotations",
 		transcriptMutationElement = "div#annotation div#transcript-mutation",
 		transcriptDomainElement = "div#annotation div#transcript-domain",
@@ -131,20 +131,20 @@ function view(){
 
 
 	// Determine if we're showing duplicates
-	if (showDuplicates == null) {
+	if (showDuplicates === null) {
 		showDuplicates = true; // TODO fix this hack
 	}
 
 	var defaultStyle = function(){
 		var sty = { colorSchemes: { network: {} , sampleType: {} } };
-		sty.colorSchemes.network["HPRD"] = "rgb(13, 59, 56)"
+		sty.colorSchemes.network.HPRD = "rgb(13, 59, 56)";
 		sty.colorSchemes.network["HINT+HI2012"] = "rgb(127, 92, 159)";
-		sty.colorSchemes.network["HINT"] = "rgb(127, 92, 159)";
-		sty.colorSchemes.network["iRefIndex"] = "rgb(140, 91, 56)";
-		sty.colorSchemes.network["Multinet"] = "rgb(92, 128, 178)";
-		sty.colorSchemes.network["Community"] = "rgb(230, 189, 123)";
+		sty.colorSchemes.network.HINT = "rgb(127, 92, 159)";
+		sty.colorSchemes.network.iRefIndex = "rgb(140, 91, 56)";
+		sty.colorSchemes.network.Multinet = "rgb(92, 128, 178)";
+		sty.colorSchemes.network.Community = "rgb(230, 189, 123)";
 		return sty;
-	}
+	};
 
 	var style = { network: defaultStyle(), aberrations: defaultStyle(),
 				  transcript: defaultStyle(), cnas: defaultStyle(),
@@ -193,7 +193,7 @@ function view(){
 				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
 			});
 			data.aberrations.samples.forEach(function(s){
-				heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]]
+				heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]];
 			});
 			data.heatmap.annotations = heatmapAnnotations;
 		}
@@ -274,9 +274,9 @@ function view(){
 
 			// Add the references (if necessary)
 			if (data.annotations && data.annotations[geneName]){
-				var annotatedMutationNames = Object.keys(data.annotations[geneName])
-					annotatedMutations = annotatedMutationNames.map(mutationToClass),
-					mutationIndex = annotatedMutations.indexOf(mutationClass);
+				var annotatedMutationNames = Object.keys(data.annotations[geneName]),
+						annotatedMutations = annotatedMutationNames.map(mutationToClass),
+						mutationIndex = annotatedMutations.indexOf(mutationClass);
 
 				// Determine if there are references for the current gene
 				// AND its current mutation type
@@ -322,7 +322,7 @@ function view(){
 								  		ref.vote = null;
 								  	} else if (ref.vote == 'up'){
 								  		ref.score -= 2;
-								  		ref.vote = 'down'
+								  		ref.vote = 'down';
 								  	} else {
 								  		ref.vote = 'down';
 								  		ref.score -= 1;
@@ -350,7 +350,7 @@ function view(){
 
 
 	} else {
-		aberrations.html("<b>No aberrations</b>.")
+		aberrations.html("<b>No aberrations</b>.");
 	}
 
 	// Network
@@ -365,7 +365,7 @@ function view(){
 	var edges = network.selectAll("g.gd3Link"),
 		networkTooltips = [],
 		refs = data.network.refs,
-		comments = data.network.comments;;
+		comments = data.network.comments;
 
 	edges.classed("gd3-tipobj", true);
 	edges.each(function(d) {
@@ -419,7 +419,7 @@ function view(){
 						  		ref.vote = null;
 						  	} else if (ref.vote == 'up'){
 						  		ref.score -= 2;
-						  		ref.vote = 'down'
+						  		ref.vote = 'down';
 						  	} else {
 						  		ref.vote = 'down';
 						  		ref.score -= 1;
@@ -430,10 +430,10 @@ function view(){
 						 		network: n,
 						 		pmid: ref.pmid,
 						 		vote: 'down'
-						 	}, '/vote/ppi')
+						 	}, '/vote/ppi');
 						 }}
 					].map(gd3.tooltip.datum));
-				})
+				});
 			} else{
 				refTable.push(gd3.tooltip.datum({type: 'text', text: n}));
 			}
@@ -453,13 +453,13 @@ function view(){
 	// First populate the dropdown with the transcripts for each gene
 	var numTranscriptsAdded = 0;
 	genes.forEach(function(g, i){
-		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length == 0) return;
+		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length === 0) return;
 		else numTranscriptsAdded += 1;
 
 		var transcripts = Object.keys(data.transcripts[g]).map(function(t){
 			return { name: t, numMutations: data.transcripts[g][t].mutations.length };
 		});
-		transcripts.sort(function(a, b){ return a.numMutations < b.numMutations ? 1 : -1 });
+		transcripts.sort(function(a, b){ return a.numMutations < b.numMutations ? 1 : -1; });
 
 		var optGroup = transcriptSelect.append("optgroup")
 			.attr("label", g);
@@ -505,7 +505,7 @@ function view(){
 				// ...and search at the protein sequence level
 				changeOneCode = d.aao + d.locus + d.aan + "%5Btw%5D",
 				changeThreeCode = aminoAcidCode(d.aao) + d.locus + aminoAcidCode(d.aan) + "%5Btw%5D",
-				clause1	 = geneName + changeOneCode
+				clause1	 = geneName + changeOneCode;
 				clause2 = geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")",
 				changeQuery = clause1 + " OR (" + clause2 + ")",
 				changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
@@ -529,7 +529,7 @@ function view(){
 		updateTranscript();
 	} else {
 		transcriptSelect.remove();
-		transcript.html("<b>No transcript data</b>.")
+		transcript.html("<b>No transcript data</b>.");
 	}
 
 	// Copy number aberrations
@@ -547,7 +547,7 @@ function view(){
 		.attr("id", function(d){ return "cna-option-" + d.name; })
 		.attr("value", function(d){ return d.name; })
 		.attr()
-		.text(function(d){ return d.name + " (" + d.numCNAs + " aberrations)"; })
+		.text(function(d){ return d.name + " (" + d.numCNAs + " aberrations)"; });
 
 	// Create the CNA genes data
 	function updateCNAChart(){
@@ -559,7 +559,7 @@ function view(){
 
 		// Update the CNA browser
 		cnas.datum(data.cnas[geneName])
-			.call(gd3.cna({ style: style.cnas }).showScrollers(false))
+			.call(gd3.cna({ style: style.cnas }).showScrollers(false));
 
 		// And add tooltips
 		var intervals = cnas.selectAll("g.intervals"),
@@ -632,7 +632,7 @@ function view(){
 	var controls = d3.select("#control-panel div#controls"),
 		datasetsPanel = controls.append("div")
 			.attr("class", "panel panel-default")
-			.style("padding", "0px")
+			.style("padding", "0px");
 
 	var datasetHeading = datasetsPanel.append("div")
 		.attr("class", "panel-heading")
@@ -690,7 +690,7 @@ function view(){
 	var hideViewCheckboxes = [ { checkbox: $('#AberrationsHideCheckbox'), _id: "aberrationsRow" },
 							   { checkbox: $('#DataMatrixHideCheckbox'), _id: "dataMatrixRow" },
 							   { checkbox: $('#NetworkTranscriptHideCheckbox'), _id: "networkTranscriptRow" },
-							   { checkbox: $('#CNAsHideCheckbox'), _id: "cnasRow" }]
+							   { checkbox: $('#CNAsHideCheckbox'), _id: "cnasRow" }];
 	hideViewCheckboxes.forEach(function(d){
 		d.checkbox.change(function() {
 			if ($(this).is(":checked")){
@@ -699,7 +699,7 @@ function view(){
 				$('#' + d._id).show();
 			}
 		});
-	})
+	});
 
 
 	// Resolve the promise and return
