@@ -52,7 +52,36 @@ d3.xhr('/queryGetDatasetsAndGenes')
 
 function initQueryWidget(data) {
   // first add recent queries to the menu bar if they exist
+
+  // TODO in the future if more complex querying is needed, magiQueryHrefFN
+  //    should be promoted to its own global module so that adding query
+  //    parameters can be done in a systematic, complete fashion
+  function magiQueryHrefFn() {
+    var datasets = 'datasets=' + addedList.join('%2C'),
+        genes = 'genes=' + loadedGenes.join('%2C'),
+        search = [genes, datasets];
+
+    return 'view?'+search.join('&');
+  }
+
+  var queryBtn = d3.select('#magi-nav-queryBtn')
+      .attr('href', magiQueryHrefFn)
+      .on('click', function() {
+        if($('#navbar-query .multiselect :checked').length === 0) d3.event.preventDefault();
+      });
+
   if(data.recentQueries) {
+    var queryPersistanceData = {
+      datasets : data.recentQueries[0].datasets.map(function(d) {
+            if(!d || d.split(' ').length < 6) return null;
+            return d.split(' ')[5];
+          }),
+      genes: data.recentQueries[0].genes
+    };
+
+    initGenes(queryPersistanceData);
+    initDatasets(queryPersistanceData);
+
     d3.select('#requery-recent-queries-title').style('display', 'inline-block');
     var queries = d3.select('#requery-recent-queries')
             .style('display', 'inline-block')
@@ -82,27 +111,15 @@ function initQueryWidget(data) {
   } else {
     d3.select('#requery-recent-queries-title').remove();
     d3.select('#requery-recent-queries').remove();
+
+    initGenes();
+    initDatasets();
   }
-
-  // TODO in the future if more complex querying is needed, magiQueryHrefFN
-  //    should be promoted to its own global module so that adding query
-  //    parameters can be done in a systematic, complete fashion
-  function magiQueryHrefFn() {
-    var datasets = 'datasets=' + addedList.join('%2C'),
-        genes = 'genes=' + loadedGenes.join('%2C'),
-        search = [genes, datasets];
-
-    return 'view?'+search.join('&');
-  }
-
-  var queryBtn = d3.select('#magi-nav-queryBtn')
-      .attr('href', magiQueryHrefFn)
-      .on('click', function() {
-        if($('#navbar-query .multiselect :checked').length === 0) d3.event.preventDefault();
-      });
-
 
   function initGenes() {
+    if (arguments.length > 0) {
+      loadedGenes = arguments[0].genes;
+    }
     var geneList = data.genes,
         geneListLowerCase = geneList.map(function(d) { return d.toLowerCase(); });
 
@@ -188,6 +205,9 @@ function initQueryWidget(data) {
   }
 
   function initDatasets() {
+    if (arguments.length > 0) {
+      loadedDatasets = arguments[0].datasets;
+    }
     // Add datasets to the multiselect to redefine query
     var datasets = data.datasets;
 
@@ -234,8 +254,4 @@ function initQueryWidget(data) {
     // Show the multiselect
     $('#magi-datasets').css('visibility', '');
   }
-
-
-  initGenes();
-  initDatasets();
 }
