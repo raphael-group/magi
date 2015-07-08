@@ -241,8 +241,10 @@ function initLogging() {
     // Get query information from address bar
     var pathTkns = window.location.search.split('&'),
         genes = pathTkns[0].replace('?genes=','').split('%2C'),
-        datasets = pathTkns[1].replace('datasets=','').split('%2C'),
-        showDuplicates = pathTkns[2].replace('showDuplicates=','');
+        datasets = pathTkns[1].replace('datasets=','').split('%2C');
+    if (pathTkns.length > 2) {
+      showDuplicates = pathTkns[2].replace('showDuplicates=','');
+    }
 
     genes = genes.map(function(g) {
       var hasher = new jsSHA(g, "TEXT"),
