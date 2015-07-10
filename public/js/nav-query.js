@@ -112,8 +112,15 @@ function initQueryWidget(data) {
     d3.select('#requery-recent-queries-title').remove();
     d3.select('#requery-recent-queries').remove();
 
-    initGenes();
-    initDatasets();
+    $.get('/getSessionLatestQuery').success(function(d) {
+      if(!d.datasets || !d.genes) {
+        initGenes();
+        initDatasets();
+      } else {
+        initGenes(d);
+        initDatasets(d);
+      }
+    });
   }
 
   function initGenes() {

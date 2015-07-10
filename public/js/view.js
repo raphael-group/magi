@@ -24,6 +24,8 @@ $('button#shareBtn').on('click', function(e) {
     });
   });
 
+console.log(data);
+
 // Master function for
 // * drawing the D3 visualizations
 // * adding tooltips
