@@ -98,3 +98,10 @@ exports.queryGetDatasetsAndGenes = function(req, res) {
 
   getDatasetResponseData(getGeneResponseData);
 };
+
+
+exports.getSessionLatestQuery = function(req, res) {
+  var gs = req.session.genes,
+      ds = req.session.datasets;
+  res.send({datasets: ds, genes: gs});
+};

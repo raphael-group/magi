@@ -12,8 +12,6 @@ var mongoose = require( 'mongoose' ),
 
 
 exports.view  = function view(req, res){
-  console.log('view');
-
   // Parse query params
   if(req.params.id) {
     var QueryHash = Database.magi.model('QueryHash'),
@@ -35,6 +33,11 @@ exports.view  = function view(req, res){
           };
           var genes = getParameterByName(query,"genes").split(','),
               dataset_ids = getParameterByName(query,"datasets").split(',');
+
+
+          // set cookie for view
+          req.session.genes = genes;
+          req.session.datasets = dataset_ids;
           completeViewData(genes, dataset_ids);
         }
       }
@@ -42,6 +45,10 @@ exports.view  = function view(req, res){
   } else {
     var genes = req.query.genes.split(","),
         dataset_ids = req.query.datasets.split(",");
+
+    // set cookie for view
+    req.session.genes = genes;
+    req.session.datasets = dataset_ids;
     completeViewData(genes, dataset_ids);
   }
 
