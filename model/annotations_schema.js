@@ -34,7 +34,7 @@ aberrations = sql.define({
 //	{name: 'is_germline',	dataType: 'boolean'}, // not used
 //  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true},
-	{name: 'anno_id', dataType: 'serial', primaryKey: true, references: {table: 'annos', column: 'u_id'}}]
+	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}}]
 })
 // todo: maintain unique key constraint with the source?
 //aberrations.unique = ["gene", "cancer", "mut_class", "mut_type",
@@ -50,7 +50,7 @@ interactions = sql.define({
 	{name: 'directed',	dataType: 'boolean'},
 	{name: 'tissue',	dataType: 'varchar(30)'},
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'ppi'", notNull:true},
-	{name: 'anno_id', dataType: 'serial', primaryKey: true, references: {table: 'annos', column: 'u_id'}}]
+	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}}]
 })
 
 votes = sql.define({
@@ -61,8 +61,6 @@ votes = sql.define({
 	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
 	// integrity check: only one vote at a time
 	{name: 'direction', dataType: 'smallint', notNull: true},
-//	{name: 'upvote', dataType: 'smallint', notNull: true},
-//	{name: 'downvote', dataType: 'smallint', notNull: true},
 	{name: 'comment', dataType: 'varchar(100)'}]
 })
 

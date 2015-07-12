@@ -96,6 +96,7 @@ exports.annotations_SQL.gene = annotations_SQL.gene;
 exports.annotations_SQL.mutationVote = annotations_SQL.mutationVote;
 exports.annotations_SQL.cancer = annotations_SQL.cancer;
 exports.annotations_SQL.save_ppi = annotations_SQL.savePPI;
+exports.annotations_SQL.removeMutation = annotations_SQL.deleteMutation;
 
 // exports.annotations.cancer = annotations.cancer;
 // exports.annotations.ppiVote = annotations.ppiVote;

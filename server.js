@@ -183,7 +183,10 @@ app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 
 // SQL subtitute annotation views
 app.get('/annotations/gene/:gene', routes.annotations_SQL.gene);
-//app.get('/annotations/cancer/:cancer', routes.annotations_SQL.cancer);
+app.get('/delete/mutation/:u_id', routes.annotations_SQL.removeMutation); // todo: should be a DELETE
+// and take advantage of HTTP verbs
+
+//app.get('/annotations/cancer/:cancer', routes.annotations_SQL. cancer);
 app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations_SQL.saveMutation);
 app.post('/vote/mutation', routes.annotations_SQL.mutationVote);
 app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations_SQL.save_ppi);

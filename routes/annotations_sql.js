@@ -95,6 +95,22 @@ exports.saveMutation = function saveMutation(req, res) {
 
 }
 
+exports.deleteMutation = function deleteMutation(req, res){
+    console.log("/delete/gene/" + req.params.u_id)
+
+    if (req.user) { // ensure that a user is logged in 
+	annotations.geneDelete(req.params.u_id, req.user._id)
+	    .then(function() {
+		res.send({ status: "Mutation deleted successfully!" });
+	    }).fail(function(err) {
+		res.send({ error: err });
+	    }).done();
+    } else {
+	console.log("req: " + req)
+	res.send({ error: "You must be logged in as the user who annotated the mutation to delte"})
+    }
+}
+
 // Save a vote on a mutation
 // FIXME: link here is not working...
 exports.mutationVote = function mutationVote(req, res){

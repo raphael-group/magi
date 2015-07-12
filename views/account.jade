@@ -111,9 +111,11 @@ block body
             th PMID / PMCID
             th Source
             th Votes
+            th Remove
         tbody
           -for (var i = 0; i < geneAnnos.length; i++)          
             - var d = geneAnnos[i];
+            - var uid = d.u_id;
             - var gene = d.gene
             - var cancer = cancerAbbr(d.cancer)
             - var mutationClass = d.mut_class ? d.mut_class : "--";
@@ -132,7 +134,10 @@ block body
               td !{pubmedLink(pmid_ref)}
               td !{d.source}
               td
-                span(id="vote-#{d.u_id}-#{pmid_ref}") #{numVotes}
+                span(id="vote-#{uid}-#{pmid_ref}") #{numVotes}
+              td
+                a(href="/delete/mutation/#{uid}", title="Remove mutation")
+                  span(class="glyphicon glyphicon-trash")
     - else
       | You have not annotated any genes. &nbsp;
 
