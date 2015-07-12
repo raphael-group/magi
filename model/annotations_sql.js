@@ -20,7 +20,7 @@ exports.geneFind = function(query, dir, callback) {
       selAnnosQuery = abers.from(abers.joinTo(annos)).where(query);
     }
 
-
+    // TODO: use annos.table.columns to automatically separate
     Database.sql_query(joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting gene annotations: " + err);
@@ -61,7 +61,30 @@ function joinVoteListsToQuery(query) {
     return wholeQueryText;
 }
 
-// find all mutation annotations given a structure with regexp
+// delete a single mutation annotation 
+exports.geneDelete = function(anno_id, user_id, callback) {
+    annos = Schemas.annotations
+    var Q = require( 'q' ),
+    d = Q.defer();
+
+    deleteQuery = annos.delete().where(annos.u_id.equals(anno_id), annos.user_id.equals(user_id))
+    Database.execute(deleteQuery, function(err, result) {
+	if (err) {
+            console.log("Error deleting mutation annotation: " + err);
+	    console.log("Debug: full query:", selQuery.string)
+	    d.reject(err);
+	}
+	if (result.rowCount != 1) {
+	    d.reject("Mutation not found for deletion");
+	} else {
+	    d.resolve();	
+	}
+    });
+
+    return d.promise;
+}
+
+// find all protein-protein interaction annotations given a structure with regexp
 // and the ids of users who have submitted upvotes/downvotes on each
 exports.ppiFind = function(query, callback) {
     ppis = Schemas.interactions
