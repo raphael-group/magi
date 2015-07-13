@@ -15,16 +15,17 @@ exports.geneFind = function(query, dir, callback) {
 
     // Selects the desired annotations according to the given filter
     if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
-        selAnnosQuery = annos.from(annos.joinTo(abers)).where(query);
+//        selAnnosQuery = annos.from(annos.joinTo(abers)).where(query);
+        selAnnosQuery = annos.from(annos.joinTo(abers)).where(annos.user_id.equals(query.user_id));
     } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
-      selAnnosQuery = abers.from(abers.joinTo(annos)).where(query);
+	selAnnosQuery = abers.from(abers.joinTo(annos)).where(query);
     }
 
     // TODO: use annos.table.columns to automatically separate
     Database.sql_query(joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting gene annotations: " + err);
-	    console.log("Debug: full query:", selQuery.string)
+	    console.log("Debug: full query:", selAnnosQuery.string)
 	    callback(err, null)
 	}
 
@@ -56,26 +57,27 @@ function joinVoteListsToQuery(query) {
     wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
 	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
 	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
-	selQuerySplit[1];
+    selQuerySplit[1];
 
     return wholeQueryText;
 }
 
 // delete a single mutation annotation 
-exports.geneDelete = function(anno_id, user_id, callback) {
+exports.annoDelete = function(anno_id, user_id, callback) {
     annos = Schemas.annotations
+    user_id = String(user_id)
     var Q = require( 'q' ),
     d = Q.defer();
 
     deleteQuery = annos.delete().where(annos.u_id.equals(anno_id), annos.user_id.equals(user_id))
     Database.execute(deleteQuery, function(err, result) {
 	if (err) {
-            console.log("Error deleting mutation annotation: " + err);
+            console.log("Error deleting annotation: " + err);
 	    console.log("Debug: full query:", selQuery.string)
 	    d.reject(err);
 	}
 	if (result.rowCount != 1) {
-	    d.reject("Mutation not found for deletion");
+	    d.reject("Annotation not found for deletion");
 	} else {
 	    d.resolve();	
 	}
@@ -86,20 +88,22 @@ exports.geneDelete = function(anno_id, user_id, callback) {
 
 // find all protein-protein interaction annotations given a structure with regexp
 // and the ids of users who have submitted upvotes/downvotes on each
-exports.ppiFind = function(query, callback) {
+exports.ppiFind = function(query, dir, callback) {
     ppis = Schemas.interactions
     annos = Schemas.annotations
     votes = Schemas.votes
 
-    // Selects the desired annotations according to the given filter
-    selPpisQuery = ppis
-	.from(ppis.join(annos).on(ppis.anno_id.equals(annos.u_id)))
-	.where(query)
+    // Selects the desired ppi annotations according to the given filter
+    if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
+        selAnnosQuery = annos.from(annos.joinTo(ppis)).where(query);
+    } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
+	selAnnosQuery = ppis.from(ppis.joinTo(annos)).where(query);
+    }
 
-    Database.sql_query(joinVoteListsToQuery(selPpisQuery), selAnnosQuery.toQuery().values, function(err, result) {
+    Database.sql_query(joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting ppi annotations: " + err);
-	    console.log("Debug: full query:", selQuery.string)
+	    console.log("Debug: full query:", selAnnosQuery.string)
 	    callback(err, null)
 	}
 
@@ -115,7 +119,6 @@ exports.ppiFind = function(query, callback) {
 	callback(null, result.rows)
     })
 }
-
 
 // todo: Vote for a mutation
 exports.vote = function mutationVote(fields, user_id){
@@ -152,7 +155,7 @@ exports.vote = function mutationVote(fields, user_id){
 	    Database.execute(voteInsertQuery, function (err, result) {
 		if (err) {
 		    console.log("Error voting for mutation:", err)
-		    throw new Error(err);
+		    d.reject(err);
 		}
 	    })
 	} else {

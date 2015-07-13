@@ -4,7 +4,7 @@ block body
   div(class="container")
     h3
       | Your account. &nbsp;
-      small Manage your settings and uploaded datasets here.
+      small Manage your settings, uploaded datasets and annotations here.
     hr
     h4 Account information
     b Name: &nbsp;
@@ -136,11 +136,51 @@ block body
               td
                 span(id="vote-#{uid}-#{pmid_ref}") #{numVotes}
               td
-                a(href="/delete/mutation/#{uid}", title="Remove mutation")
+                a(href="/delete/annotations/mutation/#{uid}", title="Remove mutation")
                   span(class="glyphicon glyphicon-trash")
     - else
       | You have not annotated any genes. &nbsp;
 
+    hr
+    br
+    div(id="div-ppis")
+      - if (ppiAnnos.length > 0) 
+        h4 Your Interaction Annotations 
+        // todo: DRY with gene.jade
+        table(class="table table-condensed", id="gene-annotation-table")
+          thead
+            tr(style="background:#e3e3e3")
+              th Source
+              th Target
+              th Type
+              th Weight
+              th Directed
+              th Tissue
+              th PMID / PMCID
+              th Votes
+              th Remove
+          tbody
+            -for (var i = 0; i < ppiAnnos.length; i++)          
+              - var d = ppiAnnos[i];
+              - var uid = d.u_id;
+              - var numVotes = d.upvotes.length - d.downvotes.length;
+              tr
+                td !{d.source}
+                td !{d.target}
+                td !{d.type}
+                td #{d.weight}
+                td !{d.directed}
+                td !{d.tissue}
+                td !{pubmedLink(d.reference)}
+                td
+                  span(id="vote-#{uid}-#{pmid_ref}") #{numVotes}
+                td
+                  a(href="/delete/annotations/interaction/#{uid}", title="Remove ppi")
+                    span(class="glyphicon glyphicon-trash")
+      - else
+        | You have not annotated any protein-protein interactions. &nbsp;
+      
+    
     hr
     br
 
