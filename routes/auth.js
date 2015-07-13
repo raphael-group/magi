@@ -28,19 +28,24 @@ exports.account = function(req, res){
 				if (err) throw new Error(err);
 
 			    // here call to postgres for all annotations:
-			    SQL_annos.geneFind({user_id: user._id}, 'left', function(err, geneAnnos) {
+			    SQL_annos.geneFind({user_id: String(user._id)}, 'left', function(err, geneAnnos) {
 				if (err) throw new Error(err);
-				console.log("User's gene anno #: " + geneAnnos.length);
-				if (geneAnnos.length > 0) {
-				    console.log(geneAnnos[0]);
-				}
-				// Render index page
-				res.render('account',
-					   { user: user,
-					     groups: groups,
-					     geneAnnos: geneAnnos,
-					     abbrToCancer: abbrToCancer,
-					     cancerToAbbr: cancerToAbbr});
+				console.log("User's gene anno count: " + geneAnnos.length);
+				SQL_annos.ppiFind({user_id: String(user._id)}, 'left', function (err, ppiAnnos) {
+				    if (err) throw new Error(err);
+				    console.log("User's ppi anno count: " + ppiAnnos.length);
+				    if (ppiAnnos.length > 0) {
+					console.log(ppiAnnos[0]);
+				    }				   
+				    // Render index page
+				    res.render('account',
+					       { user: user,
+						 groups: groups,
+						 geneAnnos: geneAnnos,
+						 ppiAnnos: ppiAnnos,
+						 abbrToCancer: abbrToCancer,
+						 cancerToAbbr: cancerToAbbr});
+				});
 			    });
 			});
 		};

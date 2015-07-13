@@ -75,7 +75,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	    domain: req.body.domain, // not used: which field should this go in?
 	    pmid: req.body.pmid,
 	    comment: req.body.comment,
-	    user_id: req.user._id,
+	    user_id: req.user._id + "",
 	    source: "Community"
 	};
 
@@ -95,13 +95,21 @@ exports.saveMutation = function saveMutation(req, res) {
 
 }
 
-exports.deleteMutation = function deleteMutation(req, res){
-    console.log("/delete/gene/" + req.params.u_id)
+exports.removeMutation = function removeMutation(req, res) {
+    console.log("/delete/annotations/mutation/" + req.params.u_id)
+    removeAnnotation(req, res)
+}
 
+exports.removePpi = function removePpi(req, res) {
+    console.log("/delete/annotations/interaction/" + req.params.u_id)
+    removeAnnotation(req, res)
+}
+
+function removeAnnotation(req, res){
     if (req.user) { // ensure that a user is logged in 
-	annotations.geneDelete(req.params.u_id, req.user._id)
+	annotations.annoDelete(req.params.u_id, req.user._id)
 	    .then(function() {
-		res.send({ status: "Mutation deleted successfully!" });
+		res.send({ status: "Annotation deleted successfully!" });
 	    }).fail(function(err) {
 		res.send({ error: err });
 	    }).done();
