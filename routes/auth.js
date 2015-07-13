@@ -30,10 +30,8 @@ exports.account = function(req, res){
 			    // here call to postgres for all annotations:
 			    SQL_annos.geneFind({user_id: String(user._id)}, 'left', function(err, geneAnnos) {
 				if (err) throw new Error(err);
-				console.log("User's gene anno count: " + geneAnnos.length);
 				SQL_annos.ppiFind({user_id: String(user._id)}, 'left', function (err, ppiAnnos) {
 				    if (err) throw new Error(err);
-				    console.log("User's ppi anno count: " + ppiAnnos.length);
 				    if (ppiAnnos.length > 0) {
 					console.log(ppiAnnos[0]);
 				    }				   

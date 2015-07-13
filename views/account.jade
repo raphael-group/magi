@@ -125,7 +125,7 @@ block body
             - var pmid_ref = d.reference
             - var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
             - var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
-            tr
+            tr(class = "anno-tr")
               td !{gene}
               td !{cancer}
               td #{mutation_class(mutationClass)}
@@ -136,7 +136,7 @@ block body
               td
                 span(id="vote-#{uid}-#{pmid_ref}") #{numVotes}
               td
-                a(href="/delete/annotations/mutation/#{uid}", title="Remove mutation")
+                a(data-uid="#{uid}", class="trash-anno-icon", title="Remove mutation")
                   span(class="glyphicon glyphicon-trash")
     - else
       | You have not annotated any genes. &nbsp;
@@ -164,13 +164,17 @@ block body
               - var d = ppiAnnos[i];
               - var uid = d.u_id;
               - var numVotes = d.upvotes.length - d.downvotes.length;
-              tr
+              - var type = d.type ? d.type : "--"
+              - var weight = d.weight ? d.weight : "=="
+              - var directed = d.directed ? d.directed : "--"
+              - var tissue = d.tissue ? d.tissue : "--"
+              tr(id="anno-tr-" + uid)
                 td !{d.source}
                 td !{d.target}
-                td !{d.type}
-                td #{d.weight}
-                td !{d.directed}
-                td !{d.tissue}
+                td !{type}
+                td #{weight}
+                td !{directed}
+                td !{tissue}
                 td !{pubmedLink(d.reference)}
                 td
                   span(id="vote-#{uid}-#{pmid_ref}") #{numVotes}
