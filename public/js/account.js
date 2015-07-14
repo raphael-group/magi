@@ -6,18 +6,20 @@ $().ready(function() {
       $('#consentLog').attr('checked', res == 'true' ? true : false);
     });
 
-    var successClasses  = 'remove-annotation remove-success',
-    warningClasses = 'remove-annotation remove-warning';
-
     var successClasses  = 'alert alert-success',
     warningClasses = 'alert alert-warning';
 
-    function deleteMutation() {
+    function deleteAnnotation() {
+	if ($(this).attr("class") === "trash-mut-icon")  {
+	    rootRoute = "/delete/annotations/mutation/"
+	} else if ($(this).attr("class") === "trash-ppi-icon") {
+	    rootRoute = "/delete/annotations/interaction/"
+	}
 	uid = $(this).data("uid")
 	parentRow = $(this).parents(".anno-tr")
 	$.ajax({
-	    url: "/delete/annotations/mutation/" + uid,
-	    type: 'GET',
+	    url: rootRoute + uid,
+	    type: 'GET', // todo: deletes
 	    error: function(xhr) {
 		statusOnDelete($(parentRow), 'Database error: ' + xhr.status, warningClasses);
 	    },
@@ -31,13 +33,14 @@ $().ready(function() {
 	    }
 	}) 
     }
-    
+
     function statusOnDelete(elem, result, classes) {
 	$(elem).html(result);
 	$(elem).attr('class', classes);
     }
-    $(".trash-anno-icon").click(deleteMutation);
 
+    $(".trash-ppi-icon").click(deleteAnnotation);
+    $(".trash-mut-icon").click(deleteAnnotation);
 });
 
 
