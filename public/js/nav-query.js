@@ -134,6 +134,9 @@ function initQueryWidget(data) {
         addedGeneArea = d3.select('#requery-gene-badge-container'),
         addedGeneList = d3.select('#requery-gene-badge-list');
 
+    // Initialize the drop down to the correct number of genes
+    d3.select("#requery-gene-select-amount").text(loadedGenes.length);
+
     function addBadge(g) {
       var badgeLi = addedGeneList.append('li')
             .classed('requery-gene-badge-list-item', true)
@@ -143,7 +146,9 @@ function initQueryWidget(data) {
                 loadedGenes.splice(loadedGenes.indexOf(g), 1);
                 queryBtn.attr('href', magiQueryHrefFn);
                 badgeLi.remove();
+                d3.select("#requery-gene-select-amount").text(loadedGenes.length);
             });
+      d3.select("#requery-gene-select-amount").text(loadedGenes.length);
     }
     loadedGenes.forEach(addBadge);
 
