@@ -44,7 +44,7 @@ exports.upload  = function upload(req, res){
 			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
 			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_public; }),
 				user_cancers = cancers.filter(function(d){ return !d.is_public; });
-			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
+			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers, skip_requery: true });
 		}
 	});
 }
@@ -163,7 +163,7 @@ exports.uploadDataset = function uploadDataset(req, res){
 		annotationColorsFile = fields.AnnotationColorsLocation;
 	}
 
-	// Construct the 
+	// Construct the
 	var args = ['-c', cancer, '-dn', '"' + dataset + '"', '--user_id', req.user._id];
 	if (groupName) args = args.concat(['-gn', '"' + groupName + '"']);
 	if (snvFile) args = args.concat(['-sf', snvFile, '-sft', snvFileFormat]);
@@ -243,30 +243,30 @@ exports.uploadCancer = function uploadCancer(req, res){
 // Render pages describing file formats
 exports.formatSNVs = function formatSNVs(req, res){
 	console.log('/upload/formats/snvs');
-	res.render('formats/snvs', {user: req.user });
+	res.render('formats/snvs', {user: req.user, skip_requery: true });
 }
 
 exports.formatCNAs = function formatCNAs(req, res){
 	console.log('/upload/formats/cnas');
-	res.render('formats/cnas', {user: req.user });
+	res.render('formats/cnas', {user: req.user, skip_requery: true });
 }
 
 exports.formatAberrations = function formatAberrations(req, res){
 	console.log('/upload/formats/aberrations');
-	res.render('formats/aberrations', {user: req.user });
+	res.render('formats/aberrations', {user: req.user, skip_requery: true });
 }
 
 exports.formatDataMatrices = function formatDataMatrices(req, res){
 	console.log('/upload/formats/data-matrices');
-	res.render('formats/data-matrices', {user: req.user });
+	res.render('formats/data-matrices', {user: req.user, skip_requery: true });
 }
 
 exports.formatSampleAnnotations = function formatSampleAnnotations(req, res){
 	console.log('/upload/formats/sample-annotations');
-	res.render('formats/sample-annotations', {user: req.user });
+	res.render('formats/sample-annotations', {user: req.user, skip_requery: true });
 }
 
 exports.formatAnnotationColors = function formatAnnotationColors(req, res){
 	console.log('/upload/formats/annotation-colors');
-	res.render('formats/annotation-colors', {user: req.user });
+	res.render('formats/annotation-colors', {user: req.user, skip_requery: true });
 }
