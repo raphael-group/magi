@@ -222,7 +222,7 @@ div#navbar-query {
   padding: 0px 15px 5px 5px;
 }
 div#navbar-query-connector{
-  z-index:1000;position:absolute;left:143px;top:38px;background:rgb(235, 235, 235);height:17px;width:68px
+  z-index:1000;position:absolute;left:68px;top:38px;background:rgb(235, 235, 235);height:17px;width:67px
 }
 form#requery-gene-select-addForm .twitter-typeahead{display:inline !important;position: static!important;}
 .requery-dataset-select{background:#fff!important;border:1px solid rgb(205, 205, 205);}

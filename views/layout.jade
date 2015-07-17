@@ -35,13 +35,15 @@ html
                 div(id="topNavList")
                   ul(class="nav navbar-nav")
                     li
+                      a(href="/#magi-tab-query-genes" id="#{ skip_requery ? '' : 'navbar-query-btn' }") Query
+                    li
                       a(href="/upload") Upload
                     li
-                      a(href="/#magi-tab-query" id="#{ skip_requery ? '' : 'navbar-query-btn' }") Query
-                    li
-                      a(href="/#db-chooser" id="nav-instructions") Instructions
+                      a(href="/datasets") Datasets
                     li
                       a(href="/cancers") Cancers
+                    li
+                      a(href="/#db-chooser" id="nav-instructions") Instructions
                     li
                       a(href="/support") Support
                     li
@@ -92,7 +94,7 @@ html
     block footer
       hr
       div(id="footer", class="container")
-        p(class="col-lg-4 text-left") Updated: June 3rd, 2015
+        p(class="col-lg-4 text-left") Updated: July 17th, 2015
         p(class="col-lg-4 text-center") Copyright 2014-2015. All rights reserved.
         ul(id="more-info", class="col-lg-4 text-right")
           li
