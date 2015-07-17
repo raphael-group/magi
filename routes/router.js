@@ -86,3 +86,5 @@ exports.userGaveConsent = log.userGaveConsent;
 
 // Requery parameters
 exports.queryGetDatasetsAndGenes = requery.queryGetDatasetsAndGenes;
+// Get session variables for queries
+exports.getSessionLatestQuery = requery.getSessionLatestQuery;
