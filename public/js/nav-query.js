@@ -51,6 +51,8 @@ d3.xhr('/queryGetDatasetsAndGenes')
     });
 
 function initQueryWidget(data) {
+  // first add recent queries to the menu bar if they exist
+
   // TODO in the future if more complex querying is needed, magiQueryHrefFN
   //    should be promoted to its own global module so that adding query
   //    parameters can be done in a systematic, complete fashion
@@ -68,13 +70,72 @@ function initQueryWidget(data) {
         if($('#navbar-query .multiselect :checked').length === 0) d3.event.preventDefault();
       });
 
+  if(data.recentQueries) {
+    var queryPersistanceData = {
+      datasets : data.recentQueries[0].datasets.map(function(d) {
+            if(!d || d.split(' ').length < 6) return null;
+            return d.split(' ')[5];
+          }),
+      genes: data.recentQueries[0].genes
+    };
+
+    initGenes(queryPersistanceData);
+    initDatasets(queryPersistanceData);
+
+    d3.select('#requery-recent-queries-title').style('display', 'inline-block');
+    var queries = d3.select('#requery-recent-queries')
+            .style('display', 'inline-block')
+            .style('margin-left', '5px')
+            .selectAll('a')
+              .data(data.recentQueries)
+              .enter()
+              .append('a');
+    queries.each(function(d,i) {
+      var datasets = d.datasets.map(function(d) {
+            if(!d || d.split(' ').length < 6) return null;
+            return d.split(' ')[5];
+          }),
+          genes = d.genes,
+          thisEl = d3.select(this),
+          title = 'genes:'+genes.join(',') + '; ' + datasets.length + ' datasets';
+
+      var hrefDatasets = 'datasets=' + datasets.join('%2C'),
+          hrefGenes = 'genes=' + genes.join('%2C'),
+          search = 'view?'+[hrefGenes, hrefDatasets].join('&');
+
+      thisEl.attr('title', title)
+          .attr('href', search)
+          .style('margin-left', '3px')
+          .text('['+(i+1)+']');
+    });
+  } else {
+    d3.select('#requery-recent-queries-title').remove();
+    d3.select('#requery-recent-queries').remove();
+
+    $.get('/getSessionLatestQuery').success(function(d) {
+      if(!d.datasets || !d.genes) {
+        initGenes();
+        initDatasets();
+      } else {
+        initGenes(d);
+        initDatasets(d);
+      }
+    });
+  }
 
   function initGenes() {
-    var geneList = data.genes;
+    if (arguments.length > 0) {
+      loadedGenes = arguments[0].genes;
+    }
+    var geneList = data.genes,
+        geneListLowerCase = geneList.map(function(d) { return d.toLowerCase(); });
 
     var geneRequery = d3.select('#requery-gene-select'),
         addedGeneArea = d3.select('#requery-gene-badge-container'),
         addedGeneList = d3.select('#requery-gene-badge-list');
+
+    // Initialize the drop down to the correct number of genes
+    d3.select("#requery-gene-select-amount").text(loadedGenes.length);
 
     function addBadge(g) {
       var badgeLi = addedGeneList.append('li')
@@ -85,7 +146,9 @@ function initQueryWidget(data) {
                 loadedGenes.splice(loadedGenes.indexOf(g), 1);
                 queryBtn.attr('href', magiQueryHrefFn);
                 badgeLi.remove();
+                d3.select("#requery-gene-select-amount").text(loadedGenes.length);
             });
+      d3.select("#requery-gene-select-amount").text(loadedGenes.length);
     }
     loadedGenes.forEach(addBadge);
 
@@ -113,12 +176,12 @@ function initQueryWidget(data) {
     };
 
     $('#requery-gene-select-addInput').typeahead({
-      hint: true,
-      highlight: true,
+      hint: false,
+      highlight: false,
       minLength: 1
     },
     {
-      name: 'genes',
+      // name: 'genes',
       display: 'gene',
       source: substringMatcher(geneList),
       templates: {
@@ -127,40 +190,36 @@ function initQueryWidget(data) {
             'Unable to find any genes that match the current query.',
           '</div>'
         ].join('\n'),
-        suggestion: Handlebars.compile('<div><strong>{{gene}}</strong></div>')
+        suggestion: Handlebars.compile('<div class="requery-geneSuggestion">{{gene}}</div>')
       }
     });
 
-    function geneInputValidation() {
-      var geneInput = d3.select('#requery-gene-select-addInput'),
-          gene = geneInput.property('value');
-
-      if(loadedGenes.indexOf(gene) < 0) {
-        loadedGenes.push(gene);
-        queryBtn.attr('href', magiQueryHrefFn);
-        addBadge(gene);
-      }
-
-      if(gene === undefined || gene === '' || geneList.indexOf(gene) < 0) {
-        return;
-      }
-
-      geneInput.property('value', '');
-    }
-
-    d3.select('#requery-gene-select-addBtn').on('keypress', function() {
-          if(d3.event.keyCode == 13) {
-            d3.event.preventDefault();
-            geneInputValidation();
+    $('#requery-gene-select-addInput')
+        .on('typeahead:selected', function(evt, item) {
+          // do what you want with the item here
+          if(loadedGenes.indexOf(item.gene) < 0) {
+            loadedGenes.push(item.gene);
+            queryBtn.attr('href', magiQueryHrefFn);
+            addBadge(item.gene);
           }
-        })
-        .on('click', function () {
-          d3.event.preventDefault();
-          geneInputValidation();
+          $('#requery-gene-select-addInput')
+              .typeahead('val', '');
+
+          d3.select('#requery-gene-select-addInput')
+              .transition()
+                .duration(250)
+                .style('background', '#3cb878')
+              .transition()
+                .delay(250)
+                .duration(350)
+                .style('background', 'white');
         });
   }
 
   function initDatasets() {
+    if (arguments.length > 0) {
+      loadedDatasets = arguments[0].datasets;
+    }
     // Add datasets to the multiselect to redefine query
     var datasets = data.datasets;
 
@@ -206,15 +265,5 @@ function initQueryWidget(data) {
 
     // Show the multiselect
     $('#magi-datasets').css('visibility', '');
-
-    // hack for getting the requery menu to show/hide
-    $('#magi-datasets').on('click', function() {
-      $('#magi-datasets div.btn-group ul').toggle();
-    });
-
   }
-
-
-  initGenes();
-  initDatasets();
 }
