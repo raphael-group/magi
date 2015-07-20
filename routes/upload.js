@@ -44,7 +44,7 @@ exports.upload  = function upload(req, res){
 			cancers.sort(function(a, b){ return a.cancer > b.cancer ? 1 : -1; });
 			var tcga_icgc_cancers = cancers.filter(function(d){ return d.is_public; }),
 				user_cancers = cancers.filter(function(d){ return !d.is_public; });
-			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers, skip_requery: true });
+			res.render('upload', {user: req.user, tcga_icgc_cancers: tcga_icgc_cancers, user_cancers: user_cancers });
 		}
 	});
 }
@@ -243,30 +243,30 @@ exports.uploadCancer = function uploadCancer(req, res){
 // Render pages describing file formats
 exports.formatSNVs = function formatSNVs(req, res){
 	console.log('/upload/formats/snvs');
-	res.render('formats/snvs', {user: req.user, skip_requery: true });
+	res.render('formats/snvs', {user: req.user });
 }
 
 exports.formatCNAs = function formatCNAs(req, res){
 	console.log('/upload/formats/cnas');
-	res.render('formats/cnas', {user: req.user, skip_requery: true });
+	res.render('formats/cnas', {user: req.user });
 }
 
 exports.formatAberrations = function formatAberrations(req, res){
 	console.log('/upload/formats/aberrations');
-	res.render('formats/aberrations', {user: req.user, skip_requery: true });
+	res.render('formats/aberrations', {user: req.user });
 }
 
 exports.formatDataMatrices = function formatDataMatrices(req, res){
 	console.log('/upload/formats/data-matrices');
-	res.render('formats/data-matrices', {user: req.user, skip_requery: true });
+	res.render('formats/data-matrices', {user: req.user });
 }
 
 exports.formatSampleAnnotations = function formatSampleAnnotations(req, res){
 	console.log('/upload/formats/sample-annotations');
-	res.render('formats/sample-annotations', {user: req.user, skip_requery: true });
+	res.render('formats/sample-annotations', {user: req.user });
 }
 
 exports.formatAnnotationColors = function formatAnnotationColors(req, res){
 	console.log('/upload/formats/annotation-colors');
-	res.render('formats/annotation-colors', {user: req.user, skip_requery: true });
+	res.render('formats/annotation-colors', {user: req.user });
 }
