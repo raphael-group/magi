@@ -98,7 +98,7 @@ exports.sampleView = function sampleView(req, res){
 						});
 					});
 
-					// Sort the mutations 
+					// Sort the mutations
 					locusMutations.sort(function(a, b){ return a.locusReferences.count > b.locusReferences.count ? -1 : 1; })
 					typeMutations.sort(function(a, b){ return a.typeReferences.count > b.typeReferences.count ? -1 : 1; })
 					geneMutations.sort(function(a, b){ return a.geneReferences.count > b.geneReferences.count ? -1 : 1; })
@@ -114,7 +114,15 @@ exports.sampleView = function sampleView(req, res){
 					});
 
 					// Render the page
-					res.render('sampleView', {sample: sample, annotations: sampleAnnotations, user: req.user, dataset: dataset, cancer: cancer, mutations: mutations });
+					res.render('sampleView', {
+						sample: sample,
+						annotations: sampleAnnotations,
+						user: req.user,
+						dataset: dataset,
+						cancer: cancer,
+						mutations: mutations,
+						show_requery: true
+					});
 
 				});
 			});

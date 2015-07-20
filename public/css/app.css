@@ -202,9 +202,7 @@ div.page-header{
   margin-top: 10px;
   padding: 5px 15px;
 }
-a#navbar-query-btn {
-  background: rgb(235,235,235);
-  color: rgb(31,31,31);
+a.qry-button {
   border-radius: 7.5px 7.5px 0 0;
   margin-left: 5px;
 }

@@ -18,7 +18,7 @@
     "compression": "latest",
     "method-override": "latest",
     "morgan": "latest",
-    "multer": "latest",
+    "multer": "0.1.8",
     "serve-favicon": "latest",
     "cookie-parser": "latest",
     "cookie-session": "latest",
