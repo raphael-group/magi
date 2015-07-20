@@ -320,7 +320,7 @@ exports.view  = function view(req, res){
                               };
 
                         // Render view
-                        res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user });
+                        res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user, show_requery: true });
                       });
                     });
                   });

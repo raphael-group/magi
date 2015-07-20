@@ -24,17 +24,35 @@ var queryNoStyle = {
       color: 'rgb(31,31,31)'
     };
 
+function showQueryBtn() {
+  navbarQuery.style('display', 'block');
+  d3.select('#navbar-query-btn').style(queryStyle);
+  d3.select("div#body").style('margin-top', '30px');
+  navbarHeight = 81;
+}
+
+function hideQueryBtn(){
+  navbarQuery.style('display', 'none');
+  d3.select('#navbar-query-btn').style(queryNoStyle);
+  d3.select("div#body").style('margin-top', '0px');
+  navbarHeight = 46;
+}
+
 var navbarQuery = d3.selectAll('.navbar-query');
 d3.select('#navbar-query-btn')
     .attr('href', '#')
-    .on('click', function() {
+    .on('click', function(){
       if(d3.event) d3.event.preventDefault();
-      var isVisible = navbarQuery.style('display') !== 'none';
-      navbarQuery.style('display', isVisible ? 'none' : 'block');
-      d3.select("div#body").style('margin-top', isVisible ? '0px' : '30px');
-      navbarHeight = isVisible ? 46 : 81;
-      d3.select(this).style(isVisible ? queryNoStyle : queryStyle);
+      if (navbarQuery.style('display') !== 'none') hideQueryBtn();
+      else showQueryBtn();
+
     });
+
+$(document).ready(function(){
+  if (navbarQuery.style('display') !== 'none') showQueryBtn();
+  else hideQueryBtn();
+});
+
 // get datasets and genes from URI if they are present
 var uriDatasetStr = getQueryVariable('datasets'),
     uriGeneStr = getQueryVariable('genes'),
