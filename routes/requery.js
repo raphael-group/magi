@@ -67,10 +67,18 @@ exports.queryGetDatasetsAndGenes = function(req, res) {
           // Append the groupClass standard to each group
           initDatasetGroup( userGroups, 'private' );
           responseData.groups = responseData.groups.concat(userGroups);
-        });
-      }
 
-      geneDataCallback(responseData, dbIdList);
+          // Load the user's recent queries
+          var User = Database.magi.model( 'User' );
+          User.findById(req.user._id, function(err, user){
+            if (err) throw new Error(err);
+            responseData.recentQueries = user.queries ? user.queries : [];
+            geneDataCallback(responseData, dbIdList);
+          });
+        });
+      } else {
+        geneDataCallback(responseData, dbIdList);
+      }
     });
   }
 
@@ -79,9 +87,21 @@ exports.queryGetDatasetsAndGenes = function(req, res) {
     MutGene.find({ 'dataset_id' : { $in : dbIdList} })
       .distinct('gene', function(error, genes) {
         var finalResponseData = {genes: genes, datasets: responseData };
+
+        if(responseData.recentQueries) {
+          finalResponseData.recentQueries = responseData.recentQueries;
+        }
+
         res.send(finalResponseData);
       });
   }
 
   getDatasetResponseData(getGeneResponseData);
+};
+
+
+exports.getSessionLatestQuery = function(req, res) {
+  var gs = req.session.genes,
+      ds = req.session.datasets;
+  res.send({datasets: ds, genes: gs});
 };

@@ -14,7 +14,7 @@ exports.account = function(req, res){
 				if (err) throw new Error(err);
 
 				// Render index page
-				res.render('account', { user: user, groups: groups });
+				res.render('account', { user: user, groups: groups, skip_requery: true });
 
 			});
 		};
