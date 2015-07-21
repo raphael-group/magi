@@ -42,6 +42,11 @@ exports.geneFind = function(query, dir, callback) {
     })
 }
 
+exports.inGeneClause = function(columnName, columnPoss) {
+    abers = Schemas.aberrations
+    return abers[columnName].in(columnPoss);
+}
+
 // join a query with the list of all user_ids who have voted on a particular annotation
 function joinVoteListsToQuery(query) {
     // Retrieve upvotes and downvotes for every annotation
