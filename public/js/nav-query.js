@@ -179,7 +179,7 @@ function initQueryWidget(data) {
         matches = [];
 
         // regex used to determine if a string contains the substring `q`
-        substrRegex = new RegExp(q, 'i');
+        substrRegex = new RegExp('^' + q, 'gi');
 
         // iterate through the pool of strings and for any string that
         // contains the substring `q`, add it to the `matches` array
@@ -187,6 +187,13 @@ function initQueryWidget(data) {
           if (substrRegex.test(str)) {
             matches.push({ gene: str});
           }
+        });
+
+        // Sort ascending by length so exact matches are first
+        matches.sort(function(x, y){
+          var m = x.gene.length,
+              n = y.gene.length;
+            return m === n ? d3.ascending(x.gene, y.gene) : d3.ascending(m, n);
         });
 
         cb(matches);
