@@ -3,7 +3,7 @@
 var mongoose = require( 'mongoose' ),
 	Database = require('../model/db'),
 	Samples = require('../model/samples'),
-	Annotations = require('../model/annotations'),
+SQLannotations = require('../model/annotations_sql'),
 	Cancers = require('../model/cancers'),
 	Datasets = require('../model/datasets'),
 	fs = require('fs');
@@ -54,71 +54,79 @@ exports.sampleView = function sampleView(req, res){
 					return;
 				}
 
-				var Annotation = Database.magi.model( 'Annotation' );
-				Annotation.find({gene: {$in: mutGenes}}, function(err, support){
-					if (err){
-						console.error(err);
-						fail = true;
-						return;
+			    // Create a list of mutations including the annotations, separating
+			    // them into three groups: locus (most important), type (second most
+			    // important), and gene (least important)
+			    var locusMutations = [],
+			    typeMutations = [],
+			    geneMutations = [];
+
+			    // call for additional mutations
+			    SQLannotations.geneFind(SQLannotations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
+				if (err) {
+				    console.error(err);
+				    fail = true;
+				    return;
+				} 
+				
+				annotations = SQLannotations.geneTable(mutGenes, userAnnos);
+
+				// Create a list of mutations including the annotations, separating
+				// them into three groups: locus (most important), type (second most
+				// important), and gene (least important)
+				var locusMutations = [],
+				typeMutations = [],
+				geneMutations = [];
+				sample.mutations.forEach(function(d){
+				    var g = d.name;
+				    d.mutations.forEach(function(m){
+					// Remove the p. prefix
+					if (typeof(m.change) == 'string'){
+					    m.change = m.change.replace("p.", "");
 					}
-					annotations = Annotations.geneTable(mutGenes, support);
-
-					// Create a list of mutations including the annotations, separating
-					// them into three groups: locus (most important), type (second most
-					// important), and gene (least important)
-					var locusMutations = [],
-						typeMutations = [],
-						geneMutations = [];
-
-					sample.mutations.forEach(function(d){
-						var g = d.name;
-						d.mutations.forEach(function(m){
-							// Remove the p. prefix
-							if (typeof(m.change) == 'string'){
-								m.change = m.change.replace("p.", "");
-							}
-							if (typeof(annotations[g][m.type]) != 'undefined'){
-								if (typeof(annotations[g][m.type][m.change]) != 'undefined'){
-									m['annotationType'] = 'locus';
-									m['locusReferences'] = annotations[g][m.type][m.change];
-									m['typeReferences'] = annotations[g][m.type][""];
-									m['geneReferences'] = annotations[g][""];
-									locusMutations.push(m)
-								} else {
-									m['annotationType'] = 'type';
-									m['typeReferences'] = annotations[g][m.type][""];
-									m['geneReferences'] = annotations[g][""];
-									typeMutations.push(m)
-								}
-							} else {
-								m['annotationType'] = 'gene';
-								m['geneReferences'] = annotations[g][""];
-								geneMutations.push( m );
-							}
-						});
-					});
-
-					// Sort the mutations 
-					locusMutations.sort(function(a, b){ return a.locusReferences.count > b.locusReferences.count ? -1 : 1; })
-					typeMutations.sort(function(a, b){ return a.typeReferences.count > b.typeReferences.count ? -1 : 1; })
-					geneMutations.sort(function(a, b){ return a.geneReferences.count > b.geneReferences.count ? -1 : 1; })
-					var mutations = locusMutations.concat(typeMutations.concat(geneMutations)).map(function(d){
-						// Prettify the mutation types for display
-						if (d.type == 'missense') d.type = 'Missense';
-						else if (d.type == 'nonsense') d.type = 'Nonsense';
-						else if (d.type == 'splice_site') d.type = 'Splice Site';
-						else if (d.type == 'amp') d.type = 'Amplification';
-						else if (d.type == 'del') d.type = 'Deletion';
-						else if (d.type == 'snv') d.type = 'SNV';
-						return d;
-					});
-
-					// Render the page
-					res.render('sampleView', {sample: sample, annotations: sampleAnnotations, user: req.user, dataset: dataset, cancer: cancer, mutations: mutations });
-
+					if (typeof(annotations[g][m.type]) != 'undefined'){
+					    if (typeof(annotations[g][m.type][m.change]) != 'undefined'){
+						m['annotationType'] = 'locus';
+						m['locusReferences'] = annotations[g][m.type][m.change];
+						m['typeReferences'] = annotations[g][m.type][""];
+						m['geneReferences'] = annotations[g][""];
+						locusMutations.push(m)
+					    } else {
+						m['annotationType'] = 'type';
+						m['typeReferences'] = annotations[g][m.type][""];
+						m['geneReferences'] = annotations[g][""];
+						typeMutations.push(m)
+					    }
+					} else {
+					    m['annotationType'] = 'gene';
+					    m['geneReferences'] = annotations[g][""];
+					    geneMutations.push( m );
+					}
+				    });
 				});
+				// Sort the mutations 
+				locusMutations.sort(function(a, b){ return a.locusReferences.count > b.locusReferences.count ? -1 : 1; })
+				typeMutations.sort(function(a, b){ return a.typeReferences.count > b.typeReferences.count ? -1 : 1; })
+				geneMutations.sort(function(a, b){ return a.geneReferences.count > b.geneReferences.count ? -1 : 1; })
+				var mutations = locusMutations.concat(typeMutations.concat(geneMutations)).map(function(d){
+				    // Prettify the mutation types for display
+				    if (d.type == 'missense') d.type = 'Missense';
+				    else if (d.type == 'nonsense') d.type = 'Nonsense';
+				    else if (d.type == 'splice_site') d.type = 'Splice Site';
+				    else if (d.type == 'amp') d.type = 'Amplification';
+				    else if (d.type == 'del') d.type = 'Deletion';
+				    else if (d.type == 'snv') d.type = 'SNV';
+				    return d;
+				});
+				// Render the page
+				res.render('sampleView', {sample: sample, annotations: sampleAnnotations, user: req.user, dataset: dataset, cancer: cancer, mutations: mutations });
+			    });
 			});
 		})
 	});
 	if (fail){ res.redirect('/401'); }
+}
+
+function endsWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
