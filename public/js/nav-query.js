@@ -201,6 +201,7 @@ function initQueryWidget(data) {
     {
       // name: 'genes',
       display: 'gene',
+      limit: 20,
       source: substringMatcher(geneList),
       templates: {
         empty: [
@@ -232,6 +233,12 @@ function initQueryWidget(data) {
                 .duration(350)
                 .style('background', 'white');
         });
+
+    d3.select('#requery-gene-select-addInput').on('keypress', function() {
+      if(d3.event.keyCode === 13) {
+        d3.event.preventDefault();
+      }
+    });
   }
 
   function initDatasets() {
