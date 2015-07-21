@@ -22,7 +22,7 @@ $(document).ready(function() {
         // }
 
         // Make sure no more than 25 genes are entered
-        var genes = geneList.split("\n").filter(function(g){ return g != ""; });
+        var genes = geneList.split("\n").filter(function(g){ return g !== ""; });
         if (genes.length > 25){
             status('Please enter <b>at most 25 genes</b> (one per line).', warningClasses);
             return false;
@@ -43,7 +43,7 @@ $(document).ready(function() {
         }
 
         // Make sure at least one dataset is checked
-        if (numDatasets == 0){
+        if (numDatasets === 0){
             status('Please check at least one dataset.', warningClasses);
             return false;
         }

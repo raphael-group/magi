@@ -224,6 +224,10 @@ div#navbar-query-connector{
 }
 form#requery-gene-select-addForm .twitter-typeahead{display:inline !important;position: static!important;}
 .requery-dataset-select{background:#fff!important;border:1px solid rgb(205, 205, 205);}
+div#scrollable-dropdown-menu .tt-menu {
+  max-height: 150px;
+  overflow-y: auto;
+}
 
 span.requery-gene-select-badge {
   background: rgb(175,175,175);
