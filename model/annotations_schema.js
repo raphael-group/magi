@@ -17,7 +17,7 @@ annotations = sql.define({
 	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
 	{name: 'u_id', dataType: 'serial', primaryKey: true},
 	{name: 'comment',	dataType: 'varchar(5000)',},
- 	{name: 'reference',	dataType: 'varchar(25)', notNull: true},
+ 	{name: 'reference',	dataType: 'varchar(45)', notNull: true},
 	{name: 'type', dataType: annoTypeName, notNull: true}],
 })
 

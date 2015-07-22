@@ -274,7 +274,7 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 
 	    var query = {
 		gene: A.gene,
-		cancer: A.cancer,
+		cancer: A.cancer.toUpperCase(),
 		change: A.change,
 		transcript: A.transcript,
 		mut_class: A.mutation_class,
@@ -301,7 +301,6 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 exports.upsertPPI = function(data, callback) {
     ppis = Schemas.interactions
     annos = Schemas.annotations
-    console.log("Retrieved record: ", data)
 
     // insert into the annos
     annoInsertQuery = annos.insert([{
@@ -321,7 +320,8 @@ exports.upsertPPI = function(data, callback) {
 	}
     }
 
-    console.log("Submitting query: ", annoInsertQuery.string)
+//    console.log("Submitting upsert query: ", annoInsertQuery.toQuery().text)
+
     // todo: test update case
     // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
     Database.execute(annoInsertQuery, function(err, subresult) {
@@ -330,11 +330,12 @@ exports.upsertPPI = function(data, callback) {
 	u_id = subresult.rows[0].u_id
 	console.log("Returned on upsert ppi u_id: ", u_id)
 
+	// database, type, weight, directed, tissue are all unspecified on front-end
 	ppiInsertQuery = ppis.insert(
 	    ppis.source.value(data.source),
 	    ppis.target.value(data.target),
-	    // nothing else can be specified currently in front end
-	    // database, type, weight, directed, tissue all blank
+	    ppis.weight.value(data.weight),
+	    ppis.database.value(data.database),	    
 	    ppis.anno_id.value(u_id)).returning(ppis.anno_id) // we can return more if we want
 
 	Database.execute(ppiInsertQuery, function(err, result) {
@@ -343,3 +344,69 @@ exports.upsertPPI = function(data, callback) {
 	})
     })
 }
+
+// Loads annotations into the database
+exports.loadPPIsFromFile = function(filename, source, callback){
+    // Load required modules
+    var fs = require( 'fs' ),
+    Q  = require( 'q' );
+
+    // Read in the file asynchronously
+    var data;
+    function loadPPIFile(){
+	var d = Q.defer();
+	fs.readFile(filename, 'utf-8', function (err, fileData) {
+	    // Exit if there's an error, else callback
+	    if (err) console.log(err)
+	    d.resolve();
+	    data = fileData;
+	});
+	return d.promise;
+    }
+
+    function processAnnotations(){
+	// Load the lines, but skip the header (the first line)
+	var lines = data.trim().split('\n');
+
+	// Make sure there're some lines in the file
+	if (lines.length < 2){
+	    console.log("Empty file (or just header). Exiting.")
+	    process.exit(1);
+	}
+
+	// Create objects to represent each annotation
+	var ppis = [];
+	for (var i = 1; i < lines.length; i++){ // first line should be the header
+	    // Parse the line
+	    var fields = lines[i].split('\t'),
+	    support = {
+		source: fields[0],
+		target: fields[1], 
+		weight: fields[2] == '' ? 1 : fields[2],
+		database: fields[3],
+		pmid: fields[4] == '' || fields.length <= 4 ? "none" : fields[4],
+		user_id: "admin_user"
+	    }
+	    ppis.push( support );
+	}
+	console.log( "Loading " + ppis.length + " annotations from file..." )
+
+	// Save all the annotations
+	return Q.allSettled( ppis.map(function(query){
+	    var d = Q.defer();
+	    
+	    exports.upsertPPI(query, function(err, annotation){
+		if (err) {
+		    console.log("error, query: ");
+		    console.log(query)
+		    throw new Error(err);
+		}
+		d.resolve();
+	    })
+	    return d.promise;
+	}));
+    }
+
+    loadPPIFile().then( processAnnotations ).then( function(){ callback("") } );
+}
+
