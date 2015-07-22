@@ -328,7 +328,6 @@ exports.upsertPPI = function(data, callback) {
 	// retrieve the unique ID for the annotation
 	handleErr(err, subresult, annoInsertQuery)
 	u_id = subresult.rows[0].u_id
-	console.log("Returned on upsert ppi u_id: ", u_id)
 
 	// database, type, weight, directed, tissue are all unspecified on front-end
 	ppiInsertQuery = ppis.insert(

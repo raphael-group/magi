@@ -4,7 +4,6 @@ var mongoose = require( 'mongoose' ),
 	Database = require('../model/db'),
 	Samples = require('../model/samples'),
 	Annotations = require('../model/annotations'),
-SQLannotations = require('../model/annotations_sql'),
 	Cancers = require('../model/cancers'),
 	Datasets = require('../model/datasets'),
 	fs = require('fs');
@@ -99,83 +98,22 @@ exports.sampleView = function sampleView(req, res){
 						});
 					});
 
-				    // call for additional mutations
-				    SQLannotations.geneFind(SQLannotations.inGeneClause('gene', ['PTEN'] /*mutGenes*/ ),'right', function(err, userAnnos) {
-					if (err) {
-					    console.error(err);
-					    fail = true;
-					    return;
-					}
-
-					addIfMatching = function(mutationArray, protoAnno, ref, annoType, refKeys) {
-					    for(i = 0; i < mutationArray.length; i++) {
-						match = true;
-						Object.keys(ref).foreach(function (key) {
-						    if(protoAnno[key] != mutationArray[i][key]) {
-							match = false;
-						    }
-						});
-
-						if (match) {
-						    console.log("match found!")
-						    for(j = 0; j < refKeys.length; j++) {
-							mutationArray[i][refKeys].refs.push(ref);
-							mutationArray[i][refKeys].count += 1;
-						    }
-						}
-					    }
-/*
-					    newMutation = protoAnno;
-					    newMutation['annotationType'] = annoType;
-					    for(j = 0; j < refKeys.length; j++) {
-						newMutation[refKeys[j]] = {refs: ref};
-					    }
-					    mutationArray.push(newMutation);
-*/					    return
-					}
-
-					for(var h = 0; h < userAnnos.length; h++) {
-					    userAnno = userAnnos[h];
-					    ref = {
-						pmid: userAnno.reference,
-						cancers: userAnno.cancer
-					    };
-
-					    redoneAnno = {gene: userAnno.gene}
-					    addIfMatching(geneMutations, redoneAnno, ref,
-						       'gene', ['geneReferences'])
-
-					    // look for a subtype in geneMutations
-					    if (userAnno.mutation_type) {
-						redoneAnno["type"] = userAnno.mut_type;
-						addIfMatching(typeMutations, redoneAnno, ref,
-							   'type', ['geneReferences', 'typeReferences'])
-
-						if (userAnno.protein_seq_change) { // (userAnno.protein_seq_change)
-						    redoneAnno["change"] = userAnnos.protein_seq_change;
-						    addIfMatching(locusMutations, redoneAnno, ref,
-							       'locus', ['geneReferences', 'typeReferences', 'locusReferences'])
-						}
-					    }
-					}
-
 					// Sort the mutations
 					locusMutations.sort(function(a, b){ return a.locusReferences.count > b.locusReferences.count ? -1 : 1; })
 					typeMutations.sort(function(a, b){ return a.typeReferences.count > b.typeReferences.count ? -1 : 1; })
 					geneMutations.sort(function(a, b){ return a.geneReferences.count > b.geneReferences.count ? -1 : 1; })
 					var mutations = locusMutations.concat(typeMutations.concat(geneMutations)).map(function(d){
-					    // Prettify the mutation types for display
-					    if (d.type == 'missense') d.type = 'Missense';
-					    else if (d.type == 'nonsense') d.type = 'Nonsense';
-					    else if (d.type == 'splice_site') d.type = 'Splice Site';
-					    else if (d.type == 'amp') d.type = 'Amplification';
-					    else if (d.type == 'del') d.type = 'Deletion';
-					    else if (d.type == 'snv') d.type = 'SNV';
-					    return d;
+						// Prettify the mutation types for display
+						if (d.type == 'missense') d.type = 'Missense';
+						else if (d.type == 'nonsense') d.type = 'Nonsense';
+						else if (d.type == 'splice_site') d.type = 'Splice Site';
+						else if (d.type == 'amp') d.type = 'Amplification';
+						else if (d.type == 'del') d.type = 'Deletion';
+						else if (d.type == 'snv') d.type = 'SNV';
+						return d;
 					});
 
 					// Render the page
-
 					res.render('sampleView', {
 						sample: sample,
 						annotations: sampleAnnotations,
@@ -185,7 +123,6 @@ exports.sampleView = function sampleView(req, res){
 						mutations: mutations,
 						show_requery: true
 					});
-				    });
 				});
 			});
 		})
