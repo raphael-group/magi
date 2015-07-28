@@ -2,6 +2,7 @@
 Database = require('./db_sql');
 Schemas = require('./annotations_schema.js');
 var sql = require("sql");
+var ADMIN_USER = "admin";
 
 //initialize table
 exports.init = Schemas.initDatabase
@@ -29,17 +30,19 @@ exports.geneFind = function(query, dir, callback) {
 	    callback(err, null)
 	}
 
-	// convert null votes to []
-	for (var i = 0; i < result.rows.length; i++) {
-	    if (result.rows[i].upvotes == null) {
-		result.rows[i].upvotes = []
-	    }
-	    if (result.rows[i].downvotes == null) {
-		result.rows[i].downvotes = []
-	    }
-	}
-	callback(null, result.rows)
+	callback(null, result.rows.map(normalizeAnnotation))
     })
+}
+
+function normalizeAnnotation(anno) {
+    // convert null votes to []
+    if (anno.upvotes == null) {
+	anno.upvotes = []
+    }
+    if (anno.downvotes == null) {
+	anno.downvotes = []
+    }
+    return anno;
 }
 
 exports.inGeneClause = function(columnName, columnPoss) {
@@ -112,16 +115,7 @@ exports.ppiFind = function(query, dir, callback) {
 	    callback(err, null)
 	}
 
-	// convert null votes to []
-	for (var i = 0; i < result.rows.length; i++) {
-	    if (result.rows[i].upvotes == null) {
-		result.rows[i].upvotes = []
-	    }
-	    if (result.rows[i].downvotes == null) {
-		result.rows[i].downvotes = []
-	    }
-	}
-	callback(null, result.rows)
+	callback(null, result.rows.map(normalizeAnnotation))
     })
 }
 
@@ -218,6 +212,18 @@ exports.upsertAber = function(data, callback){
     })
 }
 
+function parsePMID(pmid_field) {
+    // parse PMIDs if necessary:
+    if (pmid_field === undefined) 
+	return ["none"]
+
+    if (pmid_field.indexOf(",") == -1) 
+	return [pmid_field];
+
+    return pmid_field.split(",");
+
+}
+
 // Loads annotations into the database
 exports.loadAnnotationsFromFile = function(filename, source, callback){
     // Load required modules
@@ -252,21 +258,24 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 	for (var i = 1; i < lines.length; i++){
 	    // Parse the line
 	    var fields = lines[i].split('\t'),
-	    support = {
-		gene: fields[0],
-		transcript: fields[1] == '' ? null : fields[1], // not used
-		cancer: fields[2] == '' ? null : fields[2],
-		mutation_class: fields[3],
-		mutation_type: fields[4],
-		locus: fields[5] == '' ? null : fields[5], // not used
-		change: fields[6] == '' ? null : fields[6],
-		reference: fields[7], //pmid
-		comment: fields.length > 8 ? fields[8] : null,
-		source: source
-	    }
-	    annotations.push( support );
+	    references = parsePMID(fields[7])
+	    
+	    references.forEach(function(pmid) {
+		annotations.push({
+		    gene: fields[0],
+		    transcript: fields[1] == '' ? null : fields[1], // not used
+		    cancer: fields[2] == '' ? null : fields[2],
+		    mutation_class: fields[3],
+		    mutation_type: fields[4],
+		    locus: fields[5] == '' ? null : fields[5], // not used
+		    change: fields[6] == '' ? null : fields[6],
+		    reference: pmid, //pmid
+		    comment: fields.length > 8 ? fields[8] : null,
+		    source: source
+		});
+	    });
 	}
-	console.log( "Loading " + annotations.length + " annotations from file..." )
+	console.log( "Loading " + annotations.length + " aberration annotations from file..." )
 
 	// Save all the annotations
 	return Q.allSettled( annotations.map(function(A){
@@ -282,7 +291,7 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 		pmid: A.reference,
 		comment: A.comment,
 		source: source,
-		user_id: "admin_user"
+		user_id: ADMIN_USER
 	    };
 
 	    exports.upsertAber(query, function(err, annotation){
@@ -375,20 +384,21 @@ exports.loadPPIsFromFile = function(filename, source, callback){
 
 	// Create objects to represent each annotation
 	var ppis = [];
-	for (var i = 1; i < lines.length; i++){ // first line should be the header
-	    // Parse the line
-	    var fields = lines[i].split('\t'),
-	    support = {
-		source: fields[0],
-		target: fields[1], 
-		weight: fields[2] == '' ? 1 : fields[2],
-		database: fields[3],
-		pmid: fields[4] == '' || fields.length <= 4 ? "none" : fields[4],
-		user_id: "admin_user"
-	    }
-	    ppis.push( support );
+	for (var i = 1; i < lines.length; i++){ // first line should be the header	    
+	    var fields = lines[i].split('\t');
+	    pmids = parsePMID(fields[4]);
+	    pmids.forEach(function (_pmid) {
+		ppis.push({
+		    source: fields[0],
+		    target: fields[1], 
+		    weight: fields[2] == '' ? 1 : fields[2],
+		    database: fields[3],
+		    pmid: _pmid,
+		    user_id: ADMIN_USER
+		}); 
+	    }); 
 	}
-	console.log( "Loading " + ppis.length + " annotations from file..." )
+	console.log( "Loading " + ppis.length + " ppi annotations from file..." )
 
 	// Save all the annotations
 	return Q.allSettled( ppis.map(function(query){
