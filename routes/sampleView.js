@@ -67,8 +67,8 @@ exports.sampleView = function sampleView(req, res){
 				    console.error(err);
 				    fail = true;
 				    return;
-				}
-
+				} 
+				
 				annotations = geneTable(mutGenes, userAnnos);
 
 				// Create a list of mutations including the annotations, separating
@@ -132,11 +132,11 @@ function endsWith(str, suffix) {
 }
 
 function geneTable(genes, support){
-	// Assemble the annotations into a dictionary index by
+	// Assemble the annotations into a dictionary index by 
 	// gene (e.g. TP53) and mutation class (e.g. missense or amp)
 	// and then protein change (only applicable for missense/nonsense)
 	// 1) Store the total number of references for the gene/class in "",
-	//    i.e. annotations['TP53'][''] gives the total for TP53 and
+	//    i.e. annotations['TP53'][''] gives the total for TP53 and 
 	//    annotations['TP53']['snv'][''] gives the total for TP53 SNVs.
 	// 2) Count the number per protein change.
 	var annotations = {};
@@ -150,7 +150,6 @@ function geneTable(genes, support){
 		var mClass = A.mut_class.toLowerCase(),
 			mType = A.mut_type ? A.mut_type.toLowerCase().replace("_mutation", "") : "";
 		if (mClass == "snv" && (mType == "missense" || mType == "nonsense")){ mClass = mType; }
-
 		// Add the class if it hasn't been seen before
 		if (typeof(annotations[A.gene][mClass]) == 'undefined'){
 			annotations[A.gene][mClass] = {"" : [] };
