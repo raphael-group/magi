@@ -45,9 +45,15 @@ function normalizeAnnotation(anno) {
     return anno;
 }
 
+// refactor me
 exports.inGeneClause = function(columnName, columnPoss) {
-    abers = Schemas.aberrations
+    abers = Schemas.aberrations;
     return abers[columnName].in(columnPoss);
+}
+
+exports.inPPIClause = function(columnName, columnPoss) {
+    ppis = Schemas.interactions;
+    return ppis[columnName].in(columnPoss);
 }
 
 // join a query with the list of all user_ids who have voted on a particular annotation
@@ -92,31 +98,6 @@ exports.annoDelete = function(anno_id, user_id, callback) {
     });
 
     return d.promise;
-}
-
-// find all protein-protein interaction annotations given a structure with regexp
-// and the ids of users who have submitted upvotes/downvotes on each
-exports.ppiFind = function(query, dir, callback) {
-    ppis = Schemas.interactions
-    annos = Schemas.annotations
-    votes = Schemas.votes
-
-    // Selects the desired ppi annotations according to the given filter
-    if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
-        selAnnosQuery = annos.from(annos.joinTo(ppis)).where(query);
-    } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
-	selAnnosQuery = ppis.from(ppis.joinTo(annos)).where(query);
-    }
-
-    Database.sql_query(joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
-	if (err) {
-            console.log("Error selecting ppi annotations: " + err);
-	    console.log("Debug: full query:", selAnnosQuery.string)
-	    callback(err, null)
-	}
-
-	callback(null, result.rows.map(normalizeAnnotation))
-    })
 }
 
 // todo: Vote for a mutation
@@ -194,7 +175,6 @@ exports.upsertAber = function(data, callback){
     Database.execute(annoInsertQuery, function(err, subresult) {
 	handleErr(err, subresult, annoInsertQuery)
 	u_id = subresult.rows[0].u_id
-//	console.log("Returned on upsert u_id: ", u_id)
 	aberInsertQuery = abers.insert(
 	    abers.gene.value(data.gene),
 	    abers.cancer.value(data.cancer),
@@ -276,14 +256,14 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 	    });
 	}
 	console.log( "Loading " + annotations.length + " aberration annotations from file..." )
-
 	// Save all the annotations
 	return Q.allSettled( annotations.map(function(A){
 	    var d = Q.defer();
 
+	    cancer = A.cancer ? A.cancer.toUpperCase() : "Cancer"
 	    var query = {
 		gene: A.gene,
-		cancer: A.cancer.toUpperCase(),
+		cancer: cancer,
 		change: A.change,
 		transcript: A.transcript,
 		mut_class: A.mutation_class,
@@ -293,7 +273,6 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 		source: source,
 		user_id: ADMIN_USER
 	    };
-
 	    exports.upsertAber(query, function(err, annotation){
 		if (err) throw new Error(err);
 		d.resolve();
@@ -307,6 +286,31 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 
 // ************************************
 // PPIs
+// find all protein-protein interaction annotations given a structure with regexp
+// and the ids of users who have submitted upvotes/downvotes on each
+exports.ppiFind = function(query, dir, callback) {
+    ppis = Schemas.interactions
+    annos = Schemas.annotations
+    votes = Schemas.votes
+
+    // Selects the desired ppi annotations according to the given filter
+    if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
+        selAnnosQuery = annos.from(annos.joinTo(ppis)).where(query);
+    } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
+	selAnnosQuery = ppis.from(ppis.joinTo(annos)).where(query);
+    }
+
+    Database.sql_query(joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
+	if (err) {
+            console.log("Error selecting ppi annotations: " + err);
+	    console.log("Debug: full query:", selAnnosQuery.string)
+	    callback(err, null)
+	}
+
+	callback(null, result.rows.map(normalizeAnnotation))
+    })
+}
+
 exports.upsertPPI = function(data, callback) {
     ppis = Schemas.interactions
     annos = Schemas.annotations
@@ -418,3 +422,12 @@ exports.loadPPIsFromFile = function(filename, source, callback){
 
     loadPPIFile().then( processAnnotations ).then( function(){ callback("") } );
 }
+
+// A function for listing all the interactions for a particular gene
+exports.ppilist = function ppilist(genes, callback){
+    inGenes = [inPPIClause('source', genes), inPPIClause('target', genes)];
+    exports.ppiFind(inGenes, function (err, ppis) {
+	if(err) console.log(err);
+	else callback("", ppis);
+    })// end PPI.find
+}// end exports.ppilist
