@@ -119,7 +119,7 @@ exports.sampleView = function sampleView(req, res){
 				    return d;
 				});
 				// Render the page
-				res.render('sampleView', {sample: sample, annotations: sampleAnnotations, user: req.user, dataset: dataset, cancer: cancer, mutations: mutations });
+				res.render('sampleView', {sample: sample, annotations: sampleAnnotations, user: req.user, dataset: dataset, cancer: cancer, mutations: mutations, show_requery: true });
 			    });
 			});
 		})
