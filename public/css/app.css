@@ -533,6 +533,9 @@ span.comment a{cursor:pointer;margin-left:3px;}
 div.annotation-table a.upvote, div.annotation-table a.downvote{ color:#000;}
 div.annotation-table td, div.annotation-table th{ text-align: center;}
 
+/* Trashing icon style */
+span.glyphicon-trash {cursor:pointer;}
+
 /* Boostrap changes */
 .popover{
     max-width: 500px;
