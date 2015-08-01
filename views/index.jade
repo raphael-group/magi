@@ -19,6 +19,7 @@ block body
                 li Generate dataset summaries.
             li Collaboratively annotate aberrations and interactions while exploring your data.
             li View the aberrations in a tumor sample, prioritized by their annotations.
+          | If you use MAGI in your work, please cite <a href='http://www.nature.com/nmeth/journal/v12/n6/full/nmeth.3412.html' target='_new'>Leiserson, <i>et al</i>. <i>Nature Methods</i>, 2015</a>.
           br
 
         div(class="col-md-6")
@@ -64,7 +65,7 @@ block body
         a(href="/datasets" id="magi-tab-datasets") View Dataset Summaries
 
     div(id="query-samples", class="query panel-success panel", style="margin-top:-2px;display:none")
-      div(class="panel-body")
+      div(class="panel-body" id="scrollable-dropdown-menu")
         b Search by sample ID
         p View the mutations in and clinical information from a single tumor sample.
         input(class="typeahead form-control", id="sample-typeahead", type="text", placeholder="Sample ID (e.g. TCGA-XX-XXXX).")
@@ -304,11 +305,11 @@ block body
         br
         i Screenshot of the MAGI annotations interface.
       br
-      | MAGI includes an interface for users to add annotations to aberrations or interactions 
-      | in the browser while they are exploring their data. Here we show an example of how 
-      | users can click on mutations in the transcript view to prepopulate the annotation form 
-      | with information about the mutation. Users can click on any of the data points in the 
-      | MAGI visualizations to prepopulate the form. Note that users must be logged in to 
+      | MAGI includes an interface for users to add annotations to aberrations or interactions
+      | in the browser while they are exploring their data. Here we show an example of how
+      | users can click on mutations in the transcript view to prepopulate the annotation form
+      | with information about the mutation. Users can click on any of the data points in the
+      | MAGI visualizations to prepopulate the form. Note that users must be logged in to
       | add new annotations or vote on existing annotations.
       br
       br
@@ -501,6 +502,7 @@ block belowTheFold
     $("input#sample-typeahead").typeahead({highlight: true}, {
       name: 'samples',
       displayKey: 'sample',
+      limit: 20,
       source: sampleBloodhound.ttAdapter(),
       templates:{
         suggestion: Handlebars.compile('<div><strong>{{sample}}</strong> ({{groupName}}: {{cancer}})</p>')

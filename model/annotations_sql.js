@@ -2,6 +2,7 @@
 Database = require('./db_sql');
 Schemas = require('./annotations_schema.js');
 var sql = require("sql");
+var ADMIN_USER = "admin";
 
 //initialize table
 exports.init = Schemas.initDatabase
@@ -29,17 +30,24 @@ exports.geneFind = function(query, dir, callback) {
 	    callback(err, null)
 	}
 
-	// convert null votes to []
-	for (var i = 0; i < result.rows.length; i++) {
-	    if (result.rows[i].upvotes == null) {
-		result.rows[i].upvotes = []
-	    }
-	    if (result.rows[i].downvotes == null) {
-		result.rows[i].downvotes = []
-	    }
-	}
-	callback(null, result.rows)
+	callback(null, result.rows.map(normalizeAnnotation))
     })
+}
+
+function normalizeAnnotation(anno) {
+    // convert null votes to []
+    if (anno.upvotes == null) {
+	anno.upvotes = []
+    }
+    if (anno.downvotes == null) {
+	anno.downvotes = []
+    }
+    return anno;
+}
+
+exports.inGeneClause = function(columnName, columnPoss) {
+    abers = Schemas.aberrations
+    return abers[columnName].in(columnPoss);
 }
 
 // join a query with the list of all user_ids who have voted on a particular annotation
@@ -107,16 +115,7 @@ exports.ppiFind = function(query, dir, callback) {
 	    callback(err, null)
 	}
 
-	// convert null votes to []
-	for (var i = 0; i < result.rows.length; i++) {
-	    if (result.rows[i].upvotes == null) {
-		result.rows[i].upvotes = []
-	    }
-	    if (result.rows[i].downvotes == null) {
-		result.rows[i].downvotes = []
-	    }
-	}
-	callback(null, result.rows)
+	callback(null, result.rows.map(normalizeAnnotation))
     })
 }
 
@@ -213,6 +212,18 @@ exports.upsertAber = function(data, callback){
     })
 }
 
+function parsePMID(pmid_field) {
+    // parse PMIDs if necessary:
+    if (pmid_field === undefined) 
+	return ["none"]
+
+    if (pmid_field.indexOf(",") == -1) 
+	return [pmid_field];
+
+    return pmid_field.split(",");
+
+}
+
 // Loads annotations into the database
 exports.loadAnnotationsFromFile = function(filename, source, callback){
     // Load required modules
@@ -247,21 +258,24 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 	for (var i = 1; i < lines.length; i++){
 	    // Parse the line
 	    var fields = lines[i].split('\t'),
-	    support = {
-		gene: fields[0],
-		transcript: fields[1] == '' ? null : fields[1], // not used
-		cancer: fields[2] == '' ? null : fields[2],
-		mutation_class: fields[3],
-		mutation_type: fields[4],
-		locus: fields[5] == '' ? null : fields[5], // not used
-		change: fields[6] == '' ? null : fields[6],
-		reference: fields[7], //pmid
-		comment: fields.length > 8 ? fields[8] : null,
-		source: source
-	    }
-	    annotations.push( support );
+	    references = parsePMID(fields[7])
+	    
+	    references.forEach(function(pmid) {
+		annotations.push({
+		    gene: fields[0],
+		    transcript: fields[1] == '' ? null : fields[1], // not used
+		    cancer: fields[2] == '' ? null : fields[2],
+		    mutation_class: fields[3],
+		    mutation_type: fields[4],
+		    locus: fields[5] == '' ? null : fields[5], // not used
+		    change: fields[6] == '' ? null : fields[6],
+		    reference: pmid, //pmid
+		    comment: fields.length > 8 ? fields[8] : null,
+		    source: source
+		});
+	    });
 	}
-	console.log( "Loading " + annotations.length + " annotations from file..." )
+	console.log( "Loading " + annotations.length + " aberration annotations from file..." )
 
 	// Save all the annotations
 	return Q.allSettled( annotations.map(function(A){
@@ -269,7 +283,7 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 
 	    var query = {
 		gene: A.gene,
-		cancer: A.cancer,
+		cancer: A.cancer.toUpperCase(),
 		change: A.change,
 		transcript: A.transcript,
 		mut_class: A.mutation_class,
@@ -277,7 +291,7 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 		pmid: A.reference,
 		comment: A.comment,
 		source: source,
-		user_id: "admin_user"
+		user_id: ADMIN_USER
 	    };
 
 	    exports.upsertAber(query, function(err, annotation){
@@ -296,7 +310,6 @@ exports.loadAnnotationsFromFile = function(filename, source, callback){
 exports.upsertPPI = function(data, callback) {
     ppis = Schemas.interactions
     annos = Schemas.annotations
-    console.log("Retrieved record: ", data)
 
     // insert into the annos
     annoInsertQuery = annos.insert([{
@@ -316,20 +329,21 @@ exports.upsertPPI = function(data, callback) {
 	}
     }
 
-    console.log("Submitting query: ", annoInsertQuery.string)
+//    console.log("Submitting upsert query: ", annoInsertQuery.toQuery().text)
+
     // todo: test update case
     // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
     Database.execute(annoInsertQuery, function(err, subresult) {
 	// retrieve the unique ID for the annotation
 	handleErr(err, subresult, annoInsertQuery)
 	u_id = subresult.rows[0].u_id
-	console.log("Returned on upsert ppi u_id: ", u_id)
 
+	// database, type, weight, directed, tissue are all unspecified on front-end
 	ppiInsertQuery = ppis.insert(
 	    ppis.source.value(data.source),
 	    ppis.target.value(data.target),
-	    // nothing else can be specified currently in front end
-	    // database, type, weight, directed, tissue all blank
+	    ppis.weight.value(data.weight),
+	    ppis.database.value(data.database),	    
 	    ppis.anno_id.value(u_id)).returning(ppis.anno_id) // we can return more if we want
 
 	Database.execute(ppiInsertQuery, function(err, result) {
@@ -337,4 +351,70 @@ exports.upsertPPI = function(data, callback) {
 	    callback(null, result.rows[0])
 	})
     })
+}
+
+// Loads annotations into the database
+exports.loadPPIsFromFile = function(filename, source, callback){
+    // Load required modules
+    var fs = require( 'fs' ),
+    Q  = require( 'q' );
+
+    // Read in the file asynchronously
+    var data;
+    function loadPPIFile(){
+	var d = Q.defer();
+	fs.readFile(filename, 'utf-8', function (err, fileData) {
+	    // Exit if there's an error, else callback
+	    if (err) console.log(err)
+	    d.resolve();
+	    data = fileData;
+	});
+	return d.promise;
+    }
+
+    function processAnnotations(){
+	// Load the lines, but skip the header (the first line)
+	var lines = data.trim().split('\n');
+
+	// Make sure there're some lines in the file
+	if (lines.length < 2){
+	    console.log("Empty file (or just header). Exiting.")
+	    process.exit(1);
+	}
+
+	// Create objects to represent each annotation
+	var ppis = [];
+	for (var i = 1; i < lines.length; i++){ // first line should be the header	    
+	    var fields = lines[i].split('\t');
+	    pmids = parsePMID(fields[4]);
+	    pmids.forEach(function (_pmid) {
+		ppis.push({
+		    source: fields[0],
+		    target: fields[1], 
+		    weight: fields[2] == '' ? 1 : fields[2],
+		    database: fields[3],
+		    pmid: _pmid,
+		    user_id: ADMIN_USER
+		}); 
+	    }); 
+	}
+	console.log( "Loading " + ppis.length + " ppi annotations from file..." )
+
+	// Save all the annotations
+	return Q.allSettled( ppis.map(function(query){
+	    var d = Q.defer();
+	    
+	    exports.upsertPPI(query, function(err, annotation){
+		if (err) {
+		    console.log("error, query: ");
+		    console.log(query)
+		    throw new Error(err);
+		}
+		d.resolve();
+	    })
+	    return d.promise;
+	}));
+    }
+
+    loadPPIFile().then( processAnnotations ).then( function(){ callback("") } );
 }

@@ -17,7 +17,7 @@ annotations = sql.define({
 	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
 	{name: 'u_id', dataType: 'serial', primaryKey: true},
 	{name: 'comment',	dataType: 'varchar(5000)',},
- 	{name: 'reference',	dataType: 'varchar(25)', notNull: true},
+ 	{name: 'reference',	dataType: 'varchar(45)', notNull: true},
 	{name: 'type', dataType: annoTypeName, notNull: true}],
 })
 
@@ -31,11 +31,12 @@ aberrations = sql.define({
 	{name: 'mut_type',	dataType: 'varchar(35)'},
         {name: 'protein_seq_change', dataType: 'varchar(30)'},
         {name: 'source', 	dataType: 'varchar(20)', notNull: true},
-//	{name: 'is_germline',	dataType: 'boolean'}, // not used
-//  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
+	{name: 'is_germline',	dataType: 'boolean'}, // not used
+  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
 	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true},
 	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}}]
 })
+
 // todo: maintain unique key constraint with the source?
 //aberrations.unique = ["gene", "cancer", "mut_class", "mut_type",
 
@@ -61,7 +62,7 @@ votes = sql.define({
 	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
 	// integrity check: only one vote at a time
 	{name: 'direction', dataType: 'smallint', notNull: true},
-	{name: 'comment', dataType: 'varchar(100)'}]
+	{name: 'comment', dataType: 'varchar(300)'}]
 })
 
 function initDatabase() {
