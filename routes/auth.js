@@ -34,7 +34,7 @@ exports.account = function(req, res){
 				    if (err) throw new Error(err);
 				    if (ppiAnnos.length > 0) {
 					console.log(ppiAnnos[0]);
-				    }				   
+				    }
 				    // Render index page
 				    res.render('account',
 					       { user: user,
@@ -42,7 +42,8 @@ exports.account = function(req, res){
 						 geneAnnos: geneAnnos,
 						 ppiAnnos: ppiAnnos,
 						 abbrToCancer: abbrToCancer,
-						 cancerToAbbr: cancerToAbbr});
+						 cancerToAbbr: cancerToAbbr,
+             skip_requery: true});
 				});
 			    });
 			});

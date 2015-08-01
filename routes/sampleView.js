@@ -67,8 +67,8 @@ exports.sampleView = function sampleView(req, res){
 				    console.error(err);
 				    fail = true;
 				    return;
-				} 
-				
+				}
+
 				annotations = geneTable(mutGenes, userAnnos);
 
 				// Create a list of mutations including the annotations, separating
@@ -104,7 +104,7 @@ exports.sampleView = function sampleView(req, res){
 					}
 				    });
 				});
-				// Sort the mutations 
+				// Sort the mutations
 				locusMutations.sort(function(a, b){ return a.locusReferences.count > b.locusReferences.count ? -1 : 1; })
 				typeMutations.sort(function(a, b){ return a.typeReferences.count > b.typeReferences.count ? -1 : 1; })
 				geneMutations.sort(function(a, b){ return a.geneReferences.count > b.geneReferences.count ? -1 : 1; })
@@ -119,7 +119,7 @@ exports.sampleView = function sampleView(req, res){
 				    return d;
 				});
 				// Render the page
-				res.render('sampleView', {sample: sample, annotations: sampleAnnotations, user: req.user, dataset: dataset, cancer: cancer, mutations: mutations });
+				res.render('sampleView', {sample: sample, annotations: sampleAnnotations, user: req.user, dataset: dataset, cancer: cancer, mutations: mutations, show_requery: true });
 			    });
 			});
 		})
@@ -133,11 +133,11 @@ function endsWith(str, suffix) {
 
 
 function geneTable(genes, support){
-	// Assemble the annotations into a dictionary index by 
+	// Assemble the annotations into a dictionary index by
 	// gene (e.g. TP53) and mutation class (e.g. missense or amp)
 	// and then protein change (only applicable for missense/nonsense)
 	// 1) Store the total number of references for the gene/class in "",
-	//    i.e. annotations['TP53'][''] gives the total for TP53 and 
+	//    i.e. annotations['TP53'][''] gives the total for TP53 and
 	//    annotations['TP53']['snv'][''] gives the total for TP53 SNVs.
 	// 2) Count the number per protein change.
 	var annotations = {};
@@ -151,7 +151,7 @@ function geneTable(genes, support){
 		var mClass = A.mut_class.toLowerCase(),
 			mType = A.mut_type ? A.mut_type.toLowerCase().replace("_mutation", "") : "";
 		if (mClass == "snv" && (mType == "missense" || mType == "nonsense")){ mClass = mType; }
-		
+
 		// Add the class if it hasn't been seen before
 		if (typeof(annotations[A.gene][mClass]) == 'undefined'){
 			annotations[A.gene][mClass] = {"" : [] };
@@ -174,7 +174,7 @@ function geneTable(genes, support){
 	    annotations[A.gene][""].push({ pmid: A.reference, cancer: A.cancer });
 	});
 
-	// Combine references at the PMID level so that for each 
+	// Combine references at the PMID level so that for each
 	// annotation type (gene, type, locus) we have a list of references
 	// with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)
 	// level so we have a list of PMIDs that all map to the same cancer type(s)

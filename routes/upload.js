@@ -163,7 +163,7 @@ exports.uploadDataset = function uploadDataset(req, res){
 		annotationColorsFile = fields.AnnotationColorsLocation;
 	}
 
-	// Construct the 
+	// Construct the
 	var args = ['-c', cancer, '-dn', '"' + dataset + '"', '--user_id', req.user._id];
 	if (groupName) args = args.concat(['-gn', '"' + groupName + '"']);
 	if (snvFile) args = args.concat(['-sf', snvFile, '-sft', snvFileFormat]);

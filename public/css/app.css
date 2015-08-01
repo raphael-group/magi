@@ -202,9 +202,7 @@ div.page-header{
   margin-top: 10px;
   padding: 5px 15px;
 }
-a#navbar-query-btn {
-  background: rgb(235,235,235);
-  color: rgb(31,31,31);
+a.qry-button {
   border-radius: 7.5px 7.5px 0 0;
   margin-left: 5px;
 }
@@ -222,10 +220,15 @@ div#navbar-query {
   padding: 0px 15px 5px 5px;
 }
 div#navbar-query-connector{
-  z-index:1000;position:absolute;left:143px;top:38px;background:rgb(235, 235, 235);height:17px;width:68px
+  z-index:1000;position:absolute;left:68px;top:38px;background:rgb(235, 235, 235);height:17px;width:67px
 }
 form#requery-gene-select-addForm .twitter-typeahead{display:inline !important;position: static!important;}
 .requery-dataset-select{background:#fff!important;border:1px solid rgb(205, 205, 205);}
+div#scrollable-dropdown-menu .tt-menu {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
 span.requery-gene-select-badge {
   background: rgb(175,175,175);
   border-radius: 5px;
@@ -272,6 +275,26 @@ span.requery-gene-select-badge-xout {
   padding: 1px 0px 3px 3px;
   width: 12px;
   visibility: hidden;
+}
+
+div.requery-geneSuggestion {
+  font-weight: bold;
+}
+div.requery-geneSuggestion::after {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  color: #333;
+  content: 'add';
+  font-size: 11px;
+  font-weight: bold;
+  margin-left: 3px;
+  padding: 0px 5px 2px 5px;
+}
+
+div.requery-geneSuggestion:hover::before {
+  background: #ccc;
+  border: 1px solid #999;
 }
 
 /* Footer */
