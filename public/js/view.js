@@ -382,8 +382,9 @@ function view(){
 				{type: 'text', text: 'Votes'}
 			].map(gd3.tooltip.datum)
 		];
-		d.categories.forEach(function(n){
-			if (d.references[n].length > 0){
+		
+	    d.categories.forEach(function(n){
+		if (d.references[n].length > 0){
 				d.references[n].forEach(function(ref, i){
 					ref.score = ref.upvotes.length - ref.downvotes.length;
 					if (ref.upvotes.indexOf(user_id) > -1){
@@ -440,7 +441,7 @@ function view(){
 						 }}
 					].map(gd3.tooltip.datum));
 				})
-			} else{
+			} else {
 				refTable.push(gd3.tooltip.datum({type: 'text', text: n}));
 			}
 		});

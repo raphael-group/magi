@@ -281,9 +281,7 @@ exports.view  = function view(req, res){
 
 							    SQLannotations.ppilist(genes, function(err, ppis) {
 								SQLannotations.ppicomments(ppis, user_id, function(err, comments){
-								    console.log("comments");
 								    formatPPIs(ppis, user_id, function(err, edges, refs){
-									console.log("formatting");
 									var Cancer = Database.magi.model( 'Cancer' );
 									Cancer.find({}, function(err, cancers){
 									    if (err) throw new Error(err);
@@ -324,7 +322,6 @@ exports.view  = function view(req, res){
 										sampleAnnotations: sampleAnnotations,
 										geneToAnnotationCount: geneToAnnotationCount
 									    };
-									    console.log("rendering")
 									    // Render view
 									    res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user });
 									});
@@ -374,13 +371,15 @@ function formatPPIs(ppis, user_id, callback){
 		var references = {};
 		networks.forEach(function(n){ references[n] = []; });
 		edgeNames[edgeName].forEach(function(d){
+		    if (d.refs.pmid && d.refs.pmid != '' ) {
 			references[d.name] = references[d.name].concat( d.refs );
+		    }
 		});
 
 		// Update the map of each network's edge's references to
 		// its votes and whether or not it was voted for by the current user
 		networks.forEach(function(n){
-			// Initialize the hashs for each component of this edge (if necessary)
+			// Initialize the hashes for each component of this edge (if necessary)
 			if (!(n in refs)) refs[n] = {};
 			if (!(source in refs[n])) refs[n][source] = {};
 			if (!(target in refs[n][source])) refs[n][source][target] = {};
