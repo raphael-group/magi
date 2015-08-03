@@ -13,8 +13,6 @@ SQLannotations = require("../model/annotations_sql.js"),
 
 
 exports.view  = function view(req, res){
-	console.log('view');
-
 	// Parse query params
 	if(req.params.id) {
 		var QueryHash = Database.magi.model('QueryHash'),
@@ -234,7 +232,7 @@ exports.view  = function view(req, res){
 						    };
 						    
 						    geneToAnnotationList[A.gene][A.reference] = true;
-//						    var cancer = A.cancer ? A.cancer : "Cancer";
+						    var cancer = A.cancer ? A.cancer : "Cancer";
 						    if (cancer in annotations[A.gene][A.mut_class]) {
 							annotations[A.gene][A.mut_class][cancer].push(ref);
 						    } else {
@@ -280,56 +278,132 @@ exports.view  = function view(req, res){
 							Dataset.createHeatmap(genes, datasets, samples, function(err, heatmap){
 								if (err) throw new Error(err);
 								var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
-							    // todo: replace PPIs
-								PPIs.ppilist(genes, function(err, ppis){
-									PPIs.ppicomments(ppis, user_id, function(err, comments){
-										PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-										    var Cancer = Database.magi.model( 'Cancer' );
-											Cancer.find({}, function(err, cancers){
-												if (err) throw new Error(err);
 
-												// Create a mapping of dataset titles to cancer names
-												var cancerIdToName = {},
-													abbrToCancer = {},
-													datasetToCancer = {};
-												cancers.forEach(function(c){
-													cancerIdToName[c._id] = c.cancer;
-													if (c.abbr) abbrToCancer[c.abbr] = c.cancer;
-												});
-												datasets.forEach(function(d){
-													datasetToCancer[d.title] = cancerIdToName[d.cancer_id];
-												});
+							    SQLannotations.ppilist(genes, function(err, ppis) {
+								SQLannotations.ppicomments(ppis, user_id, function(err, comments){
+								    console.log("comments");
+								    formatPPIs(ppis, user_id, function(err, edges, refs){
+									console.log("formatting");
+									var Cancer = Database.magi.model( 'Cancer' );
+									Cancer.find({}, function(err, cancers){
+									    if (err) throw new Error(err);
 
-												// Package data into one object
-												var network_data = { edges: edges, nodes: nodes, refs: refs, comments: comments, title: "Mutations" };
-												var pkg = 	{
-																abbrToCancer: abbrToCancer,
-																datasetToCancer: datasetToCancer,
-																network: network_data,
-																aberrations: mutation_matrix,
-																transcripts: transcript_data,
-																domainDBs: Object.keys(domainDBs),
-																cnas: cna_browser_data,
-																datasetColors: datasetColors,
-																annotations: annotations,
-																genes: genes,
-																dataset_ids: dataset_ids,
-																heatmap: heatmap,
-																sampleAnnotations: sampleAnnotations,
-																geneToAnnotationCount: geneToAnnotationCount
-															};
+									    // Create a mapping of dataset titles to cancer names
+									    var cancerIdToName = {},
+									    abbrToCancer = {},
+									    datasetToCancer = {};
+									    cancers.forEach(function(c){
+										cancerIdToName[c._id] = c.cancer;
+										if (c.abbr) abbrToCancer[c.abbr] = c.cancer;
+									    });
+									    datasets.forEach(function(d){
+										datasetToCancer[d.title] = cancerIdToName[d.cancer_id];
+									    });
 
-												// Render view
-												res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user });
-											});
-										});
+									    // Package data into one object
+									    var network_data = { 
+										edges: edges, 
+										nodes: nodes, 
+										refs: refs, 
+										comments: comments, 
+										title: "Mutations" 
+									    };
+									    var pkg = {
+										abbrToCancer: abbrToCancer,
+										datasetToCancer: datasetToCancer,
+										network: network_data,
+										aberrations: mutation_matrix,
+										transcripts: transcript_data,
+										domainDBs: Object.keys(domainDBs),
+										cnas: cna_browser_data,
+										datasetColors: datasetColors,
+										annotations: annotations,
+										genes: genes,
+										dataset_ids: dataset_ids,
+										heatmap: heatmap,
+										sampleAnnotations: sampleAnnotations,
+										geneToAnnotationCount: geneToAnnotationCount
+									    };
+									    console.log("rendering")
+									    // Render view
+									    res.render('view', {data: pkg, showDuplicates: req.query.showDuplicates || false, user: req.user });
 									});
+								    });
 								});
+							    });
 							});
-						});
+					    });
 					});
 				});
 			});
 		});
 	}
+}
+
+function formatPPIs(ppis, user_id, callback){
+	var edgeNames = {};
+	for (var i = 0; i < ppis.length; i++){
+		// Parse interaction and create unique ID
+		var ppi   = ppis[i],
+			ppiName = [ppi.source, ppi.target].sort().join("*");
+
+	    refInfo = {
+		pmid: ppi.reference,
+		upvotes: ppi.upvotes,
+		downvotes: ppi.downvotes
+	    }
+		// Append the current network for the given edge
+		if (ppiName in edgeNames){
+			edgeNames[ppiName].push( {name: ppi.database, refs: refInfo } );
+		}
+		else{
+		    edgeNames[ppiName] = [ {name: ppi.database, refs: refInfo } ];
+		}
+	}
+
+	// Create edges array by splitting edgeNames
+	var edges = [],
+		refs = {};
+	for (var edgeName in edgeNames){
+		var  arr   = edgeName.split("*"),
+			source   = arr[0],
+			target   = arr[1],
+			networks = edgeNames[edgeName].map(function(d){ return d.name; });
+
+		// Create a map of each network to its references
+		var references = {};
+		networks.forEach(function(n){ references[n] = []; });
+		edgeNames[edgeName].forEach(function(d){
+			references[d.name] = references[d.name].concat( d.refs );
+		});
+
+		// Update the map of each network's edge's references to
+		// its votes and whether or not it was voted for by the current user
+		networks.forEach(function(n){
+			// Initialize the hashs for each component of this edge (if necessary)
+			if (!(n in refs)) refs[n] = {};
+			if (!(source in refs[n])) refs[n][source] = {};
+			if (!(target in refs[n][source])) refs[n][source][target] = {};
+
+			references[n].forEach(function(ref){
+				// Record the score
+				var score = ref.upvotes.length - ref.downvotes.length;
+				refs[n][source][target][ref.pmid] = { vote: null, score: score };
+
+				//  Record the user's vote for the current reference (if neccessary)
+				if (user_id && ref.upvotes.indexOf(user_id) != -1){
+					refs[n][source][target][ref.pmid].vote = "up";
+				}
+				else if (user_id && ref.downvotes.indexOf(user_id) != -1){
+					refs[n][source][target][ref.pmid].vote = "down";
+				}
+			});
+		});
+
+		edges.push({ source: source, target: target, weight: 1, categories: networks, references: references });
+	}
+
+	// Execute callback
+	callback("", edges, refs);
+
 }

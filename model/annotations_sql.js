@@ -51,7 +51,7 @@ exports.inGeneClause = function(columnName, columnPoss) {
     return abers[columnName].in(columnPoss);
 }
 
-exports.inPPIClause = function(columnName, columnPoss) {
+exports.inPPIClause = function inPPIClause(columnName, columnPoss) {
     ppis = Schemas.interactions;
     return ppis[columnName].in(columnPoss);
 }
@@ -425,9 +425,38 @@ exports.loadPPIsFromFile = function(filename, source, callback){
 
 // A function for listing all the interactions for a particular gene
 exports.ppilist = function ppilist(genes, callback){
-    inGenes = [inPPIClause('source', genes), inPPIClause('target', genes)];
-    exports.ppiFind(inGenes, function (err, ppis) {
+    inGenes = [
+	exports.inPPIClause('source', genes), 
+	exports.inPPIClause('target', genes)];
+    exports.ppiFind(inGenes, 'right', function (err, ppis) {
 	if(err) console.log(err);
 	else callback("", ppis);
     })// end PPI.find
 }// end exports.ppilist
+
+// A replacement function for getting comments
+exports.ppicomments = function ppicomments(ppis, user_id, callback){
+    annos = Schemas.annotations
+    votes = Schemas.votes
+    // get all u_ids of the ppis
+    uids = ppis.map(function(p) {return p.u_id;});
+    
+    query = annos.from(annos.join(votes).on(annos.u_id.equals(votes.anno_id))).where([
+	annos.u_id.in(uids), 
+	annos.user_id.equals(user_id)
+    ])
+
+    Database.execute(query, function(err, result) {
+	if (err) {
+            console.log("Error getting ppi comments: " + err);
+	    console.log("Debug: full query:", selQuery.string)
+	    callback(err, null);
+	}
+	if (result.rowCount == 0) {
+	    callback(null, []);
+	} else {
+	    callback(null, result.rows);
+	}
+    });
+
+}
