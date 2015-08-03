@@ -293,8 +293,11 @@ function view(){
 						];
 
 					cancerNames.forEach(function(cancer){
+					    var refsUsed = [];
 						cancerToRefs[cancer].forEach(function(ref, i){
 							// only show the cancer name in the first row
+						    if (refsUsed.indexOf(ref.pmid) == -1) {
+							refsUsed.push(ref.pmid);
 							refTable.push([
 								{ type: 'text', text: i ? "" : cancerToName(cancer) },
 								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
@@ -331,6 +334,7 @@ function view(){
 								  	return ref.vote;
 								  }}
 							].map(gd3.tooltip.datum));
+						    }
 						});
 					});
 

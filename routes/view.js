@@ -5,6 +5,7 @@ var mongoose = require( 'mongoose' ),
 	PPIs     = require( "../model/ppis" ),
 	Domains  = require( "../model/domains" ),
 	Annotations  = require( "../model/annotations" ),
+SQLannotations = require("../model/annotations_sql.js"),
 	QueryHash = require('../model/queryHash'),
 	Database = require('../model/db'),
 	Cancers  = require( "../model/cancers" ),
@@ -211,43 +212,51 @@ exports.view  = function view(req, res){
 
 						// Load the annotations for each gene
 						var Annotation = Database.magi.model( 'Annotation' );
-						Annotation.find({gene: {$in: genes}}, function(err, support){
-							// Throw error if necessary
-							if (err) throw new Error(err);
+					    SQLannotations.geneFind(SQLannotations.inGeneClause('gene', genes),'right', function(err, support) {
+						// Throw error if necessary
+						if (err) throw new Error(err);
 
-							// Assemble the annotations
-							var annotations = {},
-								geneToAnnotationList = {};
-							genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
-							support.forEach(function(A){
-								A.mutation_class = A.mutation_class.toUpperCase();
-								if (!annotations[A.gene][A.mutation_class]){
-									annotations[A.gene][A.mutation_class] = {};
+						// Assemble the annotations
+						var annotations = {},
+						geneToAnnotationList = {};
+						genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
+						support.forEach(function(A, i){
+						    A.mut_class = A.mut_class.toUpperCase();
+								if (!annotations[A.gene][A.mut_class]){
+									annotations[A.gene][A.mut_class] = {};
 								}
-								var refs = A.references.map(function(d){
-									var score = d.upvotes.length - d.downvotes.length,
-										vote = d.upvotes.indexOf(user_id) != -1 ? "up" : d.downvotes.indexOf(user_id) != -1 ? "down" : null;
-									geneToAnnotationList[A.gene][d.pmid] = true;
-									return { pmid: d.pmid, score: score,  vote: vote, _id: A._id };
-								});
-								var cancer = A.cancer ? A.cancer : "Cancer";
-								annotations[A.gene][A.mutation_class][cancer] = refs;
-							});
+						    var ref = {
+							pmid: A.reference,
+							score: A.upvotes.length - A.downvotes.length,
+							vote: A.upvotes.indexOf(user_id) != -1 ? "up" : 
+							    (A.downvotes.indexOf(user_id) != -1 ? "down" : null),
+							_id: A.u_id
+						    };
+						    
+						    geneToAnnotationList[A.gene][A.reference] = true;
+//						    var cancer = A.cancer ? A.cancer : "Cancer";
+						    if (cancer in annotations[A.gene][A.mut_class]) {
+							annotations[A.gene][A.mut_class][cancer].push(ref);
+						    } else {
+							annotations[A.gene][A.mut_class][cancer] = [ref];
+						    }
+						});
 
-							// Count the number of PMIDs per gene
-							var geneToAnnotationCount = {};
-							genes.forEach(function(g){
-								geneToAnnotationCount[g] = Object.keys(geneToAnnotationList[g]).length;
-							});
+						// Count the number of PMIDs per gene
+						
+						var geneToAnnotationCount = {};
+						genes.forEach(function(g){
+						    geneToAnnotationCount[g] = Object.keys(geneToAnnotationList[g]).length;
+						});
 
-							// Assemble data into single Object
-							var mutation_matrix = {
-													M : M,
-													sampleToTypes: sampleToTypes,
-													sampleTypes: Object.keys(typeToSamples),
-													typeToSamples: typeToSamples,
-													samples: samples
-												};
+						// Assemble data into single Object
+						var mutation_matrix = {
+						    M : M,
+						    sampleToTypes: sampleToTypes,
+						    sampleTypes: Object.keys(typeToSamples),
+						    typeToSamples: typeToSamples,
+						    samples: samples
+						};
 
 							// Sort genes by coverage
 							genes = genes.sort(function(a, b){
@@ -271,11 +280,11 @@ exports.view  = function view(req, res){
 							Dataset.createHeatmap(genes, datasets, samples, function(err, heatmap){
 								if (err) throw new Error(err);
 								var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
+							    // todo: replace PPIs
 								PPIs.ppilist(genes, function(err, ppis){
 									PPIs.ppicomments(ppis, user_id, function(err, comments){
 										PPIs.formatPPIs(ppis, user_id, function(err, edges, refs){
-											var Cancer = Database.magi.model( 'Cancer' );
-
+										    var Cancer = Database.magi.model( 'Cancer' );
 											Cancer.find({}, function(err, cancers){
 												if (err) throw new Error(err);
 
