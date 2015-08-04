@@ -3,7 +3,7 @@
 var mongoose = require( 'mongoose' ),
 	Database = require('../model/db'),
 	Samples = require('../model/samples'),
-        SQLannotations = require('../model/annotations_sql'),
+        Annotations = require('../model/annotations'),
 	Cancers = require('../model/cancers'),
 	Datasets = require('../model/datasets'),
 	fs = require('fs');
@@ -14,8 +14,7 @@ exports.sampleView = function sampleView(req, res){
 		fail = false,
 		Sample = Database.magi.model( 'Sample' ),
 		Dataset = Database.magi.model( 'Dataset' ),
-		Cancer = Database.magi.model( 'Cancer' ),
-		Annotation = Database.magi.model( 'Annotation' );
+		Cancer = Database.magi.model( 'Cancer' );
 
 	Sample.findOne({name: sample}, function(err, sample){
 		// Fail if we can't find the sample
@@ -62,14 +61,14 @@ exports.sampleView = function sampleView(req, res){
 			    geneMutations = [];
 
 			    // call for additional mutations
-			    SQLannotations.geneFind(SQLannotations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
+			    Annotations.geneFind(Annotations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
 				if (err) {
 				    console.error(err);
 				    fail = true;
 				    return;
 				} 
 				
-				annotations = geneTable(mutGenes, userAnnos);
+				var annotations = geneTable(mutGenes, userAnnos);
 
 				// Create a list of mutations including the annotations, separating
 				// them into three groups: locus (most important), type (second most

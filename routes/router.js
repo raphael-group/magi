@@ -8,7 +8,6 @@ var about = require( './about' ),
 	enrichments = require( './enrichments' ),
 	datasets = require('./datasets'),
 	annotations = require('./annotations'),
-	annotations_SQL = require('./annotations_sql'),
   log = require('./log'),
   share = require('./share'),
   requery = require('./requery');
@@ -64,7 +63,8 @@ exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view;
 exports.datasets.manifests = datasets.manifests;
 
-// Annotations
+// Annotations 
+/*
 exports.annotations = { save: {} };
 exports.annotations.gene = annotations.gene;
 exports.annotations.cancer = annotations.cancer;
@@ -73,7 +73,7 @@ exports.annotations.save.ppi = annotations.savePPI;
 exports.annotations.ppiVote = annotations.ppiVote;
 exports.annotations.ppiComment = annotations.ppiComment;
 exports.annotations.mutationVote = annotations.mutationVote;
-
+*/
 // Share link
 exports.saveShareURL = share.saveShareURL;
 
@@ -91,15 +91,15 @@ exports.queryGetDatasetsAndGenes = requery.queryGetDatasetsAndGenes;
 // Get session variables for queries
 exports.getSessionLatestQuery = requery.getSessionLatestQuery;
 
-// test routes for POSTGRESQL
-exports.annotations_SQL = {};
-exports.annotations_SQL.saveMutation = annotations_SQL.saveMutation;
-exports.annotations_SQL.gene = annotations_SQL.gene;
-exports.annotations_SQL.mutationVote = annotations_SQL.mutationVote;
-exports.annotations_SQL.cancer = annotations_SQL.cancer;
-exports.annotations_SQL.save_ppi = annotations_SQL.savePPI;
-exports.annotations_SQL.removeMutation = annotations_SQL.removeMutation;
-exports.annotations_SQL.removePpi = annotations_SQL.removePpi;
+// test routes for annotations
+exports.annotations = {};
+exports.annotations.saveMutation = annotations.saveMutation;
+exports.annotations.gene = annotations.gene;
+exports.annotations.mutationVote = annotations.mutationVote;
+exports.annotations.cancer = annotations.cancer;
+exports.annotations.save_ppi = annotations.savePPI;
+exports.annotations.removeMutation = annotations.removeMutation;
+exports.annotations.removePpi = annotations.removePpi;
 
 // exports.annotations.cancer = annotations.cancer;
 // exports.annotations.ppiVote = annotations.ppiVote;

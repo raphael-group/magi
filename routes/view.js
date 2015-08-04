@@ -2,15 +2,13 @@
 // Load models
 var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
-	PPIs     = require( "../model/ppis" ),
 	Domains  = require( "../model/domains" ),
-	Annotations  = require( "../model/annotations" ),
-SQLannotations = require("../model/annotations_sql.js"),
+        Annotations = require("../model/annotations"),
+        PPIs = require("../model/ppis"),
 	QueryHash = require('../model/queryHash'),
 	Database = require('../model/db'),
 	Cancers  = require( "../model/cancers" ),
 	fs = require('fs');
-
 
 exports.view  = function view(req, res){
 	// Parse query params
@@ -209,8 +207,7 @@ exports.view  = function view(req, res){
 						});
 
 						// Load the annotations for each gene
-						var Annotation = Database.magi.model( 'Annotation' );
-					    SQLannotations.geneFind(SQLannotations.inGeneClause('gene', genes),'right', function(err, support) {
+					    Annotations.geneFind(Annotations.inGeneClause('gene', genes),'right', function(err, support) {
 						// Throw error if necessary
 						if (err) throw new Error(err);
 
@@ -279,8 +276,8 @@ exports.view  = function view(req, res){
 								if (err) throw new Error(err);
 								var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
 
-							    SQLannotations.ppilist(genes, function(err, ppis) {
-								SQLannotations.ppicomments(ppis, user_id, function(err, comments){
+							    PPIs.ppilist(genes, function(err, ppis) {
+								PPIs.ppicomments(ppis, user_id, function(err, comments){
 								    formatPPIs(ppis, user_id, function(err, edges, refs){
 									var Cancer = Database.magi.model( 'Cancer' );
 									Cancer.find({}, function(err, cancers){
