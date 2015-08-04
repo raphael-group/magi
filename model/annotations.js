@@ -424,7 +424,7 @@ exports.loadPPIsFromFile = function(filename, source, callback){
 }
 
 // A function for listing all the interactions for a particular gene
-exports.ppilist = function ppilist(genes, callback){
+exports.ppilist = function (genes, callback){
     inGenes = [
 	exports.inPPIClause('source', genes), 
 	exports.inPPIClause('target', genes)];

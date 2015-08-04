@@ -179,17 +179,17 @@ app.get('/manifests', routes.datasets.manifests);
 //app.post('/vote/ppi', ensureAuthenticated, routes.annotations_SQL.ppiVote);
 //app.post('/comment/ppi', ensureAuthenticated, routes.annotations_SQL.ppiComment);
 
-// SQL substitute annotation views
-app.get('/annotations/gene/:gene', routes.annotations_SQL.gene);
-app.get('/delete/annotations/mutation/:u_id', routes.annotations_SQL.removeMutation); // todo: should be a DELETE
-app.get('/delete/annotations/interaction/:u_id', routes.annotations_SQL.removePpi); // todo: should be a DELETE
+// SQL  annotation views
+app.get('/annotations/gene/:gene', routes.annotations.gene);
+app.get('/delete/annotations/mutation/:u_id', routes.annotations.removeMutation); // todo: should be a DELETE
+app.get('/delete/annotations/interaction/:u_id', routes.annotations.removePpi); // todo: should be a DELETE
 
 // and take advantage of HTTP verbs
 
-//app.get('/annotations/cancer/:cancer', routes.annotations_SQL. cancer);
-app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations_SQL.saveMutation);
-app.post('/vote/mutation', routes.annotations_SQL.mutationVote);
-app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations_SQL.save_ppi);
+//app.get('/annotations/cancer/:cancer', routes.annotations. cancer);
+app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation);
+app.post('/vote/mutation', routes.annotations.mutationVote);
+app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save_ppi);
 
 // more information
 app.get('/terms', routes.terms);

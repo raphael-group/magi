@@ -2,7 +2,7 @@
 var mongoose = require('mongoose'),
 Dataset = require( "../model/datasets" ),
 Database = require('../model/db'),
-SQL_annos = require("../model/annotations_sql.js");
+SQL_annos = require("../model/annotations.js");
 
 var abbrToCancer = {}, cancerToAbbr = {};
 Cancer = Database.magi.model( 'Cancer' );

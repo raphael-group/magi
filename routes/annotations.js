@@ -1,7 +1,7 @@
 // Load required modules
 var mongoose = require( 'mongoose' ),
 formidable = require('formidable'),
-annotations  = require( "../model/annotations_sql" ),
+annotations  = require( "../model/annotations" ),
 Database = require('../model/db')
 
 // Create the table if it doesn't exist already
