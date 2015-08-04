@@ -2,15 +2,12 @@
 // Load models
 var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
-	PPIs     = require( "../model/ppis" ),
 	Domains  = require( "../model/domains" ),
-	Annotations  = require( "../model/annotations" ),
-SQLannotations = require("../model/annotations_sql.js"),
+        SQLannotations = require("../model/annotations_sql"),
 	QueryHash = require('../model/queryHash'),
 	Database = require('../model/db'),
 	Cancers  = require( "../model/cancers" ),
 	fs = require('fs');
-
 
 exports.view  = function view(req, res){
 	// Parse query params
@@ -209,7 +206,6 @@ exports.view  = function view(req, res){
 						});
 
 						// Load the annotations for each gene
-						var Annotation = Database.magi.model( 'Annotation' );
 					    SQLannotations.geneFind(SQLannotations.inGeneClause('gene', genes),'right', function(err, support) {
 						// Throw error if necessary
 						if (err) throw new Error(err);

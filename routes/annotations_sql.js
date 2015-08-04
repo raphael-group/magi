@@ -2,7 +2,6 @@
 var mongoose = require( 'mongoose' ),
 formidable = require('formidable'),
 annotations  = require( "../model/annotations_sql" ),
-PPIs = require( "../model/ppis" ),
 Database = require('../model/db')
 
 // Create the table if it doesn't exist already

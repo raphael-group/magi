@@ -14,8 +14,7 @@ exports.sampleView = function sampleView(req, res){
 		fail = false,
 		Sample = Database.magi.model( 'Sample' ),
 		Dataset = Database.magi.model( 'Dataset' ),
-		Cancer = Database.magi.model( 'Cancer' ),
-		Annotation = Database.magi.model( 'Annotation' );
+		Cancer = Database.magi.model( 'Cancer' );
 
 	Sample.findOne({name: sample}, function(err, sample){
 		// Fail if we can't find the sample
