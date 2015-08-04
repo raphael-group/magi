@@ -2,9 +2,10 @@
 var mongoose = require( 'mongoose' ),
 formidable = require('formidable'),
 annotations  = require( "../model/annotations" ),
+ppis  = require( "../model/ppis" ),
 Database = require('../model/db')
 
-// Create the table if it doesn't exist already
+// Create the tables if they don't exist already
 annotations.init()
 
 // on init: create map between cancers and abbrs
@@ -24,7 +25,7 @@ Cancer.find({}, function(err, cancers){
 // todo: add post route to add genes
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
-    console.log('SQL proxy for: /annotations/gene, gene =', req.params.gene);
+    console.log('/annotations/gene, gene =', req.params.gene);
 
     // Parse params
     var geneRequested = req.params.gene.toUpperCase() || ""
@@ -46,7 +47,7 @@ exports.gene = function gene(req, res){
 }
 
 exports.saveMutation = function saveMutation(req, res) {
-    console.log('SQL proxy for: /save/annotation/mutation')
+    console.log('/save/annotation/mutation')
 
     // Load the posted form
     var form = new formidable.IncomingForm({});
@@ -168,7 +169,7 @@ exports.savePPI = function savePPI(req, res){
 	    query = req.body;
 	    query.anno_source = "Community"
 	    query.user_id = req.user._id + ""
-	    annotations.upsertPPI(query, function(err, annotation){
+	    ppis.upsertPPI(query, function(err, annotation){
 		if (err) {
 		    res.send({ error: "Interaction could not be parsed." });
 		    throw new Error(err)
