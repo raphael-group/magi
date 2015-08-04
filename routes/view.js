@@ -4,6 +4,7 @@ var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
 	Domains  = require( "../model/domains" ),
         Annotations = require("../model/annotations"),
+        PPIs = require("../model/ppis"),
 	QueryHash = require('../model/queryHash'),
 	Database = require('../model/db'),
 	Cancers  = require( "../model/cancers" ),
@@ -275,8 +276,8 @@ exports.view  = function view(req, res){
 								if (err) throw new Error(err);
 								var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
 
-							    Annotations.ppilist(genes, function(err, ppis) {
-								Annotations.ppicomments(ppis, user_id, function(err, comments){
+							    PPIs.ppilist(genes, function(err, ppis) {
+								PPIs.ppicomments(ppis, user_id, function(err, comments){
 								    formatPPIs(ppis, user_id, function(err, edges, refs){
 									var Cancer = Database.magi.model( 'Cancer' );
 									Cancer.find({}, function(err, cancers){

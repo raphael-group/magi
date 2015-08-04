@@ -3,7 +3,7 @@
 var mongoose = require( 'mongoose' ),
 	Database = require('../model/db'),
 	Samples = require('../model/samples'),
-        annotations = require('../model/annotations'),
+        Annotations = require('../model/annotations'),
 	Cancers = require('../model/cancers'),
 	Datasets = require('../model/datasets'),
 	fs = require('fs');
@@ -61,14 +61,14 @@ exports.sampleView = function sampleView(req, res){
 			    geneMutations = [];
 
 			    // call for additional mutations
-			    annotations.geneFind(annotations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
+			    Annotations.geneFind(Annotations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
 				if (err) {
 				    console.error(err);
 				    fail = true;
 				    return;
 				} 
 				
-				annotations = geneTable(mutGenes, userAnnos);
+				var annotations = geneTable(mutGenes, userAnnos);
 
 				// Create a list of mutations including the annotations, separating
 				// them into three groups: locus (most important), type (second most

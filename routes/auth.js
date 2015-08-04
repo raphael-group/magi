@@ -2,7 +2,8 @@
 var mongoose = require('mongoose'),
 Dataset = require( "../model/datasets" ),
 Database = require('../model/db'),
-SQL_annos = require("../model/annotations.js");
+Annos = require("../model/annotations"),
+PPIs = require("../model/ppis");
 
 var abbrToCancer = {}, cancerToAbbr = {};
 Cancer = Database.magi.model( 'Cancer' );
@@ -28,9 +29,9 @@ exports.account = function(req, res){
 				if (err) throw new Error(err);
 
 			    // here call to postgres for all annotations:
-			    SQL_annos.geneFind({user_id: String(user._id)}, 'left', function(err, geneAnnos) {
+			    Annos.geneFind({user_id: String(user._id)}, 'left', function(err, geneAnnos) {
 				if (err) throw new Error(err);
-				SQL_annos.ppiFind({user_id: String(user._id)}, 'left', function (err, ppiAnnos) {
+				PPIs.ppiFind({user_id: String(user._id)}, 'left', function (err, ppiAnnos) {
 				    if (err) throw new Error(err);
 				    if (ppiAnnos.length > 0) {
 					console.log(ppiAnnos[0]);

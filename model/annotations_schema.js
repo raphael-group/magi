@@ -128,3 +128,46 @@ exports.annotations = annotations
 exports.aberrations = aberrations
 exports.interactions = interactions
 exports.votes = votes
+
+
+exports.normalizeAnnotation = function(anno) {
+    // convert null votes to []
+    if (anno.upvotes == null) {
+	anno.upvotes = []
+    }
+    if (anno.downvotes == null) {
+	anno.downvotes = []
+    }
+    return anno;
+}
+
+exports.parsePMID = function(pmid_field) {
+    // parse PMIDs if necessary:
+    if (pmid_field === undefined) 
+	return ["none"]
+
+    if (pmid_field.indexOf(",") == -1) 
+	return [pmid_field];
+
+    return pmid_field.split(",");
+}
+
+// join a query with the list of all user_ids who have voted on a particular annotation
+exports.joinVoteListsToQuery = function(query) {
+    // Retrieve upvotes and downvotes for every annotation
+    upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
+	" FROM votes WHERE direction =  1 group by anno_id) AS U";
+
+    downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
+	" FROM votes WHERE direction = -1 group by anno_id) as D ";
+
+    selQuerySplit = query.toQuery().text.split("WHERE");
+
+    // Join the upvote/downvote table within the annotation selection
+    wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
+	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
+	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
+    selQuerySplit[1];
+
+    return wholeQueryText;
+}
