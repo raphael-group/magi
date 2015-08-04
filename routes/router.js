@@ -7,7 +7,6 @@ var about = require( './about' ),
 	sampleView = require( './sampleView' ),
 	enrichments = require( './enrichments' ),
 	datasets = require('./datasets'),
-	annotations = require('./annotations'),
 	annotations_SQL = require('./annotations_sql'),
   log = require('./log'),
   share = require('./share'),
@@ -64,7 +63,8 @@ exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view;
 exports.datasets.manifests = datasets.manifests;
 
-// Annotations
+// Annotations 
+/*
 exports.annotations = { save: {} };
 exports.annotations.gene = annotations.gene;
 exports.annotations.cancer = annotations.cancer;
@@ -73,7 +73,7 @@ exports.annotations.save.ppi = annotations.savePPI;
 exports.annotations.ppiVote = annotations.ppiVote;
 exports.annotations.ppiComment = annotations.ppiComment;
 exports.annotations.mutationVote = annotations.mutationVote;
-
+*/
 // Share link
 exports.saveShareURL = share.saveShareURL;
 
