@@ -176,8 +176,8 @@ app.get('/manifests', routes.datasets.manifests);
 
 // FIXME: disabling cancer view and ppiVote / ppiComment for now
 //app.get('/annotations/cancer/:cancer', routes.annotations.cancer); 
-//app.post('/vote/ppi', ensureAuthenticated, routes.annotations_SQL.ppiVote);
-//app.post('/comment/ppi', ensureAuthenticated, routes.annotations_SQL.ppiComment);
+app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
+//app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 
 // SQL  annotation views
 app.get('/annotations/gene/:gene', routes.annotations.gene);

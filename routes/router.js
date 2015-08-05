@@ -100,6 +100,8 @@ exports.annotations.cancer = annotations.cancer;
 exports.annotations.save_ppi = annotations.savePPI;
 exports.annotations.removeMutation = annotations.removeMutation;
 exports.annotations.removePpi = annotations.removePpi;
+exports.annotations.ppiVote = annotations.ppiVote;
+//exports.annotations.ppiComment = annotations.ppiComment;
 
 // exports.annotations.cancer = annotations.cancer;
 // exports.annotations.ppiVote = annotations.ppiVote;

@@ -4,6 +4,7 @@ var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
 	Domains  = require( "../model/domains" ),
         Annotations = require("../model/annotations"),
+        Aberrations = require("../model/aberrations"),
         PPIs = require("../model/ppis"),
 	QueryHash = require('../model/queryHash'),
 	Database = require('../model/db'),
@@ -207,7 +208,8 @@ exports.view  = function view(req, res){
 						});
 
 						// Load the annotations for each gene
-					    Annotations.geneFind(Annotations.inGeneClause('gene', genes),'right', function(err, support) {
+
+					    Aberrations.geneFind(Aberrations.inGeneClause('gene', genes),'right', function(err, support) {
 						// Throw error if necessary
 						if (err) throw new Error(err);
 
