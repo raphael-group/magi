@@ -1,12 +1,13 @@
 // Load required modules
 var mongoose = require( 'mongoose' ),
 formidable = require('formidable'),
-annotations  = require( "../model/annotations" ),
+base_annotations = require( "../model/annotations" ),
+aberration = require("../model/aberrations"),
 ppis  = require( "../model/ppis" ),
 Database = require('../model/db')
 
 // Create the tables if they don't exist already
-annotations.init()
+base_annotations.init()
 
 // on init: create map between cancers and abbrs
 var abbrToCancer = {}, cancerToAbbr = {};
@@ -30,7 +31,7 @@ exports.gene = function gene(req, res){
     // Parse params
     var geneRequested = req.params.gene.toUpperCase() || ""
 
-    annotations.geneFind({gene: geneRequested}, 'right', function(err, result) {
+    aberrations.geneFind({gene: geneRequested}, 'right', function(err, result) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
@@ -80,7 +81,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	};
 
 	// TODO: test behavior on attempting to upsert identical annotation?
-	annotations.upsertAber(query, function(err, annotation){
+	aberrations.upsertAber(query, function(err, annotation){
 	    if (err){
 		res.send({ error: "Annotation could not be parsed. " + err });
 		// todo: handle error: interpret or pass up if critical (no database, no table)
