@@ -180,4 +180,4 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 
 }
 
-exports.inPPIClause = Annotations.inClause(Schemas.aberrations)
+exports.inPPIClause = Annotations.inClause(Schemas.interactions)

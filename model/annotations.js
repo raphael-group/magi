@@ -9,9 +9,10 @@ exports.ADMIN_USER = "admin";
 exports.init = Schemas.initDatabase
 
 exports.inClause = function(table) {
-    return function (columnName, columnPoss) {
+    f = function (columnName, columnPoss) {
 	return table[columnName].in(columnPoss);
     }
+    return f;
 }
 
 exports.normalize = function(anno) {
