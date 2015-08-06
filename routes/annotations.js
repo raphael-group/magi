@@ -131,7 +131,7 @@ exports.mutationVote = function mutationVote(req, res){
 	}
 
 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
-	annotations.vote(req.body, req.user._id + "")
+	base_annotations.vote(req.body, req.user._id + "")
 	    .then(function(){
 		res.send({ status: "Mutation vote saved successfully!" });
 	    })
@@ -154,7 +154,7 @@ exports.ppiVote = function mutationVote(req, res){
 	}
 
 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
-	annotations.vote(req.body, req.user._id + "")
+	base_annotations.vote(req.body, req.user._id + "")
 	    .then(function(){
 		res.send({ status: "PPI vote saved successfully!" });
 	    })

@@ -98,12 +98,12 @@ exports.vote = function mutationVote(fields, user_id){
 	direction : valence
     })
 	.where(votes.voter_id.equals(user_id),
-	       votes.anno_type.equals("aber"),
+//	       votes.anno_type.equals("aber"),
 	       votes.anno_id.equals(anno_id))
 
     voteInsertQuery = votes.insert(votes.voter_id.value(user_id),
 		 votes.direction.value(valence),
-		 votes.anno_type.value("aber"),
+//		 votes.anno_type.value("aber"),
 		 votes.anno_id.value(anno_id))
 
     // todo: operate as transaction
