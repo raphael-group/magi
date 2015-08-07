@@ -111,20 +111,22 @@ exports.vote = function mutationVote(fields, user_id){
     Database.execute(voteUpdateQuery, function (err, result) {
 	// Throw error and resolve if necessary
 	if (err) {
-	    console.log("Error voting for mutation:", err)
+	    console.log("Error update voting for mutation:", err)
 	    throw new Error(err);
 	} else if (result.rowCount == 0 ){
 	    Database.execute(voteInsertQuery, function (err, result) {
 		if (err) {
-		    console.log("Error voting for mutation:", err)
+		    console.log("Error insert voting for mutation:", err)
 		    d.reject(err);
+		} else { // vote was inserted
+		    console.log("User", user_id, "voted for anno #",  anno_id);
+		    d.resolve();
 		}
 	    })
-	} else {
-	    console.log("vote submission Result: ", result)
+	} else { // vote was updated
+	    console.log("User", user_id, "voted for anno #",  anno_id);
+	    d.resolve();
 	}
-	console.log("User", user_id, "voted for anno #",  anno_id);
-	d.resolve();
     })
 
     return d.promise;
