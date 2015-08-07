@@ -129,8 +129,6 @@ exports.loadPPIsFromFile = function(filename, source, callback){
 	    
 	    exports.upsertPPI(query, function(err, annotation){
 		if (err) {
-		    console.log("error, query: ");
-		    console.log(query)
 		    throw new Error(err);
 		}
 		d.resolve();
@@ -181,5 +179,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 }
 
 exports.inPPIClause = Annotations.inClause(Schemas.interactions)
-exports.vote = Annotations.vote;
 exports.remove = Annotations.annoDelete;
+exports.vote = function (fields, user_id) {
+    return Annotations.vote(fields, user_id, "ppi");
+}

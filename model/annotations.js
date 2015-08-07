@@ -82,7 +82,7 @@ exports.annoDelete = function(anno_id, user_id, callback) {
 }
 
 // todo: Vote for a mutation
-exports.vote = function mutationVote(fields, user_id){
+exports.vote = function mutationVote(fields, user_id, anno_label_type){
     votes = Schemas.votes
 
     // Set up the promise
@@ -102,13 +102,13 @@ exports.vote = function mutationVote(fields, user_id){
 	direction : valence
     })
 	.where(votes.voter_id.equals(user_id),
-//	       votes.anno_type.equals("aber"),
+	       votes.anno_type.equals(anno_label_type),
 	       votes.anno_id.equals(anno_id))
 
 // todo: fill in correct type depending on vote type
     voteInsertQuery = votes.insert(votes.voter_id.value(user_id),
 		 votes.direction.value(valence),
-		 votes.anno_type.value("aber"),
+		 votes.anno_type.value(anno_label_type),
 		 votes.anno_id.value(anno_id))
 
     // todo: operate as transaction
