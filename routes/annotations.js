@@ -1,13 +1,13 @@
 // Load required modules
 var mongoose = require( 'mongoose' ),
 formidable = require('formidable'),
-base_annotations = require( "../model/annotations" ),
-aberration = require("../model/aberrations"),
-ppis  = require( "../model/ppis" ),
+Base_annotations = require( "../model/annotations" ),
+Aberrations = require("../model/aberrations"),
+PPIs  = require( "../model/ppis" ),
 Database = require('../model/db')
 
 // Create the tables if they don't exist already
-base_annotations.init()
+Base_annotations.init()
 
 // on init: create map between cancers and abbrs
 var abbrToCancer = {}, cancerToAbbr = {};
@@ -31,7 +31,7 @@ exports.gene = function gene(req, res){
     // Parse params
     var geneRequested = req.params.gene.toUpperCase() || ""
 
-    aberrations.geneFind({gene: geneRequested}, 'right', function(err, result) {
+    Aberrations.geneFind({gene: geneRequested}, 'right', function(err, result) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
@@ -81,7 +81,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	};
 
 	// TODO: test behavior on attempting to upsert identical annotation?
-	aberrations.upsertAber(query, function(err, annotation){
+	Aberrations.upsertAber(query, function(err, annotation){
 	    if (err){
 		res.send({ error: "Annotation could not be parsed. " + err });
 		// todo: handle error: interpret or pass up if critical (no database, no table)
@@ -108,7 +108,7 @@ exports.removePpi = function removePpi(req, res) {
 
 function removeAnnotation(req, res){
     if (req.user) { // ensure that a user is logged in 
-	annotations.annoDelete(req.params.u_id, req.user._id)
+	Base_annotations.annoDelete(req.params.u_id, req.user._id)
 	    .then(function() {
 		res.send({ status: "Annotation deleted successfully!" });
 	    }).fail(function(err) {
@@ -131,7 +131,7 @@ exports.mutationVote = function mutationVote(req, res){
 	}
 
 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
-	base_annotations.vote(req.body, req.user._id + "")
+	Aberrations.vote(req.body, req.user._id + "")
 	    .then(function(){
 		res.send({ status: "Mutation vote saved successfully!" });
 	    })
@@ -154,7 +154,7 @@ exports.ppiVote = function mutationVote(req, res){
 	}
 
 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
-	base_annotations.vote(req.body, req.user._id + "")
+	PPIs.vote(req.body, req.user._id + "")
 	    .then(function(){
 		res.send({ status: "PPI vote saved successfully!" });
 	    })

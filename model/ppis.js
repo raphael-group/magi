@@ -181,3 +181,5 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 }
 
 exports.inPPIClause = Annotations.inClause(Schemas.interactions)
+exports.vote = Annotations.vote;
+exports.remove = Annotations.annoDelete;

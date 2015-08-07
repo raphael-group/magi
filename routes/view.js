@@ -3,7 +3,6 @@
 var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
 	Domains  = require( "../model/domains" ),
-        Annotations = require("../model/annotations"),
         Aberrations = require("../model/aberrations"),
         PPIs = require("../model/ppis"),
 	QueryHash = require('../model/queryHash'),
