@@ -110,6 +110,7 @@ function initDatabase() {
 		subannos.forEach( function (thisTable) {
 		    createQuery = thisTable.create().ifNotExists()
 
+		    constraint = ""
 		    if (thisTable.getName() in typeConstraint) {
 			constraint = addTypeValueConstraintFn(thisTable)
 		    }
