@@ -133,9 +133,11 @@ exports.mutationVote = function mutationVote(req, res){
 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
 	Aberrations.vote(req.body, req.user._id + "")
 	    .then(function(){
+		console.log("success!")
 		res.send({ status: "Mutation vote saved successfully!" });
 	    })
-	    .fail(function(){
+	    .fail(function(err){
+		console.log("failure! " + err)
 		res.send({ error: "Mutation vote could not be parsed." });
 	    });
     }
