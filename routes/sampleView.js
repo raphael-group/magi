@@ -3,7 +3,6 @@
 var mongoose = require( 'mongoose' ),
 	Database = require('../model/db'),
 	Samples = require('../model/samples'),
-        Base_annotations = require('../model/annotations'),
 Aberrations = require('../model/aberrations'),
 	Cancers = require('../model/cancers'),
 	Datasets = require('../model/datasets'),
@@ -62,7 +61,7 @@ exports.sampleView = function sampleView(req, res){
 			    geneMutations = [];
 
 			    // call for additional mutations
-			    Base_annotations.geneFind(Base_annotations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
+			    Aberrations.geneFind(Aberrations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
 				if (err) {
 				    console.error(err);
 				    fail = true;

@@ -2,7 +2,7 @@
 var mongoose = require('mongoose'),
 Dataset = require( "../model/datasets" ),
 Database = require('../model/db'),
-Annos = require("../model/annotations"),
+Aberrations = require("../model/aberrations"),
 PPIs = require("../model/ppis");
 
 var abbrToCancer = {}, cancerToAbbr = {};
@@ -29,22 +29,23 @@ exports.account = function(req, res){
 				if (err) throw new Error(err);
 
 			    // here call to postgres for all annotations:
-			    Annos.geneFind({user_id: String(user._id)}, 'left', function(err, geneAnnos) {
+			    Aberrations.geneFind({user_id: String(user._id)}, 'left', function(err, geneAnnos) {
 				if (err) throw new Error(err);
 				PPIs.ppiFind({user_id: String(user._id)}, 'left', function (err, ppiAnnos) {
 				    if (err) throw new Error(err);
 				    if (ppiAnnos.length > 0) {
 					console.log(ppiAnnos[0]);
 				    }
-				// Render index page
-				res.render('account',
-					   { user: user,
-					     groups: groups,
-					     geneAnnos: geneAnnos,
-					     ppiAnnos: ppiAnnos,
-					     abbrToCancer: abbrToCancer,
-					     cancerToAbbr: cancerToAbbr,
-					     skip_requery: true});
+
+				    // Render index page
+				    res.render('account',
+					       { user: user,
+						 groups: groups,
+						 geneAnnos: geneAnnos,
+						 ppiAnnos: ppiAnnos,
+						 abbrToCancer: abbrToCancer,
+						 cancerToAbbr: cancerToAbbr,
+						 skip_requery: true});
 				});
 			    });
 			});

@@ -101,9 +101,10 @@ exports.vote = function mutationVote(fields, user_id){
 //	       votes.anno_type.equals("aber"),
 	       votes.anno_id.equals(anno_id))
 
+// todo: fill in correct type depending on vote type
     voteInsertQuery = votes.insert(votes.voter_id.value(user_id),
 		 votes.direction.value(valence),
-//		 votes.anno_type.value("aber"),
+		 votes.anno_type.value("aber"),
 		 votes.anno_id.value(anno_id))
 
     // todo: operate as transaction

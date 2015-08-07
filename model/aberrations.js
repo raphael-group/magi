@@ -154,4 +154,7 @@ exports.loadFromFile = function(filename, source, callback){
     loadAnnotationFile().then( processAnnotations ).then( function(){ callback("") } );
 }
 
+// inherit some functions from annotations
 exports.inGeneClause = Annotations.inClause(Schemas.aberrations)
+exports.remove = Annotations.annoDelete;
+exports.vote = Annotations.vote;
