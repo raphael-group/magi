@@ -24,8 +24,6 @@ $('button#shareBtn').on('click', function(e) {
     });
   });
 
-console.log(data);
-
 // Master function for
 // * drawing the D3 visualizations
 // * adding tooltips
@@ -371,7 +369,7 @@ function view(){
 	var edges = network.selectAll("g.gd3Link"),
 		networkTooltips = [],
 		refs = data.network.refs,
-		comments = data.network.comments;;
+		comments = data.network.comments;
 
 	edges.classed("gd3-tipobj", true);
 	edges.each(function(d) {
@@ -413,6 +411,7 @@ function view(){
 						  		ref.score += 1;
 						  	}
 						 	vote({
+							    _id: ref._id,
 						 		source: d.source.name,
 						 		target: d.target.name,
 						 		network: n,
@@ -432,6 +431,7 @@ function view(){
 						  		ref.score -= 1;
 						  	}
 						 	vote({
+							    _id: ref._id,
 						 		source: d.source.name,
 						 		target: d.target.name,
 						 		network: n,
