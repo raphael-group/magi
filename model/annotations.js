@@ -93,6 +93,10 @@ exports.vote = function mutationVote(fields, user_id){
     var anno_id = fields._id, // FIXME: not guaranteed unique - better to use anno_id,
     valence = (fields.vote == "up") ? 1 : -1 ;
 
+    console.log("[" + anno_id + "]");
+    console.log(fields);
+
+
     // change existing vote if necessary
     voteUpdateQuery = votes.update({
 	direction : valence
