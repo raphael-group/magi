@@ -188,7 +188,7 @@ exports.cancer = function cancer(req, res){
 }
 
 exports.savePPI = function savePPI(req, res){
-	console.log("sql proxy for: /save/annotation/ppi")
+	console.log("/save/annotation/ppi")
 
 	if (req.user && req.body){
 	    /* fields already in req.body: source, target, pmid, comment */

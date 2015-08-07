@@ -157,4 +157,6 @@ exports.loadFromFile = function(filename, source, callback){
 // inherit some functions from annotations
 exports.inGeneClause = Annotations.inClause(Schemas.aberrations)
 exports.remove = Annotations.annoDelete;
-exports.vote = Annotations.vote;
+exports.vote = function (fields, user_id) {
+    return Annotations.vote(fields, user_id, "aber");
+}
