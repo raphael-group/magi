@@ -85,7 +85,11 @@ block body
 							span(id="vote-#{d.u_id}-#{pmid_ref}") #{numVotes}
 							a(href="#", class="upvote  #{upVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25B2;
 		br
-		div(id="annotationStatus", class="text-center", style="width:100%;")
+		div(id="annotationStatus", class="text-center", style="width:100%;display:off")
+		div(id="commentVote", class="container", style="width%100;")
+			label(class="toggle")
+			| <b>Add a comment to your vote? (Optional)</b>
+			textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
 
 
 block belowTheFold
@@ -99,14 +103,15 @@ block belowTheFold
 				tableID: "#gene-annotation-table", aaSorting: [[0, "asc"]]
 			});
 		$("#gene-annotation-table_info").css({'font-weight': 'bold', 'font-size': '110%'});
-		function voteMutation(annotation_id, pmid, vote){
+		function voteMutation(annotation_id, pmid, vote, comment){
 			// Update the vote count
 			// Create a form to submit as an AJAX request to update the database
 			var formData = new FormData();
 			formData.append( "pmid", pmid );
 			formData.append( "_id", annotation_id );
 			formData.append( "vote", vote );
-
+			formData.append( "comment", comment );
+			console.log("Comment:", comment);
 			$.ajax({
 				// Note: can't use JSON otherwise IE8 will pop open a dialog
 				// window trying to download the JSON as a file
@@ -148,7 +153,9 @@ block belowTheFold
 					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
 					numVotes = +(voteCount.text());
 
-				voteMutation(annotation_id, pmid, 'down');
+				var comment = $('textarea#mutation-comment').val();
+				console.log("in downvote:", comment);
+				voteMutation(annotation_id, pmid, 'down', comment);
 
 				if (sibling.hasClass('upvote-on')){
 					sibling.removeClass('upvote-on');
@@ -174,7 +181,9 @@ block belowTheFold
 					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
 					numVotes = +(voteCount.text());
 
-				voteMutation(annotation_id, el.attr('pmid'), 'up');
+				var comment = $('textarea#mutation-comment').val();
+				console.log("in upvote:", comment);
+				voteMutation(annotation_id, pmid, 'up', comment);
 
 				if (sibling.hasClass('downvote-on')){
 					sibling.removeClass('downvote-on');
@@ -193,11 +202,12 @@ block belowTheFold
 		downvote();
 		upvote();
 
-		var infoClasses  = 'alert alert-info',
+		var infoClasses	 = 'alert alert-info',
 			warningClasses = 'alert alert-warning',
 			successClasses = 'alert alert-success';
 
 		function annotationStatus(msg, classes) {
-			$("#annotationStatus").attr('class', classes);
+			$('#annotationStatus').attr('class', classes);
 			$('#annotationStatus').html(msg);
+			$('#annotationStatus').show().delay(3000).fadeOut();
 		}

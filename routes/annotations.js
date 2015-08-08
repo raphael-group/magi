@@ -123,6 +123,7 @@ function removeAnnotation(req, res){
 // Save a vote on a mutation
 // FIXME: link here is not working...
 exports.mutationVote = function mutationVote(req, res){
+    console.log("/vote/mutation/" + req.params.u_id)
     // Only allow logged in users to vote
     if (req.isAuthenticated()){
 	if (!req.body){
