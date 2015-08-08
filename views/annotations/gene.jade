@@ -89,6 +89,7 @@ block body
 		div(id="commentVote", class="container", style="width%100;")
 			label(class="toggle")
 			| <b>Add a comment to your vote? (Optional)</b>
+			span(class="glyphicon glyphicon-remove", style="cursor:pointer;float:right", onclick="$(this).parent().hide();$('textarea#mutation-comment').hide()")
 			textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
 
 
@@ -103,6 +104,14 @@ block belowTheFold
 				tableID: "#gene-annotation-table", aaSorting: [[0, "asc"]]
 			});
 		$("#gene-annotation-table_info").css({'font-weight': 'bold', 'font-size': '110%'});
+		$(document).ready(function(){
+			clearComment();
+		});
+
+		function clearComment() {
+			$('#mutation-comment').val('');	
+		}
+		
 		function voteMutation(annotation_id, pmid, vote, comment){
 			// Update the vote count
 			// Create a form to submit as an AJAX request to update the database
@@ -111,7 +120,7 @@ block belowTheFold
 			formData.append( "_id", annotation_id );
 			formData.append( "vote", vote );
 			formData.append( "comment", comment );
-			console.log("Comment:", comment);
+			clearComment();
 			$.ajax({
 				// Note: can't use JSON otherwise IE8 will pop open a dialog
 				// window trying to download the JSON as a file
@@ -209,5 +218,5 @@ block belowTheFold
 		function annotationStatus(msg, classes) {
 			$('#annotationStatus').attr('class', classes);
 			$('#annotationStatus').html(msg);
-			$('#annotationStatus').show().delay(3000).fadeOut();
+			$('#annotationStatus').slideUp().delay(3000).slideUp();
 		}
