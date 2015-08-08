@@ -90,26 +90,23 @@ exports.vote = function mutationVote(fields, user_id, anno_label_type){
     d = Q.defer();
 
     //Create and execute the query
-    var anno_id = fields._id, // FIXME: not guaranteed unique - better to use anno_id,
-    valence = (fields.vote == "up") ? 1 : -1 ;
-
-    console.log("[" + anno_id + "]");
-    console.log(fields);
-
+    var anno_id = fields._id,     valence = (fields.vote == "up") ? 1 : -1 ;
 
     // change existing vote if necessary
     voteUpdateQuery = votes.update({
-	direction : valence
+	direction : valence,
+ 	comment: fields.comment
     })
 	.where(votes.voter_id.equals(user_id),
 	       votes.anno_type.equals(anno_label_type),
-	       votes.anno_id.equals(anno_id))
+	       votes.anno_id.equals(anno_id));
 
 // todo: fill in correct type depending on vote type
     voteInsertQuery = votes.insert(votes.voter_id.value(user_id),
 		 votes.direction.value(valence),
 		 votes.anno_type.value(anno_label_type),
-		 votes.anno_id.value(anno_id))
+		 votes.anno_id.value(anno_id),
+				   votes.comment.value(fields.comment));
 
     // todo: operate as transaction
     Database.execute(voteUpdateQuery, function (err, result) {
