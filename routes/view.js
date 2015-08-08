@@ -3,7 +3,7 @@
 var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
 	Domains  = require( "../model/domains" ),
-        Annotations = require("../model/annotations"),
+        Aberrations = require("../model/aberrations"),
         PPIs = require("../model/ppis"),
 	QueryHash = require('../model/queryHash'),
 	Database = require('../model/db'),
@@ -207,7 +207,8 @@ exports.view  = function view(req, res){
 						});
 
 						// Load the annotations for each gene
-					    Annotations.geneFind(Annotations.inGeneClause('gene', genes),'right', function(err, support) {
+
+					    Aberrations.geneFind(Aberrations.inGeneClause('gene', genes),'right', function(err, support) {
 						// Throw error if necessary
 						if (err) throw new Error(err);
 
@@ -344,14 +345,15 @@ function formatPPIs(ppis, user_id, callback){
 	    refInfo = {
 		pmid: ppi.reference,
 		upvotes: ppi.upvotes,
-		downvotes: ppi.downvotes
+		downvotes: ppi.downvotes,
+		_id: ppi.u_id
 	    }
 		// Append the current network for the given edge
 		if (ppiName in edgeNames){
 			edgeNames[ppiName].push( {name: ppi.database, refs: refInfo } );
 		}
 		else{
-		    edgeNames[ppiName] = [ {name: ppi.database, refs: refInfo } ];
+		    edgeNames[ppiName] = [ {id: ppi.anno_id, name: ppi.database, refs: refInfo } ];
 		}
 	}
 
@@ -362,7 +364,8 @@ function formatPPIs(ppis, user_id, callback){
 		var  arr   = edgeName.split("*"),
 			source   = arr[0],
 			target   = arr[1],
-			networks = edgeNames[edgeName].map(function(d){ return d.name; });
+	    networks = edgeNames[edgeName].map(function(d){ return d.name; });
+//	    anno_id = edgeNames[edgeName].id;
 
 		// Create a map of each network to its references
 		var references = {};
@@ -384,7 +387,9 @@ function formatPPIs(ppis, user_id, callback){
 			references[n].forEach(function(ref){
 				// Record the score
 				var score = ref.upvotes.length - ref.downvotes.length;
-				refs[n][source][target][ref.pmid] = { vote: null, score: score };
+				refs[n][source][target][ref.pmid] = { 
+				    vote: null, 
+				    score: score };
 
 				//  Record the user's vote for the current reference (if neccessary)
 				if (user_id && ref.upvotes.indexOf(user_id) != -1){

@@ -1,12 +1,13 @@
 // Load required modules
 var mongoose = require( 'mongoose' ),
 formidable = require('formidable'),
-annotations  = require( "../model/annotations" ),
-ppis  = require( "../model/ppis" ),
+Base_annotations = require( "../model/annotations" ),
+Aberrations = require("../model/aberrations"),
+PPIs  = require( "../model/ppis" ),
 Database = require('../model/db')
 
 // Create the tables if they don't exist already
-annotations.init()
+Base_annotations.init()
 
 // on init: create map between cancers and abbrs
 var abbrToCancer = {}, cancerToAbbr = {};
@@ -30,7 +31,7 @@ exports.gene = function gene(req, res){
     // Parse params
     var geneRequested = req.params.gene.toUpperCase() || ""
 
-    annotations.geneFind({gene: geneRequested}, 'right', function(err, result) {
+    Aberrations.geneFind({gene: geneRequested}, 'right', function(err, result) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
@@ -80,7 +81,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	};
 
 	// TODO: test behavior on attempting to upsert identical annotation?
-	annotations.upsertAber(query, function(err, annotation){
+	Aberrations.upsertAber(query, function(err, annotation){
 	    if (err){
 		res.send({ error: "Annotation could not be parsed. " + err });
 		// todo: handle error: interpret or pass up if critical (no database, no table)
@@ -107,7 +108,7 @@ exports.removePpi = function removePpi(req, res) {
 
 function removeAnnotation(req, res){
     if (req.user) { // ensure that a user is logged in 
-	annotations.annoDelete(req.params.u_id, req.user._id)
+	Base_annotations.annoDelete(req.params.u_id, req.user._id)
 	    .then(function() {
 		res.send({ status: "Annotation deleted successfully!" });
 	    }).fail(function(err) {
@@ -130,12 +131,37 @@ exports.mutationVote = function mutationVote(req, res){
 	}
 
 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
-	annotations.vote(req.body, req.user._id + "")
+	Aberrations.vote(req.body, req.user._id + "")
 	    .then(function(){
+		console.log("success!")
 		res.send({ status: "Mutation vote saved successfully!" });
 	    })
-	    .fail(function(){
+	    .fail(function(err){
+		console.log("failure! " + err)
 		res.send({ error: "Mutation vote could not be parsed." });
+	    });
+    }
+    else{
+	res.send({ error: "You must be logged in to vote." });
+    }
+}
+
+// Save a vote on a PPI
+exports.ppiVote = function mutationVote(req, res){
+    // Only allow logged in users to vote
+    if (req.isAuthenticated()){
+	if (!req.body){
+	    res.send({error: 'Empty vote body.'})
+	    return;
+	}
+
+	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
+	PPIs.vote(req.body, req.user._id + "")
+	    .then(function(){
+		res.send({ status: "PPI vote saved successfully!" });
+	    })
+	    .fail(function(){
+		res.send({ error: "PPI vote could not be parsed." });
 	    });
     }
     else{
@@ -162,7 +188,7 @@ exports.cancer = function cancer(req, res){
 }
 
 exports.savePPI = function savePPI(req, res){
-	console.log("sql proxy for: /save/annotation/ppi")
+	console.log("/save/annotation/ppi")
 
 	if (req.user && req.body){
 	    /* fields already in req.body: source, target, pmid, comment */

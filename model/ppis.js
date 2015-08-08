@@ -1,16 +1,7 @@
 // Import required modules
 Database = require('./db_sql');
-Schemas = require('./annotations_schema.js');
+Schemas = require('./annotations_schema');
 var sql = require("sql");
-var ADMIN_USER = "admin";
-
-//initialize table
-exports.init = Schemas.initDatabase
-
-exports.inPPIClause = function inPPIClause(columnName, columnPoss) {
-    ppis = Schemas.interactions;
-    return ppis[columnName].in(columnPoss);
-}
 
 // ************************************
 // PPIs
@@ -28,14 +19,14 @@ exports.ppiFind = function(query, dir, callback) {
 	selAnnosQuery = ppis.from(ppis.joinTo(annos)).where(query);
     }
 
-    Database.sql_query(Schemas.joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
+    Database.sql_query(Annotations.joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting ppi annotations: " + err);
 	    console.log("Debug: full query:", selAnnosQuery.string)
 	    callback(err, null)
 	}
 
-	callback(null, result.rows.map(Schemas.normalizeAnnotation))
+	callback(null, result.rows.map(Annotations.normalize))
     })
 }
 
@@ -118,7 +109,7 @@ exports.loadPPIsFromFile = function(filename, source, callback){
 	var ppis = [];
 	for (var i = 1; i < lines.length; i++){ // first line should be the header	    
 	    var fields = lines[i].split('\t');
-	    pmids = Schemas.parsePMID(fields[4]);
+	    pmids = Annotations.parsePMID(fields[4]);
 	    pmids.forEach(function (_pmid) {
 		ppis.push({
 		    source: fields[0],
@@ -126,7 +117,7 @@ exports.loadPPIsFromFile = function(filename, source, callback){
 		    weight: fields[2] == '' ? 1 : fields[2],
 		    database: fields[3],
 		    pmid: _pmid,
-		    user_id: ADMIN_USER
+		    user_id: Annotations.ADMIN_USER
 		}); 
 	    }); 
 	}
@@ -138,8 +129,6 @@ exports.loadPPIsFromFile = function(filename, source, callback){
 	    
 	    exports.upsertPPI(query, function(err, annotation){
 		if (err) {
-		    console.log("error, query: ");
-		    console.log(query)
 		    throw new Error(err);
 		}
 		d.resolve();
@@ -187,4 +176,10 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 	}
     });
 
+}
+
+exports.inPPIClause = Annotations.inClause(Schemas.interactions)
+exports.remove = Annotations.annoDelete;
+exports.vote = function (fields, user_id) {
+    return Annotations.vote(fields, user_id, "ppi");
 }
