@@ -85,7 +85,12 @@ block body
 							span(id="vote-#{d.u_id}-#{pmid_ref}") #{numVotes}
 							a(href="#", class="upvote  #{upVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25B2;
 		br
-		div(id="annotationStatus", class="text-center", style="width:100%;")
+		div(id="annotationStatus", class="text-center", style="width:100%;display:off")
+		div(id="commentVote", class="container", style="width%100;")
+			label(class="toggle")
+			| <b>Add a comment to your vote? (Optional)</b>
+			span(class="glyphicon glyphicon-remove", style="cursor:pointer;float:right", onclick="$(this).parent().hide();$('textarea#mutation-comment').hide()")
+			textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
 
 
 block belowTheFold
@@ -99,14 +104,23 @@ block belowTheFold
 				tableID: "#gene-annotation-table", aaSorting: [[0, "asc"]]
 			});
 		$("#gene-annotation-table_info").css({'font-weight': 'bold', 'font-size': '110%'});
-		function voteMutation(annotation_id, pmid, vote){
+		$(document).ready(function(){
+			clearComment();
+		});
+
+		function clearComment() {
+			$('#mutation-comment').val('');	
+		}
+		
+		function voteMutation(annotation_id, pmid, vote, comment){
 			// Update the vote count
 			// Create a form to submit as an AJAX request to update the database
 			var formData = new FormData();
 			formData.append( "pmid", pmid );
 			formData.append( "_id", annotation_id );
 			formData.append( "vote", vote );
-
+			formData.append( "comment", comment );
+			clearComment();
 			$.ajax({
 				// Note: can't use JSON otherwise IE8 will pop open a dialog
 				// window trying to download the JSON as a file
@@ -146,22 +160,23 @@ block belowTheFold
 					annotation_id = el.attr('annotation-id'),
 					pmid = el.attr('pmid'),
 					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
-					numVotes = +(voteCount.text());
-
-				voteMutation(annotation_id, pmid, 'down');
+					numVotes = +(voteCount.text()),
+					comment = $('textarea#mutation-comment').val(),
+					voteDirection = 'up';
 
 				if (sibling.hasClass('upvote-on')){
 					sibling.removeClass('upvote-on');
 					el.addClass('downvote-on'); 
 					voteCount.text(numVotes - 2);
 				} else if (el.hasClass('downvote-on')){
+					voteDirection = 'remove';
 					el.removeClass('downvote-on');
 					voteCount.text(numVotes + 1);
-				} else{
+				} else {
 					el.addClass('downvote-on');
 					voteCount.text(numVotes - 1);
 				}
-
+				voteMutation(annotation_id, pmid, voteDirection, comment);
 			});
 		}
 
@@ -172,32 +187,35 @@ block belowTheFold
 					annotation_id = el.attr('annotation-id'),
 					pmid = el.attr('pmid'),
 					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
-					numVotes = +(voteCount.text());
-
-				voteMutation(annotation_id, el.attr('pmid'), 'up');
-
+					numVotes = +(voteCount.text()),
+					comment = $('textarea#mutation-comment').val(),
+					voteDirection = 'up';
 				if (sibling.hasClass('downvote-on')){
 					sibling.removeClass('downvote-on');
 					el.addClass('upvote-on'); 
 					voteCount.text(numVotes + 2);
 				} else if (el.hasClass('upvote-on')){
+					voteDirection = 'remove';
 					el.removeClass('upvote-on');
 					voteCount.text(numVotes - 1);
 				} else{
+					voteMutation(annotation_id, pmid, 'up', comment);
 					el.addClass('upvote-on');
 					voteCount.text(numVotes + 1);
 				}
+				voteMutation(annotation_id, pmid, voteDirection, comment);
 			});
 		}
 
 		downvote();
 		upvote();
 
-		var infoClasses  = 'alert alert-info',
+		var infoClasses	 = 'alert alert-info',
 			warningClasses = 'alert alert-warning',
 			successClasses = 'alert alert-success';
 
 		function annotationStatus(msg, classes) {
-			$("#annotationStatus").attr('class', classes);
+			$('#annotationStatus').attr('class', classes);
 			$('#annotationStatus').html(msg);
+			$('#annotationStatus').show().delay(5000).slideUp();
 		}

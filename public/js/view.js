@@ -305,22 +305,26 @@ function view(){
 								  voteDirectionFn: function(){ return ref.vote; },
 								  voteCountFn: function(){ return ref.score; },
 								  upvoteFn: function(){
+								      var voteDirection = 'up';
 								  	// Update the reference vote count
 								  	if (ref.vote == 'down'){
 								  		ref.score += 2;
 								  		ref.vote = 'up';
 								  	} else if (ref.vote == 'up'){
+									    voteDirection = 'remove';
 								  		ref.score -= 1;
 								  		ref.vote = null;
 								  	} else {
 								  		ref.vote = 'up';
 								  		ref.score += 1;
 								  	}
-								  	vote({_id: ref._id, pmid: ref.pmid, vote: 'up'}, '/vote/mutation');
+								  	vote({_id: ref._id, pmid: ref.pmid, vote: voteDirection}, '/vote/mutation');
 								  	return ref.vote;
 								  },
 								  downvoteFn: function(){
+								      var voteDirection = 'down';
 								  	if (ref.vote == 'down'){
+									    voteDirection = 'remove';
 								  		ref.score += 1;
 								  		ref.vote = null;
 								  	} else if (ref.vote == 'up'){
@@ -330,7 +334,7 @@ function view(){
 								  		ref.vote = 'down';
 								  		ref.score -= 1;
 								  	}
-								  	vote({_id: ref._id, pmid: ref.pmid, vote: 'down'}, '/vote/mutation');
+								      vote({_id: ref._id, pmid: ref.pmid, vote: voteDirection}, '/vote/mutation');
 								  	return ref.vote;
 								  }}
 							].map(gd3.tooltip.datum));
@@ -400,10 +404,12 @@ function view(){
 						 voteDirectionFn: function(){ return ref.vote; },
 						 voteCountFn: function(){ return ref.score; },
 						 upvoteFn: function(){
+						     var voteDirection = 'up';
 						  	if (ref.vote == 'down'){
 						  		ref.score += 2;
 						  		ref.vote = 'up';
 						  	} else if (ref.vote == 'up'){
+							    voteDirection = 'remove';
 						  		ref.score -= 1;
 						  		ref.vote = null;
 						  	} else {
@@ -416,11 +422,13 @@ function view(){
 						 		target: d.target.name,
 						 		network: n,
 						 		pmid: ref.pmid,
-						 		vote: 'up'
+						 		vote: voteDirection
 						 	}, '/vote/ppi');
 						 },
 						 downvoteFn: function(){
+						     var voteDirection = 'down';
 						  	if (ref.vote == 'down'){
+							    voteDirection = 'remove';
 						  		ref.score += 1;
 						  		ref.vote = null;
 						  	} else if (ref.vote == 'up'){
@@ -436,7 +444,7 @@ function view(){
 						 		target: d.target.name,
 						 		network: n,
 						 		pmid: ref.pmid,
-						 		vote: 'down'
+						 		vote: voteDirection
 						 	}, '/vote/ppi')
 						 }}
 					].map(gd3.tooltip.datum));
@@ -726,6 +734,10 @@ function populateForm(fields){
 }
 
 function vote(fields, url){
+    // add and clear comment
+    fields.comment = $("textarea#vote-comment").val();
+    $("textarea#vote-comment").val("");
+
   // Create a form to submit as an AJAX request to update the database
   var formData = populateForm(fields);
   $.ajax({
