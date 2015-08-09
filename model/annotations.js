@@ -3,9 +3,11 @@ Database = require('./db_sql');
 Schemas = require('./annotations_schema');
 Annotations = require('./annotations');
 var sql = require("sql");
+
+// for user added
 exports.ADMIN_USER = "admin";
 
-//initialize table
+// initialize table
 exports.init = Schemas.initDatabase
 
 exports.inClause = function(table) {
@@ -68,29 +70,63 @@ exports.annoDelete = function(anno_id, user_id, callback) {
     Database.execute(deleteQuery, function(err, result) {
 	if (err) {
             console.log("Error deleting annotation: " + err);
-	    console.log("Debug: full query:", selQuery.string)
+//	    console.log("Debug: full query:", selQuery.string)
 	    d.reject(err);
 	}
 	if (result.rowCount != 1) {
 	    d.reject("Annotation not found for deletion");
 	} else {
-	    d.resolve();	
+	    d.resolve();
 	}
     });
 
     return d.promise;
 }
 
-// todo: Vote for a mutation
-exports.vote = function mutationVote(fields, user_id, anno_label_type){
+function deleteVote(fields, user_id, anno_label_type) {
     votes = Schemas.votes
 
     // Set up the promise
     var Q = require( 'q' ),
     d = Q.defer();
 
+    anno_id = fields._id;
+    deleteQuery = votes.delete().where(
+	votes.anno_id.equals(anno_id), 
+	votes.voter_id.equals(user_id),
+	votes.anno_type.equals(anno_label_type));
+
+    Database.execute(deleteQuery, function (err, result) {
+	// Throw error and resolve if necessary
+	if (err) {
+            console.log("Error deleting vote: " + err);
+	    d.reject(err);
+	}
+	if (result.rowCount != 1) {
+	    d.reject("Vote not found for deletion");
+	} else {
+	    d.resolve();
+	}
+    });
+    return d.promise;
+}
+
+// todo: Vote for a mutation, and give the option to remove a vote as well
+exports.vote = function mutationVote(fields, user_id, anno_label_type){
+    votes = Schemas.votes
+
+
+    if (fields.vote == "remove") {
+	return deleteVote(fields, user_id, anno_label_type)
+    }
+
+    // Set up the promise
+    var Q = require( 'q' ),
+    d = Q.defer();
+
     //Create and execute the query
-    var anno_id = fields._id,     valence = (fields.vote == "up") ? 1 : -1 ;
+    var anno_id = fields._id,    
+    valence = (fields.vote == "up") ? 1 : -1 ;
 
     // change existing vote if necessary
     voteUpdateQuery = votes.update({
@@ -120,17 +156,12 @@ exports.vote = function mutationVote(fields, user_id, anno_label_type){
 		    console.log("Error insert voting for mutation:", err)
 		    d.reject(err);
 		} else { // vote was inserted
-		    console.log("User", user_id, "voted for anno #",  anno_id);
 		    d.resolve();
 		}
 	    })
 	} else { // vote was updated
-	    console.log("User", user_id, "voted for anno #",  anno_id);
 	    d.resolve();
 	}
     })
-
     return d.promise;
 }
-
-// todo: add comment
