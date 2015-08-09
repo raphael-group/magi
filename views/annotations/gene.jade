@@ -160,24 +160,23 @@ block belowTheFold
 					annotation_id = el.attr('annotation-id'),
 					pmid = el.attr('pmid'),
 					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
-					numVotes = +(voteCount.text());
-
-				var comment = $('textarea#mutation-comment').val();
-				console.log("in downvote:", comment);
-				voteMutation(annotation_id, pmid, 'down', comment);
+					numVotes = +(voteCount.text()),
+					comment = $('textarea#mutation-comment').val(),
+					voteDirection = 'up';
 
 				if (sibling.hasClass('upvote-on')){
 					sibling.removeClass('upvote-on');
 					el.addClass('downvote-on'); 
 					voteCount.text(numVotes - 2);
 				} else if (el.hasClass('downvote-on')){
+					voteDirection = 'remove';
 					el.removeClass('downvote-on');
 					voteCount.text(numVotes + 1);
-				} else{
+				} else {
 					el.addClass('downvote-on');
 					voteCount.text(numVotes - 1);
 				}
-
+				voteMutation(annotation_id, pmid, voteDirection, comment);
 			});
 		}
 
@@ -188,23 +187,23 @@ block belowTheFold
 					annotation_id = el.attr('annotation-id'),
 					pmid = el.attr('pmid'),
 					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
-					numVotes = +(voteCount.text());
-
-				var comment = $('textarea#mutation-comment').val();
-				console.log("in upvote:", comment);
-				voteMutation(annotation_id, pmid, 'up', comment);
-
+					numVotes = +(voteCount.text()),
+					comment = $('textarea#mutation-comment').val(),
+					voteDirection = 'up';
 				if (sibling.hasClass('downvote-on')){
 					sibling.removeClass('downvote-on');
 					el.addClass('upvote-on'); 
 					voteCount.text(numVotes + 2);
 				} else if (el.hasClass('upvote-on')){
+					voteDirection = 'remove';
 					el.removeClass('upvote-on');
 					voteCount.text(numVotes - 1);
 				} else{
+					voteMutation(annotation_id, pmid, 'up', comment);
 					el.addClass('upvote-on');
 					voteCount.text(numVotes + 1);
 				}
+				voteMutation(annotation_id, pmid, voteDirection, comment);
 			});
 		}
 
@@ -218,5 +217,5 @@ block belowTheFold
 		function annotationStatus(msg, classes) {
 			$('#annotationStatus').attr('class', classes);
 			$('#annotationStatus').html(msg);
-			$('#annotationStatus').slideUp().delay(3000).slideUp();
+			$('#annotationStatus').show().delay(5000).slideUp();
 		}
