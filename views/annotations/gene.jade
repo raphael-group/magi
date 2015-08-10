@@ -59,6 +59,8 @@ block body
 					th Mutation class
 					th Mutation type
 					th Protein sequence change
+					th Germline?
+					th Measurement type					
 					th PMID / PMCID
 					th Source
 					th Votes
@@ -71,6 +73,9 @@ block body
 					- var proteinSeqChange = d.protein_seq_change ? d.protein_seq_change : "--";
 					- var numVotes = d.upvotes.length - d.downvotes.length;
 					- var pmid_ref = d.reference
+					- var germline = d.is_germline ? d.is_germline : "--";
+					- var measure_type = d.measurement_type ? d.measurement_type : "--";
+
 					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
 					- var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
 					tr
@@ -78,6 +83,8 @@ block body
 						td #{mutation_class(mutationClass)}
 						td #{mutation_type(mutationType)}
 						td #{proteinSeqChange}
+						td #{germline}
+						td #{measure_type}						  
 						td !{pubmedLink(pmid_ref)}
 						td !{d.source}
 						td 
