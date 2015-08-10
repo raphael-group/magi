@@ -1,24 +1,29 @@
 // Load models
-var db = require('../model/db')
-, ppis = require('../model/ppis');
+//var db = require('../model/db'),
+	ppis = require('../model/ppis');
+	pg = require('../model/db_sql');
 
 // Validate args
 var argv = require('optimist').argv;
-if (!( argv.ppi_file )){
-    usage  = "Usage: node loadPPIs.js --ppi_file=</path/to/ppis>"
+if (!( argv.ppi_file)){
+    usage  = "Usage: node loadPPIAnnotations.js --ppi_file=</path/to/ppi/file>"
     console.log(usage);
     process.exit(1);
 }
 
-// Insert the network into the database
-var path   = require( 'path' )
-, filepath = path.normalize(__dirname + '/' + argv.ppi_file);
+// normalize the path to the annotations
+// shouldn't this be the path from where the file was run?
+var path  = require( 'path' ),
+	filepath = path.normalize(__dirname + '/' + argv.ppi_file);
 
-var mongoose = require( 'mongoose' );
-ppis.insertNetworkFromFile( filepath, function(err){
-	if (err) throw new Error(err);
-	
-	// Finish up
-	mongoose.disconnect();	
-});
-
+// test connection to postgres
+pg.verify_connection()
+    .then( function () {
+	ppis.loadFromFile( filepath, argv.source, function(err){
+	    if (err) throw new Error(err);	
+	})})
+    .fail( function (err) {
+	console.log("Connection failed:", err);
+	console.log("Check POSTGRES environment variables.");
+	process.exit(1);
+    }).done(); // TODO: rollback?

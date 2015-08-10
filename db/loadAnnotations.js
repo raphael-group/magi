@@ -1,6 +1,6 @@
 // Load models
 //var db = require('../model/db'),
-	annotations = require('../model/annotations_sql');
+	abers = require('../model/aberrations');
 	pg = require('../model/db_sql');
 
 // Validate args
@@ -18,7 +18,7 @@ var path   = require( 'path' ),
 // test connection to postgres
 pg.verify_connection()
     .then( function () {
-	annotations.loadAnnotationsFromFile( filepath, argv.source, function(err){
+	abers.loadFromFile( filepath, argv.source, function(err){
 	    if (err) throw new Error(err);	
 	})})
     .fail( function (err) {
