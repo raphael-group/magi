@@ -5,10 +5,11 @@ pg.settings = {
     dbname: process.env.POSTGRES_DBNAME || 'magi',
     host: process.env.POSTGRES_HOST || '127.0.0.1',
     port: process.env.POSTGRES_PORT || '5432',
-    user: process.env.POSTGRES_USER || 'postgres'
+    user: process.env.POSTGRES_USER || 'postgres',
+	pw: ':magipaad'
 }
 
-var conString = 'postgres://' + pg.settings.user + '@' + pg.settings.host + ':' + 
+var conString = 'postgres://' + pg.settings.user + pg.settings.pw + '@' + pg.settings.host + ':' + 
     pg.settings.port + '/' + pg.settings.dbname;
 
 console.log('Connecting to postgres at address', conString);

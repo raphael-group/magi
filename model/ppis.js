@@ -77,7 +77,7 @@ exports.upsertPPI = function(data, callback) {
 }
 
 // Loads annotations into the database
-exports.loadPPIsFromFile = function(filename, source, callback){
+exports.loadFromFile = function(filename, source, callback){
     // Load required modules
     var fs = require( 'fs' ),
     Q  = require( 'q' );
