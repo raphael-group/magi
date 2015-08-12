@@ -205,8 +205,7 @@ block belowTheFold
 					voteDirection = 'remove';
 					el.removeClass('upvote-on');
 					voteCount.text(numVotes - 1);
-				} else{
-					voteMutation(annotation_id, pmid, 'up', comment);
+				} else {
 					el.addClass('upvote-on');
 					voteCount.text(numVotes + 1);
 				}
