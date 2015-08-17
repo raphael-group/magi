@@ -21,9 +21,11 @@ exports.normalize = function(anno) {
     // convert null votes to []
     if (anno.upvotes == null) {
 	anno.upvotes = []
+	anno.upcomments = []
     }
     if (anno.downvotes == null) {
 	anno.downvotes = []
+	anno.downcomments = []
     }
     return anno;
 }
@@ -43,12 +45,14 @@ exports.parsePMID = function(pmid_field) {
 exports.joinVoteListsToQuery = function(query) {
     // Retrieve upvotes and downvotes for every annotation
     upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
+	", array_agg(comment) AS upcomments " +
 	" FROM votes WHERE direction =  1 group by anno_id) AS U";
 
     downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
+	", array_agg(comment) AS downcomments " +
 	" FROM votes WHERE direction = -1 group by anno_id) as D ";
 
-    selQuerySplit = query.toQuery().text.split("WHERE");
+	selQuerySplit = query.toQuery().text.split("WHERE");
 
     // Join the upvote/downvote table within the annotation selection
     wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
@@ -56,7 +60,8 @@ exports.joinVoteListsToQuery = function(query) {
 	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
     selQuerySplit[1];
 
-    return wholeQueryText;
+    	console.log("whole query:", wholeQueryText);
+	return wholeQueryText;
 }
 
 // delete a single mutation annotation 
