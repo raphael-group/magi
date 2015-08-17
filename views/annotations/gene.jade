@@ -72,14 +72,23 @@ block body
 					- var mutationType = d.mut_type ? d.mut_type : "--";
 					- var proteinSeqChange = d.protein_seq_change ? d.protein_seq_change : "--";
 					- var numVotes = d.upvotes.length - d.downvotes.length;
+					- var numComments = d.upcomments.length + d.downcomments.length;
+					- var comments = d.upcomments.concat(d.downcomments);
 					- var pmid_ref = d.reference
 					- var germline = d.is_germline ? d.is_germline : "--";
 					- var measure_type = d.measurement_type ? d.measurement_type : "--";
 
 					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
 					- var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
+					mixin commentPopover(comments)
+						- var rows = comments.map(function(d){ return '<tr><td>' + d + '</td></tr>' }).join("");
+						- var tbl = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>Pubmed ID</th><th>Cancers</th></tr></thead><tbody>' + rows + '</tbody></table>'
+						a(href='#', data-title='Comments', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
+							| #{comments.count}
 					tr
-						td !{cancer} 
+						td !{cancer + numComments} 
+							-if (numComments > 0)
+								+commentPopover(comments)
 						td #{mutation_class(mutationClass)}
 						td #{mutation_type(mutationType)}
 						td #{proteinSeqChange}

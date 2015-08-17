@@ -19,13 +19,17 @@ exports.geneFind = function(query, dir, callback) {
     }
 
     // TODO: use annos.table.columns to automatically separate
-    Database.sql_query(Annotations.joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
+
+var joinedQuery = Annotations.joinVoteListsToQuery(selAnnosQuery);
+    Database.sql_query(joinedQuery, selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting gene annotations: " + err);
 	    console.log("Debug: full query:", selAnnosQuery.string)
 	    callback(err, null)
 	}
 
+	    //console.log("Debug: full query is:", joinedQuery)
+	//console.log("result:", result.rows)
 	callback(null, result.rows.map(Annotations.normalize))
     })
 }
