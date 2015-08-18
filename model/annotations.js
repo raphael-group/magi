@@ -18,14 +18,28 @@ exports.inClause = function(table) {
 }
 
 exports.normalize = function(anno) {
+    var combine = function(votes, comments) {
+	var bound_comments = [];
+	if (votes.length == comments.length) {
+	    for(var i = 0; i < comments.length; i++) {
+		bound_comments[i] = {user_id: votes[i],
+				     comment: comments[i] ? comments[i] : "<empty>"};
+	    }
+	}
+	return bound_comments;
+    }
     // convert null votes to []
     if (anno.upvotes == null) {
 	anno.upvotes = []
 	anno.upcomments = []
+    } else {
+	anno.upcomments = combine(anno.upvotes, anno.upcomments);
     }
     if (anno.downvotes == null) {
 	anno.downvotes = []
 	anno.downcomments = []
+    } else {
+	anno.downcomments = combine(anno.downvotes, anno.downcomments);
     }
     return anno;
 }
