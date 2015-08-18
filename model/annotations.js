@@ -17,30 +17,40 @@ exports.inClause = function(table) {
     return f;
 }
 
+// handle comments and upvotes
 exports.normalize = function(anno) {
     var combine = function(votes, comments) {
 	var bound_comments = [];
 	if (votes.length == comments.length) {
 	    for(var i = 0; i < comments.length; i++) {
-		bound_comments[i] = {user_id: votes[i],
-				     comment: comments[i] ? comments[i] : "<empty>"};
-	    }
-	}
+		if (comments[i]) {
+			bound_comments.push({user_id: votes[i],
+					     comment: comments[i]});
+		    }
+		}
+	}	
 	return bound_comments;
     }
+
+    var comments = [];
+    if (anno.comment) {
+	comments.push({user_id: anno.user_id,
+			comment: anno.comment});
+	}
     // convert null votes to []
     if (anno.upvotes == null) {
 	anno.upvotes = []
 	anno.upcomments = []
     } else {
-	anno.upcomments = combine(anno.upvotes, anno.upcomments);
+	comments = comments.concat(combine(anno.upvotes, anno.upcomments));
     }
     if (anno.downvotes == null) {
 	anno.downvotes = []
 	anno.downcomments = []
     } else {
-	anno.downcomments = combine(anno.downvotes, anno.downcomments);
+	comments = comments.concat(combine(anno.downvotes, anno.downcomments));
     }
+    anno["comments"] = comments;
     return anno;
 }
 
