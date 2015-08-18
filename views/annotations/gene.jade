@@ -77,24 +77,28 @@ block body
 					- var pmid_ref = d.reference
 					- var germline = d.is_germline ? d.is_germline : "--";
 					- var measure_type = d.measurement_type ? d.measurement_type : "--";
-
 					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
 					- var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
-					mixin commentPopover(comments)
-						- var rows = comments.map(function(d){ return '<tr><td>' + d + '</td></tr>' }).join("");
-						- var tbl = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>Pubmed ID</th><th>Cancers</th></tr></thead><tbody>' + rows + '</tbody></table>'
-						a(href='#', data-title='Comments', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
-							| #{comments.count}
+
+					mixin commentPopover(comms)
+						- var rows = comms.map(function(str){ return '<tr><td>' + str + '</td></tr>' }).join("");
+						- var tbl = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>Comment</th></tr></thead><tbody>' + rows + '</tbody></table>'
+						- var title = "Comments"
+						- tbl = 'hello'
+						- console.log(rows)
+						- console.log(tbl)
+						a(href='#', data-title='#{title}', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
+							| #{comms.length}
 					tr
-						td !{cancer + numComments} 
-							-if (numComments > 0)
-								+commentPopover(comments)
+						td !{cancer}
 						td #{mutation_class(mutationClass)}
 						td #{mutation_type(mutationType)}
 						td #{proteinSeqChange}
 						td #{germline}
 						td #{measure_type}						  
 						td !{pubmedLink(pmid_ref)}
+							- if(numComments > 0)
+								+commentPopover(comments)
 						td !{d.source}
 						td 
 							a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25BC;&nbsp;								
@@ -119,6 +123,15 @@ block belowTheFold
 		var tbl = addDataTable({
 				tableID: "#gene-annotation-table", aaSorting: [[0, "asc"]]
 			});
+                        
+		//- Set up the popovers
+		$("[data-toggle=popover]").popover({html:true, container: 'body'})
+		//- Make sure the popovers are active whenever the table is updated
+		var table = $("#gene-annotation-table").DataTable();
+		table.on( 'draw', function () {
+			$("[data-toggle=popover]").popover({html:true, container: 'body'})
+		} );
+		
 		$("#gene-annotation-table_info").css({'font-weight': 'bold', 'font-size': '110%'});
 		$(document).ready(function(){
 			clearComment();
