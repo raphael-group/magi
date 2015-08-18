@@ -84,7 +84,6 @@ exports.joinVoteListsToQuery = function(query) {
 	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
     selQuerySplit[1];
 
-    	console.log("whole query:", wholeQueryText);
 	return wholeQueryText;
 }
 
