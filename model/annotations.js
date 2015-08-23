@@ -22,9 +22,10 @@ exports.normalize = function(anno) {
 	var bound_comments = [];
 	if (votes.length == comments.length) {
 	    for(var i = 0; i < comments.length; i++) {
-		// convert vote uids to integers, to facilitate lookup in mongo
-		bound_comments[i] = {user_id: votes[i], 
-				     comment: comments[i] ? comments[i] : "<empty>"};
+		if (comments[i]) {
+		    bound_comments.push({user_id: votes[i], 
+					 comment: comments[i] ? comments[i] : "<empty>"});
+		}
 	    }
 	}
 	return bound_comments;
