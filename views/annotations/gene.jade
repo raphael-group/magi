@@ -84,7 +84,6 @@ block body
 					mixin commentPopover(comms)
 						- var cell = function(str){ return '<td>' + str + '</td>' };
 						- var rows = comms.map(function(comment){ return '<tr>' + cell(comment.user_name) + cell(comment.comment) + '</tr>'  });
-						- console.log(comms);
 						- var tbl = popover_header + '<tbody>' + rows.join("") + '</tbody></table>';
 						a(href='#', data-title='Comments', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
 							| #{comms.length}
@@ -190,7 +189,7 @@ block belowTheFold
 					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
 					numVotes = +(voteCount.text()),
 					comment = $('textarea#mutation-comment').val(),
-					voteDirection = 'up';
+					voteDirection = 'down';
 
 				if (sibling.hasClass('upvote-on')){
 					sibling.removeClass('upvote-on');
