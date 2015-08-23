@@ -23,20 +23,14 @@ exports.normalize = function(anno) {
 	var bound_comments = [];
 	if (votes.length == comments.length) {
 	    for(var i = 0; i < comments.length; i++) {
-		if (comments[i]) {
-			bound_comments.push({user_id: votes[i],
-					     comment: comments[i]});
-		    }
-		}
-	}	
+		// convert vote uids to integers, to facilitate lookup in mongo
+		bound_comments[i] = {user_id: votes[i],
+				     comment: comments[i] ? comments[i] : "<empty>"};
+	    }
+	}
 	return bound_comments;
     }
 
-    var comments = [];
-    if (anno.comment) {
-	comments.push({user_id: anno.user_id,
-			comment: anno.comment});
-	}
     // convert null votes to []
     if (anno.upvotes == null) {
 	anno.upvotes = []
@@ -56,10 +50,10 @@ exports.normalize = function(anno) {
 
 exports.parsePMID = function(pmid_field) {
     // parse PMIDs if necessary:
-    if (pmid_field === undefined) 
+    if (pmid_field === undefined)
 	return ["none"]
 
-    if (pmid_field.indexOf(",") == -1) 
+    if (pmid_field.indexOf(",") == -1)
 	return [pmid_field];
 
     return pmid_field.split(",");
@@ -84,10 +78,11 @@ exports.joinVoteListsToQuery = function(query) {
 	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
     selQuerySplit[1];
 
+//    	console.log("whole query:", wholeQueryText);
 	return wholeQueryText;
 }
 
-// delete a single mutation annotation 
+// delete a single mutation annotation
 exports.annoDelete = function(anno_id, user_id, callback) {
     annos = Schemas.annotations
     user_id = String(user_id)
@@ -120,7 +115,7 @@ function deleteVote(fields, user_id, anno_label_type) {
 
     anno_id = fields._id;
     deleteQuery = votes.delete().where(
-	votes.anno_id.equals(anno_id), 
+	votes.anno_id.equals(anno_id),
 	votes.voter_id.equals(user_id),
 	votes.anno_type.equals(anno_label_type));
 
@@ -153,7 +148,7 @@ exports.vote = function mutationVote(fields, user_id, anno_label_type){
     d = Q.defer();
 
     //Create and execute the query
-    var anno_id = fields._id,    
+    var anno_id = fields._id,
     valence = (fields.vote == "up") ? 1 : -1 ;
 
     // change existing vote if necessary

@@ -79,10 +79,11 @@ block body
 					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
 					- var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
 
-					- var popover_header = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>User ID</th><th>Comment</th></tr></thead>';
+					- var popover_header = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>User</th><th>Comment</th></tr></thead>';
 					mixin commentPopover(comms)
 						- var cell = function(str){ return '<td>' + str + '</td>' };
-						- var rows = comms.map(function(comment){ return '<tr>' + cell(comment.user_id) + cell(comment.comment) + '</tr>'  });
+						- var rows = comms.map(function(comment){ return '<tr>' + cell(comment.user_name) + cell(comment.comment) + '</tr>'  });
+						- console.log(comms);
 						- var tbl = popover_header + '<tbody>' + rows.join("") + '</tbody></table>';
 						a(href='#', data-title='Comments', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
 							| #{comms.length}

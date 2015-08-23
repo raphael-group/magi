@@ -4,7 +4,9 @@ formidable = require('formidable'),
 Base_annotations = require( "../model/annotations" ),
 Aberrations = require("../model/aberrations"),
 PPIs  = require( "../model/ppis" ),
-Database = require('../model/db')
+Database = require('../model/db'),
+User = require('../model/user'),
+Q = require('q');
 
 // Create the tables if they don't exist already
 Base_annotations.init()
@@ -35,15 +37,43 @@ exports.gene = function gene(req, res){
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
-	// Render the view
-	var pkg = {
-	    user: req.user,
-	    annotations: result,
-	    gene: geneRequested,
-	    abbrToCancer: abbrToCancer,
-	    cancerToAbbr: cancerToAbbr
+	resolveNames = function(comments) {
+	    if (comments.length > 0) {
+		return Q.all(comments.map(function (comment) {
+		    return User.findById(comment.user_id);
+		}));
+	    } else {
+		return Q.fcall(function() {return [];});
+	    }
 	};
-	res.render('annotations/gene', pkg);
+
+	// Translate user ids to names
+	Q.all(result.map(function(row) {
+	    return resolveNames(row.upcomments)
+		.then(function(user_promises) {		    
+		    user_promises.forEach(function(user, i) {
+			row.upcomments[i].user_name = user.name;
+		    });
+		}).then(function () {
+		    return resolveNames(row.downcomments);
+		}).then(function(user_promises) {		    
+		    user_promises.forEach(function(user, i) {
+			row.downcomments[i].user_name = user.name;
+		    }); 
+		}).fail(function(err) {
+		    console.log("Error in resolving user id's");
+		});
+	})).then(function () {
+	    // Render the view
+	    var pkg = {
+		user: req.user,
+		annotations: result,
+		gene: geneRequested,
+		abbrToCancer: abbrToCancer,
+		cancerToAbbr: cancerToAbbr
+	    };
+	    res.render('annotations/gene', pkg);
+	});
     });
 }
 
