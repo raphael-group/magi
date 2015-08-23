@@ -28,8 +28,6 @@ var joinedQuery = Annotations.joinVoteListsToQuery(selAnnosQuery);
 	    callback(err, null)
 	}
 
-	    //console.log("Debug: full query is:", joinedQuery)
-	//console.log("result:", result.rows)
 	callback(null, result.rows.map(Annotations.normalize))
     })
 }

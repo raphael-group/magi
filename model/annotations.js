@@ -22,12 +22,14 @@ exports.normalize = function(anno) {
 	var bound_comments = [];
 	if (votes.length == comments.length) {
 	    for(var i = 0; i < comments.length; i++) {
-		bound_comments[i] = {user_id: votes[i],
+		// convert vote uids to integers, to facilitate lookup in mongo
+		bound_comments[i] = {user_id: votes[i], 
 				     comment: comments[i] ? comments[i] : "<empty>"};
 	    }
 	}
 	return bound_comments;
     }
+
     // convert null votes to []
     if (anno.upvotes == null) {
 	anno.upvotes = []
@@ -74,7 +76,7 @@ exports.joinVoteListsToQuery = function(query) {
 	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
     selQuerySplit[1];
 
-    	console.log("whole query:", wholeQueryText);
+//    	console.log("whole query:", wholeQueryText);
 	return wholeQueryText;
 }
 
