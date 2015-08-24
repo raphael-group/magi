@@ -27,14 +27,8 @@ exports.findById = function (id) {
     return find({_id: id});
 }
 
-//var userCache = {}; // cache by 
+// todo: caching?
 function find(criteria) {
-/*
-    if (google_id in userCache) {
-	return Q.fcall(function () {
-	    return userCache[google_id];
-	});
-    } */
     d = Q.defer();
 
     User.findOne(criteria, function (err, user) {
@@ -42,7 +36,7 @@ function find(criteria) {
 	    console.log(err);
 	    throw new Error(err);
 	} 
-//	userCache[google_id] = user;
+	console.log("user resolved: ", user);
 	d.resolve(user);
     });
     return d.promise;
