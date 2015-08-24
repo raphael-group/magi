@@ -89,11 +89,11 @@ exports.removeDataset = function removeDataset(query, callback){
 		// Throw an error if it occurred
 		if (err) throw new Error(err);
 
-		// Otherwise, remove all mutgenes with 
+		// Otherwise, remove all mutgenes with
 		MutGene.remove({dataset_id: query.dataset_id}, function(err){
 			// Throw an error if it occurred
 			if (err) throw new Error(err);
-			
+
 			DataMatrixRow.remove({dataset_id: query.dataset_id}, function(err){
 				// Throw an error if it occurred
 				if (err) throw new Error(err);
@@ -146,6 +146,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			samples = samples.concat(d.data_matrix_samples.map(function(d){ return {name: d}; }));
 		})
 	}
+
 	var sampleNames = samples.map(function(d){ return d.name; });
 
 	// Construct the DataMatrixRow query
@@ -195,7 +196,6 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 					});
 				}
 			});
-
 			callback("", heatmap);
 		}
 	});// end DataMatrixRow.find
@@ -435,7 +435,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				var arr = s.split("\t");
 				if (arr.length > 1){
 					// Sample is always stored in column 1, dataset is always stored in column 2
-					sampleToDataset[arr[0]] = arr[1]; 
+					sampleToDataset[arr[0]] = arr[1];
 					if (!(arr[1] in datasetToSamples)) datasetToSamples[arr[1]] = [];
 					datasetToSamples[arr[1]].push( arr[0] );
 
@@ -615,7 +615,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 			});
 
-			// Load locations of each gene and find their neighbors 
+			// Load locations of each gene and find their neighbors
 			var Gene = Database.magi.model( 'Gene' );
 			// console.log(Object.keys(cnas["AKR1C2"].segments))
 			// Object.keys(cnas["AKR1C2"].segments).forEach(function(s){
@@ -766,7 +766,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			// Create the data for the mutation plot
 			mutation_plot_data = {};
 			genes.forEach(function(d){
-				mutation_plot_data[d.name] = 	{ 
+				mutation_plot_data[d.name] = 	{
 													cnas: d.cnas,
 													snvs: d.snvs,
 													mutated_samples: d.mutated_samples,
@@ -1090,7 +1090,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 						return funcs.slice(1, funcs.length).reduce(Q.when, Q(funcs[0]()))
 					});
 				});
-			});	
+			});
 		});
 		return d.promise;
 	}

@@ -24,8 +24,6 @@ $('button#shareBtn').on('click', function(e) {
     });
   });
 
-console.log(data);
-
 // Master function for
 // * drawing the D3 visualizations
 // * adding tooltips
@@ -187,7 +185,7 @@ function view(){
   // in the same order as the aberration matrix
   if (data.heatmap.cells){
     // Add the cancer type as an annotation for the heatmap
-    if (data.aberrations && data.aberrations.samples){
+    if (data.aberrations && data.aberrations.samples && data.aberrations.samples.length > 0){
       var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
       heatmapAnnotations.categories.push("Cancer type");
       heatmapAnnotations.annotationToColor["Cancer type"] = {};

@@ -335,7 +335,7 @@ def load_cnas(cnaFile, cnaFileType, dataset, sampleToMuts, geneToCases, sampleWh
 		if cnaFileType == 'MAGI':
 			cnas, numCNAs = load_cna_file(cnaFile, dataset, sampleToMuts, geneToCases, sampleWhitelist)
 		elif cnaFileType == 'GISTIC2':
-			# GISTIC2 requires a tarball. So verify that there is a tarball, then 
+			# GISTIC2 requires a tarball. So verify that there is a tarball, then
 			# untar it to a temporary directory
 			cnaDir = load_file_to_tmp(cnaFile, needs_dir=True)
 			print cnaDir
@@ -374,7 +374,7 @@ def load_data_matrix(dataMatrixFile, sampleWhitelist):
 	return dataMatrix, dataMatrixSamples
 
 ###############################################################################
-# 
+#
 def identify_mutations_in_samples(samples, snvs, cnas, aberrations):
 	# Initialize the dictionary of samples to mutations
 	sampleToMutations = dict( (s, defaultdict(list)) for s in samples )
@@ -428,7 +428,7 @@ def get_parser():
 	# Metadata
 	parser.add_argument('-c', '--cancer', required=True, type=str, choices=cancerToId.keys(),
 		help='Cancer name (lowercase).')
-	parser.add_argument('-dn', '--dataset_name', required=True, type=str, 
+	parser.add_argument('-dn', '--dataset_name', required=True, type=str,
 		help='Name for this dataset in MAGI.')
 	parser.add_argument('-gn', '--group_name', default=None, required=False, type=str,
 		help='Add this dataset to a particular group.')
@@ -455,7 +455,7 @@ def get_parser():
 	parser.add_argument('-dc', '--del_cutoff', default=-0.3, type=float,
 		help='Deletion changes to be considered.')
 	parser.add_argument('-cct', '--cna_consistency_threshold', default=0.75,
-		type=float, help='CNA cna_consistency_threshold to be considered.')    
+		type=float, help='CNA cna_consistency_threshold to be considered.')
 	parser.add_argument('-range', '--range_cna', default=500000, type=int,
 		help='Tolerant range of CNA are included in the browser.')
 
@@ -501,7 +501,7 @@ def run( args ):
 	except IOError as e:
 		sys.stderr.write("IOError when parsing sample annotation or annotation color file.\n")
 		os._exit(5) # Samples/Annotation colors local file error
-		
+
 	# Load SNVs
 	try:
 		snvs, numSNVs = load_snvs(args.snv_file, args.snv_file_type, args.dataset_name,
@@ -550,7 +550,11 @@ def run( args ):
 
 	# Create a list of the samples in this dataset if one wasn't provided
 	if not sampleWhitelist:
-		samples = sampleToMuts.keys()
+		if args.snv_file or args.cna_file or args.aberrations_file:
+			samples = sampleToMuts.keys()
+		else:
+			samples = dataMatrixSamples
+	print len(samples)
 
 	# Create a mapping of samples to their mutation types
 	sampleToMutations = identify_mutations_in_samples(samples, snvs, cnas, aberrations)
@@ -593,7 +597,7 @@ def run( args ):
 		del point['name']
 		for t in mutationTypes:
 			# Skip the types we computed manually above
-			if t in datum or t in ['snv', 'inactive_snv']: continue 
+			if t in datum or t in ['snv', 'inactive_snv']: continue
 			point[t.lower()] = numMutSamples([g], set([t]))
 
 		mutationPlotData[g] = point
@@ -664,9 +668,11 @@ def run( args ):
 	print "Dataset ID:", dataset_id
 
 	# Add mutated samples
-	samplesWithMutations = [ dict(name=s, mutations=sampleToMutations[s], dataset_id=dataset_id)
-							 for s in samples ]
-	db.samples.insert( samplesWithMutations )
+	if args.cna_file or args.snv_file or args.aberrations_file:
+		dbSamples = [ dict(name=s, mutations=sampleToMutations[s], dataset_id=dataset_id) for s in samples ]
+	else: # there must only be data matrix samples
+		dbSamples = [ dict(name=s, mutations=[], dataset_id=dataset_id) for s in dataMatrixSamples ]
+	db.samples.insert( dbSamples )
 
 	# Save the data matrix rows
 	if dataMatrix and dataMatrixSamples:
