@@ -113,7 +113,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	// Add the annotation
 
 	// prefer abbreviation to full name given by form
-	if (req.body.cancer != "undefined" &&
+	if (req.body.cancer && req.body.cancer != "undefined" &&
 	    req.body.cancer.toLowerCase() in cancerToAbbr) {
 	    req.body.cancer = cancerToAbbr[req.body.cancer.toLowerCase()];
 	}

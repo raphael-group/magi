@@ -17,6 +17,7 @@ exports.inClause = function(table) {
     return f;
 }
 
+// handle comments and upvotes
 exports.normalize = function(anno) {
     var combine = function(votes, comments) {
 	var bound_comments = [];
@@ -36,14 +37,15 @@ exports.normalize = function(anno) {
 	anno.upvotes = []
 	anno.upcomments = []
     } else {
-	anno.upcomments = combine(anno.upvotes, anno.upcomments);
+	comments = comments.concat(combine(anno.upvotes, anno.upcomments));
     }
     if (anno.downvotes == null) {
 	anno.downvotes = []
 	anno.downcomments = []
     } else {
-	anno.downcomments = combine(anno.downvotes, anno.downcomments);
+	comments = comments.concat(combine(anno.downvotes, anno.downcomments));
     }
+    anno["comments"] = comments;
     return anno;
 }
 
@@ -77,7 +79,6 @@ exports.joinVoteListsToQuery = function(query) {
 	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
     selQuerySplit[1];
 
-//    	console.log("whole query:", wholeQueryText);
 	return wholeQueryText;
 }
 

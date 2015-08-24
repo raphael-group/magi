@@ -72,8 +72,7 @@ block body
 					- var mutationType = d.mut_type ? d.mut_type : "--";
 					- var proteinSeqChange = d.protein_seq_change ? d.protein_seq_change : "--";
 					- var numVotes = d.upvotes.length - d.downvotes.length;
-					- var numComments = d.upcomments.length + d.downcomments.length;
-					- var comments = d.upcomments.concat(d.downcomments);
+					- var comments = d.comments;
 					- var pmid_ref = d.reference
 					- var germline = d.is_germline ? d.is_germline : "--";
 					- var measure_type = d.measurement_type ? d.measurement_type : "--";
@@ -95,7 +94,7 @@ block body
 						td #{germline}
 						td #{measure_type}						  
 						td !{pubmedLink(pmid_ref)}
-							- if(numComments > 0)
+							- if(comments.length > 0)
 								+commentPopover(comments)
 						td !{d.source}
 						td 

@@ -65,7 +65,7 @@ exports.upsertAber = function(data, callback){
 	    abers.transcript.value(data.transcript),
 	    abers.mut_class.value(data.mut_class),
 	    abers.mut_type.value(data.mut_type),
-	    abers.protein_seq_change.value(data.change),
+	    abers.protein_seq_change.value(data.protein_seq_change),
 	    abers.source.value(data.source),
 	    abers.anno_id.value(u_id)).returning(abers.anno_id) // we can re turn more if we want
 
