@@ -37,33 +37,58 @@ exports.gene = function gene(req, res){
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
-	resolveNames = function(comments) {
-	    if (comments.length > 0) {
-		return Q.all(comments.map(function (comment) {
+	var resolveNames = function(comments) {
+	    if (comments.length > 0) {		
+		var names = Q.all(comments.map(function (comment) {
 		    return User.findById(comment.user_id);
 		}));
+		console.log("in resolve: names = ", names);
+		return names;
 	    } else {
 		return Q.fcall(function() {return [];});
 	    }
 	};
 
-	// Translate user ids to names
-	Q.all(result.map(function(row) {
-	    return resolveNames(row.upcomments)
-		.then(function(user_promises) {		    
-		    user_promises.forEach(function(user, i) {
-			row.upcomments[i].user_name = user.name;
+	// get all the unique user ids within comments
+	uniqueIds = {};
+	result.forEach(function(row) {
+	    row.upcomments.forEach(function (comment) {
+		if (comment.user_id in uniqueIds) {
+		    uniqueIds[comment.user_id].push(comment);
+		} else {
+		    uniqueIds[comment.user_id] = [comment];
+		}});
+	    row.downcomments.forEach(function (comment) {
+		if (comment.user_id in uniqueIds) {
+		    uniqueIds[comment.user_id].push(comment);
+		} else {
+		    uniqueIds[comment.user_id] = [comment];
+		}});
+	});
+
+	var promises = [];
+	for(user_id in uniqueIds) {
+	    promises.push(User.findById(user_id)
+		.then(function (user) {
+		    var theseComments = uniqueIds[user._id];
+	 	    console.log("unblocked with user ", user._id);
+		    theseComments.forEach(function(comment) {
+			comment.user_name = user.name;
 		    });
-		}).then(function () {
-		    return resolveNames(row.downcomments);
-		}).then(function(user_promises) {		    
-		    user_promises.forEach(function(user, i) {
-			row.downcomments[i].user_name = user.name;
-		    }); 
-		}).fail(function(err) {
-		    console.log("Error in resolving user id's");
-		});
-	})).then(function () {
+		    console.log("done with ", user._id, ", count = ", theseComments.length);
+		    return true;
+		}).fail(function (err) {
+		    console.log("Error:", err);
+		}));
+	}
+
+	Q.allSettled(promises).done(function (done_promises) {
+	    console.log("ok, rendering...");
+	    result.forEach(function(row) {
+		if (row.upcomments.length > 0 || row.downcomments.length > 0) {
+		    console.log(row.u_id, row.upcomments.concat(row.downcomments));
+		}});
+
 	    // Render the view
 	    var pkg = {
 		user: req.user,

@@ -24,7 +24,7 @@ exports.normalize = function(anno) {
 	    for(var i = 0; i < comments.length; i++) {
 		if (comments[i]) {
 		    bound_comments.push({user_id: votes[i], 
-					 comment: comments[i] ? comments[i] : "<empty>"});
+					 comment: comments[i]});
 		}
 	    }
 	}
