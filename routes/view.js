@@ -95,6 +95,38 @@ exports.view  = function view(req, res){
       datasets.forEach(function(d){ typeToSamples[d.title] = d.samples; });
 
       Dataset.mutGenesList(genes, dataset_ids, function(err, mutGenes){
+        if (err) throw new Error(err);
+
+        // Create a master sample list. We include samples:
+        // 1) Mutated in at least one of the genes; and,
+        // 2) In datasets with no mutations
+        // And store each with a unique ID.
+        var sampleToInclude = {},
+            sampleToTypes = {},
+            samples = [];
+
+        function addSample(s, _id){
+          var sampleID = _id + '-' + s;
+          if (!(sampleID in sampleToInclude)){
+            sampleToInclude[sampleID] = true;
+            sampleToTypes[sampleID] = datasetNames[_id];
+            samples.push({ name: s, _id: sampleID, z_index: datasetIDToPrecedence[_id] })
+          }
+        }
+
+        datasets.forEach(function(d){
+          if (d.summary.num_mutated_genes === 0){
+            console.log(d.title, d.samples.length);
+            d.samples.forEach(function(s){ addSample(s, d._id); });
+          } else {
+            mutGenes.forEach(function(g){
+              Object.keys(g.mutated_samples).forEach(function(s){
+                addSample(s, g.dataset_id);
+              });
+            });
+          }
+        });
+
         // Create a list of all the transcripts in the mutated genes
         var transcripts = [];
         mutGenes.forEach(function(G){
@@ -117,13 +149,9 @@ exports.view  = function view(req, res){
           // Create empty Objects to store transcript/mutation matrix data
           var M = {},
               transcript_data = {},
-              sampleToTypes = {},
               // CNA samples don't need IDs like the mutation matrix
               cnaSampleToTypes = {},
-              cna_browser_data = {},
-              // make a list of mutated samples with their unique IDs
-              seenSample = {},
-              samples = [];
+              cna_browser_data = {};
 
           // Initialize with genes as keys (in case genes aren't in the data)
           var i;
@@ -135,8 +163,7 @@ exports.view  = function view(req, res){
           // Iterate through each dataset
           for (i = 0; i < mutGenes.length; i++){
             // Parse dataset values into short variable handles
-            var G = mutGenes[i],
-              z_index = datasetIDToPrecedence[G.dataset_id];
+            var G = mutGenes[i];
 
             // Record the CNAs
             if (G.cnas){
@@ -171,13 +198,8 @@ exports.view  = function view(req, res){
             // Load the mutated samples
             for (var s in G.mutated_samples){
               var _id = G.dataset_id + "-" + s;
-              sampleToTypes[_id] = datasetNames[G.dataset_id];
               cnaSampleToTypes[s] = datasetNames[G.dataset_id];
               M[G.gene][_id] = G.mutated_samples[s];
-              if (!(_id in seenSample)){
-                samples.push( {_id: _id, name: s, z_index: z_index } );
-                seenSample[_id] = true;
-              }
             }
 
             var t;

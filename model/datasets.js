@@ -144,7 +144,7 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 		var samples = [];
 		datasets.forEach(function(d){
 			samples = samples.concat(d.data_matrix_samples.map(function(d){ return {name: d}; }));
-		})
+		});
 	}
 
 	var sampleNames = samples.map(function(d){ return d.name; });
@@ -168,8 +168,18 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 				geneToDatasetToRow = {};
 
 			// Create a mapping of genes -> dataset_ids -> data matrix rows
+			var datasetToMatrixSamples = {};
+			datasets.forEach(function(d){
+				datasetToMatrixSamples[d._id] = d.data_matrix_samples;
+			});
+
 			genes.forEach(function(g){ geneToDatasetToRow[g] = {}; });
-			rows.forEach(function(r){ geneToDatasetToRow[r.gene][r.dataset_id] = r; });
+			rows.forEach(function(r){
+				geneToDatasetToRow[r.gene][r.dataset_id] = {};
+				r.row.forEach(function(n, i){
+					geneToDatasetToRow[r.gene][r.dataset_id][datasetToMatrixSamples[r.dataset_id][i]] = n;
+				})
+			});
 
 			// Iterate over the genes and datasets to construct the unified heatmap
 			var sampleToMut = {}, sampleToData = {};
@@ -178,13 +188,20 @@ exports.createHeatmap = function createHeatmap(genes, datasets, samples, callbac
 			datasets.forEach(function(d, j){
 				var mutSamples = d.data_matrix_samples.filter(function(s){ return sampleToMut[s]; });
 				genes.forEach(function(g, i){
-					if (!(d._id in geneToDatasetToRow[g])) return;
-					geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
-						// Ignore samples not mutated in the gene set
-						if (!sampleToMut[d.data_matrix_samples[k]]) return;
-						heatmap.cells.push({x: d.data_matrix_samples[k], y: g, value: n });
-						sampleToData[d.data_matrix_samples[k]] = true;
+					mutSamples.forEach(function(s){
+						if (!sampleToMut[s]) return;
+						if (!(d._id in geneToDatasetToRow[g])) var val = null;
+						else if (!(s in geneToDatasetToRow[g][d._id])) var val = null;
+						else var val = geneToDatasetToRow[g][d._id][s];
+						heatmap.cells.push({x: s, y: g, value: val });
+						sampleToData[s] = true;
 					});
+					// geneToDatasetToRow[g][d._id].row.forEach(function(n, k){
+					// 	// Ignore samples not mutated in the gene set
+					// 	if (!sampleToMut[d.data_matrix_samples[k]]) return;
+					// 	heatmap.cells.push({x: d.data_matrix_samples[k], y: g, value: n });
+					// 	sampleToData[d.data_matrix_samples[k]] = true;
+					// });
 				});
 			});
 

@@ -626,7 +626,7 @@ def run( args ):
 		"most_mutated_genes": mostMutatedGenes,
 		"most_mutated_gene_sets": mostMutatedGeneSets,
 		"mutation_plot_data": mutationPlotData,
-		"num_mutated_genes": len(geneToCases)
+		"num_mutated_genes": sum(1 for g, c in genesWithCount if c > 0)
 	}
 
 	# Then convert the sets in the mutated genes to lists,
