@@ -1,7 +1,7 @@
 /* Master D3 controller for the view */
 
 var user_id = user ? user._id : "";
-console.log(data)
+
 // When the document is ready, draw the visualizations
 // and then fade them in and the loading GIF out
 $(document).ready(
