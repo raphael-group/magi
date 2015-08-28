@@ -36,39 +36,22 @@ exports.gene = function gene(req, res){
     Aberrations.geneFind({gene: geneRequested}, 'right', function(err, result) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
-
-	var resolveNames = function(comments) {
-	    if (comments.length > 0) {		
-		var names = Q.all(comments.map(function (comment) {
-		    return User.findById(comment.user_id);
-		}));
-		console.log("in resolve: names = ", names);
-		return names;
-	    } else {
-		return Q.fcall(function() {return [];});
-	    }
-	};
-
+	
 	// get all the unique user ids within comments
 	uniqueIds = {};
 	result.forEach(function(row) {
-	    row.upcomments.forEach(function (comment) {
+	    row.comments.forEach(function (comment) {
 		if (comment) {
+		console.log(comment);			
 		    if (comment.user_id in uniqueIds) {
 			uniqueIds[comment.user_id].push(comment);
 		    } else {
 			uniqueIds[comment.user_id] = [comment];
 		    };
-		    row.downcomments.forEach(function (comment) {
-			if (comment.user_id in uniqueIds) {
-			    uniqueIds[comment.user_id].push(comment);
-			} else {
-			    uniqueIds[comment.user_id] = [comment];
-			}});
-		}
-	    });
-	});
+		}});
+    	});
 
+	console.log(uniqueIds);
 	var promises = [];
 	for(user_id in uniqueIds) {
 	    promises.push(User.findById(user_id)

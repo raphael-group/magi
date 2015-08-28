@@ -19,13 +19,14 @@ exports.inClause = function(table) {
 
 // handle comments and upvotes
 exports.normalize = function(anno) {
-    var combine = function(votes, comments) {
+    var combine = function(votes, comments, voteDir) {
 	var bound_comments = [];
 	if (votes.length == comments.length) {
 	    for(var i = 0; i < comments.length; i++) {
 		if (comments[i]) {
 		    bound_comments.push({user_id: votes[i],
-					 comment: comments[i]});
+					 comment: comments[i],
+					 direction: voteDir});
 		}
 	    }
 	}
@@ -38,13 +39,13 @@ exports.normalize = function(anno) {
 	anno.upvotes = []
 	anno.upcomments = []
     } else {
-	comments = comments.concat(combine(anno.upvotes, anno.upcomments));
+	comments = comments.concat(combine(anno.upvotes, anno.upcomments, 'up'));
     }
     if (anno.downvotes == null) {
 	anno.downvotes = []
 	anno.downcomments = []
     } else {
-	comments = comments.concat(combine(anno.downvotes, anno.downcomments));
+	comments = comments.concat(combine(anno.downvotes, anno.downcomments, 'down'));
     }
     anno["comments"] = comments;
     return anno;
