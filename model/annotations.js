@@ -33,6 +33,7 @@ exports.normalize = function(anno) {
     }
 
     // convert null votes to []
+    var comments = [];
     if (anno.upvotes == null) {
 	anno.upvotes = []
 	anno.upcomments = []

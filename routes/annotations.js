@@ -53,17 +53,20 @@ exports.gene = function gene(req, res){
 	uniqueIds = {};
 	result.forEach(function(row) {
 	    row.upcomments.forEach(function (comment) {
-		if (comment.user_id in uniqueIds) {
-		    uniqueIds[comment.user_id].push(comment);
-		} else {
-		    uniqueIds[comment.user_id] = [comment];
-		}});
-	    row.downcomments.forEach(function (comment) {
-		if (comment.user_id in uniqueIds) {
-		    uniqueIds[comment.user_id].push(comment);
-		} else {
-		    uniqueIds[comment.user_id] = [comment];
-		}});
+		if (comment) {
+		    if (comment.user_id in uniqueIds) {
+			uniqueIds[comment.user_id].push(comment);
+		    } else {
+			uniqueIds[comment.user_id] = [comment];
+		    };
+		    row.downcomments.forEach(function (comment) {
+			if (comment.user_id in uniqueIds) {
+			    uniqueIds[comment.user_id].push(comment);
+			} else {
+			    uniqueIds[comment.user_id] = [comment];
+			}});
+		}
+	    });
 	});
 
 	var promises = [];
