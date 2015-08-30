@@ -138,7 +138,7 @@ block belowTheFold
 			$('#mutation-comment').val('');	
 		}
 		
-		function voteMutation(annotation_id, pmid, vote, comment){
+		function voteMutation(annotation_id, pmid, vote, comment, displayCallback){
 			// Update the vote count
 			// Create a form to submit as an AJAX request to update the database
 			var formData = new FormData();
@@ -169,6 +169,7 @@ block belowTheFold
 
 					// Log the status
 					annotationStatus(response.status, successClasses);
+					displayCallback();
 				}
 			});
 		}
@@ -190,19 +191,19 @@ block belowTheFold
 					comment = $('textarea#mutation-comment').val(),
 					voteDirection = 'down';
 
-				if (sibling.hasClass('upvote-on')){
-					sibling.removeClass('upvote-on');
-					el.addClass('downvote-on'); 
-					voteCount.text(numVotes - 2);
-				} else if (el.hasClass('downvote-on')){
-					voteDirection = 'remove';
-					el.removeClass('downvote-on');
-					voteCount.text(numVotes + 1);
-				} else {
-					el.addClass('downvote-on');
-					voteCount.text(numVotes - 1);
-				}
-				voteMutation(annotation_id, pmid, voteDirection, comment);
+				voteMutation(annotation_id, pmid, voteDirection, comment, function() {
+					if (sibling.hasClass('upvote-on')){
+						sibling.removeClass('upvote-on');
+						el.addClass('downvote-on');
+						voteCount.text(numVotes - 2);
+					} else if (el.hasClass('downvote-on')){
+						voteDirection = 'remove';
+						el.removeClass('downvote-on');
+						voteCount.text(numVotes + 1);
+					} else {
+						el.addClass('downvote-on');
+						voteCount.text(numVotes - 1);
+				}});
 			});
 		}
 
@@ -216,19 +217,19 @@ block belowTheFold
 					numVotes = +(voteCount.text()),
 					comment = $('textarea#mutation-comment').val(),
 					voteDirection = 'up';
-				if (sibling.hasClass('downvote-on')){
-					sibling.removeClass('downvote-on');
-					el.addClass('upvote-on'); 
-					voteCount.text(numVotes + 2);
-				} else if (el.hasClass('upvote-on')){
-					voteDirection = 'remove';
-					el.removeClass('upvote-on');
-					voteCount.text(numVotes - 1);
-				} else {
-					el.addClass('upvote-on');
-					voteCount.text(numVotes + 1);
-				}
-				voteMutation(annotation_id, pmid, voteDirection, comment);
+				voteMutation(annotation_id, pmid, voteDirection, comment, function () {
+					if (sibling.hasClass('downvote-on')){
+						sibling.removeClass('downvote-on');
+						el.addClass('upvote-on'); 
+						voteCount.text(numVotes + 2);
+					} else if (el.hasClass('upvote-on')){
+						voteDirection = 'remove';
+						el.removeClass('upvote-on');
+						voteCount.text(numVotes - 1);
+					} else {
+						el.addClass('upvote-on');
+						voteCount.text(numVotes + 1);
+				}});
 			});
 		}
 
