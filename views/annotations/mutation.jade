@@ -1,0 +1,55 @@
+extends ../layout
+block body
+	br
+	div(class="container")
+		-if (error)
+			h3 Annotation not found: ##{annotation_id}
+		-else
+			h3 #{annotation.gene} mutation annotation ##{annotation.u_id}
+			br
+			div(class="col-lg-4 col-md-4")
+				h4 Annotation Data
+					mixin tr_prop(property, value)
+						tr 
+							th #{property}
+							th #{value}
+					table(class="table table-striped", id="annotation-table")
+						thead
+							tr(style="background:#d3d3d3")
+								th Property
+								th Value
+						tbody
+							+tr_prop("Cancer", annotation.cancer)
+							+tr_prop("Mutation class", annotation.mut_class)
+							+tr_prop("Mutation type", annotation.mut_type)
+							+tr_prop("Protein sequence change", annotation.protein_seq_change)
+							+tr_prop("Germline?", annotation.is_germline)
+							+tr_prop("Measurement type", annotation.measurement_type)
+							+tr_prop("PMID", annotation.reference)
+							+tr_prop("Source", annotation.source)
+			div(class="col-lg-8 col-md-8")
+				h4 Comments
+				-if (! annotation.comments)
+					| No comments are recorded for this annotation.
+				-else
+					table(class="table", id="comment-table")
+						thead
+							tr(style="background:#d3d3d3")
+								th Commenter
+								th Text
+								th Direction
+						tbody
+							-for (var i = 0; i < annotation.comments.length; i++)
+								-var comment = annotation.comments[i];
+								tr 
+									th Anonymous
+									th #{comment.comment}
+									th #{comment.direction}
+
+
+block belowTheFold
+	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
+	script(src='/js/dataTableWrapper.js').
+	script(type='text/javascript').
+		//- Convert the tables into DataTables
+		addDataTable({ tableID: "#variant-table", aaSorting: [[0, "asc"]] });

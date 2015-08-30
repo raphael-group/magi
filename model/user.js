@@ -36,7 +36,6 @@ function find(criteria) {
 	    console.log(err);
 	    throw new Error(err);
 	} 
-	console.log("user resolved: ", user);
 	d.resolve(user);
     });
     return d.promise;

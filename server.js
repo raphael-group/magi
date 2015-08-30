@@ -179,17 +179,18 @@ app.get('/manifests', routes.datasets.manifests);
 app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 //app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 
-// SQL  annotation views
+// SQL annotation views
 app.get('/annotations/gene/:gene', routes.annotations.gene);
+app.get('/annotations/mutation/:u_id', routes.annotations.mutation);
 app.get('/delete/annotations/mutation/:u_id', routes.annotations.removeMutation); // todo: should be a DELETE
 app.get('/delete/annotations/interaction/:u_id', routes.annotations.removePpi); // todo: should be a DELETE
 
 // and take advantage of HTTP verbs
 
 //app.get('/annotations/cancer/:cancer', routes.annotations. cancer);
-app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation);
+app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation); // todo: remove save prefix
 app.post('/vote/mutation', routes.annotations.mutationVote);
-app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save_ppi);
+app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save_ppi); 
 
 // more information
 app.get('/terms', routes.terms);
