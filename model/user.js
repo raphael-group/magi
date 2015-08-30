@@ -42,3 +42,12 @@ function find(criteria) {
     return d.promise;
 }
 
+exports.anonymousPromise = function(user_id) {
+    return Q.fcall(function() {return {
+	_id: user_id,
+	google_id: user_id,
+	name: "Anonymous",
+	email: "anonymous@noemail.edu"
+    }});
+}
+
