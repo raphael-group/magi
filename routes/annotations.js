@@ -44,7 +44,6 @@ exports.gene = function gene(req, res){
 	result.forEach(function(row) {
 	    row.comments.forEach(function (comment) {
 		if (comment) {
-		console.log(comment);			
 		    if (comment.user_id in uniqueIds) {
 			uniqueIds[comment.user_id].push(comment);
 		    } else {
@@ -90,6 +89,26 @@ exports.gene = function gene(req, res){
 	});
     });
 }
+
+exports.mutation = function mutation(req, res) {
+    console.log('/annotation/mutation, id =', req.params.u_id)
+    var anno_id = req.params.u_id;
+    Aberrations.geneFind({anno_id: anno_id}, 'right', function(err, result) {
+	// Throw error (if necessary)
+	if (err) throw new Error(err);
+	else if (!result) {
+	    res.render('annotations/mutation', {error: 'No such annotation', annotation_id: anno_id});
+	    return;
+	}
+	var pkg = {
+	    user: req.user,
+	    annotation: result[0],
+	    abbrToCancer: abbrToCancer,
+	    cancerToAbbr: cancerToAbbr
+	};
+	res.render('annotations/mutation', pkg);	
+    });
+};
 
 exports.saveMutation = function saveMutation(req, res) {
     console.log('/save/annotation/mutation')
