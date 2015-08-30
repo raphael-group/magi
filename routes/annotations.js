@@ -13,6 +13,8 @@ Base_annotations.init()
 
 // on init: create map between cancers and abbrs
 var abbrToCancer = {}, cancerToAbbr = {};
+var anonymizeIds = true;
+
 Cancer = Database.magi.model( 'Cancer' );
 
 Cancer.find({}, function(err, cancers){
@@ -36,7 +38,7 @@ exports.gene = function gene(req, res){
     Aberrations.geneFind({gene: geneRequested}, 'right', function(err, result) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
-	
+
 	// get all the unique user ids within comments
 	uniqueIds = {};
 	result.forEach(function(row) {
@@ -47,34 +49,35 @@ exports.gene = function gene(req, res){
 			uniqueIds[comment.user_id].push(comment);
 		    } else {
 			uniqueIds[comment.user_id] = [comment];
-		    };
-		}});
-    	});
+		    };		
+		}
+	    });
+	});
 
-	console.log(uniqueIds);
+	// resolve user names
 	var promises = [];
 	for(user_id in uniqueIds) {
-	    promises.push(User.findById(user_id)
-		.then(function (user) {
-		    var theseComments = uniqueIds[user._id];
-	 	    console.log("unblocked with user ", user._id);
-		    theseComments.forEach(function(comment) {
-			comment.user_name = user.name;
-		    });
-		    console.log("done with ", user._id, ", count = ", theseComments.length);
-		    return true;
-		}).fail(function (err) {
-		    console.log("Error:", err);
-		}));
+	    if (anonymizeIds) {
+		promises.push(User.anonymousPromise(user_id));
+	    } else {
+		promises.push(User.findById(user_id))
+	    }
 	}
 
-	Q.allSettled(promises).done(function (done_promises) {
-	    console.log("ok, rendering...");
-	    result.forEach(function(row) {
-		if (row.upcomments.length > 0 || row.downcomments.length > 0) {
-		    console.log(row.u_id, row.upcomments.concat(row.downcomments));
-		}});
+	// insert user names into comments
+	promises = promises.map(function(p) {
+	    return p.then(function (user) {
+		var theseComments = uniqueIds[user._id];
+		theseComments.forEach(function(comment) {
+		    comment.user_name = user.name;
+		});
+		return true;
+	    }).fail(function (err) {
+		console.log("Error:", err);
+	    });
+	});
 
+	Q.allSettled(promises).done(function (done_promises) {
 	    // Render the view
 	    var pkg = {
 		user: req.user,
