@@ -139,8 +139,7 @@ function deleteVote(fields, user_id, anno_label_type) {
 
 // todo: Vote for a mutation, and give the option to remove a vote as well
 exports.vote = function mutationVote(fields, user_id, anno_label_type){
-    votes = Schemas.votes
-
+    votes = Schemas.votes;
 
     if (fields.vote == "remove") {
 	return deleteVote(fields, user_id, anno_label_type)

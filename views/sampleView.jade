@@ -18,7 +18,7 @@ block body
 							th Locus/Change
 					tbody
 						-for (var i = 0; i < mutations.length; i++)
-							- var m  = mutations[i];
+							- var m = mutations[i];
 							- var geneBackground = m.geneReferences && m.geneReferences.refs && m.geneReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
 							- var typeBackground = m.typeReferences && m.typeReferences.refs && m.typeReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
 							- var locusBackground = m.locusReferences && m.locusReferences.refs && m.locusReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
