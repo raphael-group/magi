@@ -48,10 +48,10 @@ block body
 	-	}
 	br
 	div(class="container")
-		-if (error)
+		-if (error != "" || (annotation === undefined))
 			h3 Annotation not found: ##{annotation_id}
 		-else
-		h3 #{annotation.gene} mutation annotation ##{annotation.u_id}
+			h3 #{annotation.gene} mutation annotation ##{annotation.u_id}
 			br
 			div(class="col-lg-4 col-md-4")
 				h4 Annotation Data
