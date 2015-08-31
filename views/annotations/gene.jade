@@ -160,7 +160,7 @@ block belowTheFold
 				type: 'POST',
 
 				error: function(xhr) {
-					annotationStatus('Database error: ' + xhr.status);
+					annotationStatus('Database error: ' + xhr.status, warningClasses);
 				},
 
 				success: function(response) {

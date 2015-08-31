@@ -94,12 +94,13 @@ block body
 											td(class="comment-dir") #{comment.direction}
 				hr(style="clear:both")
 				div(id="commentVote", class="container", style="width%100;")
-					h4 Vote (and add an optional comment, reload to check update):
+					h4 Vote (submitting without a vote deletes comment):
 					textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
 					| Vote: 
 					a(href="#", class="upvote" style="color:#000") &#x25B2;&nbsp;
 					a(href="#", class="downvote" style="color:#000") &#x25BC;
 					button(type="submit", id="submit", class="btn btn-default") Submit
+				div(id="annotationStatus", class="text-center", style="width:100%;display:off")
 
 block belowTheFold
 	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
@@ -107,6 +108,15 @@ block belowTheFold
 	script(type='text/javascript').
 		//- Convert the tables into DataTables
 		addDataTable({ tableID: "#variant-table", aaSorting: [[0, "asc"]] });
+		function annotationStatus(msg, classes) {
+			$('#annotationStatus').attr('class', classes);
+			$('#annotationStatus').html(msg);
+			$('#annotationStatus').show().delay(5000).slideUp();
+		}
+		var infoClasses	 = 'alert alert-info',
+			warningClasses = 'alert alert-warning',
+			successClasses = 'alert alert-success';
+
 		$(document).ready(function() {
 		
 			var my_comment = $('.comment-name').filter(function () { 
@@ -148,11 +158,11 @@ block belowTheFold
 
 				var formData = new FormData();
 				var uid = $('#annotation-table').attr('annotation-id');
-  
+				var comment_body = $('textarea#mutation-comment').val() ? $('textarea#mutation-comment').val() : "<empty>";
+
 				formData.append( "_id", uid );
 				formData.append( "vote", vote );
-				formData.append( "comment", $('textarea#mutation-comment').val() );
-
+				formData.append( "comment", comment_body);
 				$.ajax({
 					url: '/vote/mutation',
 					data: formData,
@@ -161,13 +171,13 @@ block belowTheFold
 					processData: false,
 					type: 'POST',
 					error: function(error) {
-						console.log("error:", error.status);
+						annotationStatus('Database error: ' + error.status, warningClasses);
 					}, 
 					success: function(response) {
 						if(response.error) {
-							console.log("error: ", response.error); 
+							annotationStatus(response.error, warningClasses);
 						} else {
-							console.log("response:", response);
+							annotationStatus(response.status + ': reload to see updates.', successClasses);
 						}
 						clearVoteAndComment();
 					}

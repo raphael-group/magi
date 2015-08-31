@@ -204,6 +204,7 @@ exports.mutationVote = function mutationVote(req, res){
 	    return;
 	}
 
+	console.log(req.body);
 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
 	var action = (req.body.vote == "remove") ? "removed" : "saved";
 	Aberrations.vote(req.body, req.user._id + "")
