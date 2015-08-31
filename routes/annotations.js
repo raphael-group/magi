@@ -98,8 +98,11 @@ exports.mutation = function mutation(req, res) {
     Aberrations.geneFind({anno_id: anno_id}, 'right', function(err, result) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
-	else if (!result) {
-	    res.render('annotations/mutation', {error: 'No such annotation', annotation_id: anno_id});
+	else if (!result || result.length == 0) {
+	    res.render('annotations/mutation', { 
+				error: 'No such annotation', 
+				annotation_id: anno_id
+		});
 	    return;
 	}
 	var anno = result[0];
