@@ -78,6 +78,7 @@ block body
 					- var measure_type = d.measurement_type ? d.measurement_type : "--";
 					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
 					- var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
+					- var id = d.u_id;
 
 					- var popover_header = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>User</th><th>Comment</th></tr></thead>';
 					mixin commentPopover(comms)
@@ -90,7 +91,8 @@ block body
 						td !{cancer}
 						td #{mutation_class(mutationClass)}
 						td #{mutation_type(mutationType)}
-						td #{proteinSeqChange}
+						td 
+							a(href='/annotations/mutation/#{id}') #{proteinSeqChange}
 						td #{germline}
 						td #{measure_type}						  
 						td !{pubmedLink(pmid_ref)}
