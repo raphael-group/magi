@@ -88,18 +88,18 @@ block body
 							tbody
 								-for (var i = 0; i < annotation.comments.length; i++)
 									-var comment = annotation.comments[i];
-										tr 
-											td Anonymous
-											td #{comment.comment}
-											td #{comment.direction}
+										tr(class="comment-row")
+											td(class="comment-name") #{comment.name}
+											td(class="comment-body") #{comment.comment}
+											td(class="comment-dir") #{comment.direction}
 				hr(style="clear:both")
 				div(id="commentVote", class="container", style="width%100;")
-					h4 Add your own comment and vote:
+					h4 Vote (and add an optional comment, reload to check update):
 					textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
-					button(type="submit", id="submit", class="btn btn-default") Submit
 					| Vote: 
 					a(href="#", class="upvote" style="color:#000") &#x25B2;&nbsp;
-					a(href="#", class="downvote" style="color:#000") &#x25BC;&nbsp;
+					a(href="#", class="downvote" style="color:#000") &#x25BC;
+					button(type="submit", id="submit", class="btn btn-default") Submit
 
 block belowTheFold
 	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
@@ -108,6 +108,21 @@ block belowTheFold
 		//- Convert the tables into DataTables
 		addDataTable({ tableID: "#variant-table", aaSorting: [[0, "asc"]] });
 		$(document).ready(function() {
+		
+			var my_comment = $('.comment-name').filter(function () { 
+				return $.text([this]) != 'Anonymous';
+			});
+
+			if (my_comment.length > 0) {
+				$('textarea#mutation-comment').val(my_comment.siblings('.comment-body').text());
+				var voteDir = my_comment.siblings('.comment-dir').text();
+				if (voteDir === 'up') {
+					$('a.upvote').addClass('upvote-on');
+				} else if (voteDir === 'down') {
+					$('a.upvote').addClass('upvote-on');
+				}
+			}
+			
 			$('a.upvote').on('click', function(){
 				var sibling = $(this).siblings('a');
 				$(this).toggleClass('upvote-on');

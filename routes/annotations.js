@@ -56,7 +56,9 @@ exports.gene = function gene(req, res){
 	// resolve user names
 	var promises = [];
 	for(user_id in uniqueIds) {
-	    if (anonymizeIds) {
+	    if (req.user && user_id === String(req.user._id)) {
+		promises.push(Q.fcall(function() {return req.user;}));
+	    } else if (anonymizeIds) {
 		promises.push(User.anonymousPromise(user_id));
 	    } else {
 		promises.push(User.findById(user_id))
@@ -100,9 +102,17 @@ exports.mutation = function mutation(req, res) {
 	    res.render('annotations/mutation', {error: 'No such annotation', annotation_id: anno_id});
 	    return;
 	}
+	var anno = result[0];
+	anno.comments.forEach(function (comment) {
+	    if (req.user && comment.user_id === String(req.user._id)) {
+		comment.name = req.user.name;
+	    } else {
+		comment.name = "Anonymous";
+	    }
+	});
 	var pkg = {
 	    user: req.user,
-	    annotation: result[0],
+	    annotation: anno,
 	    abbrToCancer: abbrToCancer,
 	    cancerToAbbr: cancerToAbbr
 	};
