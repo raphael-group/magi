@@ -26,7 +26,7 @@
     "mongoose": "3.8.x",
     "bower": "latest",
     "formidable": "latest",
-    "passport": "latest",
+    "passport": "0.2.x",
     "passport-google-openidconnect": "latest",
     "moment": "latest",
     "jsdom": "3.x",
