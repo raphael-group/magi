@@ -76,9 +76,13 @@ block belowTheFold
 		//- Convert the tables into DataTables
 		addDataTable({ tableID: "#variant-table", aaSorting: [[0, "asc"]] });
 		//- Set up the popovers
-		$("[data-toggle=popover]").popover({html:true, container: 'body'})
+		function setupPopovers(){
+			$("[data-toggle=popover]").popover({
+				html:true, container: 'body'
+			}).click(function(e){ e.preventDefault(); $(this).focus(); })
+		}
+		setupPopovers();
+
 		//- Make sure the popovers are active whenever the table is updated
 		var table = $("#variant-table").DataTable();
-		table.on( 'draw', function () {
-			$("[data-toggle=popover]").popover({html:true, container: 'body'})
-		} );
+		table.on( 'draw', setupPopovers);
