@@ -113,8 +113,6 @@ block body
 
 
 block belowTheFold
-	script(src='/components/jquery/dist/jquery.min.js').
-	script(src='/components/bootstrap/dist/js/bootstrap.min.js').
 	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
 	script(src='/js/dataTableWrapper.js').
 	script(type='text/javascript').
@@ -124,12 +122,15 @@ block belowTheFold
 			});
                         
 		//- Set up the popovers
-		$("[data-toggle=popover]").popover({html:true, container: 'body'})
+		function setupPopovers(){
+			$("[data-toggle=popover]").popover({
+				html:true, container: 'body'
+			}).click(function(e){ e.preventDefault(); $(this).focus(); })
+		}
+		setupPopovers();
+		
 		//- Make sure the popovers are active whenever the table is updated
-		var table = $("#gene-annotation-table").DataTable();
-		table.on( 'draw', function () {
-			$("[data-toggle=popover]").popover({html:true, container: 'body'})
-		} );
+		tbl.on( 'draw', setupPopovers);
 		
 		$("#gene-annotation-table_info").css({'font-weight': 'bold', 'font-size': '110%'});
 		$(document).ready(function(){
@@ -180,6 +181,7 @@ block belowTheFold
 		tbl.on( 'draw', function () {
 			upvote();
 			downvote();
+			setupPopovers();
 		} );
 
 		function downvote(){
