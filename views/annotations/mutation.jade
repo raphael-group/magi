@@ -48,7 +48,7 @@ block body
 	-	}
 	br
 	div(class="container")
-		-if (error != "" || (annotation === undefined))
+		-if (error)
 			h3 Annotation not found: ##{annotation_id}
 		-else
 			h3 #{annotation.gene} mutation annotation ##{annotation.u_id}
