@@ -1,275 +1,191 @@
 // Import required modules
-var mongoose = require( 'mongoose' ),
-	Database = require('./db');
+Database = require('./db_sql');
+Schemas = require('./annotations_schema');
+Annotations = require('./annotations');
+var sql = require("sql");
 
-// Create GeneSet schema and add it to Mongoose
-var AnnotationSchema = new mongoose.Schema({
-	gene: { type: String, required: true},
-	transcript: { type: String, required: false},
-	change: { type: String, required: false},
-	mutation_class: { type: String, required: true},
-	mutation_type: { type: String, required: false},
-	cancer: { type: String, required: false },
-	position: { type: Number, required: false},
-	domain: { type: {}, required: false},
-	references: { type: Array, required: true, default: [] },
-	support: { type: Array, required: false, default: [] },
-	source: { type: String, required: false, default: 'Community'},
-	created_at: { type: Date, default: Date.now }
-});
+// for user added
+exports.ADMIN_USER = "admin";
 
-Database.magi.model( 'Annotation', AnnotationSchema );
+// initialize table
+exports.init = Schemas.initDatabase
 
-// upsert an annotation into MongoDB
-exports.upsertAnnotation = function(query, pmid, comment, user_id, source, callback ){
-	var Annotation = Database.magi.model( 'Annotation' );
-
-	var support = {ref: pmid, user_id: user_id, comment: comment};
-	Annotation.findOneAndUpdate(
-		query,
-		{$push: {support: support}},
-		{upsert: true},
-		function(err, annotation) {
-			if (err) throw new Error(err);
-			// if (annotation == null){
-			// 	console.log(query)
-			// 	callback(null, null);
-			// 	return;
-			// }
-			var addReference = annotation.references.filter(function(r){ return r.pmid == pmid }).length == 0;
-
-			if (addReference){
-				annotation.references.push( {source: source, pmid: pmid, upvotes: [], downvotes: []} )
-				annotation.markModified('references');
-			}
-
-			annotation.save(function(err, annotation){
-				if (err) throw new Error(err);
-				callback(err, annotation);
-			});
-		}
-	);
+exports.inClause = function(table) {
+    f = function (columnName, columnPoss) {
+	return table[columnName].in(columnPoss);
+    }
+    return f;
 }
 
-// Vote for a mutation
-exports.vote = function mutationVote(fields, user_id){
-	// Set up the promise
-	var Annotation = Database.magi.model( 'Annotation' );
-		Q = require( 'q' ),
-		d = Q.defer();
-
-	//Create and execute the query
-	var pmid = fields.pmid,
-		vote = fields.vote;
-
-	Annotation.findById(fields._id, function(err, annotation){
-		// Throw error and resolve if necessary
-		if (err){
-			throw new Error(err);
-			d.resolve();
+// handle comments and upvotes
+exports.normalize = function(anno) {
+    var combine = function(votes, comments, voteDir) {
+	var bound_comments = [];
+	if (votes.length == comments.length) {
+	    for(var i = 0; i < comments.length; i++) {
+		if (comments[i]) {
+		    bound_comments.push({user_id: votes[i], 
+					 comment: comments[i],
+					 direction: voteDir});
 		}
+	    }
+	}
+	return bound_comments;
+    }
 
-		// Update the vote for the reference
-		annotation.references.forEach(function(ref){
-			if (ref.pmid == pmid){
-				var upIndex = ref.upvotes.indexOf( user_id ),
-					downIndex = ref.downvotes.indexOf( user_id );
-				if (vote == "up"){
-					if (upIndex == -1) ref.upvotes.push( user_id );
-					else ref.upvotes.splice(upIndex, 1);
-					if (downIndex != -1) ref.downvotes.splice(downIndex, 1);
-				}
-				else if (vote == "down"){
-					if (downIndex == -1) ref.downvotes.push( user_id );
-					else ref.downvotes.splice(downIndex, 1);
-					if (upIndex != -1) ref.upvotes.splice(upIndex, 1);
-				}
-				annotation.markModified('references');
-			}
-		})
-
-		// Then save the annotation
-		annotation.save(function(err){
-			if (err) throw new Error(err);
-			d.resolve();
-		});
-	});
-
-	return d.promise;
+    // convert null votes to []
+    var comments = [];
+    if (anno.upvotes == null) {
+	anno.upvotes = []
+	anno.upcomments = []
+    } else {
+	comments = comments.concat(combine(anno.upvotes, anno.upcomments, 'up'));
+    }
+    if (anno.downvotes == null) {
+	anno.downvotes = []
+	anno.downcomments = []
+    } else {
+	comments = comments.concat(combine(anno.downvotes, anno.downcomments, 'down'));
+    }
+    anno["comments"] = comments;
+    return anno;
 }
 
-// Loads annotations into the database
-exports.loadAnnotationsFromFile = function(filename, source, callback){
-	// Load required modules
-	var fs = require( 'fs' ),
-		Annotation = Database.magi.model( 'Annotation' ),
-		Q  = require( 'q' );
+exports.parsePMID = function(pmid_field) {
+    // parse PMIDs if necessary:
+    if (pmid_field === undefined) 
+	return ["none"]
 
-	// Read in the file asynchronously
-	var data;
-	function loadAnnotationFile(){
-		var d = Q.defer();
-		fs.readFile(filename, 'utf-8', function (err, fileData) {
-			// Exit if there's an error, else callback
-			if (err) console.log(err)
-			d.resolve();
-			data = fileData;
-		});
-		return d.promise;
-	}
+    if (pmid_field.indexOf(",") == -1) 
+	return [pmid_field];
 
-	function processAnnotations(){
-		// Load the lines, but skip the header (the first line)
-		var lines = data.trim().split('\n');
-
-		// Make sure there're some lines in the file
-		if (lines.length < 2){
-			console.log("Empty file (or just header). Exiting.")
-			process.exit(1);
-		}
-
-		// Create objects to represent each annotation
-		var annotations = [];
-		for (var i = 1; i < lines.length; i++){
-			// Parse the line
-			var fields = lines[i].split('\t'),
-				support = {
-					gene: fields[0],
-					transcript: fields[1] == '' ? null : fields[1],
-					cancer: fields[2] == '' ? null : fields[2],
-					mutation_class: fields[3],
-					mutation_type: fields[4],
-					locus: fields[5] == '' ? null : fields[5],
-					change: fields[6] == '' ? null : fields[6],
-					pmid: fields[7],
-					comment: fields.length > 8 ? fields[8] : null,
-					source: source
-				}
-			annotations.push( support );
-		}
-		console.log( "Loaded " + annotations.length + " annotations." )
-
-		// Save all the annotations
-		return Q.allSettled( annotations.map(function(A){
-			var d = Q.defer();
-			var query = {
-					gene: A.gene,
-					cancer: A.cancer,
-					mutation_class: A.mutation_class
-				};
-
-			if (A.change != null && A.change != '')
-				query.change = A.change;
-			if (A.mutation_type != null && A.mutation_type != '')
-				query.mutation_type = A.mutation_type;
-
-			exports.upsertAnnotation(query, A.pmid, A.comment, null, source, function(err, annotation){
-				if (err) throw new Error(err);
-				d.resolve();
-			})
-			return d.promise;
-		}));
-	}
-
-	loadAnnotationFile().then( processAnnotations ).then( function(){ callback("") } );
+    return pmid_field.split(",");
 }
 
-//
-exports.geneTable = function (genes, support){
-	// Assemble the annotations into a dictionary index by 
-	// gene (e.g. TP53) and mutation class (e.g. missense or amp)
-	// and then protein change (only applicable for missense/nonsense)
-	// 1) Store the total number of references for the gene/class in "",
-	//    i.e. annotations['TP53'][''] gives the total for TP53 and 
-	//    annotations['TP53']['snv'][''] gives the total for TP53 SNVs.
-	// 2) Count the number per protein change.
-	var annotations = {};
+// join a query with the list of all user_ids who have voted on a particular annotation
+exports.joinVoteListsToQuery = function(query) {
+    // Retrieve upvotes and downvotes for every annotation
+    upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
+	", array_agg(comment) AS upcomments " +
+	" FROM votes WHERE direction =  1 group by anno_id) AS U";
 
-	genes.forEach(function(g){ annotations[g] = { "": [] }; });
+    downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
+	", array_agg(comment) AS downcomments " +
+	" FROM votes WHERE direction = -1 group by anno_id) as D ";
 
-	support.forEach(function(A){
-		// We split SNVs into two subclasses: nonsense or missense.
-		// We also remove the "_mutation" suffix sometimes present in the
-		// mutation types
-		var mClass = A.mutation_class.toLowerCase(),
-			mType = A.mutation_type ? A.mutation_type.toLowerCase().replace("_mutation", "") : "";
-		if (mClass == "snv" && (mType == "missense" || mType == "nonsense")){ mClass = mType; }
-		
-		// Add the class if it hasn't been seen before
-		if (typeof(annotations[A.gene][mClass]) == 'undefined'){
-			annotations[A.gene][mClass] = {"" : [] };
-		}
+	selQuerySplit = query.toQuery().text.split("WHERE");
 
-		// If we know the mutaton class, we might also want to add
-		// the protein sequence change
-		if (mClass == "snv" || mClass == "missense" || mClass == "nonsense"){
-			if (A.change){
-				A.change = A.change.replace("p.", "");
-				if (typeof(annotations[A.gene][mClass][A.change]) == 'undefined'){
-					annotations[A.gene][mClass][A.change] = [];
-				}
+    // Join the upvote/downvote table within the annotation selection
+    wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
+	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
+	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
+    selQuerySplit[1];
 
-				A.references.forEach(function(ref){
-					annotations[A.gene][mClass][A.change].push({ pmid: ref.pmid, cancer: A.cancer });
-				});
-			}
-		}
-		A.references.forEach(function(ref){
-			annotations[A.gene][mClass][""].push({ pmid: ref.pmid, cancer: A.cancer });
-			annotations[A.gene][""].push({ pmid: ref.pmid, cancer: A.cancer });
-		});
-	});
+	return wholeQueryText;
+}
 
-	// Combine references at the PMID level so that for each 
-	// annotation type (gene, type, locus) we have a list of references
-	// with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)
-	// level so we have a list of PMIDs that all map to the same cancer type(s)
-	function combineCancers(objects){
-		var objToIndex = [],
-			combinedCancer = [];
+// delete a single mutation annotation 
+exports.annoDelete = function(anno_id, user_id, callback) {
+    annos = Schemas.annotations
+    user_id = String(user_id)
+    var Q = require( 'q' ),
+    d = Q.defer();
 
-		// First combine at the cancer level
-		objects.forEach(function(d){
-			d.cancer = d.cancer ? d.cancer.toUpperCase() : "Cancer";
-			if (typeof(objToIndex[d.pmid]) == 'undefined'){
-				objToIndex[d.pmid] = combinedCancer.length;
-				combinedCancer.push( { pmid: d.pmid, cancers: [d.cancer] } );
-			} else {
-				var index = objToIndex[d.pmid];
-				if (combinedCancer[index].cancers.indexOf(d.cancer) === -1)
-					combinedCancer[index].cancers.push( d.cancer )
-			}
-		});
-
-		// Then combine at the PMID level
-		var groups = {};
-		combinedCancer.forEach(function(d){
-			var key = d.cancers.sort().join("");
-			if (typeof(groups[key]) === 'undefined') groups[key] = [];
-			groups[key].push(d)
-		});
-
-		var combined = Object.keys(groups).map(function(k){
-			var datum = {pmids: [], cancers: groups[k][0].cancers };
-			groups[k].forEach(function(d){ datum.pmids.push(d.pmid); });
-			return datum;
-		});
-
-		return {refs: combined, count: combinedCancer.length};
+    deleteQuery = annos.delete().where(annos.u_id.equals(anno_id), annos.user_id.equals(user_id))
+    Database.execute(deleteQuery, function(err, result) {
+	if (err) {
+            console.log("Error deleting annotation: " + err);
+//	    console.log("Debug: full query:", selQuery.string)
+	    d.reject(err);
 	}
+	if (result.rowCount != 1) {
+	    d.reject("Annotation not found for deletion");
+	} else {
+	    d.resolve();
+	}
+    });
 
-	genes.forEach(function(g){
-		Object.keys(annotations[g]).forEach(function(ty){
-			if (ty == ""){
-				annotations[g][ty] = combineCancers(annotations[g][ty]);
-			} else {
-				Object.keys(annotations[g][ty]).forEach(function(c){
-					annotations[g][ty][c] = combineCancers(annotations[g][ty][c]);
-				});
-			}
-		});
-	});
+    return d.promise;
+}
 
-	return annotations;
+function deleteVote(fields, user_id, anno_label_type) {
+    votes = Schemas.votes
 
+    // Set up the promise
+    var Q = require( 'q' ),
+    d = Q.defer();
+
+    anno_id = fields._id;
+    deleteQuery = votes.delete().where(
+	votes.anno_id.equals(anno_id), 
+	votes.voter_id.equals(user_id),
+	votes.anno_type.equals(anno_label_type));
+
+    Database.execute(deleteQuery, function (err, result) {
+	// Throw error and resolve if necessary
+	if (err) {
+            console.log("Error deleting vote: " + err);
+	    d.reject(err);
+	}
+	if (result.rowCount != 1) {
+	    d.reject("Vote not found for deletion");
+	} else {
+	    d.resolve();
+	}
+    });
+    return d.promise;
+}
+
+// todo: Vote for a mutation, and give the option to remove a vote as well
+exports.vote = function mutationVote(fields, user_id, anno_label_type){
+    votes = Schemas.votes;
+
+    if (fields.vote == "remove") {
+	return deleteVote(fields, user_id, anno_label_type)
+    }
+
+    // Set up the promise
+    var Q = require( 'q' ),
+    d = Q.defer();
+
+    //Create and execute the query
+    var anno_id = fields._id,    
+    valence = (fields.vote == "up") ? 1 : -1 ;
+
+    // change existing vote if necessary
+    voteUpdateQuery = votes.update({
+	direction : valence,
+ 	comment: fields.comment
+    })
+	.where(votes.voter_id.equals(user_id),
+	       votes.anno_type.equals(anno_label_type),
+	       votes.anno_id.equals(anno_id));
+
+// todo: fill in correct type depending on vote type
+    voteInsertQuery = votes.insert(votes.voter_id.value(user_id),
+		 votes.direction.value(valence),
+		 votes.anno_type.value(anno_label_type),
+		 votes.anno_id.value(anno_id),
+				   votes.comment.value(fields.comment));
+
+    // todo: operate as transaction
+    Database.execute(voteUpdateQuery, function (err, result) {
+	// Throw error and resolve if necessary
+	if (err) {
+	    console.log("Error update voting for mutation:", err)
+	    throw new Error(err);
+	} else if (result.rowCount == 0 ){
+	    Database.execute(voteInsertQuery, function (err, result) {
+		if (err) {
+		    console.log("Error insert voting for mutation:", err)
+		    d.reject(err);
+		} else { // vote was inserted
+		    d.resolve();
+		}
+	    })
+	} else { // vote was updated
+	    d.resolve();
+	}
+    })
+    return d.promise;
 }

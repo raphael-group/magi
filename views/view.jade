@@ -78,6 +78,18 @@ block body
 
             div(id="saveErrMsgContainer")
 
+      div(id="voteCommentBox", class="panel panel-default", style="padding:0px")
+        div(class="panel-heading", style="padding:5px")
+          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="voteCommentLink")
+            | Comment on votes
+            span(style="float:right") [+]
+            
+        div(id="collapseVoteComment", class="panel-collapse collapse")
+          div(class="panel-body", style="padding:5px")
+            p(style="margin:0px;") Add an optional comment to each vote.
+            br
+            textarea(class="form-control", id="vote-comment", placeholder="Enter comments on a vote.", type="textarea")
+            
       div(id="annotatedVariants" class="panel panel-default", style="padding:0px;")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotatedVariantsLink")
@@ -121,6 +133,7 @@ block body
                     option(value="expression") is expressed (over/under) in
                     option(value="methylation") is methylated (hypo/hyper) in
                   br
+                  label Cancer
                   input(class="typeahead form-control", id="cancer-typeahead", type="text", placeholder="Cancer")
                   label PMID
                   input(class="form-control", id="mutation-pmid", placeholder="PMID", maxlength="8")
@@ -329,6 +342,7 @@ block belowTheFold
         //- Set up bootstrap toggling
         var linksWithToggles = [{link: "instructions", target: "One"},
                                 {link: "save", target: "Save"},
+                                {link: "voteComment", target: "VoteComment"},
                                 {link: "annotate", target: "Annotation"},
                                 {link: "annotatedVariants", target: "AnnotatedVariants"},
                                 {link: "options", target: "Options"}];

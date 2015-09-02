@@ -1,23 +1,53 @@
 // Load required modules
 var mongoose = require('mongoose'),
-	Dataset = require( "../model/datasets" ),
-	Database = require('../model/db');
+Dataset = require( "../model/datasets" ),
+Database = require('../model/db'),
+Aberrations = require("../model/aberrations"),
+PPIs = require("../model/ppis"),
+User = require("../model/user");
+
+var abbrToCancer = {}, cancerToAbbr = {};
+Cancer = Database.magi.model( 'Cancer' );
+
+Cancer.find({}, function(err, cancers){
+    if (err) throw new Error(err);
+
+    // Make a map of cancers to abbreviations and vice versa
+    cancers.forEach(function(c){
+	abbrToCancer[c.abbr] = c.cancer;
+	cancerToAbbr[c.cancer.toLowerCase()] = c.abbr;
+    })
+})
 
 // Renders account information, including the user's uploaded datasets
 exports.account = function(req, res){
-	var User = Database.magi.model( 'User' );
-	User.findOne({ googleId: req.session.passport.user}, function(err, user) {
-		if(err) console.log(err);
-		else {
-			Dataset.datasetGroups({user_id: user._id}, function(err, groups){
-				// Throw error (if necessary)
-				if (err) throw new Error(err);
+    User.findByGoogleId(req.session.passport.user)
+	.fail(function(err) {console.log(err);})
+	.then(function(user) {
+	    Dataset.datasetGroups({user_id: user._id}, function(err, groups){
+		// Throw error (if necessary)
+		if (err) throw new Error(err);
 
-				// Render index page
-				res.render('account', { user: user, groups: groups, skip_requery: true });
-
-			});
-		};
+		// here call to postgres for all annotations:
+		Aberrations.geneFind({user_id: String(user._id)}, 'left', function(err, geneAnnos) {
+		    if (err) throw new Error(err);
+		    PPIs.ppiFind({user_id: String(user._id)}, 'left', function (err, ppiAnnos) {
+			if (err) throw new Error(err);
+			if (ppiAnnos.length > 0) {
+			    console.log(ppiAnnos[0]);
+			}
+			// Render index page
+			res.render('account',
+				   { user: user,
+				     groups: groups,
+				     geneAnnos: geneAnnos,
+				     ppiAnnos: ppiAnnos,
+				     abbrToCancer: abbrToCancer,
+				     cancerToAbbr: cancerToAbbr,
+				     skip_requery: true});
+		    });
+		});
+	    });
 	});
 }
 
