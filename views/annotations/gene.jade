@@ -194,14 +194,13 @@ block belowTheFold
 					numVotes = +(voteCount.text()),
 					comment = $('textarea#mutation-comment').val(),
 					voteDirection = 'down';
-
+				if ( el.hasClass('downvote-on')) voteDirection = 'remove'; 
 				voteMutation(annotation_id, pmid, voteDirection, comment, function() {
 					if (sibling.hasClass('upvote-on')){
 						sibling.removeClass('upvote-on');
 						el.addClass('downvote-on');
 						voteCount.text(numVotes - 2);
 					} else if (el.hasClass('downvote-on')){
-						voteDirection = 'remove';
 						el.removeClass('downvote-on');
 						voteCount.text(numVotes + 1);
 					} else {
@@ -221,13 +220,13 @@ block belowTheFold
 					numVotes = +(voteCount.text()),
 					comment = $('textarea#mutation-comment').val(),
 					voteDirection = 'up';
+				if ( el.hasClass('upvote-on')) voteDirection = 'remove'; 
 				voteMutation(annotation_id, pmid, voteDirection, comment, function () {
 					if (sibling.hasClass('downvote-on')){
 						sibling.removeClass('downvote-on');
 						el.addClass('upvote-on'); 
 						voteCount.text(numVotes + 2);
 					} else if (el.hasClass('upvote-on')){
-						voteDirection = 'remove';
 						el.removeClass('upvote-on');
 						voteCount.text(numVotes - 1);
 					} else {
