@@ -39,7 +39,7 @@ MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Sa
 4. Start MongoDB and create a Postgresql database:
 
         mongod &
-	postgres createdb magi # the database name
+        postgres createdb $POSTGRES_DBNAME
 
 5. Download the [latest tarball of data files](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (~300Mb) from the Raphael group website, and untar in the MAGI directory.
 
