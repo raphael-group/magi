@@ -64,6 +64,7 @@ block body
 					th PMID / PMCID
 					th Source
 					th Votes
+					th Detail
 			tbody
 				-for (var i = 0; i < annotations.length; i++)
 					- var d = annotations[i];
@@ -91,8 +92,7 @@ block body
 						td !{cancer}
 						td #{mutation_class(mutationClass)}
 						td #{mutation_type(mutationType)}
-						td 
-							a(href='/annotations/mutation/#{id}') #{proteinSeqChange}
+						td #{proteinSeqChange}
 						td #{germline}
 						td #{measure_type}						  
 						td !{pubmedLink(pmid_ref)}
@@ -103,11 +103,13 @@ block body
 							a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25BC;&nbsp;								
 							span(id="vote-#{d.u_id}-#{pmid_ref}") #{numVotes}
 							a(href="#", class="upvote  #{upVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25B2;
+						td 
+							a(href='/annotations/mutation/#{id}' class="glyphicon glyphicon-pencil")
 		br
 		div(id="annotationStatus", class="text-center", style="width:100%;display:off")
-		div(id="commentVote", class="container", style="width%100;")
-			label(class="toggle")
-			| <b>Add a comment to your vote? (Optional)</b>
+		div(id="commentVote", class="container", style="width%100;")                
+			label(class="toggle")                        
+			| <b>Add a comment to your vote? (Optional)</b>                        
 			span(class="glyphicon glyphicon-remove", style="cursor:pointer;float:right", onclick="$(this).parent().hide();$('textarea#mutation-comment').hide()")
 			textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
 
