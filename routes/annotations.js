@@ -199,7 +199,6 @@ function removeAnnotation(req, res){
 // Save a vote on a mutation
 // FIXME: link here is not working...
 exports.mutationVote = function mutationVote(req, res){
-    console.log("/vote/mutation/" + req.body._id)
     // Only allow logged in users to vote
     if (req.isAuthenticated()){
 	if (!req.body){
@@ -207,8 +206,7 @@ exports.mutationVote = function mutationVote(req, res){
 	    return;
 	}
 
-	console.log(req.body);
-	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
+ 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
 	var action = (req.body.vote == "remove") ? "removed" : "saved";
 	Aberrations.vote(req.body, req.user._id + "")
 	    .then(function(){
