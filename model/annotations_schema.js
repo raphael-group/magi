@@ -62,7 +62,7 @@ votes = sql.define({
 	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
 	// integrity check: only one vote at a time
 	{name: 'direction', dataType: 'smallint', notNull: true},
-	{name: 'comment', dataType: 'varchar(300)'}]
+	{name: 'comment', dataType: 'varchar(3000)'}]
 })
 
 function initDatabase() {
