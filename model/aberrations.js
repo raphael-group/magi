@@ -76,6 +76,26 @@ exports.upsertAber = function(data, callback){
     })
 }
 
+exports.update = function(data, callback) {
+    var abers = Schemas.aberrations;
+
+    var updateQuery = abers.update(data).
+	where(abers.anno_id.equals(data.anno_id)).
+	returning(abers.anno_id);
+    Database.execute(updateQuery, function(err, result) {
+	if (err == null && result.rows.length == 0) {
+	    err = Error("Did not return annotation ID");
+	}
+	if (err) {
+            console.log("Error upserting gene annotation: " + err);
+	    console.log("Debug: full query:", query.string)
+	    callback(err, null);
+	} else {
+	    callback(null, result.rows[0]);
+	}	
+    });
+}
+
 // Loads annotations into the database
 exports.loadFromFile = function(filename, source, callback){
     // Load required modules

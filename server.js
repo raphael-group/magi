@@ -176,12 +176,11 @@ app.get('/manifests', routes.datasets.manifests);
 
 // FIXME: disabling cancer view and ppiVote / ppiComment for now
 //app.get('/annotations/cancer/:cancer', routes.annotations.cancer); 
-app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 //app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 
-// SQL annotation views
 app.get('/annotations/gene/:gene', routes.annotations.gene);
 app.get('/annotations/mutation/:u_id', routes.annotations.mutation);
+app.put('/annotations/mutation/:u_id', routes.annotations.updateMutation);
 app.get('/delete/annotations/mutation/:u_id', routes.annotations.removeMutation); // todo: should be a DELETE
 app.get('/delete/annotations/interaction/:u_id', routes.annotations.removePpi); // todo: should be a DELETE
 
@@ -189,8 +188,9 @@ app.get('/delete/annotations/interaction/:u_id', routes.annotations.removePpi); 
 
 //app.get('/annotations/cancer/:cancer', routes.annotations. cancer);
 app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation); // todo: remove save prefix
-app.post('/vote/mutation', routes.annotations.mutationVote);
 app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save_ppi); 
+app.post('/vote/mutation', routes.annotations.mutationVote);
+app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 
 // more information
 app.get('/terms', routes.terms);
