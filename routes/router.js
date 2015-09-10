@@ -85,6 +85,7 @@ exports.annotations = {};
 exports.annotations.saveMutation = annotations.saveMutation;
 exports.annotations.gene = annotations.gene;
 exports.annotations.mutation = annotations.mutation;
+exports.annotations.updateMutation = annotations.updateMutation;
 exports.annotations.mutationVote = annotations.mutationVote;
 exports.annotations.cancer = annotations.cancer;
 exports.annotations.save_ppi = annotations.savePPI;

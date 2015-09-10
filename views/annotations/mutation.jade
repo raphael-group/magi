@@ -2,8 +2,8 @@ extends ../layout
 block body
 	//- Helper javascript functions
 	- var pubmedLink = function (_id){
-	- 		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
-	- 			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+	-		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+	-			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
 	-		} else{
 	-			var href = 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
 	-		}
@@ -56,7 +56,6 @@ block body
 				|  mutation annotation ##{annotation.u_id}
 			br
 			div(class="col-lg-4 col-md-4")
-				-var is_germline = annotation.is_germline ? annotation.is_germline : "--";
 				-var measurement_type = annotation.measurement_type ? annotation.measurement_type : "--";
 				h4 Annotation Data
 					mixin tr_prop(property, value)
@@ -76,20 +75,21 @@ block body
 							+tr_prop("Protein sequence change") !{annotation.protein_seq_change}
 							+tr_prop("Germline?")
 								div(id='view-germline-div')
-									!{is_germline}
+									div(id='view-germline-label' style='float:left' class='entry')
+										!{annotation.is_germline}
 									span(id="edit-germline", 
 										class="glyphicon glyphicon-pencil",
 										style="float:right;cursor:pointer",
 										onclick="$(this).parent().next().show();$(this).parent().hide();")
 								div(id='edit-germline-div', style='display:none')
-									select(id="germline", class="form-control")
-										option(value=null) --
-										option(value=false) False
-										option(value=true) True
+									select(id="is_germline_field", class="form-control", selected="#{annotation.is_germline}")
+										option false
+										option true
 									span(id="confirm_germline", class="glyphicon glyphicon-ok-circle" style="float:right;cursor:pointer")
 							+tr_prop("Measurement type")
 								div(id='view-measurement-div')
-									!{measurement_type}
+									div(id='view-measurement-label' style='float:left' class='entry')
+										!{measurement_type}
 									span(id="edit-measurement", 
 										class="glyphicon glyphicon-pencil",
 										style="float:right;cursor:pointer",
@@ -97,7 +97,7 @@ block body
 								div(id='edit-measurement-div', style='display:none')
 									input(class="form-control", 
 										type="text", 
-										id="measurent_type", 
+										id="measurement_type_field",
 										placeholder=measurement_type)
 									span(id="confirm_measurement_type", class="glyphicon glyphicon-ok-circle" style="float:right;cursor:pointer")
 							+tr_prop("PMID") !{pubmedLink(annotation.reference)}
@@ -152,6 +152,7 @@ block belowTheFold
 			successClasses = 'alert alert-success';
 
 		$(document).ready(function() {		
+			var uid = $('#annotation-table').attr('annotation-id');
 			var my_comment = $('.comment-name').filter(function () { 
 				return $.text([this]) != 'Anonymous';
 			});
@@ -180,7 +181,7 @@ block belowTheFold
 					sibling.removeClass('upvote-on');
 				}
 			});
-                        
+			
 			$('button#submit').on('click', function() {
 				var vote = 'remove';
 				if ($('a.upvote').hasClass('upvote-on')) {
@@ -190,7 +191,6 @@ block belowTheFold
 				}
 
 				var formData = new FormData();
-				var uid = $('#annotation-table').attr('annotation-id');
 				var comment_body = $('textarea#mutation-comment').val() ? $('textarea#mutation-comment').val() : "<empty>";
 
 				formData.append( "_id", uid );
@@ -210,10 +210,12 @@ block belowTheFold
 						if(response.error) {
 							annotationStatus(response.error, warningClasses);
 						} else {
-							annotationStatus(response.status + ': <a href="./' + uid + '">reload</a> to see updates.', successClasses);
+
+						annotationStatus(response.status + ': <a href="./' + uid + '">Reload</a> to see updates.', successClasses);
 						}
 						clearVoteAndComment();
 					}
+                                        
 				});
 			});
 			
@@ -222,10 +224,59 @@ block belowTheFold
 				$('a.upvote').removeClass('upvote-on');
 				$('a.downvote').removeClass('downvote-on');
 			}
-                        
+			
 			$('span.glyphicon-ok-circle').on('click', function() {
+				var dataField = $(this).prev();
+				var dataName = dataField.attr('id').replace('_field','');
+
+				var dataValue = dataField.val();				
+				if (dataName === 'is_germline') {
+					if (dataValue === '--') {
+						dataValue = undefined;
+					} else {
+						dataValue = (dataValue.toLowerCase() === 'true');
+					}
+				}
+
 				var formData = new FormData();
-				$(this).parent().prev().show();
-				$(this).parent().hide();
+				formData.append('anno_id', uid);
+				formData.append(dataName, dataValue);
+
+				var thisControl = $(this);
+				restoreViewMode($(this));
+				$.ajax({
+					url: './' + uid,
+					data: formData,
+					cache: false,
+					contentType: false,
+					processData: false,
+					type: 'PUT',
+					error: function(error) {
+						annotationStatus('Database error: ' + error.status, warningClasses);
+					}, 
+					success: function(response) {
+						if(response.error) {
+							annotationStatus(response.error, warningClasses);
+						} else {
+							annotationStatus(response.status, successClasses);
+							updateValue(thisControl, dataValue);
+						}
+					}					 
+				});
 			});
+			
+			function updateValue(element, newval) {
+				console.log('update', newval);
+				console.log('elem', element);
+				console.log('elem', element.parent());
+				console.log('elem', element.parent().prev());
+				console.log('elem', element.parent().prev().children('div.entry'));
+				console.log('text', element.parent().prev().children('div.entry').text());
+				element.parent().prev().children('div.entry').text(newval);
+			}
+			
+			function restoreViewMode(element) {
+				element.parent().prev().show();
+				element.parent().hide();
+			}
 		});

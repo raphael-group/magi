@@ -123,6 +123,26 @@ exports.mutation = function mutation(req, res) {
     });
 };
 
+exports.updateMutation = function updateMutation(req, res) {
+    console.log('/annotation/updateMutation, id =', req.params.u_id)
+    var anno_id = req.params.u_id;
+    if (req.user && req.body) {
+	console.log(req.body);
+	Aberrations.update(req.body, function(err, result) {
+	    // Throw error (if necessary)
+	    if (err) {
+		res.send({ error: "Annotation could not be updated. " + err });
+		// todo: handle error: interpret or pass up if critical (no database, no table)
+		throw new Error(err);
+	    }
+	    res.send({ status: "Annotation updated successfully!", annotation: { _id: anno_id } });
+	});
+    } else {
+	res.send({ error: "You must be logged in to update annotations." });
+    }
+
+};
+
 exports.saveMutation = function saveMutation(req, res) {
     console.log('/save/annotation/mutation')
 
@@ -158,7 +178,7 @@ exports.saveMutation = function saveMutation(req, res) {
 
 	// TODO: test behavior on attempting to upsert identical annotation?
 	Aberrations.upsertAber(query, function(err, annotation){
-	    if (err){
+	    if (err) {
 		res.send({ error: "Annotation could not be parsed. " + err });
 		// todo: handle error: interpret or pass up if critical (no database, no table)
 		throw new Error(err);
