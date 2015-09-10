@@ -56,25 +56,52 @@ block body
 				|  mutation annotation ##{annotation.u_id}
 			br
 			div(class="col-lg-4 col-md-4")
+				-var is_germline = annotation.is_germline ? annotation.is_germline : "--";
+				-var measurement_type = annotation.measurement_type ? annotation.measurement_type : "--";
 				h4 Annotation Data
 					mixin tr_prop(property, value)
 						tr 
 							td #{property}
-							td !{value}
+							td 
+								block
 					table(class="table table-striped", id="annotation-table", annotation-id="#{annotation.u_id}")
 						thead
 							tr(style="background:#d3d3d3")
 								th Property
 								th Value
 						tbody
-							+tr_prop("Cancer", cancerAbbr(annotation.cancer))
-							+tr_prop("Mutation class", mutation_class(annotation.mut_class))
-							+tr_prop("Mutation type", mutation_type(annotation.mut_type))
-							+tr_prop("Protein sequence change", annotation.protein_seq_change)
-							+tr_prop("Germline?", annotation.is_germline ? annotation.is_germline : "--")
-							+tr_prop("Measurement type", annotation.measurement_type ? annotation.measurement_type : "--")
-							+tr_prop("PMID", pubmedLink(annotation.reference))
-							+tr_prop("Source", annotation.source)
+							+tr_prop("Cancer") !{cancerAbbr(annotation.cancer)}
+							+tr_prop("Mutation class") !{mutation_class(annotation.mut_class)}
+							+tr_prop("Mutation type") !{mutation_type(annotation.mut_type)}
+							+tr_prop("Protein sequence change") !{annotation.protein_seq_change}
+							+tr_prop("Germline?")
+								div(id='view-germline-div')
+									!{is_germline}
+									span(id="edit-germline", 
+										class="glyphicon glyphicon-pencil",
+										style="float:right;cursor:pointer",
+										onclick="$(this).parent().next().show();$(this).parent().hide();")
+								div(id='edit-germline-div', style='display:none')
+									select(id="germline", class="form-control")
+										option(value=null) --
+										option(value=false) False
+										option(value=true) True
+									span(id="confirm_germline", class="glyphicon glyphicon-ok-circle" style="float:right;cursor:pointer")
+							+tr_prop("Measurement type")
+								div(id='view-measurement-div')
+									!{measurement_type}
+									span(id="edit-measurement", 
+										class="glyphicon glyphicon-pencil",
+										style="float:right;cursor:pointer",
+										onclick="$(this).parent().next().show();$(this).parent().hide();")
+								div(id='edit-measurement-div', style='display:none')
+									input(class="form-control", 
+										type="text", 
+										id="measurent_type", 
+										placeholder=measurement_type)
+									span(id="confirm_measurement_type", class="glyphicon glyphicon-ok-circle" style="float:right;cursor:pointer")
+							+tr_prop("PMID") !{pubmedLink(annotation.reference)}
+							+tr_prop("Source") !{annotation.source}
 			div(id = "right")
 				div(class="col-lg-8 col-md-8")
 					h4 Votes
@@ -124,8 +151,7 @@ block belowTheFold
 			warningClasses = 'alert alert-warning',
 			successClasses = 'alert alert-success';
 
-		$(document).ready(function() {
-		
+		$(document).ready(function() {		
 			var my_comment = $('.comment-name').filter(function () { 
 				return $.text([this]) != 'Anonymous';
 			});
@@ -154,7 +180,7 @@ block belowTheFold
 					sibling.removeClass('upvote-on');
 				}
 			});
-
+                        
 			$('button#submit').on('click', function() {
 				var vote = 'remove';
 				if ($('a.upvote').hasClass('upvote-on')) {
@@ -196,4 +222,10 @@ block belowTheFold
 				$('a.upvote').removeClass('upvote-on');
 				$('a.downvote').removeClass('downvote-on');
 			}
+                        
+			$('span.glyphicon-ok-circle').on('click', function() {
+				var formData = new FormData();
+				$(this).parent().prev().show();
+				$(this).parent().hide();
+			});
 		});
