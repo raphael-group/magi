@@ -2,8 +2,8 @@ extends ../layout
 block body
 	//- Helper javascript functions
 	- var pubmedLink = function (_id){
-	- 		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
-	- 			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+	-		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+	-			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
 	-		} else{
 	-			var href = 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
 	-		}
@@ -51,31 +51,60 @@ block body
 		-if (error)
 			h3 Annotation not found: ##{annotation_id}
 		-else
-			h3 #{annotation.gene} mutation annotation ##{annotation.u_id}
+			h3 
+				a(href="/annotations/gene/#{annotation.gene}") #{annotation.gene}
+				|  mutation annotation ##{annotation.u_id}
 			br
 			div(class="col-lg-4 col-md-4")
+				-var measurement_type = annotation.measurement_type ? annotation.measurement_type : "--";
 				h4 Annotation Data
 					mixin tr_prop(property, value)
 						tr 
 							td #{property}
-							td !{value}
+							td 
+								block
 					table(class="table table-striped", id="annotation-table", annotation-id="#{annotation.u_id}")
 						thead
 							tr(style="background:#d3d3d3")
 								th Property
 								th Value
 						tbody
-							+tr_prop("Cancer", cancerAbbr(annotation.cancer))
-							+tr_prop("Mutation class", mutation_class(annotation.mut_class))
-							+tr_prop("Mutation type", mutation_type(annotation.mut_type))
-							+tr_prop("Protein sequence change", annotation.protein_seq_change)
-							+tr_prop("Germline?", annotation.is_germline ? annotation.is_germline : "--")
-							+tr_prop("Measurement type", annotation.measurement_type ? annotation.measurement_type : "--")
-							+tr_prop("PMID", pubmedLink(annotation.reference))
-							+tr_prop("Source", annotation.source)
+							+tr_prop("Cancer") !{cancerAbbr(annotation.cancer)}
+							+tr_prop("Mutation class") !{mutation_class(annotation.mut_class)}
+							+tr_prop("Mutation type") !{mutation_type(annotation.mut_type)}
+							+tr_prop("Protein sequence change") !{annotation.protein_seq_change}
+							+tr_prop("Germline?")
+								div(id='view-germline-div')
+									div(id='view-germline-label' style='float:left' class='entry')
+										!{annotation.is_germline}
+									span(id="edit-germline", 
+										class="glyphicon glyphicon-pencil",
+										style="float:right;cursor:pointer",
+										onclick="$(this).parent().next().show();$(this).parent().hide();")
+								div(id='edit-germline-div', style='display:none')
+									select(id="is_germline_field", class="form-control", selected="#{annotation.is_germline}")
+										option false
+										option true
+									span(id="confirm_germline", class="glyphicon glyphicon-ok-circle" style="float:right;cursor:pointer")
+							+tr_prop("Measurement type")
+								div(id='view-measurement-div')
+									div(id='view-measurement-label' style='float:left' class='entry')
+										!{measurement_type}
+									span(id="edit-measurement", 
+										class="glyphicon glyphicon-pencil",
+										style="float:right;cursor:pointer",
+										onclick="$(this).parent().next().show();$(this).parent().hide();")
+								div(id='edit-measurement-div', style='display:none')
+									input(class="form-control", 
+										type="text", 
+										id="measurement_type_field",
+										placeholder=measurement_type)
+									span(id="confirm_measurement_type", class="glyphicon glyphicon-ok-circle" style="float:right;cursor:pointer")
+							+tr_prop("PMID") !{pubmedLink(annotation.reference)}
+							+tr_prop("Source") !{annotation.source}
 			div(id = "right")
 				div(class="col-lg-8 col-md-8")
-					h4 Comments
+					h4 Votes
 					-if (!annotation.comments || annotation.comments.length == 0)
 						| No comments are recorded for this annotation.
 					-else
@@ -91,15 +120,20 @@ block body
 										tr(class="comment-row")
 											td(class="comment-name") #{comment.name}
 											td(class="comment-body") #{comment.comment}
-											td(class="comment-dir") #{comment.direction}
+											td(class="comment-dir") 
+												-if (comment.direction === "up")
+													span(class="glyphicon glyphicon-thumbs-up", style="color:green")
+												-else
+													span(class="glyphicon glyphicon-thumbs-down", style="color:red")
 				hr(style="clear:both")
 				div(id="commentVote", class="container", style="width%100;")
-					h4 Vote (submitting without a vote deletes comment):
+					h4 Vote and comment:
 					textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
 					| Vote: 
 					a(href="#", class="upvote" style="color:#000") &#x25B2;&nbsp;
 					a(href="#", class="downvote" style="color:#000") &#x25BC;
 					button(type="submit", id="submit", class="btn btn-default") Submit
+					p Note: comments are optional, and submitting without a vote deletes any existing vote and comment.
 				div(id="annotationStatus", class="text-center", style="width:100%;display:off")
 
 block belowTheFold
@@ -117,8 +151,8 @@ block belowTheFold
 			warningClasses = 'alert alert-warning',
 			successClasses = 'alert alert-success';
 
-		$(document).ready(function() {
-		
+		$(document).ready(function() {		
+			var uid = $('#annotation-table').attr('annotation-id');
 			var my_comment = $('.comment-name').filter(function () { 
 				return $.text([this]) != 'Anonymous';
 			});
@@ -129,7 +163,7 @@ block belowTheFold
 				if (voteDir === 'up') {
 					$('a.upvote').addClass('upvote-on');
 				} else if (voteDir === 'down') {
-					$('a.upvote').addClass('upvote-on');
+					$('a.upvote').addClass('downvote-on');
 				}
 			}
 			
@@ -147,7 +181,7 @@ block belowTheFold
 					sibling.removeClass('upvote-on');
 				}
 			});
-
+			
 			$('button#submit').on('click', function() {
 				var vote = 'remove';
 				if ($('a.upvote').hasClass('upvote-on')) {
@@ -157,7 +191,6 @@ block belowTheFold
 				}
 
 				var formData = new FormData();
-				var uid = $('#annotation-table').attr('annotation-id');
 				var comment_body = $('textarea#mutation-comment').val() ? $('textarea#mutation-comment').val() : "<empty>";
 
 				formData.append( "_id", uid );
@@ -177,10 +210,12 @@ block belowTheFold
 						if(response.error) {
 							annotationStatus(response.error, warningClasses);
 						} else {
-							annotationStatus(response.status + ': reload to see updates.', successClasses);
+
+						annotationStatus(response.status + ': <a href="./' + uid + '">Reload</a> to see updates.', successClasses);
 						}
 						clearVoteAndComment();
 					}
+                                        
 				});
 			});
 			
@@ -188,5 +223,60 @@ block belowTheFold
 				$('textarea#mutation-comment').val('');	
 				$('a.upvote').removeClass('upvote-on');
 				$('a.downvote').removeClass('downvote-on');
+			}
+			
+			$('span.glyphicon-ok-circle').on('click', function() {
+				var dataField = $(this).prev();
+				var dataName = dataField.attr('id').replace('_field','');
+
+				var dataValue = dataField.val();				
+				if (dataName === 'is_germline') {
+					if (dataValue === '--') {
+						dataValue = undefined;
+					} else {
+						dataValue = (dataValue.toLowerCase() === 'true');
+					}
+				}
+
+				var formData = new FormData();
+				formData.append('anno_id', uid);
+				formData.append(dataName, dataValue);
+
+				var thisControl = $(this);
+				restoreViewMode($(this));
+				$.ajax({
+					url: './' + uid,
+					data: formData,
+					cache: false,
+					contentType: false,
+					processData: false,
+					type: 'PUT',
+					error: function(error) {
+						annotationStatus('Database error: ' + error.status, warningClasses);
+					}, 
+					success: function(response) {
+						if(response.error) {
+							annotationStatus(response.error, warningClasses);
+						} else {
+							annotationStatus(response.status, successClasses);
+							updateValue(thisControl, dataValue);
+						}
+					}					 
+				});
+			});
+			
+			function updateValue(element, newval) {
+				console.log('update', newval);
+				console.log('elem', element);
+				console.log('elem', element.parent());
+				console.log('elem', element.parent().prev());
+				console.log('elem', element.parent().prev().children('div.entry'));
+				console.log('text', element.parent().prev().children('div.entry').text());
+				element.parent().prev().children('div.entry').text(newval);
+			}
+			
+			function restoreViewMode(element) {
+				element.parent().prev().show();
+				element.parent().hide();
 			}
 		});
