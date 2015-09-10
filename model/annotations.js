@@ -17,14 +17,37 @@ exports.inClause = function(table) {
     return f;
 }
 
+// handle comments and upvotes
 exports.normalize = function(anno) {
+    var combine = function(votes, comments, voteDir) {
+	var bound_comments = [];
+	if (votes.length == comments.length) {
+	    for(var i = 0; i < comments.length; i++) {
+		if (comments[i]) {
+		    bound_comments.push({user_id: votes[i], 
+					 comment: comments[i],
+					 direction: voteDir});
+		}
+	    }
+	}
+	return bound_comments;
+    }
+
     // convert null votes to []
+    var comments = [];
     if (anno.upvotes == null) {
 	anno.upvotes = []
+	anno.upcomments = []
+    } else {
+	comments = comments.concat(combine(anno.upvotes, anno.upcomments, 'up'));
     }
     if (anno.downvotes == null) {
 	anno.downvotes = []
+	anno.downcomments = []
+    } else {
+	comments = comments.concat(combine(anno.downvotes, anno.downcomments, 'down'));
     }
+    anno["comments"] = comments;
     return anno;
 }
 
@@ -43,12 +66,14 @@ exports.parsePMID = function(pmid_field) {
 exports.joinVoteListsToQuery = function(query) {
     // Retrieve upvotes and downvotes for every annotation
     upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
+	", array_agg(comment) AS upcomments " +
 	" FROM votes WHERE direction =  1 group by anno_id) AS U";
 
     downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
+	", array_agg(comment) AS downcomments " +
 	" FROM votes WHERE direction = -1 group by anno_id) as D ";
 
-    selQuerySplit = query.toQuery().text.split("WHERE");
+	selQuerySplit = query.toQuery().text.split("WHERE");
 
     // Join the upvote/downvote table within the annotation selection
     wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
@@ -56,7 +81,7 @@ exports.joinVoteListsToQuery = function(query) {
 	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
     selQuerySplit[1];
 
-    return wholeQueryText;
+	return wholeQueryText;
 }
 
 // delete a single mutation annotation 
@@ -113,8 +138,7 @@ function deleteVote(fields, user_id, anno_label_type) {
 
 // todo: Vote for a mutation, and give the option to remove a vote as well
 exports.vote = function mutationVote(fields, user_id, anno_label_type){
-    votes = Schemas.votes
-
+    votes = Schemas.votes;
 
     if (fields.vote == "remove") {
 	return deleteVote(fields, user_id, anno_label_type)

@@ -1,6 +1,7 @@
 // Load required modules
 var mongoose = require( 'mongoose' ),
-    Database = require('./db');
+Database = require('./db'),
+Q = require('q');
 
 // create a user model
 var UserSchema = new mongoose.Schema({
@@ -15,4 +16,37 @@ var UserSchema = new mongoose.Schema({
   queries: { type: Array, required: false, default: [] },
 });
 
-Database.magi.model( 'User', UserSchema );
+var User = Database.magi.model( 'User', UserSchema );
+
+// retrieve information for a single user
+exports.findByGoogleId = function (google_id) {
+    return find({googleId: google_id});
+}
+
+exports.findById = function (id) {
+    return find({_id: id});
+}
+
+// todo: caching?
+function find(criteria) {
+    d = Q.defer();
+
+    User.findOne(criteria, function (err, user) {
+	if(err) {
+	    console.log(err);
+	    throw new Error(err);
+	} 
+	d.resolve(user);
+    });
+    return d.promise;
+}
+
+exports.anonymousPromise = function(user_id) {
+    return Q.fcall(function() {return {
+	_id: user_id,
+	google_id: user_id,
+	name: "Anonymous",
+	email: "anonymous@noemail.edu"
+    }});
+}
+

@@ -72,20 +72,32 @@ block body
 					- var mutationType = d.mut_type ? d.mut_type : "--";
 					- var proteinSeqChange = d.protein_seq_change ? d.protein_seq_change : "--";
 					- var numVotes = d.upvotes.length - d.downvotes.length;
+					- var comments = d.comments;
 					- var pmid_ref = d.reference
 					- var germline = d.is_germline ? d.is_germline : "--";
 					- var measure_type = d.measurement_type ? d.measurement_type : "--";
-
 					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
 					- var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
+					- var id = d.u_id;
+
+					- var popover_header = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>User</th><th>Comment</th></tr></thead>';
+					mixin commentPopover(comms)
+						- var cell = function(str){ return '<td>' + str + '</td>' };
+						- var rows = comms.map(function(comment){ return '<tr>' + cell(comment.user_name) + cell(comment.comment) + '</tr>'  });
+						- var tbl = popover_header + '<tbody>' + rows.join("") + '</tbody></table>';
+						a(href='#', data-title='Comments', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
+							| #{comms.length}
 					tr
-						td !{cancer} 
+						td !{cancer}
 						td #{mutation_class(mutationClass)}
 						td #{mutation_type(mutationType)}
-						td #{proteinSeqChange}
+						td 
+							a(href='/annotations/mutation/#{id}') #{proteinSeqChange}
 						td #{germline}
 						td #{measure_type}						  
 						td !{pubmedLink(pmid_ref)}
+							- if(comments.length > 0)
+								+commentPopover(comments)
 						td !{d.source}
 						td 
 							a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25BC;&nbsp;								
@@ -101,8 +113,6 @@ block body
 
 
 block belowTheFold
-	script(src='/components/jquery/dist/jquery.min.js').
-	script(src='/components/bootstrap/dist/js/bootstrap.min.js').
 	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
 	script(src='/js/dataTableWrapper.js').
 	script(type='text/javascript').
@@ -110,6 +120,18 @@ block belowTheFold
 		var tbl = addDataTable({
 				tableID: "#gene-annotation-table", aaSorting: [[0, "asc"]]
 			});
+                        
+		//- Set up the popovers
+		function setupPopovers(){
+			$("[data-toggle=popover]").popover({
+				html:true, container: 'body'
+			}).click(function(e){ e.preventDefault(); $(this).focus(); })
+		}
+		setupPopovers();
+		
+		//- Make sure the popovers are active whenever the table is updated
+		tbl.on( 'draw', setupPopovers);
+		
 		$("#gene-annotation-table_info").css({'font-weight': 'bold', 'font-size': '110%'});
 		$(document).ready(function(){
 			clearComment();
@@ -119,7 +141,7 @@ block belowTheFold
 			$('#mutation-comment').val('');	
 		}
 		
-		function voteMutation(annotation_id, pmid, vote, comment){
+		function voteMutation(annotation_id, pmid, vote, comment, displayCallback){
 			// Update the vote count
 			// Create a form to submit as an AJAX request to update the database
 			var formData = new FormData();
@@ -139,7 +161,7 @@ block belowTheFold
 				type: 'POST',
 
 				error: function(xhr) {
-					annotationStatus('Database error: ' + xhr.status);
+					annotationStatus('Database error: ' + xhr.status, warningClasses);
 				},
 
 				success: function(response) {
@@ -150,6 +172,7 @@ block belowTheFold
 
 					// Log the status
 					annotationStatus(response.status, successClasses);
+					displayCallback();
 				}
 			});
 		}
@@ -158,6 +181,7 @@ block belowTheFold
 		tbl.on( 'draw', function () {
 			upvote();
 			downvote();
+			setupPopovers();
 		} );
 
 		function downvote(){
@@ -169,21 +193,21 @@ block belowTheFold
 					voteCount = $('span#vote-' + annotation_id + '-' + pmid),
 					numVotes = +(voteCount.text()),
 					comment = $('textarea#mutation-comment').val(),
-					voteDirection = 'up';
+					voteDirection = 'down';
 
-				if (sibling.hasClass('upvote-on')){
-					sibling.removeClass('upvote-on');
-					el.addClass('downvote-on'); 
-					voteCount.text(numVotes - 2);
-				} else if (el.hasClass('downvote-on')){
-					voteDirection = 'remove';
-					el.removeClass('downvote-on');
-					voteCount.text(numVotes + 1);
-				} else {
-					el.addClass('downvote-on');
-					voteCount.text(numVotes - 1);
-				}
-				voteMutation(annotation_id, pmid, voteDirection, comment);
+				voteMutation(annotation_id, pmid, voteDirection, comment, function() {
+					if (sibling.hasClass('upvote-on')){
+						sibling.removeClass('upvote-on');
+						el.addClass('downvote-on');
+						voteCount.text(numVotes - 2);
+					} else if (el.hasClass('downvote-on')){
+						voteDirection = 'remove';
+						el.removeClass('downvote-on');
+						voteCount.text(numVotes + 1);
+					} else {
+						el.addClass('downvote-on');
+						voteCount.text(numVotes - 1);
+				}});
 			});
 		}
 
@@ -197,19 +221,19 @@ block belowTheFold
 					numVotes = +(voteCount.text()),
 					comment = $('textarea#mutation-comment').val(),
 					voteDirection = 'up';
-				if (sibling.hasClass('downvote-on')){
-					sibling.removeClass('downvote-on');
-					el.addClass('upvote-on'); 
-					voteCount.text(numVotes + 2);
-				} else if (el.hasClass('upvote-on')){
-					voteDirection = 'remove';
-					el.removeClass('upvote-on');
-					voteCount.text(numVotes - 1);
-				} else {
-					el.addClass('upvote-on');
-					voteCount.text(numVotes + 1);
-				}
-				voteMutation(annotation_id, pmid, voteDirection, comment);
+				voteMutation(annotation_id, pmid, voteDirection, comment, function () {
+					if (sibling.hasClass('downvote-on')){
+						sibling.removeClass('downvote-on');
+						el.addClass('upvote-on'); 
+						voteCount.text(numVotes + 2);
+					} else if (el.hasClass('upvote-on')){
+						voteDirection = 'remove';
+						el.removeClass('upvote-on');
+						voteCount.text(numVotes - 1);
+					} else {
+						el.addClass('upvote-on');
+						voteCount.text(numVotes + 1);
+				}});
 			});
 		}
 

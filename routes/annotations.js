@@ -4,13 +4,17 @@ formidable = require('formidable'),
 Base_annotations = require( "../model/annotations" ),
 Aberrations = require("../model/aberrations"),
 PPIs  = require( "../model/ppis" ),
-Database = require('../model/db')
+Database = require('../model/db'),
+User = require('../model/user'),
+Q = require('q');
 
 // Create the tables if they don't exist already
 Base_annotations.init()
 
 // on init: create map between cancers and abbrs
 var abbrToCancer = {}, cancerToAbbr = {};
+var anonymizeIds = true;
+
 Cancer = Database.magi.model( 'Cancer' );
 
 Cancer.find({}, function(err, cancers){
@@ -35,17 +39,89 @@ exports.gene = function gene(req, res){
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
-	// Render the view
+	// get all the unique user ids within comments
+	uniqueIds = {};
+	result.forEach(function(row) {
+	    row.comments.forEach(function (comment) {
+		if (comment) {
+		    if (comment.user_id in uniqueIds) {
+			uniqueIds[comment.user_id].push(comment);
+		    } else {
+			uniqueIds[comment.user_id] = [comment];
+		    };		
+		}
+	    });
+	});
+
+	// resolve user names
+	var promises = [];
+	for(user_id in uniqueIds) {
+	    if (req.user && user_id === String(req.user._id)) {
+		promises.push(Q.fcall(function() {return req.user;}));
+	    } else if (anonymizeIds) {
+		promises.push(User.anonymousPromise(user_id));
+	    } else {
+		promises.push(User.findById(user_id))
+	    }
+	}
+
+	// insert user names into comments
+	promises = promises.map(function(p) {
+	    return p.then(function (user) {
+		var theseComments = uniqueIds[user._id];
+		theseComments.forEach(function(comment) {
+		    comment.user_name = user.name;
+		});
+		return true;
+	    }).fail(function (err) {
+		console.log("Error:", err);
+	    });
+	});
+
+	Q.allSettled(promises).done(function (done_promises) {
+	    // Render the view
+	    var pkg = {
+		user: req.user,
+		annotations: result,
+		gene: geneRequested,
+		abbrToCancer: abbrToCancer,
+		cancerToAbbr: cancerToAbbr
+	    };
+	    res.render('annotations/gene', pkg);
+	});
+    });
+}
+
+exports.mutation = function mutation(req, res) {
+    console.log('/annotation/mutation, id =', req.params.u_id)
+    var anno_id = req.params.u_id;
+    Aberrations.geneFind({anno_id: anno_id}, 'right', function(err, result) {
+	// Throw error (if necessary)
+	if (err) throw new Error(err);
+	else if (!result || result.length == 0) {
+	    res.render('annotations/mutation', { 
+				error: 'No such annotation', 
+				annotation_id: anno_id
+		});
+	    return;
+	}
+	var anno = result[0];
+	anno.comments.forEach(function (comment) {
+	    if (req.user && comment.user_id === String(req.user._id)) {
+		comment.name = req.user.name;
+	    } else {
+		comment.name = "Anonymous";
+	    }
+	});
 	var pkg = {
 	    user: req.user,
-	    annotations: result,
-	    gene: geneRequested,
+	    annotation: anno,
 	    abbrToCancer: abbrToCancer,
 	    cancerToAbbr: cancerToAbbr
 	};
-	res.render('annotations/gene', pkg);
+	res.render('annotations/mutation', pkg);	
     });
-}
+};
 
 exports.saveMutation = function saveMutation(req, res) {
     console.log('/save/annotation/mutation')
@@ -58,7 +134,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	// Add the annotation
 
 	// prefer abbreviation to full name given by form
-	if (req.body.cancer != "undefined" &&
+	if (req.body.cancer && req.body.cancer != "undefined" &&
 	    req.body.cancer.toLowerCase() in cancerToAbbr) {
 	    req.body.cancer = cancerToAbbr[req.body.cancer.toLowerCase()];
 	}
@@ -131,6 +207,7 @@ exports.mutationVote = function mutationVote(req, res){
 	    return;
 	}
 
+	console.log(req.body);
 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
 	var action = (req.body.vote == "remove") ? "removed" : "saved";
 	Aberrations.vote(req.body, req.user._id + "")

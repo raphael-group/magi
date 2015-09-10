@@ -19,7 +19,9 @@ exports.geneFind = function(query, dir, callback) {
     }
 
     // TODO: use annos.table.columns to automatically separate
-    Database.sql_query(Annotations.joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
+
+var joinedQuery = Annotations.joinVoteListsToQuery(selAnnosQuery);
+    Database.sql_query(joinedQuery, selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting gene annotations: " + err);
 	    console.log("Debug: full query:", selAnnosQuery.string)
@@ -63,7 +65,7 @@ exports.upsertAber = function(data, callback){
 	    abers.transcript.value(data.transcript),
 	    abers.mut_class.value(data.mut_class),
 	    abers.mut_type.value(data.mut_type),
-	    abers.protein_seq_change.value(data.change),
+	    abers.protein_seq_change.value(data.protein_seq_change),
 	    abers.source.value(data.source),
 	    abers.anno_id.value(u_id)).returning(abers.anno_id) // we can re turn more if we want
 
