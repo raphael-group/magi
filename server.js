@@ -157,7 +157,6 @@ app.post('/enrichments/stats', routes.enrichmentStats);
 app.post('/upload/geneset', routes.uploadGeneset);
 app.get('/upload', ensureAuthenticated, routes.upload);
 app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset);
-app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset);
 app.post('/upload/manifest', ensureAuthenticated, routes.uploadManifest);
 app.post('/upload/cancer', routes.uploadCancer);
 app.get('/upload/formats/snvs', routes.formatSNVs);
@@ -170,6 +169,7 @@ app.get('/upload/formats/annotation-colors', routes.formatAnnotationColors);
 // Dataset views
 app.get('/datasets', routes.datasets.index);
 app.get('/datasets/view/:datasetID', routes.datasets.view);
+app.get('/delete/datasets', ensureAuthenticated, routes.deleteDataset);
 app.get('/manifests', routes.datasets.manifests);
 
 // Annotation views
@@ -181,14 +181,12 @@ app.get('/manifests', routes.datasets.manifests);
 app.get('/annotations/gene/:gene', routes.annotations.gene);
 app.get('/annotations/mutation/:u_id', routes.annotations.mutation);
 app.put('/annotations/mutation/:u_id', routes.annotations.updateMutation);
-app.get('/delete/annotations/mutation/:u_id', routes.annotations.removeMutation); // todo: should be a DELETE
-app.get('/delete/annotations/interaction/:u_id', routes.annotations.removePpi); // todo: should be a DELETE
-
-// and take advantage of HTTP verbs
+app.post('/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation);
+app.delete('/annotations/mutation/:u_id', routes.annotations.removeMutation); 
+app.post('/annotation/interaction/', routes.annotations.savePpi);
+app.delete('/annotations/interaction/:u_id', routes.annotations.removePpi);
 
 //app.get('/annotations/cancer/:cancer', routes.annotations. cancer);
-app.post('/save/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation); // todo: remove save prefix
-app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save_ppi); 
 app.post('/vote/mutation', routes.annotations.mutationVote);
 app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 
