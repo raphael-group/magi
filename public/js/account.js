@@ -11,15 +11,15 @@ $().ready(function() {
 
     function deleteAnnotation() {
 	if ($(this).attr("class") === "trash-mut-icon")  {
-	    rootRoute = "/delete/annotations/mutation/"
+	    rootRoute = "/annotations/mutation/"
 	} else if ($(this).attr("class") === "trash-ppi-icon") {
-	    rootRoute = "/delete/annotations/interaction/"
+	    rootRoute = "/annotations/interaction/"
 	}
 	uid = $(this).data("uid")
 	parentRow = $(this).parents(".anno-tr")
 	$.ajax({
 	    url: rootRoute + uid,
-	    type: 'GET', // todo: deletes
+	    type: 'DELETE',
 	    error: function(xhr) {
 		statusOnDelete($(parentRow), 'Database error: ' + xhr.status, warningClasses);
 	    },

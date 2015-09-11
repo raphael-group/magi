@@ -127,7 +127,6 @@ exports.updateMutation = function updateMutation(req, res) {
     console.log('/annotation/updateMutation, id =', req.params.u_id)
     var anno_id = req.params.u_id;
     if (req.user && req.body) {
-	console.log(req.body);
 	Aberrations.update(req.body, function(err, result) {
 	    // Throw error (if necessary)
 	    if (err) {
@@ -144,7 +143,7 @@ exports.updateMutation = function updateMutation(req, res) {
 };
 
 exports.saveMutation = function saveMutation(req, res) {
-    console.log('/save/annotation/mutation')
+    console.log('/annotation/mutation')
 
     // Load the posted form
     var form = new formidable.IncomingForm({});
@@ -193,12 +192,12 @@ exports.saveMutation = function saveMutation(req, res) {
 }
 
 exports.removeMutation = function removeMutation(req, res) {
-    console.log("/delete/annotations/mutation/" + req.params.u_id)
+    console.log("/annotations/mutation/" + req.params.u_id)
     removeAnnotation(req, res)
 }
 
 exports.removePpi = function removePpi(req, res) {
-    console.log("/delete/annotations/interaction/" + req.params.u_id)
+    console.log("/annotations/interaction/" + req.params.u_id)
     removeAnnotation(req, res)
 }
 
@@ -282,15 +281,15 @@ exports.cancer = function cancer(req, res){
 	});
 }
 
-exports.savePPI = function savePPI(req, res){
-	console.log("/save/annotation/ppi")
+exports.savePpi = function savePpi(req, res){
+	console.log("/annotation/interaction")
 
 	if (req.user && req.body){
 	    /* fields already in req.body: source, target, pmid, comment */
 	    query = req.body;
 	    query.anno_source = "Community"
 	    query.user_id = req.user._id + ""
-	    ppis.upsertPPI(query, function(err, annotation){
+	    PPIs.upsertPPI(query, function(err, annotation){
 		if (err) {
 		    res.send({ error: "Interaction could not be parsed." });
 		    throw new Error(err)

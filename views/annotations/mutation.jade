@@ -76,7 +76,7 @@ block body
 							+tr_prop("Germline?")
 								div(id='view-germline-div')
 									div(id='view-germline-label' style='float:left' class='entry')
-										!{annotation.is_germline}
+										| !{annotation.is_germline}
 									span(id="edit-germline", 
 										class="glyphicon glyphicon-pencil",
 										style="float:right;cursor:pointer",
@@ -89,7 +89,7 @@ block body
 							+tr_prop("Measurement type")
 								div(id='view-measurement-div')
 									div(id='view-measurement-label' style='float:left' class='entry')
-										!{measurement_type}
+										| !{measurement_type}
 									span(id="edit-measurement", 
 										class="glyphicon glyphicon-pencil",
 										style="float:right;cursor:pointer",

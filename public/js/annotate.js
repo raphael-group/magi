@@ -210,7 +210,7 @@ function initializeAnnotations(){
 			}
 
 			if (!validatePMID(pmid)) return false;
-			var url = '/save/annotation/mutation',
+			var url = '/annotation/mutation',
 				formData = populateForm({
 					pmid: pmid,
 					gene: gene,
@@ -232,7 +232,7 @@ function initializeAnnotations(){
 
 			// Validate the PubMed ID and construct the form to submit
 			if (!validatePMID(pmid)) return false;
-			var url = '/save/annotation/ppi',
+			var url = '/annotation/interaction',
 				formData = populateForm({
 					pmid: pmid,
 					source: source,
