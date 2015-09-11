@@ -11,9 +11,9 @@ $().ready(function() {
 
     function deleteAnnotation() {
 	if ($(this).attr("class") === "trash-mut-icon")  {
-	    rootRoute = "/annotations/mutation/"
+	    rootRoute = "/annotation/mutation/"
 	} else if ($(this).attr("class") === "trash-ppi-icon") {
-	    rootRoute = "/annotations/interaction/"
+	    rootRoute = "/annotation/interaction/"
 	}
 	uid = $(this).data("uid")
 	parentRow = $(this).parents(".anno-tr")

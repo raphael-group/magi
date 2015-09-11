@@ -179,14 +179,16 @@ app.get('/manifests', routes.datasets.manifests);
 //app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 
 app.get('/annotations/gene/:gene', routes.annotations.gene);
-app.get('/annotations/mutation/:u_id', routes.annotations.mutation);
-app.put('/annotations/mutation/:u_id', routes.annotations.updateMutation);
-app.post('/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation);
-app.delete('/annotations/mutation/:u_id', routes.annotations.removeMutation); 
-app.post('/annotation/interaction/', routes.annotations.savePpi);
-app.delete('/annotations/interaction/:u_id', routes.annotations.removePpi);
-
 //app.get('/annotations/cancer/:cancer', routes.annotations. cancer);
+
+app.get('/annotation/mutation/:u_id', routes.annotations.mutation);
+app.put('/annotation/mutation/:u_id', routes.annotations.updateMutation);
+app.post('/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation);
+app.delete('/annotation/mutation/:u_id', routes.annotations.removeMutation); 
+
+app.post('/annotation/interaction/', routes.annotations.savePpi);
+app.delete('/annotation/interaction/:u_id', routes.annotations.removePpi);
+
 app.post('/vote/mutation', routes.annotations.mutationVote);
 app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
 
