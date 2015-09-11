@@ -84,10 +84,13 @@ block body
 					- var popover_header = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>User</th><th>Comment</th></tr></thead>';
 					mixin commentPopover(comms)
 						- var cell = function(str){ return '<td>' + str + '</td>' };
-						- var rows = comms.map(function(comment){ return '<tr>' + cell(comment.user_name) + cell(comment.comment) + '</tr>'  });
-						- var tbl = popover_header + '<tbody>' + rows.join("") + '</tbody></table>';
-						a(href='#', data-title='Comments', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
-							| #{comms.length}
+						- var textedComms = comms.filter(function(c) {return !(c.comment === '<empty>');});
+						- if (textedComms.length > 0)
+							- var rows = textedComms.map(function(comment){return '<tr>' + cell(comment.user_name) + cell(comment.comment) + '</tr>';});
+							- var tbl = popover_header + '<tbody>' + rows.join("") + '</tbody></table>';
+							a(href='#', data-title='Comments', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
+								| #{textedComms.length}
+							
 					tr
 						td !{cancer}
 						td #{mutation_class(mutationClass)}
@@ -96,8 +99,7 @@ block body
 						td #{germline}
 						td #{measure_type}						  
 						td !{pubmedLink(pmid_ref)}
-							- if(comments.length > 0)
-								+commentPopover(comments)
+							+commentPopover(comments)
 						td !{d.source}
 						td 
 							a(href="#", class="downvote #{downVoteClass}", annotation-id="#{d.u_id}", pmid="#{pmid_ref}") &#x25BC;&nbsp;								
