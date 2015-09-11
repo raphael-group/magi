@@ -124,7 +124,7 @@ exports.mutation = function mutation(req, res) {
 };
 
 exports.updateMutation = function updateMutation(req, res) {
-    console.log('/annotation/updateMutation, id =', req.params.u_id)
+    console.log('/annotation/mutation, id =', req.params.u_id)
     var anno_id = req.params.u_id;
     if (req.user && req.body) {
 	Aberrations.update(req.body, function(err, result) {
@@ -192,12 +192,12 @@ exports.saveMutation = function saveMutation(req, res) {
 }
 
 exports.removeMutation = function removeMutation(req, res) {
-    console.log("/annotations/mutation/" + req.params.u_id)
+    console.log("/annotation/mutation/" + req.params.u_id)
     removeAnnotation(req, res)
 }
 
 exports.removePpi = function removePpi(req, res) {
-    console.log("/annotations/interaction/" + req.params.u_id)
+    console.log("/annotation/interaction/" + req.params.u_id)
     removeAnnotation(req, res)
 }
 
