@@ -23,11 +23,9 @@ exports.normalize = function(anno) {
 	var bound_comments = [];
 	if (votes.length == comments.length) {
 	    for(var i = 0; i < comments.length; i++) {
-		if (comments[i]) {
-		    bound_comments.push({user_id: votes[i], 
-					 comment: comments[i],
-					 direction: voteDir});
-		}
+		bound_comments.push({user_id: votes[i], 
+				     comment: comments[i],
+				     direction: voteDir});
 	    }
 	}
 	return bound_comments;

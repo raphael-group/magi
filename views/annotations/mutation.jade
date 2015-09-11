@@ -106,25 +106,27 @@ block body
 				div(class="col-lg-8 col-md-8")
 					h4 Votes
 					-if (!annotation.comments || annotation.comments.length == 0)
-						| No comments are recorded for this annotation.
+						| No votes are recorded for this annotation.
 					-else
 						table(class="table", id="comment-table")
 							thead
 								tr(style="background:#d3d3d3")
-									th Commenter
+									th(width="20%") Commenter
+									th(width="5%") Vote
 									th Text
-									th Direction
+							
 							tbody
 								-for (var i = 0; i < annotation.comments.length; i++)
 									-var comment = annotation.comments[i];
 										tr(class="comment-row")
 											td(class="comment-name") #{comment.name}
-											td(class="comment-body") #{comment.comment}
 											td(class="comment-dir") 
 												-if (comment.direction === "up")
 													span(class="glyphicon glyphicon-thumbs-up", style="color:green")
 												-else
 													span(class="glyphicon glyphicon-thumbs-down", style="color:red")
+											td(class="comment-body") #{comment.comment}
+									
 				hr(style="clear:both")
 				div(id="commentVote", class="container", style="width%100;")
 					h4 Vote and comment:
@@ -231,11 +233,7 @@ block belowTheFold
 
 				var dataValue = dataField.val();				
 				if (dataName === 'is_germline') {
-					if (dataValue === '--') {
-						dataValue = undefined;
-					} else {
-						dataValue = (dataValue.toLowerCase() === 'true');
-					}
+					dataValue = (dataValue.toLowerCase() === 'true');
 				}
 
 				var formData = new FormData();
