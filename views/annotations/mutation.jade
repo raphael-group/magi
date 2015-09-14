@@ -161,11 +161,11 @@ block belowTheFold
 
 			if (my_comment.length > 0) {
 				$('textarea#mutation-comment').val(my_comment.siblings('.comment-body').text());
-				var voteDir = my_comment.siblings('.comment-dir').text();
-				if (voteDir === 'up') {
+				var voteIcon = my_comment.siblings('.comment-dir').children();
+				if (voteIcon.hasClass('glyphicon-thumbs-up')) {
 					$('a.upvote').addClass('upvote-on');
-				} else if (voteDir === 'down') {
-					$('a.upvote').addClass('downvote-on');
+				} else if (voteIcon.hasClass('glyphicon-thumbs-down')) {
+					$('a.downvote').addClass('downvote-on');
 				}
 			}
 			
