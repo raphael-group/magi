@@ -7,7 +7,11 @@ test_pass = "Adenine=Uracil"
 # substitute with :firefox to test firefox
 # for IE testing run on windows with :ie
 # for safari/mobile browsers, check watirwebdriver.com for information
-site = Site.new(Watir::Browser.new :chrome)
+
+browser = BrowserCore.new("firefox").core
+browser.run_headless
+site = Site.new(browser.core)
+
 RSpec.configure do |config|
   config.before(:each) {@home_page = site.home_page.open}
   config.after(:suite) {site.close}

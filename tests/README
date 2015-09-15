@@ -6,12 +6,15 @@ These tests require the RSpec and Watir gems, which can be installed with gem in
 
 > gem install watir
 > gem install rspec
+> gem install headless
 
 Alternately, if bundler is installed, then run in the tests directory:
 
 > bundle install
 
-These tests also employ the chrome-webdriver application, which is found here: http://watirwebdriver.com/chrome/.  It is necessary for the chrome-webdriver application to be on the system path.
+The tests also require a web browser executable such as firefox or chrome.  If chrome is chosen as a browser, the chrome-webdriver application is also necessary, which is found here: http://watirwebdriver.com/chrome/.  It is necessary for the chrome-webdriver application to be on the system path.
+
+The headless tests require the xvfb package from main Linux repositories.
 
 ** Running the tests **
 To run all MAGI tests, run from the tests directory: 

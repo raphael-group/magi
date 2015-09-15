@@ -1,13 +1,32 @@
 # page object classes 
 require 'watir-webdriver'
-
+require 'headless'
 # the MAGI instance to be tested
-BASE_URL = 'http://cbio-test.cs.brown.edu/'
+BASE_URL = ENV['SITE_URL']
+
+class BrowserCore
+   def run_headless()
+     headless = Headless.new
+     headless.start
+     ObjectSpace.define_finalizer(self, proc {|id| headless.destroy})
+   end
+
+  def initialize(browser_name)
+    if browser_name == "firefox"
+      @core = Watir::Browser.new :ff
+    elsif browser_name == "chrome"
+      @core = Watir::Browser.new :chrome
+    else 
+      throw "Browser name " + browser_name + " not recognized"
+    end
+  end
+end
 
 class BrowserContainer
   def initialize(browser)
     @browser = browser
   end  
+
 end
 
 class Site < BrowserContainer
