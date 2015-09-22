@@ -48,7 +48,7 @@ exports.gene = function gene(req, res){
 			uniqueIds[comment.user_id].push(comment);
 		    } else {
 			uniqueIds[comment.user_id] = [comment];
-		    };		
+		    };
 		}
 	    });
 	});
@@ -99,8 +99,8 @@ exports.mutation = function mutation(req, res) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 	else if (!result || result.length == 0) {
-	    res.render('annotations/mutation', { 
-				error: 'No such annotation', 
+	    res.render('annotations/mutation', {
+				error: 'No such annotation',
 				annotation_id: anno_id
 		});
 	    return;
@@ -113,13 +113,23 @@ exports.mutation = function mutation(req, res) {
 		comment.name = "Anonymous";
 	    }
 	});
+
+	// add a test annotation
+	anno.sourceAnnos = [{
+	    cancer: "COADREAD",
+	    name: "Magi Tester",
+	    is_germline: true,
+	    measurement_type: 'WGS',
+	    characterization: null,
+	    comment: "TEST"
+	}];
 	var pkg = {
 	    user: req.user,
 	    annotation: anno,
 	    abbrToCancer: abbrToCancer,
 	    cancerToAbbr: cancerToAbbr
 	};
-	res.render('annotations/mutation', pkg);	
+	res.render('annotations/mutation', pkg);
     });
 };
 
@@ -202,7 +212,7 @@ exports.removePpi = function removePpi(req, res) {
 }
 
 function removeAnnotation(req, res){
-    if (req.user) { // ensure that a user is logged in 
+    if (req.user) { // ensure that a user is logged in
 	Base_annotations.annoDelete(req.params.u_id, req.user._id)
 	    .then(function() {
 		res.send({ status: "Annotation deleted successfully!" });
