@@ -65,61 +65,58 @@ block body
 					th Somatic?
 					th Measurement type
 					th Characterization
-					th Like?
+					th Agree?
 					th Edit
 			tbody
+				// todo: make the popover
+				mixin modeDisplay(val)
+					-if(val && val.mode)
+						| #{val.mode ? val.mode + " (" + val.count + "/" + numAnnos + ")" : "Unknown (0/0)"}
+					-else
+						| Unknown (0/0)
 				-for (var i = 0; i < annotations.length; i++)
 					- var d = annotations[i];
-					- var cancer = cancerAbbr(d.cancer)
+					- var cancer = cancerAbbr(d.cancer);
 					- var mutationClass = d.mut_class ? d.mut_class : "--";
 					- var mutationType = d.mut_type ? d.mut_type : "--";
 					- var proteinSeqChange = d.protein_seq_change ? d.protein_seq_change : "--";
-					- var numVotes = d.upvotes.length - d.downvotes.length;
-					- var comments = d.comments;
-					- var pmid_ref = d.reference
-					- var germline = d.is_germline ? d.is_germline : "--";
-					- var measure_type = d.measurement_type ? d.measurement_type : "--";
-					- var characterization = d.characterization ? d.characterization : "--";
-					- var downVoteClass = d.downvotes.indexOf(user_id) === -1 ? "" : "downvote-on";
-					- var upVoteClass = d.upvotes.indexOf(user_id) === -1 ? "" : "upvote-on";
-					- var liked = d.upvotes.indexOf(user_id) === -1 ? "" : "anno-liked";
+					- var numAnnos = d.sourceAnnos.length;
+					- var pmidRef = d.reference;
+					- var source = d.source;
+
+					- var majorityFields = ["cancer", "is_germline", "measurement_type", "characterization"];
+					- var heritable = d.is_germline_mode;
+					- if (heritable && heritable.mode)
+						-heritable.mode = heritable.mode ? "Germline" : "Somatic";
+					- var measurement_type = d.measurement_type_mode;
+					- var characterization = d.characterization_mode;
 					- var id = d.u_id;
-
-
-					- var popover_header = '<table class="table" style="font-size:90%"><thead><tr style="background:#d3d3d3"><th>User</th><th>Comment</th></tr></thead>';
-					mixin commentPopover(comms)
-						- var cell = function(str){ return '<td>' + str + '</td>' };
-						- var textedComms = comms.filter(function(c) {return !(c.comment === '<empty>');});
-						- if (textedComms.length > 0)
-							- var rows = textedComms.map(function(comment){return '<tr>' + cell(comment.user_name) + cell(comment.comment) + '</tr>';});
-							- var tbl = popover_header + '<tbody>' + rows.join("") + '</tbody></table>';
-							a(href='#', data-title='Comments', data-trigger='focus', data-content='#{tbl}', data-toggle='popover', class='initialism badge')
-								| #{textedComms.length}
-
+					- var my_annotation = d.sourceAnnos.filter(function(anno) {return anno.user_id == user_id;})[0];
+					- var agreesMajority = my_annotation && majorityFields.every(function (field) {return my_annotation[field] == d[field + "_mode"].mode;})
 					tr
 						td #{mutation_class(mutationClass)}
 						td #{mutation_type(mutationType)}
 						td #{proteinSeqChange}
 						td(class="extra-width")
-						td !{pubmedLink(pmid_ref)}
-							+commentPopover(comments)
-						td !{d.source}
-						td !{cancer}
-						td #{germline}
-						td #{measure_type}
-						td #{characterization}
+						td(class="reference", "data-reference"="#{pmidRef}") !{pubmedLink(pmidRef)}
+						td(class="source", "data-source"="#{source}") #{source}
+						td(class="cancer", "data-cancer"="#{d.cancer_mode.mode}")
+							+modeDisplay(d.cancer_mode)
+						td(class="is_germline", "data-is_germline"="#{d.is_germline_mode.mode}")
+							+modeDisplay(heritable)
+						td(class="measurement_type", "data-measurement_type"="#{d.measurement_type_mode.mode}")
+							+modeDisplay(d.measurement_type_mode)
+						td(class="characterization", "data-characterization"="#{d.characterization_mode.mode}")
+							+modeDisplay(d.characterization_mode.mode)
 						td
-							span(id="vote-like-#{id}", class="glyphicon glyphicon-thumbs-up anno-vote-on #{liked}", style="cursor:pointer")
+							span(id="vote-like-#{id}",
+								class="glyphicon glyphicon-thumbs-up anno-vote-on " + (agreesMajority ? "anno-liked" : "")
+								'data-id'="#{id}",
+								style=(agreesMajority ? "" : "cursor:pointer"))
 						td
-							a(href='/annotation/mutation/#{id}' class="glyphicon glyphicon-pencil")
+							a(href='/annotation/mutation/#{id}', class="glyphicon glyphicon-pencil")
 		br
 		div(id="annotationStatus", class="text-center", style="width:100%;display:off")
-		div(id="commentVote", class="container", style="width%100;")
-			label(class="toggle")
-			| <b>Add a comment to your vote? (Optional)</b>
-			span(class="glyphicon glyphicon-remove", style="cursor:pointer;float:right", onclick="$(this).parent().hide();$('textarea#mutation-comment').hide()")
-			textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
-
 
 block belowTheFold
 	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
@@ -130,33 +127,49 @@ block belowTheFold
 				tableID: "#gene-annotation-table", aaSorting: [[0, "asc"]]
 			});
 
-		//- Set up the popovers
-		function setupPopovers(){
-			$("[data-toggle=popover]").popover({
-				html:true, container: 'body'
-			}).click(function(e){ e.preventDefault(); $(this).focus(); })
-		}
-		setupPopovers();
-
-		//- Make sure the popovers are active whenever the table is updated
-		tbl.on( 'draw', setupPopovers);
-
 		$("#extra-width").css({'width': '30px'});
 		$("#gene-annotation-table_info").css({'font-weight': 'bold', 'font-size': '110%'});
 		$(document).ready(function(){
-			clearComment();
+
 			$('span.anno-vote-on').on('click', function() {
-				if($(this).hasClass('anno-liked')) {
-					$(this).removeClass('anno-liked');
-				} else {
-					$(this).addClass('anno-liked');
+				// do nothing if it's already liked
+				if( $(this).hasClass('anno-liked')) {
+					return;
 				}
+				var formData = new FormData();
+				formData.append("aber_id", $(this).data('id'));
+				var majorityData = $(this).data('majority');
+
+				var fields = ['source', 'reference', 'cancer', 'is_germline', 'measurement_type', 'characterization'];
+				var here = $(this);
+				fields.forEach(function(field) {
+					var elem = here.parent().siblings('td.' + field);
+					var datum = elem.data(field);
+					formData.append(field, datum);
+				});
+
+				$.ajax({
+					url: '/vote/mutation',
+					data: formData,
+					contentType: false,
+					processData: false,
+					type: 'POST',
+					error: function (xhr) {
+						annotationStatus('Database error: ' + xhr.status, warningClasses);
+					},
+					success: function(response) {
+						if (response.error) {
+							annotationStatus(response.error, warningClasses);
+							return;
+						}
+						annotationStatus(response.status, successClasses);
+						here.addClass('anno-liked');
+						here.attr("style","");
+					}
+				});
 			});
 		});
 
-		function clearComment() {
-			$('#mutation-comment').val('');
-		}
 
 
 		// Make sure to re-bind the onclick functionality whenever the table changes

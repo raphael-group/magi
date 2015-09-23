@@ -89,6 +89,7 @@ exports.annotations.updateMutation = annotations.updateMutation;
 exports.annotations.mutationVote = annotations.mutationVote;
 exports.annotations.cancer = annotations.cancer;
 exports.annotations.savePpi = annotations.savePpi;
+exports.annotations.removeSourceAnno = annotations.removeSourceAnno;
 exports.annotations.removeMutation = annotations.removeMutation;
 exports.annotations.removePpi = annotations.removePpi;
 exports.annotations.ppiVote = annotations.ppiVote;

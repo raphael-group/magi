@@ -27,6 +27,25 @@ Cancer.find({}, function(err, cancers){
     })
 })
 
+// get the most frequent element in an array, and the count that r
+function getMode(array) {
+    var histo = {}, best = {mode: null, count: 0};
+    array.forEach(function (elem) {
+	if(elem) {
+	    if(elem in histo) {
+		histo[elem]++;
+	    } else {
+		histo[elem]=1;
+	    }
+	    if (histo[elem] > best.count) {
+		best.count = histo[elem];
+		best.mode = elem;
+	    }
+	}
+    });
+    return best;
+}
+
 // todo: add post route to add genes
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
@@ -39,63 +58,30 @@ exports.gene = function gene(req, res){
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 
-	// get all the unique user ids within comments
-	uniqueIds = {};
-	result.forEach(function(row) {
-	    row.comments.forEach(function (comment) {
-		if (comment) {
-		    if (comment.user_id in uniqueIds) {
-			uniqueIds[comment.user_id].push(comment);
-		    } else {
-			uniqueIds[comment.user_id] = [comment];
-		    };
-		}
+	// calculate the mode of each aberration
+	var cols = ["cancer", "is_germline", "measurement_type", "characterization"];
+	result.forEach(function (aber) {
+	    cols.forEach(function(col) {
+		aber[col + "_mode"] =
+		    getMode(aber.sourceAnnos.map(function(c) {return c[col];}));
 	    });
 	});
-
-	// resolve user names
-	var promises = [];
-	for(user_id in uniqueIds) {
-	    if (req.user && user_id === String(req.user._id)) {
-		promises.push(Q.fcall(function() {return req.user;}));
-	    } else if (anonymizeIds) {
-		promises.push(User.anonymousPromise(user_id));
-	    } else {
-		promises.push(User.findById(user_id))
-	    }
-	}
-
-	// insert user names into comments
-	promises = promises.map(function(p) {
-	    return p.then(function (user) {
-		var theseComments = uniqueIds[user._id];
-		theseComments.forEach(function(comment) {
-		    comment.user_name = user.name;
-		});
-		return true;
-	    }).fail(function (err) {
-		console.log("Error:", err);
-	    });
-	});
-
-	Q.allSettled(promises).done(function (done_promises) {
-	    // Render the view
-	    var pkg = {
-		user: req.user,
-		annotations: result,
-		gene: geneRequested,
-		abbrToCancer: abbrToCancer,
-		cancerToAbbr: cancerToAbbr
-	    };
-	    res.render('annotations/gene', pkg);
-	});
+	// Render the view
+	var pkg = {
+	    user: req.user,
+	    annotations: result,
+	    gene: geneRequested,
+	    abbrToCancer: abbrToCancer,
+	    cancerToAbbr: cancerToAbbr
+	};
+	res.render('annotations/gene', pkg);
     });
 }
 
 exports.mutation = function mutation(req, res) {
     console.log('/annotation/mutation, id =', req.params.u_id)
     var anno_id = req.params.u_id;
-    Aberrations.geneFind({anno_id: anno_id}, 'right', function(err, result) {
+    Aberrations.geneFind({u_id: anno_id}, 'right', function(err, result) {
 	// Throw error (if necessary)
 	if (err) throw new Error(err);
 	else if (!result || result.length == 0) {
@@ -105,27 +91,10 @@ exports.mutation = function mutation(req, res) {
 		});
 	    return;
 	}
-	var anno = result[0];
-	anno.comments.forEach(function (comment) {
-	    if (req.user && comment.user_id === String(req.user._id)) {
-		comment.name = req.user.name;
-	    } else {
-		comment.name = "Anonymous";
-	    }
-	});
-
-	// add a test annotation
-	anno.sourceAnnos = [{
-	    cancer: "COADREAD",
-	    name: "Magi Tester",
-	    is_germline: true,
-	    measurement_type: 'WGS',
-	    characterization: null,
-	    comment: "TEST"
-	}];
+	var single_anno = result[0];
 	var pkg = {
 	    user: req.user,
-	    annotation: anno,
+	    annotation: single_anno,
 	    abbrToCancer: abbrToCancer,
 	    cancerToAbbr: cancerToAbbr
 	};
@@ -134,9 +103,10 @@ exports.mutation = function mutation(req, res) {
 };
 
 exports.updateMutation = function updateMutation(req, res) {
-    console.log('/annotation/mutation, id =', req.params.u_id)
+    console.log('update /annotation/mutation, id =', req.params.u_id)
     var anno_id = req.params.u_id;
     if (req.user && req.body) {
+	console.log("adding: ", req.body);
 	Aberrations.update(req.body, function(err, result) {
 	    // Throw error (if necessary)
 	    if (err) {
@@ -153,7 +123,7 @@ exports.updateMutation = function updateMutation(req, res) {
 };
 
 exports.saveMutation = function saveMutation(req, res) {
-    console.log('/annotation/mutation')
+    console.log('save /annotation/mutation')
 
     // Load the posted form
     var form = new formidable.IncomingForm({});
@@ -201,8 +171,25 @@ exports.saveMutation = function saveMutation(req, res) {
 
 }
 
+// remove a source annotation
+exports.removeSourceAnno = function removeMutation(req, res) {
+    console.log("/annotation/mutation/" + req.params.aber_id + "/source/" + req.params.source_id)
+    if (req.user) { // ensure that a user is logged in
+	console.log("user logged in");
+	Aberrations.deleteSourceAnno({'aber_id': req.params.aber_id,
+				      'asa_u_id': req.params.source_id})
+	    .then(function() {
+		res.send({ status: "Annotation deleted successfully!" });
+	    }).fail(function(err) {
+		res.send({ error: err});
+	    }).done();
+    } else {
+	res.send({ error: "You must be logged in as the user who annotated the mutation to delete"})
+    }
+}
+
 exports.removeMutation = function removeMutation(req, res) {
-    console.log("/annotation/mutation/" + req.params.u_id)
+    console.log("delete /annotation/mutation/" + req.params.u_id)
     removeAnnotation(req, res)
 }
 
@@ -220,14 +207,14 @@ function removeAnnotation(req, res){
 		res.send({ error: err });
 	    }).done();
     } else {
-	console.log("req: " + req)
-	res.send({ error: "You must be logged in as the user who annotated the mutation to delte"})
+	res.send({ error: "You must be logged in as the user who annotated the mutation to delete"})
     }
 }
 
 // Save a vote on a mutation
 // FIXME: link here is not working...
 exports.mutationVote = function mutationVote(req, res){
+    console.log("/vote/mutation/");
     // Only allow logged in users to vote
     if (req.isAuthenticated()){
 	if (!req.body){
@@ -235,17 +222,20 @@ exports.mutationVote = function mutationVote(req, res){
 	    return;
 	}
 
- 	// Add the annotation, forcing the user ID to be a string to make finding it in arrays easy
-	var action = (req.body.vote == "remove") ? "removed" : "saved";
-	Aberrations.vote(req.body, req.user._id + "")
-	    .then(function(){
-		res.send({ status: "Mutation vote " + action + " successfully!" });
-	    })
-	    .fail(function(err){
-		res.send({ error: "Mutation vote could not be " + action + "." });
-	    });
+	var data = req.body;
+	data.user_id = String(req.user._id);
+	Object.keys(data).forEach(function (field) {
+	    if (data[field] === 'null') data[field]=undefined;
+	}); // fixme: not sure why this isn't translated outside...
+	Aberrations.upsertSourceAnno(data, function(err, result) {
+	    if(err){
+		res.send({ error: "Source annotation could not be committed" });
+	    } else {
+		res.send({ status: "Source annotation saved successfully!" });
+	    }
+	});
     }
-    else{
+    else {
 	res.send({ error: "You must be logged in to vote." });
     }
 }

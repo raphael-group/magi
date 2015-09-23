@@ -61,7 +61,7 @@ exports.parsePMID = function(pmid_field) {
 }
 
 // join a query with the list of all user_ids who have voted on a particular annotation
-exports.joinVoteListsToQuery = function(query) {
+exports.joinVoteListsToQuery = function(tableCandidates, query) {
     // Retrieve upvotes and downvotes for every annotation
     upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
 	", array_agg(comment) AS upcomments " +
@@ -73,17 +73,18 @@ exports.joinVoteListsToQuery = function(query) {
 
 	selQuerySplit = query.toQuery().text.split("WHERE");
 
+    joiningSource = tableCandidates.getName();
     // Join the upvote/downvote table within the annotation selection
     wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
-	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
-	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
+	upvotesQuery + " ON U.anno_id = " + joiningSource + ".anno_id LEFT JOIN " +
+	downvotesQuery + " ON D.anno_id = " + joiningSource +".anno_id WHERE " +
     selQuerySplit[1];
 
 //    	console.log("whole query:", wholeQueryText);
 	return wholeQueryText;
 }
 
-// delete a single mutation annotation
+// delete a single annotation of any kind
 exports.annoDelete = function(anno_id, user_id, callback) {
     annos = Schemas.annotations
     user_id = String(user_id)
@@ -135,7 +136,8 @@ function deleteVote(fields, user_id, anno_label_type) {
     return d.promise;
 }
 
-// todo: Vote for a mutation, and give the option to remove a vote as well
+// Vote for a mutation, and give the option to remove a vote as well
+// Vote for the source, not the mutation
 exports.vote = function mutationVote(fields, user_id, anno_label_type){
     votes = Schemas.votes;
 

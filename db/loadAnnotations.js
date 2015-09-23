@@ -1,6 +1,5 @@
 // Load models
-//var db = require('../model/db'),
-	abers = require('../model/aberrations');
+var abers = require('../model/aberrations'),
 	pg = require('../model/db_sql');
 
 // Validate args
@@ -19,7 +18,7 @@ var path   = require( 'path' ),
 pg.verify_connection()
     .then( function () {
 	abers.loadFromFile( filepath, argv.source, function(err){
-	    if (err) throw new Error(err);	
+	    if (err) throw new Error(err);
 	})})
     .fail( function (err) {
 	console.log("Connection failed:", err);

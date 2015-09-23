@@ -77,7 +77,7 @@ block body
 			div(class="container annotation-table")
 				-var ownAnnotation = null;
 				-for(var i = 0; i < annotation.sourceAnnos.length; i++)
-					-if(user && annotation.sourceAnnos[i].name === user.name)
+					-if(user && annotation.sourceAnnos[i].user_id == user._id)
 						-ownAnnotation = annotation.sourceAnnos[i];
 				h4 Source annotations:
 				table(class="table", id="comment-table")
@@ -89,44 +89,39 @@ block body
 							tr(style="background:#d3d3d3")
 								th(width="10%") Commenter
 								th(width="10%") Cancer
-								th(width="15%") Somatic?
+								th(width="15%") Heritability
 								th(width="10%") Measurement type
 								th(width="20%") Characterization
 								th Comment
-								th(width="3%") Score
 								th(width="7%") Action
 						tbody
 							-for (var i = 0; i < annotation.sourceAnnos.length; i++)
 								- var sourceAnno = annotation.sourceAnnos[i];
-								- var measurement_type = sourceAnno.measurement_type ? sourceAnno.measurement_type : "--";
-								- var is_somatic = sourceAnno.is_germline ? !(sourceAnno.is_germline) : "Unknown"
-								- var characterization = sourceAnno.characterization ? annotation.characterization : "--"
+								- var cancer = sourceAnno.cancer ? sourceAnno.cancer : "Unknown";
+								- var measurement_type = sourceAnno.measurement_type ? sourceAnno.measurement_type : "Unknown";
+								- var is_somatic = sourceAnno.is_germline ? !(sourceAnno.is_germline) : "Unknown";
+								- var heritability = sourceAnno.is_germline ? "Germline" : ((sourceAnno.is_germline != undefined ) ? "Somatic" : "Unknown");
+								- var characterization = sourceAnno.characterization ? sourceAnno.characterization : "Unknown";
 								- var comment = sourceAnno.comment;
-								- var ownComment = (user && sourceAnno.name === user.name);
-								tr(class="comment-row " + ownComment ? "own-comment": "")
-									td(class="comment-name")
-										-if (ownComment)
-											#{sourceAnno.name}
-										-else
-											| Anonymous
-									td #{annotation.cancer}
-									td #{is_somatic}
-									td #{measurement_type}
-									td #{characterization}
-									td(class="comment-body") #{comment.comment}
-									td --
+								- var thisIsOwn = (user && sourceAnno.user_id == user._id);
+								tr(class="comment-row " + (thisIsOwn ? "own-comment": ""),
+									'data-id'=sourceAnno.asa_u_id)
+									td(class="comment-name") #{thisIsOwn ? user.name : "Anonymous"}
+									td(class="cancer_field") #{cancer}
+									td(class="heritable_field") #{heritability}
+									td(class="measurement_type_field") #{measurement_type}
+									td(class="characterization_field") #{characterization}
+									td(class="comment-body") #{sourceAnno.comment}
 									td
 										-if(user)
-											-if(ownComment)
+											-if(thisIsOwn)
 												a(href="#" class="source-anno-edit")
-													i(class="glyphicon glyphicon-pencil")
+													i(class="glyphicon glyphicon-pencil") Edit
 												a(href="#" class="source-anno-delete")
-													i(class="glyphicon glyphicon-trash")
-											-else
+													i(class="glyphicon glyphicon-trash") Delete
+											-else if(!ownAnnotation)
 												a(href="#" class="upvote source-anno-upvote")
-													i(class="glyphicon glyphicon-thumbs-up")
-												a(href="#" class="downvote source-anno-downvote")
-													i(class="glyphicon glyphicon-thumbs-down")
+													i(class="glyphicon glyphicon-thumbs-up") Agree
 							-if(user) // edit row
 								-var displayEdit = ownAnnotation ? "none":"table-row"
 								tr(class="edit-row" style="display:#{displayEdit}")
@@ -143,15 +138,15 @@ block body
 											-for(j = 0; j < cancerAbbrs.length; j++)
 												option #{cancerAbbrs[j].toUpperCase()}
 									td
-										select(id="source-anno-input is_somatic_field", class="form-control",
+										select(id="heritable_field", class="source-anno-input form-control",
 											selected="#{is_somatic}",
 											placeholder=ownAnnotation ? "#{!ownAnnotation.is_germline}" : "")
 											option Unknown
-											option False
-											option True
+											option Germline
+											option Somatic
 									td
 										input(class="source-anno-input form-control",
-											id="measurement_field",
+											id="measurement_type_field",
 											list="mtypes-list",
 											placeholder=ownAnnotation ? "#{ownAnnotation.measurement_type}" : "")
 										datalist(id="mtypes-list")
@@ -170,14 +165,16 @@ block body
 									td
 										textarea(class="source-anno-input form-control",
 											type="text",
-											id="comment",
+											id="comment_field",
 											placeholder=ownAnnotation ? "#{ownAnnotation.comment}" : "")
-									td --
 									td
 										a(href="#", id="source-anno-save")
-											i(class = "glyphicon glyphicon-save", style="cursor:pointer")
+											i(class = "glyphicon glyphicon-save", style="cursor:pointer") Save
 										a(href='#', id="source-anno-erase")
-											i(class = "glyphicon glyphicon-erase", style="cursor:pointer")
+											i(class = "glyphicon glyphicon-erase", style="cursor:pointer") Clear
+										a(href='#', id="source-anno-cancel")
+											i(class = "glyphicon glyphicon-trash", style="cursor:pointer") Cancel
+			div(id="annotationStatus", class="text-center", style="width:100%;display:off")
 
 
 block belowTheFold
@@ -210,16 +207,59 @@ block belowTheFold
 				}
 			}
 
-			$('a.source-anno-upvote').on('click', function(){
-				var sibling = $(this).siblings('a');
-				$(this).toggleClass('upvote-on');
-				sibling.removeClass('downvote-on');
-			});;
+			function saveSourceAnno(row, success_callback) {
+				var formData = new FormData();
+				var pageData = {};
+				formData.append("aber_id", "#{annotation.u_id}");
+				formData.append("source", "#{annotation.source}");
+				formData.append("reference", "#{annotation.reference}");
+				row.children('td').each(function (idx) {
+					var child = $(this).children();
+					var id = $(child).attr('id');
+					var val = $(child).val();
 
-			$('a.source-anno-downvote').on('click', function(){
-				var sibling = $(this).siblings('a');
-				$(this).toggleClass('downvote-on');
-				sibling.removeClass('upvote-on');
+					if (id && id.endsWith('field')) {
+						var fieldName = id.replace('_field','')
+						if (fieldName == 'heritable') {
+							fieldName = 'is_germline';
+							if(val == "Unknown") {
+								val = undefined;
+							} else {
+								val = (val == "Germline" ? true : false);
+							}
+						}
+						formData.append(fieldName, val);
+						pageData[id] = val;
+					}
+				});
+
+				$.ajax({
+					url: '/vote/mutation',
+					data: formData,
+					contentType: false,
+					processData: false,
+					type: 'POST',
+					error: function (xhr) {
+						annotationStatus('Database error: ' + xhr.status, warningClasses);
+					},
+					success: function(response) {
+						if (response.error) {
+							annotationStatus(response.error, warningClasses);
+							return;
+						}
+						annotationStatus(response.status + ': <a href="./#{annotation.u_id}">Reload</a> to see updates.', successClasses);
+						success_callback(response);
+					}
+				});
+			};
+
+			$('a.source-anno-agree').on('click', function(){
+				if( $(this).hasClass('upvote-on')) {return;}
+				var here = $(this);
+				saveSourceAnno(here.parents('tr'), function(response) {
+					here.addClass('upvote-on');
+					here.attr('style','');
+				});
 			});
 
 			$('a.source-anno-edit').on('click', function(){
@@ -227,8 +267,32 @@ block belowTheFold
 				$("tr.edit-row").show();
 			});
 
-			$('a.source-anno-delete').on('click', function(){
+			$('a#source-anno-cancel').on('click', function(){
 				$(this).parents('tr').hide();
+				$("tr.own-comment").show();
+			});
+
+			$('a.source-anno-delete').on('click', function(){
+				var parentRow = $(this).parents('tr');
+				var u_id = parentRow.data('id');
+				$.ajax({
+					url: "/annotation/mutation/#{annotation.u_id}/source/" + u_id,
+					contentType: false,
+					processData: false,
+					type: 'DELETE',
+					error: function (xhr) {
+						annotationStatus('Database error: ' + xhr.status, warningClasses);
+					},
+					success: function(response) {
+						if (response.error) {
+							annotationStatus(response.error, warningClasses);
+							return;
+						}
+						annotationStatus(response.status, successClasses);
+						parentRow.hide();
+					}
+
+				});
 			});
 
 			$('a#source-anno-erase').on('click', function(){
@@ -236,8 +300,11 @@ block belowTheFold
 			});
 
 			$('a#source-anno-save').on('click', function() {
-				$(this).parents('tr').hide();
-				$("tr.own-comment").show(); // todo: add this row if not already there
+				var thisRow = $(this).parents('tr');
+				saveSourceAnno(thisRow, function(response) {
+					$(thisRow).hide();
+					$("tr.own-comment").show(); // todo: add this row if not already there
+				});
 			});
 
 			function clearVoteAndComment() {
@@ -251,8 +318,9 @@ block belowTheFold
 				var dataName = dataField.attr('id').replace('_field','');
 
 				var dataValue = dataField.val();
-				if (dataName === 'is_germline') {
-					dataValue = (dataValue.toLowerCase() === 'true');
+				if (dataName === 'heritable') {
+					dataName = 'is_germline'
+					dataValue = (dataValue.toLowerCase() === 'Germline');
 				}
 
 				var formData = new FormData();

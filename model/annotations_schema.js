@@ -1,4 +1,4 @@
-// Import required modules                                                                                                                               
+// Import required modules
 Database = require('./db_sql');
 var sql = require("sql");
 
@@ -8,7 +8,6 @@ exports.initDatabase = initDatabase
 
 // type to help link subtypes of annotations
 annoTypeName = "anno_sub_type"
-//annoTypes = ["aber", "ppi"]
 
 // define tables here:
 annotations = sql.define({
@@ -16,29 +15,40 @@ annotations = sql.define({
     columns: [
 	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
 	{name: 'u_id', dataType: 'serial', primaryKey: true},
-	{name: 'comment',	dataType: 'varchar(5000)',},
+        {name: 'source', 	dataType: 'varchar(20)', notNull: true},
  	{name: 'reference',	dataType: 'varchar(45)', notNull: true},
 	{name: 'type', dataType: annoTypeName, notNull: true}],
 })
 
+// note: our current design allows duplicate aberrations b/c each aberration represents a source as well...
 aberrations = sql.define({
-    name: 'aber_annos',
+    name: 'aberrations',
     columns: [
 	{name: 'gene', 		dataType: 'varchar(15)', notNull: true},
-	{name: 'cancer',        dataType: 'varchar(40)'},
 	{name: 'transcript',	dataType: 'varchar(20)'},
 	{name: 'mut_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
 	{name: 'mut_type',	dataType: 'varchar(35)'},
         {name: 'protein_seq_change', dataType: 'varchar(30)'},
-        {name: 'source', 	dataType: 'varchar(20)', notNull: true},
-	{name: 'is_germline',	dataType: 'boolean'}, // not used
-  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
-	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true},
-	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}}]
-})
+	{name: 'u_id', dataType: 'serial', primaryKey: true}]
+});
 
+// note: this schema is not normalized
+// todo: pull out source/reference pairs, users into separate tables
+source_annos = sql.define({
+    name: 'aber_source_annos',
+    columns: [
+	{name: 'aber_id', dataType: 'integer', references: {table: aberrations.getName(), column: 'u_id', onDelete: 'cascade'}},
+	{name: 'cancer',        dataType: 'varchar(40)'},
+	{name: 'characterization', dataType: 'varchar(20)'},
+	{name: 'comment',	dataType: 'varchar(5000)',},
+	{name: 'is_germline',	dataType: 'boolean'},
+  	{name: 'measurement_type', 	dataType: 'varchar(30)'},
+ 	{name: 'reference',	dataType: 'varchar(45)', notNull: true},
+        {name: 'source', 	dataType: 'varchar(20)', notNull: true},
+	{name: 'asa_u_id',       dataType: 'serial', primaryKey:true},
+	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
+    ]});
 // todo: maintain unique key constraint with the source?
-//aberrations.unique = ["gene", "cancer", "mut_class", "mut_type",
 
 interactions = sql.define({
     name: 'ppi_annos',
@@ -57,7 +67,7 @@ interactions = sql.define({
 votes = sql.define({
     name: 'votes',
     columns: [
-	{name: 'anno_id', dataType: 'integer', primaryKey: true},
+	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}},
 	{name: 'anno_type',	dataType: annoTypeName, notNull:true, primaryKey: true},
 	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
 	// integrity check: only one vote at a time
@@ -74,7 +84,6 @@ function initDatabase() {
     }
 
     typeConstraint = {};
-    typeConstraint[aberrations.getName()] = "aber";
     typeConstraint[interactions.getName()] = "ppi";
 
     // create type first - no support for NOT EXISTS/CREATE OR REPLACE
@@ -83,7 +92,7 @@ function initDatabase() {
 	"IF NOT EXISTS (select 1 FROM pg_type " +
 	"WHERE typname='" + annoTypeName + "') " +
 	"THEN CREATE TYPE " + annoTypeName +
-	" AS ENUM('aber', 'ppi');" +
+	" AS ENUM('aber', 'ppi', 'source');" +
 	" END IF; END; $$;"
 
     Database.sql_query(wholeTypeStr, [], function(err, result) {
@@ -91,34 +100,40 @@ function initDatabase() {
 	    console.log("Error creating annotation type:", err)
 	    throw new Error(err)
 	} else {
-	    // create annotation table, then everything else
+	    // create annotation table, then aberrations table, then everything else
 	    annoCreateQuery = annotations.create().ifNotExists()
 
 	    Database.execute(annoCreateQuery, function(err, result) {
 		handle_err(annotations, err)
-		console.log("Annotations: postgres init'ed", annotations.getName(), "table");
 
-		// create subannotation and votes table
-		subannos = [aberrations, interactions, votes]
+		console.log("Annotations: postgres init'ed", annotations.getName());
+		Database.execute(aberrations.create().ifNotExists(), function(err, result) {
+		    handle_err(aberrations, err)
 
-		// key value constraint
-		addTypeValueConstraintFn = function (table) {
-		    return "CHECK (anno_type = '" +
-			typeConstraint[table.getName()] + "')"
-		}
+		    console.log("Annotations: postgres init'ed", aberrations.getName());
 
-		subannos.forEach( function (thisTable) {
-		    createQuery = thisTable.create().ifNotExists()
+		    // create subannotation and votes table
+		    subannos = [interactions, source_annos, votes]
 
-		    constraint = ""
-		    if (thisTable.getName() in typeConstraint) {
-			constraint = addTypeValueConstraintFn(thisTable)
+		    // key value constraint
+		    addTypeValueConstraintFn = function (table) {
+			return "CHECK (anno_type = '" +
+			    typeConstraint[table.getName()] + "')"
 		    }
-		    Database.executeAppend(createQuery, constraint, function(err, result) {
-			handle_err(thisTable, err)
-			console.log("Annotations: postgres init'ed", thisTable.getName(), "table");
+
+		    subannos.forEach( function (thisTable) {
+			createQuery = thisTable.create().ifNotExists()
+
+			constraint = ""
+			if (thisTable.getName() in typeConstraint) {
+			    constraint = addTypeValueConstraintFn(thisTable)
+			}
+			Database.executeAppend(createQuery, constraint, function(err, result) {
+			    handle_err(thisTable, err)
+			    console.log("Annotations: postgres init'ed", thisTable.getName(), "table");
+			});
 		    });
-		})
+		});
 	    });
 	}
     });
@@ -129,7 +144,7 @@ exports.annotations = annotations
 exports.aberrations = aberrations
 exports.interactions = interactions
 exports.votes = votes
-
+exports.aber_sources = source_annos;
 
 exports.normalizeAnnotation = function(anno) {
     // convert null votes to []
@@ -144,31 +159,11 @@ exports.normalizeAnnotation = function(anno) {
 
 exports.parsePMID = function(pmid_field) {
     // parse PMIDs if necessary:
-    if (pmid_field === undefined) 
+    if (pmid_field === undefined)
 	return ["none"]
 
-    if (pmid_field.indexOf(",") == -1) 
+    if (pmid_field.indexOf(",") == -1)
 	return [pmid_field];
 
     return pmid_field.split(",");
-}
-
-// join a query with the list of all user_ids who have voted on a particular annotation
-exports.joinVoteListsToQuery = function(query) {
-    // Retrieve upvotes and downvotes for every annotation
-    upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
-	" FROM votes WHERE direction =  1 group by anno_id) AS U";
-
-    downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
-	" FROM votes WHERE direction = -1 group by anno_id) as D ";
-
-    selQuerySplit = query.toQuery().text.split("WHERE");
-
-    // Join the upvote/downvote table within the annotation selection
-    wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
-	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
-	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
-    selQuerySplit[1];
-
-    return wholeQueryText;
 }

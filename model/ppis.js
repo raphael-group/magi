@@ -19,7 +19,7 @@ exports.ppiFind = function(query, dir, callback) {
 	selAnnosQuery = ppis.from(ppis.joinTo(annos)).where(query);
     }
 
-    Database.sql_query(Annotations.joinVoteListsToQuery(selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
+    Database.sql_query(Annotations.joinVoteListsToQuery(ppis, selAnnosQuery), selAnnosQuery.toQuery().values, function(err, result) {
 	if (err) {
             console.log("Error selecting ppi annotations: " + err);
 	    console.log("Debug: full query:", selAnnosQuery.string)
@@ -66,7 +66,7 @@ exports.upsertPPI = function(data, callback) {
 	    ppis.source.value(data.source),
 	    ppis.target.value(data.target),
 	    ppis.weight.value(data.weight),
-	    ppis.database.value(data.database),	    
+	    ppis.database.value(data.database),
 	    ppis.anno_id.value(u_id)).returning(ppis.anno_id) // we can return more if we want
 
 	Database.execute(ppiInsertQuery, function(err, result) {
@@ -107,26 +107,26 @@ exports.loadFromFile = function(filename, source, callback){
 
 	// Create objects to represent each annotation
 	var ppis = [];
-	for (var i = 1; i < lines.length; i++){ // first line should be the header	    
+	for (var i = 1; i < lines.length; i++){ // first line should be the header
 	    var fields = lines[i].split('\t');
 	    pmids = Annotations.parsePMID(fields[4]);
 	    pmids.forEach(function (_pmid) {
 		ppis.push({
 		    source: fields[0],
-		    target: fields[1], 
+		    target: fields[1],
 		    weight: fields[2] == '' ? 1 : fields[2],
 		    database: fields[3],
 		    pmid: _pmid,
 		    user_id: Annotations.ADMIN_USER
-		}); 
-	    }); 
+		});
+	    });
 	}
 	console.log( "Loading " + ppis.length + " ppi annotations from file..." )
 
 	// Save all the annotations
 	return Q.allSettled( ppis.map(function(query){
 	    var d = Q.defer();
-	    
+
 	    exports.upsertPPI(query, function(err, annotation){
 		if (err) {
 		    throw new Error(err);
@@ -143,7 +143,7 @@ exports.loadFromFile = function(filename, source, callback){
 // A function for listing all the interactions for a particular gene
 exports.ppilist = function (genes, callback){
     inGenes = [
-	exports.inPPIClause('source', genes), 
+	exports.inPPIClause('source', genes),
 	exports.inPPIClause('target', genes)];
     exports.ppiFind(inGenes, 'right', function (err, ppis) {
 	if(err) console.log(err);
@@ -157,9 +157,9 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
     votes = Schemas.votes
     // get all u_ids of the ppis
     uids = ppis.map(function(p) {return p.u_id;});
-    
+
     query = annos.from(annos.join(votes).on(annos.u_id.equals(votes.anno_id))).where([
-	annos.u_id.in(uids), 
+	annos.u_id.in(uids),
 	annos.user_id.equals(user_id)
     ])
 

@@ -5,43 +5,59 @@ Annotations = require('./annotations');
 var sql = require("sql");
 
 // find all mutation annotations given a structure with regexp
-// and the ids of users who have submitted upvotes/downvotes on each
+// and the user provided sources for each
 exports.geneFind = function(query, dir, callback) {
-    abers = Schemas.aberrations
-    annos = Schemas.annotations
-    votes = Schemas.votes
+    var abers = Schemas.aberrations,
+    sources = Schemas.aber_sources;
 
+    var selAnnosQuery;
+    // todo: use mode aggregate function?
     // Selects the desired annotations according to the given filter
     if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
-        selAnnosQuery = annos.from(annos.joinTo(abers)).where(annos.user_id.equals(query.user_id));
+        selAnnosQuery = sources.from(abers.joinTo(sources)).where(query);
     } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
-	selAnnosQuery = abers.from(abers.joinTo(annos)).where(query);
+	selAnnosQuery = abers.from(sources.joinTo(abers)).where(query);
     }
 
     // TODO: use annos.table.columns to automatically separate
-
-var joinedQuery = Annotations.joinVoteListsToQuery(selAnnosQuery);
-    Database.sql_query(joinedQuery, selAnnosQuery.toQuery().values, function(err, result) {
+//    var joinedQuery = Annotations.joinVoteListsToQuery(sources, selAnnosQuery);
+    Database.execute(selAnnosQuery, function(err, result) {
 	if (err) {
             console.log("Error selecting gene annotations: " + err);
-	    console.log("Debug: full query:", selAnnosQuery.string)
+	    console.log("Debug: full query:", selAnnosQuery)
 	    callback(err, null)
 	}
 
-	callback(null, result.rows.map(Annotations.normalize))
+	// normalize: put all sources with their aberrations;
+	var collatedResult = [], refIdx = {};
+
+	// todo: normalize heritability
+	// todo: normalize the schema so that source and reference are independent
+	aber_anno_columns = abers.columns.map(function (c) {return c.name;})
+	aber_anno_columns.push('reference');
+	aber_anno_columns.push('source');
+	result.rows.forEach(function (sourceData) {
+	    var aberAnno={};
+	    aber_anno_columns.forEach(function(column) {
+		aberAnno[column] = sourceData[column];
+		delete sourceData[column];
+	    });
+
+	    if(aberAnno.u_id in refIdx) {
+		collatedResult[refIdx[aberAnno.u_id]].sourceAnnos.push(sourceData);
+	    } else {
+		aberAnno.sourceAnnos=[sourceData];
+		refIdx[aberAnno.u_id] = collatedResult.length;
+		collatedResult.push(aberAnno);
+	    }
+	})
+	callback(null, collatedResult);
     })
 }
 
 // upsert an aberration annotation into SQL
 exports.upsertAber = function(data, callback){
-    abers = Schemas.aberrations
-    annos = Schemas.annotations
-
-    annoInsertQuery = annos.insert([{
-	user_id : data.user_id,
-	reference : data.pmid,
-	comment : data.comment,
-	type : "aber" }]).returning(annos.u_id)
+    var abers = Schemas.aberrations;
 
     handleErr = function(err, subresult, query) {
 	if (err == null && subresult.rows.length == 0) {
@@ -56,30 +72,92 @@ exports.upsertAber = function(data, callback){
 
     // todo: test update case
     // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
-    Database.execute(annoInsertQuery, function(err, subresult) {
-	handleErr(err, subresult, annoInsertQuery)
-	u_id = subresult.rows[0].u_id
-	aberInsertQuery = abers.insert(
-	    abers.gene.value(data.gene),
-	    abers.cancer.value(data.cancer),
-	    abers.transcript.value(data.transcript),
-	    abers.mut_class.value(data.mut_class),
-	    abers.mut_type.value(data.mut_type),
-	    abers.protein_seq_change.value(data.protein_seq_change),
-	    abers.source.value(data.source),
-	    abers.anno_id.value(u_id)).returning(abers.anno_id) // we can re turn more if we want
+    // TODO: may insert duplicates, fix this if we want something more interesting with genes
 
-	Database.execute(aberInsertQuery, function(err, result) {
-	    handleErr(err, result, aberInsertQuery)
-	    callback(null, result.rows[0]) // what do we want to return?
-	})
-    })
+    var aberInsertQuery = abers.insert(
+	abers.gene.value(data.gene),
+	abers.transcript.value(data.transcript),
+	abers.mut_class.value(data.mut_class),
+	abers.mut_type.value(data.mut_type),
+	abers.protein_seq_change.value(data.protein_seq_change)).returning(abers.u_id);
+
+    Database.execute(aberInsertQuery, function(err, subresult) {
+	var aber_u_id = subresult.rows[0].u_id;
+	handleErr(err, subresult, aberInsertQuery);
+
+	data.aber_id = aber_u_id;
+	exports.upsertSourceAnno(data, callback);
+    });
 }
 
-exports.update = function(data, callback) {
-    var abers = Schemas.aberrations;
+// note: requires an aber_id field to identify which aberration this source attaches to
+exports.upsertSourceAnno = function(data, callback) {
+    var sources = Schemas.aber_sources;
 
-    var updateQuery = abers.update(data).
+    // check if a record exists
+    var updateQuery = sources.update(data).
+	where(sources.aber_id.equals(data.aber_id),
+	      sources.user_id.equals(data.user_id)).
+	returning(sources.asa_u_id);
+    Database.execute(updateQuery, function(err, result) {
+	if (err) {
+            console.log("Error upserting source annotation: " + err);
+	    console.log("Debug: full query:", sourceInsertQuery.string)
+	    callback(err, null);
+	}
+	if (result && result.rows.length > 0) {
+	    callback(null, result.rows[0]); // return
+	} else {
+	    var sourceInsertQuery = sources.insert(data).returning(sources.asa_u_id);
+	    Database.execute(sourceInsertQuery, function (err, result) {
+		if (err == null && (!result || result.rows.length == 0)) {
+		    err = Error("Did not return annotation ID")
+		}
+		if (err) {
+		    console.log("Error upserting source annotation: " + err);
+		    console.log("Debug: full query:", sourceInsertQuery.string)
+		    callback(err, null)
+		}
+		callback(null, result.rows[0]); // return
+	    });
+	}
+    });
+}
+
+// delete according to a filter:
+exports.deleteSourceAnno = function(filter) {
+    var sources = Schemas.aber_sources;
+    if (filter.user_id) {
+	filter.user_id = String(filter.user_id);
+    }
+    console.log("filter");
+    var Q = require( 'q' ),
+    d = Q.defer();
+
+    deleteQuery = sources.delete().where(filter);
+    console.log("query", deleteQuery.toQuery().text, deleteQuery.toQuery().values);
+    Database.execute(deleteQuery, function(err, result) {
+	if (err) {
+            console.log("Error deleting annotation: " + err);
+//	    console.log("Debug: full query:", deleteQuery.string)
+	    d.reject(err);
+	}
+	if (result.rowCount != 1) {
+	    d.reject("Annotation not found for deletion.");
+	} else {
+	    d.resolve();
+	}
+    });
+
+    return d.promise;
+
+}
+
+// update is for an aber_source annotation
+exports.update = function(data, callback) {
+    var aber_sources = Schemas.aber_sources;
+
+    var updateQuery = aber_sources.update(data).
 	where(abers.anno_id.equals(data.anno_id)).
 	returning(abers.anno_id);
     Database.execute(updateQuery, function(err, result) {
@@ -92,7 +170,7 @@ exports.update = function(data, callback) {
 	    callback(err, null);
 	} else {
 	    callback(null, result.rows[0]);
-	}	
+	}
     });
 }
 
@@ -131,7 +209,7 @@ exports.loadFromFile = function(filename, source, callback){
 	    // Parse the line
 	    var fields = lines[i].split('\t'),
 	    references = Annotations.parsePMID(fields[7])
-	    
+
 	    references.forEach(function(pmid) {
 		annotations.push({
 		    gene: fields[0],
