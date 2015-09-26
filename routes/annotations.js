@@ -211,7 +211,7 @@ exports.mutationVote = function mutationVote(req, res){
 	var data = req.body;
 	data.user_id = String(req.user._id);
 	Object.keys(data).forEach(function (field) {
-	    if (data[field] === 'null') data[field]=undefined;
+	    if (data[field] === 'null' || data[field] === 'undefined') data[field]=undefined;
 	}); // fixme: not sure why this isn't translated outside...
 	Aberrations.upsertSourceAnno(data, function(err, result) {
 	    if(err){

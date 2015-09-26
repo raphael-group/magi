@@ -120,7 +120,7 @@ block body
 												a(href="#" class="source-anno-delete")
 													i(class="glyphicon glyphicon-trash") Delete
 											-else if(!ownAnnotation)
-												a(href="#" class="upvote source-anno-upvote")
+												a(href="#" class="upvote source-anno-agree")
 													i(class="glyphicon glyphicon-thumbs-up") Agree
 							-if(user) // edit row
 								-var displayEdit = ownAnnotation ? "none":"table-row"
@@ -128,9 +128,8 @@ block body
 									td
 										| Add an annotation:
 									td
-										input(class="source-anno-input form-control",
+										input(class="source-anno-input form-control cancer_field",
 											type="text",
-											id="cancer_field",
 											list="cancer-list",
 											placeholder=ownAnnotation ? "#{ownAnnotation.cancer}" : "")
 										datalist(id="cancer-list")
@@ -138,24 +137,22 @@ block body
 											-for(j = 0; j < cancerAbbrs.length; j++)
 												option #{cancerAbbrs[j].toUpperCase()}
 									td
-										select(id="heritable_field", class="source-anno-input form-control",
+										select(class="source-anno-input form-control heritable_field",
 											selected="#{is_somatic}",
 											placeholder=ownAnnotation ? "#{!ownAnnotation.is_germline}" : "")
 											option Unknown
 											option Germline
 											option Somatic
 									td
-										input(class="source-anno-input form-control",
-											id="measurement_type_field",
+										input(class="source-anno-input form-control measurement_type_field",
 											list="mtypes-list",
 											placeholder=ownAnnotation ? "#{ownAnnotation.measurement_type}" : "")
 										datalist(id="mtypes-list")
 											option WCA
 											option WGS
 									td
-										input(class="source-anno-input form-control",
+										input(class="source-anno-input form-control characterization_field",
 											type="text",
-											id="characterization_field",
 											list="characterization-list",
 											placeholder=ownAnnotation ? "#{ownAnnotation.characterization}" : "")
 										datalist(id="characterization-list")
@@ -163,9 +160,8 @@ block body
 											option Functional
 
 									td
-										textarea(class="source-anno-input form-control",
+										textarea(class="source-anno-input form-control comment_field",
 											type="text",
-											id="comment_field",
 											placeholder=ownAnnotation ? "#{ownAnnotation.comment}" : "")
 									td
 										a(href="#", id="source-anno-save")
@@ -214,12 +210,28 @@ block belowTheFold
 				formData.append("source", "#{annotation.source}");
 				formData.append("reference", "#{annotation.reference}");
 				row.children('td').each(function (idx) {
-					var child = $(this).children();
-					var id = $(child).attr('id');
-					var val = $(child).val();
+					var leaf = $(this);
+					if(leaf.children().length > 0) leaf = $(this).children();
+					if(leaf.attr('class') === undefined)
+						return;
 
-					if (id && id.endsWith('field')) {
-						var fieldName = id.replace('_field','')
+					var classList = $(leaf).attr("class").split(/\s+/);
+					var val;
+					if (leaf.is('td')) {
+						val = $(leaf).text();
+					} else {
+						val = $(leaf).val();
+					}
+
+					var id, fieldName;
+					classList.forEach(function(c) {
+						if(c.endsWith('_field')) {
+							id = c;
+							fieldName = c.replace('_field','');
+						}
+					});
+
+					if (fieldName) {
 						if (fieldName == 'heritable') {
 							fieldName = 'is_germline';
 							if(val == "Unknown") {
@@ -306,63 +318,4 @@ block belowTheFold
 					$("tr.own-comment").show(); // todo: add this row if not already there
 				});
 			});
-
-			function clearVoteAndComment() {
-				$('textarea#mutation-comment').val('');
-				$('a.upvote').removeClass('upvote-on');
-				$('a.downvote').removeClass('downvote-on');
-			}
-
-			$('span.glyphicon-ok-circle').on('click', function() {
-				var dataField = $(this).prev();
-				var dataName = dataField.attr('id').replace('_field','');
-
-				var dataValue = dataField.val();
-				if (dataName === 'heritable') {
-					dataName = 'is_germline'
-					dataValue = (dataValue.toLowerCase() === 'Germline');
-				}
-
-				var formData = new FormData();
-				formData.append('anno_id', uid);
-				formData.append(dataName, dataValue);
-
-				var thisControl = $(this);
-				restoreViewMode($(this));
-				$.ajax({
-					url: './' + uid,
-					data: formData,
-					cache: false,
-					contentType: false,
-					processData: false,
-					type: 'PUT',
-					error: function(error) {
-						annotationStatus('Database error: ' + error.status, warningClasses);
-					},
-					success: function(response) {
-						if(response.error) {
-							annotationStatus(response.error, warningClasses);
-						} else {
-							annotationStatus(response.status, successClasses);
-							updateValue(thisControl, dataValue);
-						}
-					}
-				});
-			});
-
-			function updateValue(element, newval) {
-				console.log('update', newval);
-				console.log('elem', element);
-				console.log('elem', element.parent());
-				console.log('elem', element.parent().prev());
-				console.log('elem', element.parent().prev().children('div.entry'));
-				console.log('text', element.parent().prev().children('div.entry').text());
-				element.parent().prev().children('div.entry').text(newval);
-			}
-
-			function restoreViewMode(element) {
-				element.parent().prev().show();
-				element.parent().hide();
-			}
-
 		});
