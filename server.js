@@ -184,7 +184,7 @@ app.get('/annotations/gene/:gene', routes.annotations.gene);
 app.get('/annotation/mutation/:u_id', routes.annotations.mutation);
 app.put('/annotation/mutation/:u_id', routes.annotations.updateMutation);
 app.post('/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation);
-//app.delete('/annotation/mutation/:u_id', routes.annotations.removeMutation);
+app.delete('/annotation/mutation/:u_id', routes.annotations.removeMutation);
 app.delete('/annotation/mutation/:aber_id/source/:source_id', routes.annotations.removeSourceAnno);
 
 app.post('/annotation/interaction/', routes.annotations.savePpi);

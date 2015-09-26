@@ -41,13 +41,7 @@ exports.gene = function gene(req, res){
 	if (err) throw new Error(err);
 
 	// calculate the mode of each aberration
-	var cols = ["cancer", "is_germline", "measurement_type", "characterization"];
-	result.forEach(function (aber) {
-	    cols.forEach(function(col) {
-		aber[col + "_mode"] =
-		    Utils.getMode(aber.sourceAnnos.map(function(c) {return c[col];}));
-	    });
-	});
+	result = Aberrations.collateSourceAnnos(result);
 	// Render the view
 	var pkg = {
 	    user: req.user,
@@ -105,7 +99,7 @@ exports.updateMutation = function updateMutation(req, res) {
 };
 
 exports.saveMutation = function saveMutation(req, res) {
-    console.log('save /annotation/mutation')
+    console.log('POST /annotation/mutation')
 
     // Load the posted form
     var form = new formidable.IncomingForm({});
@@ -131,7 +125,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	    mut_type: req.body.mutationType,
 	    protein_seq_change: req.body.change,
 	    domain: req.body.domain, // not used: which field should this go in?
-	    pmid: req.body.pmid,
+	    reference: req.body.pmid,
 	    comment: req.body.comment,
 	    user_id: req.user._id + "",
 	    source: "Community"
@@ -154,7 +148,7 @@ exports.saveMutation = function saveMutation(req, res) {
 }
 
 // remove a source annotation
-exports.removeSourceAnno = function removeMutation(req, res) {
+exports.removeSourceAnno = function removeSourceAnno(req, res) {
     console.log("/annotation/mutation/" + req.params.aber_id + "/source/" + req.params.source_id)
     if (req.user) { // ensure that a user is logged in
 	console.log("user logged in");
@@ -172,7 +166,17 @@ exports.removeSourceAnno = function removeMutation(req, res) {
 
 exports.removeMutation = function removeMutation(req, res) {
     console.log("delete /annotation/mutation/" + req.params.u_id)
-    removeAnnotation(req, res)
+    if (req.user) { // ensure that a user is logged in
+	Aberrations.remove(req.params.u_id, req.user._id)
+	    .then(function() {
+		res.send({ status: "Annotation deleted successfully!" });
+	    }).fail(function(err) {
+		res.send({ error: err });
+	    }).done();
+    } else {
+	res.send({ error: "You must be logged in as the user who annotated the mutation to delete"})
+    }
+
 }
 
 exports.removePpi = function removePpi(req, res) {

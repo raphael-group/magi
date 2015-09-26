@@ -30,7 +30,8 @@ aberrations = sql.define({
 	{name: 'mut_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
 	{name: 'mut_type',	dataType: 'varchar(35)'},
         {name: 'protein_seq_change', dataType: 'varchar(30)'},
-	{name: 'u_id', dataType: 'serial', primaryKey: true}]
+	{name: 'u_id', dataType: 'serial', primaryKey: true},
+	{name: 'aber_user_id',       dataType: 'varchar(40)', notNull: true}]
 });
 
 // note: this schema is not normalized
@@ -167,4 +168,8 @@ exports.parsePMID = function(pmid_field) {
 	return [pmid_field];
 
     return pmid_field.split(",");
+}
+
+exports.getColumnNames = function(tableDef) {
+    return tableDef.columns.map(function(c) {return c.name;});
 }

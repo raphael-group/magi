@@ -29,13 +29,15 @@ exports.account = function(req, res){
 		if (err) throw new Error(err);
 
 		// here call to postgres for all annotations:
-		Aberrations.geneFind({user_id: String(user._id)}, 'left', function(err, geneAnnos) {
+		Aberrations.geneFind({aber_user_id: String(user._id)}, 'right', function(err, geneAnnos) {
 		    if (err) throw new Error(err);
+		    // calculate the mode of each aberration
+		    geneAnnos = Aberrations.collateSourceAnnos(geneAnnos);
+
 		    PPIs.ppiFind({user_id: String(user._id)}, 'left', function (err, ppiAnnos) {
 			if (err) throw new Error(err);
-			if (ppiAnnos.length > 0) {
-			    console.log(ppiAnnos[0]);
-			}
+			console.log(geneAnnos);
+
 			// Render index page
 			res.render('account',
 				   { user: user,

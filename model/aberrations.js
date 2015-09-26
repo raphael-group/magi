@@ -2,6 +2,7 @@
 Database = require('./db_sql');
 Schemas = require('./annotations_schema');
 Annotations = require('./annotations');
+Utils = require('./util');
 var sql = require("sql");
 
 // find all mutation annotations given a structure with regexp
@@ -33,7 +34,7 @@ exports.geneFind = function(query, dir, callback) {
 
 	// todo: normalize heritability
 	// todo: normalize the schema so that source and reference are independent
-	aber_anno_columns = abers.columns.map(function (c) {return c.name;})
+	var aber_anno_columns = Schemas.getColumnNames(abers);
 	aber_anno_columns.push('reference');
 	aber_anno_columns.push('source');
 	result.rows.forEach(function (sourceData) {
@@ -79,13 +80,14 @@ exports.upsertAber = function(data, callback){
 	abers.transcript.value(data.transcript),
 	abers.mut_class.value(data.mut_class),
 	abers.mut_type.value(data.mut_type),
-	abers.protein_seq_change.value(data.protein_seq_change)).returning(abers.u_id);
+	abers.protein_seq_change.value(data.protein_seq_change),
+	abers.aber_user_id.value(data.user_id)).returning(abers.u_id);
 
     Database.execute(aberInsertQuery, function(err, subresult) {
-	var aber_u_id = subresult.rows[0].u_id;
 	handleErr(err, subresult, aberInsertQuery);
-
+	var aber_u_id = subresult.rows[0].u_id;
 	data.aber_id = aber_u_id;
+	console.log(data);
 	exports.upsertSourceAnno(data, callback);
     });
 }
@@ -94,6 +96,10 @@ exports.upsertAber = function(data, callback){
 exports.upsertSourceAnno = function(data, callback) {
     var sources = Schemas.aber_sources;
 
+    // only column in the definition of the source should survive
+    var keys = Object.keys(data);
+    var columns = Schemas.getColumnNames(sources);
+    keys.forEach(function(key) {if (!columns.some(function (c) {return key == c;})) delete data[key];});
     // check if a record exists
     var updateQuery = sources.update(data).
 	where(sources.aber_id.equals(data.aber_id),
@@ -102,7 +108,7 @@ exports.upsertSourceAnno = function(data, callback) {
     Database.execute(updateQuery, function(err, result) {
 	if (err) {
             console.log("Error upserting source annotation: " + err);
-	    console.log("Debug: full query:", sourceInsertQuery.string)
+	    console.log("Debug: full query:", updateQuery.toQuery().text);
 	    callback(err, null);
 	}
 	if (result && result.rows.length > 0) {
@@ -115,7 +121,7 @@ exports.upsertSourceAnno = function(data, callback) {
 		}
 		if (err) {
 		    console.log("Error upserting source annotation: " + err);
-		    console.log("Debug: full query:", sourceInsertQuery.string)
+		    console.log("Debug: full query:", sourceInsertQuery.toQuery().text);
 		    callback(err, null)
 		}
 		callback(null, result.rows[0]); // return
@@ -130,12 +136,10 @@ exports.deleteSourceAnno = function(filter) {
     if (filter.user_id) {
 	filter.user_id = String(filter.user_id);
     }
-    console.log("filter");
     var Q = require( 'q' ),
     d = Q.defer();
 
     deleteQuery = sources.delete().where(filter);
-    console.log("query", deleteQuery.toQuery().text, deleteQuery.toQuery().values);
     Database.execute(deleteQuery, function(err, result) {
 	if (err) {
             console.log("Error deleting annotation: " + err);
@@ -209,7 +213,6 @@ exports.loadFromFile = function(filename, source, callback){
 	    // Parse the line
 	    var fields = lines[i].split('\t'),
 	    references = Annotations.parsePMID(fields[7])
-
 	    references.forEach(function(pmid) {
 		annotations.push({
 		    gene: fields[0],
@@ -241,6 +244,7 @@ exports.loadFromFile = function(filename, source, callback){
 		pmid: A.reference,
 		comment: A.comment,
 		source: source,
+		reference: A.reference,
 		user_id: Annotations.ADMIN_USER
 	    };
 	    exports.upsertAber(query, function(err, annotation){
@@ -254,9 +258,42 @@ exports.loadFromFile = function(filename, source, callback){
     loadAnnotationFile().then( processAnnotations ).then( function(){ callback("") } );
 }
 
+exports.remove = function(anno_id, user_id) {
+    var abers = Schemas.aberrations,
+    Q = require( 'q' ),
+    d = Q.defer();
+
+    var deleteQuery = abers.delete().where(abers.u_id.equals(anno_id), abers.aber_user_id.equals(user_id));
+    Database.execute(deleteQuery, function(err, result) {
+	if (err) {
+            console.log("Error deleting annotation: " + err);
+//	    console.log("Debug: full query:", selQuery.string)
+	    d.reject(err);
+	}
+	if (result.rowCount != 1) {
+	    d.reject("Mutation not found for deletion");
+	} else {
+	    d.resolve();
+	}
+    });
+    return d.promise;
+}
+
 // inherit some functions from annotations
 exports.inGeneClause = Annotations.inClause(Schemas.aberrations)
-exports.remove = Annotations.annoDelete;
+
 exports.vote = function (fields, user_id) {
     return Annotations.vote(fields, user_id, "aber");
+}
+
+exports.collateSourceAnnos = function collateSourceAnnos(abers) {
+    // calculate the mode of each aberration
+    var cols = ["cancer", "is_germline", "measurement_type", "characterization"];
+    abers.forEach(function (aber) {
+	cols.forEach(function(col) {
+	    aber[col + "_mode"] =
+		Utils.getMode(aber.sourceAnnos.map(function(c) {return c[col];}));
+	});
+    });
+    return abers;
 }
