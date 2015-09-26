@@ -123,7 +123,6 @@ function initializeAnnotations(){
 		abberationSelect.property('value', d.mutation_class);
 		cancerInput.property('value', data.datasetToCancer[d.dataset]);
 		mutationInput.property('value', d.mutation_type ? d.mutation_type : "");
-		console.log(d.change)
 		locusInput.property('value', d.change ? d.change : "");
 		domainInput.property('value', d.domain ? d.domain : "");
 	});
@@ -190,7 +189,7 @@ function initializeAnnotations(){
 
 		// Figure out whether a PPI or mutation annotation is being added
 		var type = annotationType.attr('value');
-		
+
 		// If it's a mutation
 		if (type == 'mutation'){
 			// Retrieve the values filled out in the form
@@ -217,7 +216,7 @@ function initializeAnnotations(){
 					mutationClass: mutationClass,
 					cancer: cancer,
 					mutationType: mutationType,
-					change: change, 
+					change: change,
 					domain: domain,
 					comment: comment
 				});

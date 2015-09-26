@@ -8,6 +8,7 @@ var mongoose = require( 'mongoose' ),
 	QueryHash = require('../model/queryHash'),
 	Database = require('../model/db'),
 	Cancers  = require( "../model/cancers" ),
+        Utils = require('../model/util'),
 	fs = require('fs');
 
 exports.view  = function view(req, res){
@@ -218,23 +219,20 @@ exports.view  = function view(req, res){
 						genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
 						support.forEach(function(A, i){
 						    A.mut_class = A.mut_class.toUpperCase();
-								if (!annotations[A.gene][A.mut_class]){
-									annotations[A.gene][A.mut_class] = {};
-								}
+						    if (!annotations[A.gene][A.mut_class]){
+							annotations[A.gene][A.mut_class] = {};
+						    }
 						    var ref = {
 							pmid: A.reference,
-							score: A.upvotes.length - A.downvotes.length,
-							vote: A.upvotes.indexOf(user_id) != -1 ? "up" :
-							    (A.downvotes.indexOf(user_id) != -1 ? "down" : null),
 							_id: A.u_id
 						    };
 
 						    geneToAnnotationList[A.gene][A.reference] = true;
-						    var cancer = A.cancer ? A.cancer : "Cancer";
-						    if (cancer in annotations[A.gene][A.mut_class]) {
-							annotations[A.gene][A.mut_class][cancer].push(ref);
+						    var cancer = Utils.getMode(A.sourceAnnos.map(function (s) {return s.cancer}));
+						    if (cancer.mode in annotations[A.gene][A.mut_class]) {
+							annotations[A.gene][A.mut_class][cancer.mode].push(ref);
 						    } else {
-							annotations[A.gene][A.mut_class][cancer] = [ref];
+							annotations[A.gene][A.mut_class][cancer.mode] = [ref];
 						    }
 						});
 
@@ -387,8 +385,8 @@ function formatPPIs(ppis, user_id, callback){
 			references[n].forEach(function(ref){
 				// Record the score
 				var score = ref.upvotes.length - ref.downvotes.length;
-				refs[n][source][target][ref.pmid] = { 
-				    vote: null, 
+				refs[n][source][target][ref.pmid] = {
+				    vote: null,
 				    score: score };
 
 				//  Record the user's vote for the current reference (if neccessary)

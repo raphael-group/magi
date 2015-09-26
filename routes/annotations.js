@@ -6,6 +6,7 @@ Aberrations = require("../model/aberrations"),
 PPIs  = require( "../model/ppis" ),
 Database = require('../model/db'),
 User = require('../model/user'),
+Utils = require('../model/util'),
 Q = require('q');
 
 // Create the tables if they don't exist already
@@ -27,25 +28,6 @@ Cancer.find({}, function(err, cancers){
     })
 })
 
-// get the most frequent element in an array, and the count that r
-function getMode(array) {
-    var histo = {}, best = {mode: null, count: 0};
-    array.forEach(function (elem) {
-	if(elem) {
-	    if(elem in histo) {
-		histo[elem]++;
-	    } else {
-		histo[elem]=1;
-	    }
-	    if (histo[elem] > best.count) {
-		best.count = histo[elem];
-		best.mode = elem;
-	    }
-	}
-    });
-    return best;
-}
-
 // todo: add post route to add genes
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
@@ -63,7 +45,7 @@ exports.gene = function gene(req, res){
 	result.forEach(function (aber) {
 	    cols.forEach(function(col) {
 		aber[col + "_mode"] =
-		    getMode(aber.sourceAnnos.map(function(c) {return c[col];}));
+		    Utils.getMode(aber.sourceAnnos.map(function(c) {return c[col];}));
 	    });
 	});
 	// Render the view

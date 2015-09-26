@@ -288,7 +288,7 @@ function view(){
 						refTable = [[
 								{type: 'text', text: 'Cancer'},
 								{type: 'text', text: 'PMID'},
-								{type: 'text', text: 'Votes'}
+								{type: 'text', text: 'Edit'}
 							].map(gd3.tooltip.datum)
 						];
 
@@ -301,42 +301,7 @@ function view(){
 							refTable.push([
 								{ type: 'text', text: i ? "" : cancerToName(cancer) },
 								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
-								{ type: 'vote',
-								  voteDirectionFn: function(){ return ref.vote; },
-								  voteCountFn: function(){ return ref.score; },
-								  upvoteFn: function(){
-								      var voteDirection = 'up';
-								  	// Update the reference vote count
-								  	if (ref.vote == 'down'){
-								  		ref.score += 2;
-								  		ref.vote = 'up';
-								  	} else if (ref.vote == 'up'){
-									    voteDirection = 'remove';
-								  		ref.score -= 1;
-								  		ref.vote = null;
-								  	} else {
-								  		ref.vote = 'up';
-								  		ref.score += 1;
-								  	}
-								  	vote({_id: ref._id, pmid: ref.pmid, vote: voteDirection}, '/vote/mutation');
-								  	return ref.vote;
-								  },
-								  downvoteFn: function(){
-								      var voteDirection = 'down';
-								  	if (ref.vote == 'down'){
-									    voteDirection = 'remove';
-								  		ref.score += 1;
-								  		ref.vote = null;
-								  	} else if (ref.vote == 'up'){
-								  		ref.score -= 2;
-								  		ref.vote = 'down'
-								  	} else {
-								  		ref.vote = 'down';
-								  		ref.score -= 1;
-								  	}
-								      vote({_id: ref._id, pmid: ref.pmid, vote: voteDirection}, '/vote/mutation');
-								  	return ref.vote;
-								  }}
+							        { type: 'link', body: 'Edit', href: "/annotation/mutation/" + ref._id}
 							].map(gd3.tooltip.datum));
 						    }
 						});
@@ -384,7 +349,7 @@ function view(){
 				{type: 'text', text: 'Votes'}
 			].map(gd3.tooltip.datum)
 		];
-		
+
 	    d.categories.forEach(function(n){
 		if (d.references[n].length > 0){
 				d.references[n].forEach(function(ref, i){
