@@ -38,6 +38,7 @@ exports.upsertPPI = function(data, callback) {
     annoInsertQuery = annos.insert([{
 	user_id : data.user_id,
 	reference : data.pmid,
+	ref_source: data.anno_source,
 	comment : data.comment,
 	type : "ppi" }]).returning(annos.u_id)
 

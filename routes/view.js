@@ -339,7 +339,6 @@ function formatPPIs(ppis, user_id, callback){
 		// Parse interaction and create unique ID
 		var ppi   = ppis[i],
 			ppiName = [ppi.source, ppi.target].sort().join("*");
-
 	    refInfo = {
 		pmid: ppi.reference,
 		upvotes: ppi.upvotes,
@@ -348,10 +347,10 @@ function formatPPIs(ppis, user_id, callback){
 	    }
 		// Append the current network for the given edge
 		if (ppiName in edgeNames){
-			edgeNames[ppiName].push( {name: ppi.database, refs: refInfo } );
+			edgeNames[ppiName].push( {name: ppi.ref_source, refs: refInfo } );
 		}
 		else{
-		    edgeNames[ppiName] = [ {id: ppi.anno_id, name: ppi.database, refs: refInfo } ];
+		    edgeNames[ppiName] = [ {id: ppi.anno_id, name: ppi.ref_source, refs: refInfo } ];
 		}
 	}
 
