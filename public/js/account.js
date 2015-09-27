@@ -1,3 +1,5 @@
+// set up the account page by adding delete links and looking for user consent
+
 $().ready(function() {
   $('#consentLog').attr('disabled', true);
   $.post('/userGaveConsent')
@@ -5,9 +7,7 @@ $().ready(function() {
       $('#consentLog').attr('disabled', false);
       $('#consentLog').attr('checked', res == 'true' ? true : false);
     });
-
     $(".trash-ppi-icon").click(deleteAnnotation);
-    $(".trash-mut-icon").click(deleteAnnotation);
 });
 
 function deleteAnnotation() {
@@ -15,22 +15,27 @@ function deleteAnnotation() {
     warningClasses = 'alert alert-warning';
 
     function statusOnDelete(elem, result, classes) {
-	console.log(elem);
-	console.log($(elem));
-	console.log(result);
+	// console.log(elem);
+	// console.log($(elem));
+	// console.log(result);
 	$(elem).html(result);
 	$(elem).attr('class', classes);
     }
 
+    var route, uid = $(this).data("uid");
+
     if ($(this).attr("class") === "trash-mut-icon")  {
-	rootRoute = "/annotation/mutation/"
+	route = "/annotation/mutation/" + uid;
     } else if ($(this).attr("class") === "trash-ppi-icon") {
-	rootRoute = "/annotation/interaction/"
+	route = "/annotation/interaction/" + uid;
+    } else if ($(this).attr("class") === "trash-source-icon") {
+	var aber_id = $(this).data('aber-id');
+	route = "/annotation/mutation/" + aber_id + '/source/' + uid;
     }
-    uid = $(this).data("uid");
+    console.log("uid:", uid)
     parentRow = $(this).parents("tr");
     $.ajax({
-	url: rootRoute + uid,
+	url: route,
 	type: 'DELETE',
 	error: function(xhr) {
 	    statusOnDelete($(parentRow), 'Database error: ' + xhr.status, warningClasses);

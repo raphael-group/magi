@@ -21,7 +21,6 @@ exports.geneFind = function(query, dir, callback) {
     }
 
     // TODO: use annos.table.columns to automatically separate
-//    var joinedQuery = Annotations.joinVoteListsToQuery(sources, selAnnosQuery);
     Database.execute(selAnnosQuery, function(err, result) {
 	if (err) {
             console.log("Error selecting gene annotations: " + err);
@@ -267,10 +266,12 @@ exports.remove = function(anno_id, user_id) {
     Database.execute(deleteQuery, function(err, result) {
 	if (err) {
             console.log("Error deleting annotation: " + err);
-//	    console.log("Debug: full query:", selQuery.string)
+//	    console.log("Debug: full query:", deleteQuery.toQuery().text)
 	    d.reject(err);
 	}
 	if (result.rowCount != 1) {
+	    console.log("Debug: full query:", deleteQuery.toQuery().text, deleteQuery.toQuery().values)
+	    console.log("Debug: result:", result.rows);
 	    d.reject("Mutation not found for deletion");
 	} else {
 	    d.resolve();

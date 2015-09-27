@@ -4,8 +4,8 @@ Dataset = require( "../model/datasets" ),
 Database = require('../model/db'),
 Aberrations = require("../model/aberrations"),
 PPIs = require("../model/ppis"),
+Jade = require('jade'),
 User = require("../model/user");
-
 var abbrToCancer = {}, cancerToAbbr = {};
 Cancer = Database.magi.model( 'Cancer' );
 
@@ -27,26 +27,31 @@ exports.account = function(req, res){
 	    Dataset.datasetGroups({user_id: user._id}, function(err, groups){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
-
+		var user_id = String(user._id);
 		// here call to postgres for all annotations:
-		Aberrations.geneFind({aber_user_id: String(user._id)}, 'right', function(err, geneAnnos) {
+		Aberrations.geneFind({aber_user_id: user_id}, 'right', function(err, geneAnnos) {
 		    if (err) throw new Error(err);
 		    // calculate the mode of each aberration
 		    geneAnnos = Aberrations.collateSourceAnnos(geneAnnos);
 
-		    PPIs.ppiFind({user_id: String(user._id)}, 'left', function (err, ppiAnnos) {
+		    Aberrations.geneFind({user_id: user_id}, 'left', function(err, sourceAnnos) {
 			if (err) throw new Error(err);
-			console.log(geneAnnos);
+			// calculate the mode of each aberration
+			sourceAnnos = Aberrations.collateSourceAnnos(sourceAnnos);
 
-			// Render index page
-			res.render('account',
-				   { user: user,
-				     groups: groups,
-				     geneAnnos: geneAnnos,
-				     ppiAnnos: ppiAnnos,
-				     abbrToCancer: abbrToCancer,
-				     cancerToAbbr: cancerToAbbr,
-				     skip_requery: true});
+			PPIs.ppiFind({user_id: user_id}, 'left', function (err, ppiAnnos) {
+			    if (err) throw new Error(err);
+			    // Render index page
+			    var pkg = { user: user,
+					 groups: groups,
+					 geneAnnos: geneAnnos,
+					 sourceAnnos: sourceAnnos,
+					 ppiAnnos: ppiAnnos,
+					 abbrToCancer: abbrToCancer,
+					 cancerToAbbr: cancerToAbbr,
+					 skip_requery: true};
+			    res.render('account', pkg);
+			});
 		    });
 		});
 	    });

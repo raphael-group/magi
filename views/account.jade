@@ -1,5 +1,13 @@
 extends layout
 block body
+  - var pubmedLink = function (_id){
+  - 		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+  - 			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+  -		} else {
+  -			var href = 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
+  -		}
+  -		return "<a href='" + href + "' target='_new'>" + _id + "</a>";
+  -	}
   br
   div(class="container")
     h3
@@ -49,26 +57,33 @@ block body
       a(href="/upload") Upload your first dataset.
     hr
     br
-
-    div(id="user-annotations")
-      // todo: make DRY with annotations/gene.jade
-
-    - if (geneAnnos.length > 0)
-      h4 Your Mutation Annotations
-      - var annotations = geneAnnos;
-      //- todo: DRY with gene.jade
-      include ./annotations/gene-table.jade
-      //- todo: add gene and trash column
-
-    - else
-      | You have not annotated any gene mutations. &nbsp;
+    div(id="user-mut-annotations")
+      - if (geneAnnos.length > 0)
+        h4 Your Mutation Annotations
+        - var annotations = geneAnnos;
+        - var geneTableTitle = "gene-annotation-table";
+        include ./annotations/gene-table.jade
+      - else
+        | You have not annotated any gene mutations. &nbsp;
 
     hr
     br
+    div(id="user-source-annotations")
+      - if (sourceAnnos.length > 0)
+        h4 Your Source Annotations
+        - var annotations = sourceAnnos;
+        - var geneTableTitle = "source-annotation-table";
+        include ./annotations/gene-table.jade
+      - else
+        | You have not annotated any sources attached to gene mutations. &nbsp;
+
+    hr
+    br
+
     div(id="div-ppis")
       - if (ppiAnnos.length > 0)
         h4 Your Interaction Annotations
-        table(class="table table-condensed", id="gene-annotation-table")
+        table(class="table table-condensed", id="ppi-annotation-table")
           thead
             tr(style="background:#e3e3e3")
               th Source
@@ -143,7 +158,8 @@ block body
 
 block belowTheFold
   script(src='components/jquery/dist/jquery.min.js').
-  script(src='js/account.js')
+  script(src='js/account.js').
+
   //- adding items to the page
   script(type='text/javascript').
     $(document).ready(function() {
@@ -159,4 +175,22 @@ block belowTheFold
         }
       });
       $(".trash-mut-icon").click(deleteAnnotation);
+
+      annos = !{JSON.stringify(sourceAnnos)};
+      $('#source-annotation-table').find('tr').each(function(index) {
+        var trow = $(this);
+        if (index === 0) {
+          trow.prepend('<th>Gene</th>');
+          trow.append('<th>Delete</th>');
+        } else {
+          trow.prepend('<td>' + annos[index - 1].gene + '</td>');
+          trow.append('<td><a data-uid=' + annos[index - 1].sourceAnnos[0].asa_u_id +
+                    ' data-aber-id='+ annos[index - 1].u_id +
+                    ' class="trash-source-icon" title="Remove mutation"><span class="glyphicon glyphicon-trash"></a></td>');
+        }
+
+      });
+      $('#source-annotation-table span.source-vote-count').hide();
+      $('.agree-column').hide();
+      $(".trash-source-icon").click(deleteAnnotation);
     });

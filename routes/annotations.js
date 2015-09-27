@@ -167,7 +167,7 @@ exports.removeSourceAnno = function removeSourceAnno(req, res) {
 exports.removeMutation = function removeMutation(req, res) {
     console.log("delete /annotation/mutation/" + req.params.u_id)
     if (req.user) { // ensure that a user is logged in
-	Aberrations.remove(req.params.u_id, req.user._id)
+	Aberrations.remove(req.params.u_id, String(req.user._id))
 	    .then(function() {
 		res.send({ status: "Annotation deleted successfully!" });
 	    }).fail(function(err) {
