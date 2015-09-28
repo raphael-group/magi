@@ -1,7 +1,8 @@
 // Import required modules
-Database = require('./db_sql');
-Schemas = require('./annotations_schema');
-var sql = require("sql");
+var Database = require('./db_sql'),
+Schemas = require('./annotations_schema'),
+Annotations = require('./annotations'),
+ sql = require("sql");
 
 // ************************************
 // PPIs
@@ -48,7 +49,8 @@ exports.upsertPPI = function(data, callback) {
 	}
 	if (err) {
             console.log("Error upserting ppi annotation: " + err);
-	    console.log("Debug: full query:", query.string)
+	    console.log("Debug: full query:", query.toQuery().text)
+	    console.log("Debug: full query:", query.toQuery().values)
 	    callback(err, null)
 	}
     }
@@ -118,6 +120,7 @@ exports.loadFromFile = function(filename, source, callback){
 		    weight: fields[2] == '' ? 1 : fields[2],
 		    database: fields[3],
 		    pmid: _pmid,
+		    anno_source: source,
 		    user_id: Annotations.ADMIN_USER
 		});
 	    });

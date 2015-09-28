@@ -6,7 +6,7 @@
 // Validate args
 var argv = require('optimist').argv;
 if (!( argv.ppi_file)){
-    usage  = "Usage: node loadPPIAnnotations.js --ppi_file=</path/to/ppi/file>"
+    usage  = "Usage: node loadPPIAnnotations.js --ppi_file=</path/to/ppi/file> --source=<source>"
     console.log(usage);
     process.exit(1);
 }
@@ -20,7 +20,7 @@ var path  = require( 'path' ),
 pg.verify_connection()
     .then( function () {
 	ppis.loadFromFile( filepath, argv.source, function(err){
-	    if (err) throw new Error(err);	
+	    if (err) throw new Error(err);
 	})})
     .fail( function (err) {
 	console.log("Connection failed:", err);
