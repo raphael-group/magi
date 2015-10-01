@@ -102,7 +102,7 @@ block body
               - for (var i = 0; i < data.genes.length; i++)
                 li
                   | #{data.genes[i]}
-                  a(href="/annotations/gene/#{data.genes[i]}")
+                  a(href="#{ annotationsURL }/annotations/#{data.genes[i]}")
                     span(class="badge", style="font-size:80%") #{data.geneToAnnotationCount[data.genes[i]]}
 
       div(id="annotation" class="panel panel-default", style="padding:0px;")

@@ -1,5 +1,6 @@
 // Import required modules
 Database = require('./db_sql');
+DjangoDatabase = require('./db_django');
 Schemas = require('./annotations_schema');
 Annotations = require('./annotations');
 Utils = require('./util');
@@ -9,7 +10,7 @@ var sql = require("sql");
 // and the user provided sources for each
 exports.geneFind = function(query, dir, callback) {
     var abers = Schemas.aberrations,
-    sources = Schemas.aber_sources;
+    ref = Schemas.references;
 
     var selAnnosQuery;
     // todo: use mode aggregate function?
@@ -17,14 +18,14 @@ exports.geneFind = function(query, dir, callback) {
     if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
         selAnnosQuery = sources.from(abers.joinTo(sources)).where(query);
     } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
-	selAnnosQuery = abers.from(sources.joinTo(abers)).where(query);
+	     selAnnosQuery = ref.from(ref.join(abers).on(ref.mutation_id.equals(abers.id))).where(query);
     }
 
     // TODO: use annos.table.columns to automatically separate
-    Database.execute(selAnnosQuery, function(err, result) {
-	if (err) {
+    DjangoDatabase.execute(selAnnosQuery, function(err, result) {
+      if (err) {
             console.log("Error selecting gene annotations: " + err);
-	    console.log("Debug: full query:", selAnnosQuery)
+	    //:wconsole.log("Debug: full query:", selAnnosQuery)
 	    callback(err, null)
 	}
 
@@ -40,7 +41,6 @@ exports.geneFind = function(query, dir, callback) {
 	    var aberAnno={};
 	    aber_anno_columns.forEach(function(column) {
 		aberAnno[column] = sourceData[column];
-		delete sourceData[column];
 	    });
 
 	    if(aberAnno.u_id in refIdx) {
@@ -51,7 +51,7 @@ exports.geneFind = function(query, dir, callback) {
 		collatedResult.push(aberAnno);
 	    }
 	})
-	callback(null, collatedResult);
+	callback(null, {rows: result.rows, collatedResult: collatedResult});
     })
 }
 

@@ -42,9 +42,11 @@ exports.sampleView = function sampleView(req, res){
 			}
 			var sampleAnnotations = [];
 
-			Object.keys(dataset.sample_annotations[sample.name]).forEach(function(k){
-				sampleAnnotations.push({ property: k, value: dataset.sample_annotations[sample.name][k]});
-			});
+			if (dataset.sample_annotations && sample.name in dataset.sample_annotations){
+				Object.keys(dataset.sample_annotations[sample.name]).forEach(function(k){
+					sampleAnnotations.push({ property: k, value: dataset.sample_annotations[sample.name][k]});
+				});
+			}
 
 			Cancer.findById(dataset.cancer_id, function(err, cancer){
 				if (err){
@@ -66,8 +68,8 @@ exports.sampleView = function sampleView(req, res){
 				    console.error(err);
 				    fail = true;
 				    return;
-				} 
-				
+				}
+
 				var annotations = geneTable(mutGenes, userAnnos);
 
 				// Create a list of mutations including the annotations, separating
@@ -131,23 +133,26 @@ function endsWith(str, suffix) {
 }
 
 function geneTable(genes, support){
-	// Assemble the annotations into a dictionary index by 
+	// Assemble the annotations into a dictionary index by
 	// gene (e.g. TP53) and mutation class (e.g. missense or amp)
 	// and then protein change (only applicable for missense/nonsense)
 	// 1) Store the total number of references for the gene/class in "",
-	//    i.e. annotations['TP53'][''] gives the total for TP53 and 
+	//    i.e. annotations['TP53'][''] gives the total for TP53 and
 	//    annotations['TP53']['snv'][''] gives the total for TP53 SNVs.
 	// 2) Count the number per protein change.
 	var annotations = {};
 
 	genes.forEach(function(g){ annotations[g] = { "": [] }; });
 
-	support.forEach(function(A){
+	support.rows.forEach(function(A){
 		// We split SNVs into two subclasses: nonsense or missense.
 		// We also remove the "_mutation" suffix sometimes present in the
 		// mutation types
-		var mClass = A.mut_class.toLowerCase(),
-			mType = A.mut_type ? A.mut_type.toLowerCase().replace("_mutation", "") : "";
+		var mutMap = {MS: "missense", NS: "nonsense"};
+		var mClass = A.mutation_class.toLowerCase(),
+			mType = A.mutation_type in mutMap ?  mutMap[A.mutation_type] : A.mutation_type.toLowerCase(),
+			change = A.original_amino_acid + A.locus + A.new_amino_acid;
+
 		if (mClass == "snv" && (mType == "missense" || mType == "nonsense")){ mClass = mType; }
 		// Add the class if it hasn't been seen before
 		if (typeof(annotations[A.gene][mClass]) == 'undefined'){
@@ -157,18 +162,18 @@ function geneTable(genes, support){
 		// If we know the mutaton class, we might also want to add
 		// the protein sequence change
 		if (mClass == "snv" || mClass == "missense" || mClass == "nonsense"){
-			if (A.protein_seq_change){
-				A.protein_seq_change = A.protein_seq_change.replace("p.", "");
+			if (change){
+				A.protein_seq_change = change.replace("p.", "");
 				if (typeof(annotations[A.gene][mClass][A.protein_seq_change]) == 'undefined'){
 					annotations[A.gene][mClass][A.protein_seq_change] = [];
 				}
 
-			    annotations[A.gene][mClass][A.protein_seq_change].push({ pmid: A.reference, cancer: A.cancer });
+			    annotations[A.gene][mClass][A.protein_seq_change].push({ pmid: A.identifier, cancer: A.cancer });
 
 			}
 		}
-	    annotations[A.gene][mClass][""].push({ pmid: A.reference, cancer: A.cancer });
-	    annotations[A.gene][""].push({ pmid: A.reference, cancer: A.cancer });
+	    annotations[A.gene][mClass][""].push({ pmid: A.identifier, cancer: A.cancer });
+	    annotations[A.gene][""].push({ pmid: A.identifier, cancer: A.cancer });
 	});
 
 	// Combine references at the PMID level so that for each

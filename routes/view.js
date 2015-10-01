@@ -215,33 +215,11 @@ exports.view  = function view(req, res){
 
 						// Assemble the annotations
 						var annotations = {},
-						geneToAnnotationList = {};
-						genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
-						support.forEach(function(A, i){
-						    A.mut_class = A.mut_class.toUpperCase();
-						    if (!annotations[A.gene][A.mut_class]){
-							annotations[A.gene][A.mut_class] = {};
-						    }
-						    var ref = {
-							pmid: A.reference,
-							_id: A.u_id
-						    };
+								geneToAnnotationList = {},
+								geneToAnnotationCount = {};
 
-						    geneToAnnotationList[A.gene][A.reference] = true;
-						    var cancer = Utils.getMode(A.sourceAnnos.map(function (s) {return s.cancer}));
-						    if (cancer.mode in annotations[A.gene][A.mut_class]) {
-							annotations[A.gene][A.mut_class][cancer.mode].push(ref);
-						    } else {
-							annotations[A.gene][A.mut_class][cancer.mode] = [ref];
-						    }
-						});
-
-						// Count the number of PMIDs per gene
-
-						var geneToAnnotationCount = {};
-						genes.forEach(function(g){
-						    geneToAnnotationCount[g] = Object.keys(geneToAnnotationList[g]).length;
-						});
+						genes.forEach(function(g){ geneToAnnotationCount[g] = 0; geneToAnnotationList[g] = {};})
+						support.rows.forEach(function(A, i){ geneToAnnotationCount[A.gene] += 1; });
 
 						// Assemble data into single Object
 						var mutation_matrix = {

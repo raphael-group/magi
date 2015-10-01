@@ -1,5 +1,6 @@
 // Import required modules
 Database = require('./db_sql');
+DjangoDatabase = require('./db_django');
 var sql = require("sql");
 
 sql.setDialect('postgres')
@@ -11,46 +12,38 @@ annoTypeName = "anno_sub_type"
 
 // define tables here:
 annotations = sql.define({
-    name: 'annos',
+    name: 'annotations_annotation',
     columns: [
-	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
-	{name: 'u_id', dataType: 'serial', primaryKey: true},
-        {name: 'ref_source', 	dataType: 'varchar(20)', notNull: true},
- 	{name: 'reference',	dataType: 'varchar(45)', notNull: true},
-	{name: 'comment',       dataType: 'varchar(3000)'},
-	{name: 'type', dataType: annoTypeName, notNull: true}],
+	{name: 'user_id', dataType: 'integer', notNull: true},
+	{name: 'id', dataType: 'serial', primaryKey: true},
+	{name: 'comment',	dataType: 'varchar(300)',},
+  {name: 'heritable', dataType: 'varchar(8)'},
+  {name: 'reference_id',	dataType: 'integer', notNull: true},
+	{name: 'measurement_type', dataType: 'varchar(30)', notNull: true}],
 })
 
 // note: our current design allows duplicate aberrations b/c each aberration represents a source as well...
 aberrations = sql.define({
-    name: 'aberrations',
+    name: 'annotations_mutation',
     columns: [
-	{name: 'gene', 		dataType: 'varchar(15)', notNull: true},
-	{name: 'transcript',	dataType: 'varchar(20)'},
-	{name: 'mut_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
-	{name: 'mut_type',	dataType: 'varchar(35)'},
-        {name: 'protein_seq_change', dataType: 'varchar(30)'},
-	{name: 'u_id', dataType: 'serial', primaryKey: true},
-	{name: 'aber_user_id',       dataType: 'varchar(40)', notNull: true}]
+      {name: 'gene', 		dataType: 'varchar(30)', notNull: true},
+      {name: 'id', 		dataType: 'integer', notNull: true},
+      {name: 'mutation_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
+      {name: 'mutation_type',	dataType: 'varchar(35)'},
+      {name: 'locus', dataType: 'integer'},
+      {name: 'new_amino_acid', dataType: 'varchar(30)'},
+      {name: 'original_amino_acid', dataType: 'varchar(30)'}]
 });
 
-// note: this schema is not normalized
-// todo: pull out source/reference pairs, users into separate tables
-source_annos = sql.define({
-    name: 'aber_source_annos',
+references = sql.define({
+    name: 'annotations_reference',
     columns: [
-	{name: 'aber_id', dataType: 'integer', references: {table: aberrations.getName(), column: 'u_id', onDelete: 'cascade'}},
-	{name: 'cancer',        dataType: 'varchar(40)'},
-	{name: 'characterization', dataType: 'varchar(20)'},
-	{name: 'comment',	dataType: 'varchar(5000)',},
-	{name: 'is_germline',	dataType: 'boolean'},
-  	{name: 'measurement_type', 	dataType: 'varchar(30)'},
- 	{name: 'reference',	dataType: 'varchar(45)', notNull: true},
-        {name: 'source', 	dataType: 'varchar(20)', notNull: true},
-	{name: 'asa_u_id',       dataType: 'serial', primaryKey:true},
-	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
-    ]});
-// todo: maintain unique key constraint with the source?
+      {name: 'id', dataType: 'integer', notNull: true},
+      {name: 'identifier', dataType: 'varchar(30)', notNull: true},
+      {name: 'db', dataType: 'varchar(30)', notNull: true},
+      {name: 'source', dataType: 'varchar(30)', notNull: true},
+      {name: 'mutation_id', dataType: 'integer', notNull: true}]
+});
 
 interactions = sql.define({
     name: 'ppi_annos',
@@ -111,11 +104,10 @@ function initDatabase() {
 		console.log("Annotations: postgres init'ed", annotations.getName());
 		Database.execute(aberrations.create().ifNotExists(), function(err, result) {
 		    handle_err(aberrations, err)
-
 		    console.log("Annotations: postgres init'ed", aberrations.getName());
 
 		    // create subannotation and votes table
-		    subannos = [interactions, source_annos, votes]
+		    subannos = [interactions, votes]
 
 		    // key value constraint
 		    addTypeValueConstraintFn = function (table) {
@@ -144,9 +136,10 @@ function initDatabase() {
 // export table schemas
 exports.annotations = annotations
 exports.aberrations = aberrations
+exports.references = references
 exports.interactions = interactions
 exports.votes = votes
-exports.aber_sources = source_annos;
+// exports.aber_sources = references.joinTo(annotations).on(references.id.equals(annotations.reference_id));
 
 exports.normalizeAnnotation = function(anno) {
     // convert null votes to []
@@ -172,4 +165,24 @@ exports.parsePMID = function(pmid_field) {
 
 exports.getColumnNames = function(tableDef) {
     return tableDef.columns.map(function(c) {return c.name;});
+}
+
+// join a query with the list of all user_ids who have voted on a particular annotation
+exports.joinVoteListsToQuery = function(query) {
+    // Retrieve upvotes and downvotes for every annotation
+    upvotesQuery = "(SELECT anno_id, array_agg(voter_id) AS upvotes " +
+	" FROM votes WHERE direction =  1 group by anno_id) AS U";
+
+    downvotesQuery = " (SELECT anno_id, array_agg(voter_id) AS downvotes " +
+	" FROM votes WHERE direction = -1 group by anno_id) as D ";
+
+    selQuerySplit = query.toQuery().text.split("WHERE");
+
+    // Join the upvote/downvote table within the annotation selection
+    wholeQueryText = selQuerySplit[0] + " LEFT JOIN " +
+	upvotesQuery + " ON U.anno_id = annos.u_id LEFT JOIN " +
+	downvotesQuery + " ON D.anno_id = annos.u_id WHERE " +
+    selQuerySplit[1];
+
+    return wholeQueryText;
 }
