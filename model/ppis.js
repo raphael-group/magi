@@ -9,8 +9,8 @@ Annotations = require('./annotations'),
 // find all protein-protein interaction annotations given a structure with regexp
 // and the ids of users who have submitted upvotes/downvotes on each
 exports.ppiFind = function(query, dir, callback) {
-    ppis = Schemas.interactions
-    votes = Schemas.votes
+    var ppis = Schemas.interactions,
+        votes = Schemas.votes;
 
     // Selects the desired ppi annotations according to the given filter
     selAnnosQuery = ppis.where(query);
@@ -29,17 +29,19 @@ exports.ppiFind = function(query, dir, callback) {
 }
 
 exports.upsertPPI = function(data, callback) {
-  ppis = Schemas.interactions
-  annos = Schemas.annotations
+  var ppis = Schemas.interactions,
+      annos = Schemas.interaction_annotations;
 
   // insert into the annos
-  annoInsertQuery = annos.insert([{
-    user_id : data.user_id,
-    reference : data.pmid,
-    ref_source: data.anno_source,
-    comment : data.comment,
-    type : "ppi" }]).returning(annos.u_id)
+  console.log(data)
+  console.log('making query')
+  annoInsertQuery = annos.insert(
+    annos.user_id.value(data.user_id),
+    annos.reference.value(data.pmid),
+    annos.ref_source.value(data.anno_source),
+    annos.comment.value(data.comment)).returning(annos.u_id)
 
+  console.log('executing query')
   handleErr = function(err, subresult, query) {
     if (err == null && subresult.rows.length == 0) {
       err = Error("Did not return ppi annotation ID")
@@ -152,8 +154,9 @@ exports.ppilist = function (genes, callback){
 
 // A replacement function for getting comments
 exports.ppicomments = function ppicomments(ppis, user_id, callback){
-    annos = Schemas.annotations
-    votes = Schemas.votes
+    var annos = Schemas.interaction_annotations,
+        votes = Schemas.votes;
+
     // get all u_ids of the ppis
     uids = ppis.map(function(p) {return p.u_id;});
 

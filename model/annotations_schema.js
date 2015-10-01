@@ -45,6 +45,17 @@ references = sql.define({
       {name: 'mutation_id', dataType: 'integer', notNull: true}]
 });
 
+interaction_annotations = sql.define({
+    name: 'annos',
+    columns: [
+      {name: 'user_id',       dataType: 'varchar(40)', notNull: true},
+      {name: 'u_id', dataType: 'serial', primaryKey: true},
+      {name: 'ref_source', 	dataType: 'varchar(20)', notNull: true},
+      {name: 'reference',	dataType: 'varchar(45)', notNull: true},
+      {name: 'comment',       dataType: 'varchar(3000)'},
+      {name: 'type', dataType: annoTypeName, notNull: true}],
+})
+
 interactions = sql.define({
     name: 'ppi_annos',
     columns: [
@@ -107,7 +118,7 @@ function initDatabase() {
 		    console.log("Annotations: postgres init'ed", aberrations.getName());
 
 		    // create subannotation and votes table
-		    subannos = [interactions, votes]
+		    subannos = [interaction_annotations, interactions, votes]
 
 		    // key value constraint
 		    addTypeValueConstraintFn = function (table) {
