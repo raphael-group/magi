@@ -86,7 +86,6 @@ exports.upsertAber = function(data, callback){
 	handleErr(err, subresult, aberInsertQuery);
 	var aber_u_id = subresult.rows[0].u_id;
 	data.aber_id = aber_u_id;
-	console.log(data);
 	exports.upsertSourceAnno(data, callback);
     });
 }

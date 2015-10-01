@@ -5,7 +5,7 @@
 
 // Validate args
 var argv = require('optimist').argv;
-if (!( argv.ppi_file)){
+if (!(argv.ppi_file || argv.source)){
     usage  = "Usage: node loadPPIAnnotations.js --ppi_file=</path/to/ppi/file> --source=<source>"
     console.log(usage);
     process.exit(1);

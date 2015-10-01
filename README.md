@@ -56,10 +56,10 @@ MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Sa
         node loadCancers.js --cancers_file=../data/icgc-tcga-cancers.tsv
         node loadKnownGeneSets.js --gene_set_file=../data/pathways/kegg/kegg-pathways.tsv --dataset="KEGG"
         node loadKnownGeneSets.js --gene_set_file=../data/pathways/pindb/pindb-complexes.tsv --dataset="PINdb"
-        node loadPPIs.js --ppi_file=../data/ppis/hint-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/hprd-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/iref9-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/multinet.tsv
+        node loadPPIs.js --ppi_file=../data/ppis/hint-annotated.tsv --source=HINT
+        node loadPPIs.js --ppi_file=../data/ppis/hprd-annotated.tsv --source=HPRD
+        node loadPPIs.js --ppi_file=../data/ppis/iref9-annotated.tsv --source=IRef9
+        node loadPPIs.js --ppi_file=../data/ppis/multinet.tsv --source=MultiNet
         sh loadPublicDatasets.sh
         cd ../
 
