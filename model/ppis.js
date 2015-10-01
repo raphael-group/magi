@@ -33,15 +33,13 @@ exports.upsertPPI = function(data, callback) {
       annos = Schemas.interaction_annotations;
 
   // insert into the annos
-  console.log(data)
-  console.log('making query')
   annoInsertQuery = annos.insert(
     annos.user_id.value(data.user_id),
     annos.reference.value(data.pmid),
     annos.ref_source.value(data.anno_source),
-    annos.comment.value(data.comment)).returning(annos.u_id)
+    annos.comment.value(data.comment),
+    annos.type.value('ppi')).returning(annos.u_id)
 
-  console.log('executing query')
   handleErr = function(err, subresult, query) {
     if (err == null && subresult.rows.length == 0) {
       err = Error("Did not return ppi annotation ID")
@@ -127,7 +125,7 @@ exports.loadFromFile = function(filename, source, callback){
 	console.log( "Loading " + ppis.length + " ppi annotations from file..." )
 
 	// Save all the annotations
-	 return Q.allSettled( ppis.slice(0, 10).map(function(query){
+	 return Q.allSettled( ppis.map(function(query){
      var d = Q.defer();
      exports.upsertPPI(query, function(err, annotation){
        if (err) {

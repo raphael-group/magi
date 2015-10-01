@@ -150,6 +150,7 @@ exports.aberrations = aberrations
 exports.references = references
 exports.interactions = interactions
 exports.votes = votes
+exports.interaction_annotations = interaction_annotations;
 // exports.aber_sources = references.joinTo(annotations).on(references.id.equals(annotations.reference_id));
 
 exports.normalizeAnnotation = function(anno) {
