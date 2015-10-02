@@ -19,7 +19,6 @@ exports.geneFind = function(query, dir, callback) {
     } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
 	selAnnosQuery = abers.from(sources.joinTo(abers)).where(query);
     }
-
     // TODO: use annos.table.columns to automatically separate
     Database.execute(selAnnosQuery, function(err, result) {
 	if (err) {

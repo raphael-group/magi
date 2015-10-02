@@ -79,7 +79,7 @@ function initQueryWidget(data) {
         genes = 'genes=' + loadedGenes.join('%2C'),
         search = [genes, datasets];
 
-    return 'view?'+search.join('&');
+    return window.location.origin + '/view?'+search.join('&');
   }
 
   var queryBtn = d3.select('#magi-nav-queryBtn')
@@ -119,7 +119,7 @@ function initQueryWidget(data) {
 
       var hrefDatasets = 'datasets=' + datasets.join('%2C'),
           hrefGenes = 'genes=' + genes.join('%2C'),
-          search = 'view?'+[hrefGenes, hrefDatasets].join('&');
+          search = window.location.origin + '/view?'+[hrefGenes, hrefDatasets].join('&');
 
       thisEl.attr('title', title)
           .attr('href', search)
