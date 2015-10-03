@@ -158,7 +158,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
     // get all u_ids of the ppis
     uids = ppis.map(function(p) {return p.u_id;});
 
-    query = votes.select('*').where([ annos.id.in(uids), annos.user_id.equals(user_id) ])
+    query = votes.select('*').where([ annos.u_id.in(uids), annos.user_id.equals(user_id) ])
 
     Database.execute(query, function(err, result) {
       if (err) {
