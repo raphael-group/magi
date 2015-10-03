@@ -6,7 +6,7 @@ pg.settings = {
     host: process.env.POSTGRES_HOST || '127.0.0.1',
     port: process.env.POSTGRES_PORT || '5432',
     user: process.env.POSTGRES_USER || 'postgres',
-    pw: ''
+    pw: process.env.POSTGRES_PASSWORD ? ":" + process.env.POSTGRES_PASSWORD : ''
 }
 
 var conString = 'postgres://' + pg.settings.user + pg.settings.pw + '@' + pg.settings.host + ':' +
@@ -43,7 +43,7 @@ function executeAppend(query, suffix, cb){
     }
 }
 
-// a straight parametrized query that uses the client pool
+// a straight parametrized query that uses the client pool, given a string an an array of parameters
 function sql_query(text, values, cb){
     // gets a client from the client pool
     //console.log("plaintext query is: [", text, "]")
