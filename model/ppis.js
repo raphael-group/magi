@@ -17,7 +17,7 @@ exports.ppiFind = function(query, dir, callback) {
     console.log(selAnnosQuery.toQuery().text)
     console.log(selAnnosQuery.toQuery().values)
 
-    Database.sql_query(selAnnosQuery, selAnnosQuery.toQuery().values, function(err, result) {
+    Database.execute(selAnnosQuery, function(err, result) {
       if (err) {
         console.log("Error selecting ppi annotations: " + err);
         console.log("Debug: full query:", selAnnosQuery.string)
@@ -158,7 +158,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
     // get all u_ids of the ppis
     uids = ppis.map(function(p) {return p.u_id;});
 
-    query = votes.select('*').where([ annos.u_id.in(uids), annos.user_id.equals(user_id) ])
+    query = votes.select('*').where([ votes.anno_id.in(uids), votes.voter_id.equals(user_id) ])
 
     Database.execute(query, function(err, result) {
       if (err) {
