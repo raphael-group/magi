@@ -5,10 +5,11 @@ pg.settings = {
     dbname: process.env.POSTGRES_DJANGO_DBNAME || 'magipy',
     host: process.env.POSTGRES_DJANGO_HOST || '127.0.0.1',
     port: process.env.POSTGRES_DJANGO_PORT || '5432',
-    user: process.env.POSTGRES_DJANGO_USER || 'mdml'
+    user: process.env.POSTGRES_DJANGO_USER || 'postgres',
+    pw: process.env.POSTGRES_DJANGO_PASSWORD || ''
 }
 
-var conString = 'postgres://' + pg.settings.user + '@' + pg.settings.host + ':' +
+var conString = 'postgres://' + pg.settings.user + ':' + pg.settings.pw + '@' + pg.settings.host + ':' +
     pg.settings.port + '/' + pg.settings.dbname;
 
 console.log('Connecting to postgres at address', conString);
