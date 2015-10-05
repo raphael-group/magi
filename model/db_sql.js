@@ -43,7 +43,7 @@ function executeAppend(query, suffix, cb){
     }
 }
 
-// a straight parametrized query that uses the client pool
+// a straight parametrized query that uses the client pool, given a string an an array of parameters
 function sql_query(text, values, cb){
     // gets a client from the client pool
     //console.log("plaintext query is: [", text, "]")
