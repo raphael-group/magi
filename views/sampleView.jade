@@ -24,7 +24,7 @@ block body
 							- var locusBackground = m.locusReferences && m.locusReferences.refs && m.locusReferences.refs.length > 0 ? '#d9edf7' : '#ffffff'
 
 							mixin refPopover(gene, count)
-								a(href='#{ annotationsURL }/annotations/#{gene}', class='initialism badge')
+								a(href='/annotations/gene/#{gene}', class='initialism badge')
 									| #{count}
 
 							tr

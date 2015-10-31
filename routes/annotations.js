@@ -31,28 +31,11 @@ Cancer.find({}, function(err, cancers){
 // todo: add post route to add genes
 // Renders annotations for the given gene
 exports.gene = function gene(req, res){
-    console.log('/annotations/gene, gene =', req.params.gene);
-
-    // Parse params
-    var geneRequested = req.params.gene.toUpperCase() || ""
-
-    Aberrations.geneFind({gene: geneRequested}, 'right', function(err, result) {
-	// Throw error (if necessary)
-	if (err) throw new Error(err);
-
-	// calculate the mode of each aberration
-	result = Aberrations.collateSourceAnnos(result);
-	// Render the view
-	var pkg = {
-	    user: req.user,
-	    annotations: result,
-	    gene: geneRequested,
-	    abbrToCancer: abbrToCancer,
-	    cancerToAbbr: cancerToAbbr
-	};
-	res.render('annotations/gene', pkg);
-    });
-}
+	// redirect to the annotations site (todo: provide user session and backward reference)
+	var redirectURL = req.app.locals.annotationsURL + '/annotations/' + req.params.gene;
+    console.log('/annotations/gene, gene =', req.params.gene, ", redirecting to django app at ", redirectURL);
+	res.redirect(redirectURL);
+};
 
 exports.mutation = function mutation(req, res) {
     console.log('/annotation/mutation, id =', req.params.u_id)
