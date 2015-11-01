@@ -218,8 +218,28 @@ exports.view  = function view(req, res){
 								geneToAnnotationList = {},
 								geneToAnnotationCount = {};
 
-						genes.forEach(function(g){ geneToAnnotationCount[g] = 0; geneToAnnotationList[g] = {};})
-						support.rows.forEach(function(A, i){ geneToAnnotationCount[A.gene] += 1; });
+						genes.forEach(function(g){ 
+							annotations[g] = {};
+							geneToAnnotationCount[g] = 0; 
+							geneToAnnotationList[g] = {};
+						})
+						support.rows.forEach(function(A, i){
+
+							var ref = {
+								pmid: A.identifier,
+								_id: A.reference_id
+							};
+							geneToAnnotationList[A.gene][A.identifier] = true;
+
+							if (!annotations[A.gene][A.mutation_class]) {
+								annotations[A.gene][A.mutation_class] = {};
+							}
+							if (!annotations[A.gene][A.mutation_class][A.cancer_name]) {
+								annotations[A.gene][A.mutation_class][A.cancer_name] = [];
+							}
+							annotations[A.gene][A.mutation_class][A.cancer_name].push(ref); 
+							geneToAnnotationCount[A.gene] += 1; 
+						});
 
 						// Assemble data into single Object
 						var mutation_matrix = {

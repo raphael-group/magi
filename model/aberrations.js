@@ -10,6 +10,8 @@ var sql = require("sql");
 // and the user provided sources for each
 exports.geneFind = function(query, dir, callback) {
     var abers = Schemas.aberrations,
+	annos = Schemas.annotations,
+	cancers = Schemas.cancers,
     ref = Schemas.references;
 
     var selAnnosQuery;
@@ -18,14 +20,17 @@ exports.geneFind = function(query, dir, callback) {
     if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
         selAnnosQuery = sources.from(abers.joinTo(sources)).where(query);
     } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
-	     selAnnosQuery = ref.from(ref.join(abers).on(ref.mutation_id.equals(abers.id))).where(query);
+	     selAnnosQuery = ref.from(
+				ref.join(abers).on(ref.mutation_id.equals(abers.id))
+				   .join(annotations).on(ref.id.equals(annotations.reference_id))
+				   .join(cancers).on(cancers.id.equals(annotations.cancer_id))).where(query);
     }
 
     // TODO: use annos.table.columns to automatically separate
     DjangoDatabase.execute(selAnnosQuery, function(err, result) {
       if (err) {
             console.log("Error selecting gene annotations: " + err);
-	    //:wconsole.log("Debug: full query:", selAnnosQuery)
+	    //console.log("Debug: full query:", selAnnosQuery)
 	    callback(err, null)
 	}
 
@@ -38,6 +43,7 @@ exports.geneFind = function(query, dir, callback) {
 	aber_anno_columns.push('reference');
 	aber_anno_columns.push('source');
 	result.rows.forEach(function (sourceData) {
+		sourceData.cancer_name = sourceData.name; // explicity tag
 	    var aberAnno={};
 	    aber_anno_columns.forEach(function(column) {
 		aberAnno[column] = sourceData[column];

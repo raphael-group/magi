@@ -14,13 +14,16 @@ annoTypeName = "anno_sub_type"
 annotations = sql.define({
     name: 'annotations_annotation',
     columns: [
-	{name: 'user_id', dataType: 'integer', notNull: true},
 	{name: 'id', dataType: 'serial', primaryKey: true},
 	{name: 'comment',	dataType: 'varchar(300)',},
-  {name: 'heritable', dataType: 'varchar(8)'},
-  {name: 'reference_id',	dataType: 'integer', notNull: true},
-	{name: 'measurement_type', dataType: 'varchar(30)', notNull: true}],
+  	{name: 'heritable', dataType: 'varchar(8)'},
+	{name: 'measurement_type', dataType: 'varchar(30)', notNull: true},
+	{name: 'characterization', dataType: 'varchar(20)', notNull: true},
+	{name: 'reference_id',	dataType: 'integer', notNull: true},
+	{name: 'cancer_id', dataType: 'integer', notNull: true},
+	{name: 'user_id', dataType: 'integer', notNull: true}]
 })
+
 
 // note: our current design allows duplicate aberrations b/c each aberration represents a source as well...
 aberrations = sql.define({
@@ -33,6 +36,17 @@ aberrations = sql.define({
       {name: 'locus', dataType: 'integer'},
       {name: 'new_amino_acid', dataType: 'varchar(30)'},
       {name: 'original_amino_acid', dataType: 'varchar(30)'}]
+});
+
+cancers = sql.define({
+	name: 'annotations_cancer',
+	columns: [
+		{name: 'id', dataType: 'integer', notNull: true},
+		{name: 'name', dataType: 'varchar(100)', notNull: true},
+		{name: 'color', dataType: 'varchar(7)', notNull: true},
+		{name: 'abbr', dataType: 'varchar(10)', notNull: true}
+		// created on, last_edited
+	]
 });
 
 references = sql.define({
@@ -147,6 +161,7 @@ function initDatabase() {
 // export table schemas
 exports.annotations = annotations
 exports.aberrations = aberrations
+exports.cancers = cancers
 exports.references = references
 exports.interactions = interactions
 exports.votes = votes

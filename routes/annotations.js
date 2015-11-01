@@ -38,27 +38,9 @@ exports.gene = function gene(req, res){
 };
 
 exports.mutation = function mutation(req, res) {
-    console.log('/annotation/mutation, id =', req.params.u_id)
-    var anno_id = req.params.u_id;
-    Aberrations.geneFind({u_id: anno_id}, 'right', function(err, result) {
-	// Throw error (if necessary)
-	if (err) throw new Error(err);
-	else if (!result || result.length == 0) {
-	    res.render('annotations/mutation', {
-				error: 'No such annotation',
-				annotation_id: anno_id
-		});
-	    return;
-	}
-	var single_anno = result[0];
-	var pkg = {
-	    user: req.user,
-	    annotation: single_anno,
-	    abbrToCancer: abbrToCancer,
-	    cancerToAbbr: cancerToAbbr
-	};
-	res.render('annotations/mutation', pkg);
-    });
+	var redirectURL = req.app.locals.annotationsURL + '/annotations/details/' + req.params.u_id;    
+	console.log('/annotation/mutation, id =', req.params.u_id, ', redirecting to django app at ', redirectURL);
+	res.redirect(redirectURL);
 };
 
 exports.updateMutation = function updateMutation(req, res) {
