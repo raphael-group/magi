@@ -14,8 +14,6 @@ exports.ppiFind = function(query, dir, callback) {
 
     // Selects the desired ppi annotations according to the given filter
     selAnnosQuery = ppis.where(query);
-    console.log(selAnnosQuery.toQuery().text)
-    console.log(selAnnosQuery.toQuery().values)
 
     Database.execute(selAnnosQuery, function(err, result) {
       if (err) {
@@ -23,7 +21,6 @@ exports.ppiFind = function(query, dir, callback) {
         console.log("Debug: full query:", selAnnosQuery.string)
         callback(err, null)
       }
-      console.log(result.rows)
       callback(null, result.rows.map(Annotations.normalize))
     });
 }
