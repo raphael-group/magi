@@ -69,9 +69,7 @@ exports.sampleView = function sampleView(req, res){
 				    fail = true;
 				    return;
 				}
-
 				var annotations = geneTable(mutGenes, userAnnos);
-
 				// Create a list of mutations including the annotations, separating
 				// them into three groups: locus (most important), type (second most
 				// important), and gene (least important)
@@ -145,14 +143,16 @@ function geneTable(genes, support){
 	genes.forEach(function(g){ annotations[g] = { "": [] }; });
 
 	support.rows.forEach(function(A){
+	    A.cancer = A.abbr; // rename abbreviation to cancer
+//	    A.pmid = A.identifier; // rename identifier to pmid
 		// We split SNVs into two subclasses: nonsense or missense.
 		// We also remove the "_mutation" suffix sometimes present in the
 		// mutation types
 		var mutMap = {MS: "missense", NS: "nonsense"};
 		var mClass = A.mutation_class.toLowerCase(),
 			mType = A.mutation_type in mutMap ?  mutMap[A.mutation_type] : A.mutation_type.toLowerCase(),
-			change = A.original_amino_acid + A.locus + A.new_amino_acid;
-
+	                change = A.original_amino_acid + A.locus + A.new_amino_acid,
+                	    entry = { pmid: A.identifier, cancer: A.cancer };
 		if (mClass == "snv" && (mType == "missense" || mType == "nonsense")){ mClass = mType; }
 		// Add the class if it hasn't been seen before
 		if (typeof(annotations[A.gene][mClass]) == 'undefined'){
@@ -168,12 +168,12 @@ function geneTable(genes, support){
 					annotations[A.gene][mClass][A.protein_seq_change] = [];
 				}
 
-			    annotations[A.gene][mClass][A.protein_seq_change].push({ pmid: A.identifier, cancer: A.cancer });
+			    annotations[A.gene][mClass][A.protein_seq_change].push(entry);
 
 			}
 		}
-	    annotations[A.gene][mClass][""].push({ pmid: A.identifier, cancer: A.cancer });
-	    annotations[A.gene][""].push({ pmid: A.identifier, cancer: A.cancer });
+	    annotations[A.gene][mClass][""].push(entry);
+	    annotations[A.gene][""].push(entry);
 	});
 
 	// Combine references at the PMID level so that for each
@@ -181,6 +181,7 @@ function geneTable(genes, support){
 	// with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)
 	// level so we have a list of PMIDs that all map to the same cancer type(s)
 	function combineCancers(objects){
+
 		var objToIndex = [],
 			combinedCancer = [];
 
@@ -210,10 +211,8 @@ function geneTable(genes, support){
 			groups[k].forEach(function(d){ datum.pmids.push(d.pmid); });
 			return datum;
 		});
-
 		return {refs: combined, count: combinedCancer.length};
 	}
-
 	genes.forEach(function(g){
 		Object.keys(annotations[g]).forEach(function(ty){
 			if (ty == ""){
