@@ -8,10 +8,10 @@ sql.setDialect('postgres')
 exports.initDatabase = initDatabase
 
 // type to help link subtypes of annotations
-annoTypeName = "anno_sub_type"
+var annoTypeName = "anno_sub_type"
 
 // define tables here:
-annotations = sql.define({
+exports.annotations = annotations = sql.define({
     name: 'annotations_annotation',
     columns: [
 	{name: 'id', dataType: 'serial', primaryKey: true},
@@ -21,45 +21,53 @@ annotations = sql.define({
 	{name: 'characterization', dataType: 'varchar(20)', notNull: true},
 	{name: 'reference_id',	dataType: 'integer', notNull: true},
 	{name: 'cancer_id', dataType: 'integer', notNull: true},
-	{name: 'user_id', dataType: 'integer', notNull: true}]
+	{name: 'user_id', dataType: 'integer', notNull: true},
+	{name: 'last_edited', dataType: 'date'},
+	{name: 'created_on', dataType: 'date'}]
 })
 
 
 // note: our current design allows duplicate aberrations b/c each aberration represents a source as well...
-aberrations = sql.define({
+exports.aberrations = aberrations = sql.define({
     name: 'annotations_mutation',
     columns: [
       {name: 'gene', 		dataType: 'varchar(30)', notNull: true},
-      {name: 'id', 		dataType: 'integer', notNull: true},
-      {name: 'mutation_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
+	{name: 'id', 		dataType: 'serial', notNull: true},
+	{name: 'mutation_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
       {name: 'mutation_type',	dataType: 'varchar(35)'},
       {name: 'locus', dataType: 'integer'},
       {name: 'new_amino_acid', dataType: 'varchar(30)'},
-      {name: 'original_amino_acid', dataType: 'varchar(30)'}]
+	{name: 'original_amino_acid', dataType: 'varchar(30)'},
+	{name: 'last_edited', dataType: 'date'},
+	{name: 'created_on', dataType: 'date'}
+    ]
 });
 
-cancers = sql.define({
+exports.cancers = cancers = sql.define({
 	name: 'annotations_cancer',
 	columns: [
-		{name: 'id', dataType: 'integer', notNull: true},
-		{name: 'name', dataType: 'varchar(100)', notNull: true},
-		{name: 'color', dataType: 'varchar(7)', notNull: true},
-		{name: 'abbr', dataType: 'varchar(10)', notNull: true}
-		// created on, last_edited
+	    {name: 'id', dataType: 'integer', notNull: true},
+	    {name: 'name', dataType: 'varchar(100)', notNull: true},
+	    {name: 'color', dataType: 'varchar(7)', notNull: true},
+	    {name: 'abbr', dataType: 'varchar(10)', notNull: true},
+	    {name: 'last_edited', dataType: 'date'},
+	    {name: 'created_on', dataType: 'date'}
 	]
 });
 
-references = sql.define({
+exports.references = references = sql.define({
     name: 'annotations_reference',
     columns: [
       {name: 'id', dataType: 'integer', notNull: true},
       {name: 'identifier', dataType: 'varchar(30)', notNull: true},
       {name: 'db', dataType: 'varchar(30)', notNull: true},
       {name: 'source', dataType: 'varchar(30)', notNull: true},
-      {name: 'mutation_id', dataType: 'integer', notNull: true}]
+	{name: 'mutation_id', dataType: 'integer', notNull: true},
+	{name: 'last_edited', dataType: 'date'},
+	{name: 'created_on', dataType: 'date'}]
 });
 
-interaction_annotations = sql.define({
+exports.interaction_annotations = interaction_annotations = sql.define({
     name: 'annos',
     columns: [
       {name: 'user_id',       dataType: 'varchar(40)', notNull: true},
@@ -70,7 +78,7 @@ interaction_annotations = sql.define({
       {name: 'type', dataType: annoTypeName, notNull: true}],
 })
 
-interactions = sql.define({
+exports.interactions = interactions = sql.define({
     name: 'ppi_annos',
     columns: [
 	{name: 'source',	dataType: 'varchar(15)', notNull: true},
@@ -84,7 +92,7 @@ interactions = sql.define({
 	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}}]
 })
 
-votes = sql.define({
+exports.votes = votes = sql.define({
     name: 'votes',
     columns: [
 	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}},
@@ -93,6 +101,23 @@ votes = sql.define({
 	// integrity check: only one vote at a time
 	{name: 'direction', dataType: 'smallint', notNull: true},
 	{name: 'comment', dataType: 'varchar(3000)'}]
+})
+
+exports.users = users = sql.define({
+    name: 'auth_user',
+    columns: [
+	{name: 'id', dataType: 'serial', primaryKey: true},
+	{name: 'password',	dataType: 'varchar(128)', notNull: true},
+	{name: 'last_login', dataType: 'timestamp'},
+	{name: 'username', dataType: 'varchar(30)', notNull: true},
+	{name: 'first_name', dataType: 'varchar(30)', notNull: true},
+	{name: 'last_name', dataType: 'varchar(30)', notNull: true},
+	{name: 'email', dataType: 'varchar(254)', notNull: true},
+	{name: 'is_staff', dataType: 'boolean', notNull: true},
+	{name: 'is_superuser', dataType: 'boolean', notNull: true},
+	{name: 'is_active', dataType: 'boolean', notNull: true},
+	{name: 'date_joined', dataType: 'timesamp', notNull: true}
+    ]	
 })
 
 function initDatabase() {
@@ -159,14 +184,9 @@ function initDatabase() {
 }
 
 // export table schemas
-exports.annotations = annotations
-exports.aberrations = aberrations
-exports.cancers = cancers
-exports.references = references
-exports.interactions = interactions
-exports.votes = votes
-exports.interaction_annotations = interaction_annotations;
-// exports.aber_sources = references.joinTo(annotations).on(references.id.equals(annotations.reference_id));
+
+// a "view" on aberration sources
+//exports.aber_sources_view = references.joinTo(annotations).on(references.id.equals(annotations.reference_id));
 
 exports.normalizeAnnotation = function(anno) {
     // convert null votes to []

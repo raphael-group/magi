@@ -76,11 +76,10 @@ exports.saveMutation = function saveMutation(req, res) {
 	// prefer abbreviation to full name given by form
 	if (req.body.cancer && req.body.cancer != "undefined" &&
 	    req.body.cancer.toLowerCase() in cancerToAbbr) {
-	    req.body.cancer = cancerToAbbr[req.body.cancer.toLowerCase()];
+	    req.body.cancer = {"abbr": cancerToAbbr[req.body.cancer.toLowerCase()]};
+	} else {
+	    req.body.cancer = {"name": req.body.cancer}; // not sure if this works
 	}
-
-	// more direct?
-//	query = req.body;
 
 	var query = {
 	    gene: req.body.gene,
@@ -92,7 +91,7 @@ exports.saveMutation = function saveMutation(req, res) {
 	    domain: req.body.domain, // not used: which field should this go in?
 	    reference: req.body.pmid,
 	    comment: req.body.comment,
-	    user_id: req.user._id + "",
+	    user: req.user,
 	    source: "Community"
 	};
 
@@ -103,7 +102,7 @@ exports.saveMutation = function saveMutation(req, res) {
 		// todo: handle error: interpret or pass up if critical (no database, no table)
 		throw new Error(err);
 	    }
-	    res.send({ status: "Annotation saved successfully!", annotation: { _id: annotation.u_id } });
+	    res.send({ status: "Annotation saved successfully!", annotation: { _id: annotation.id } });
 	});
     }
     else{

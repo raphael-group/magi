@@ -63,6 +63,7 @@ exports.geneFind = function(query, dir, callback) {
 
 // upsert an aberration annotation into SQL
 exports.upsertAber = function(data, callback){
+    // TODO: rewrite me and upsertSourceAnno
     var abers = Schemas.aberrations;
 
     handleErr = function(err, subresult, query) {
@@ -71,65 +72,184 @@ exports.upsertAber = function(data, callback){
 	}
 	if (err) {
             console.log("Error upserting gene annotation: " + err);
-	    console.log("Debug: full query:", query.string)
+	    console.log("Debug: full query:", query.toString());
 	    callback(err, null)
 	}
     }
 
-    // todo: test update case
-    // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
-    // TODO: may insert duplicates, fix this if we want something more interesting with genes
+    // TODO: we may insert duplicate mutations, fix this if we want something more interesting with genes
 
+    var now = new Date().toString().substring(0,15);
+    // parse the protein sequence change
+    var acids = data.protein_seq_change.split(/\d+/), locus = 0; 
+    if (acids[0].length < data.protein_seq_change.length)
+	locus = parseInt(data.protein_seq_change.substr(acids[0].length));
+    if (acids.length == 1)
+	acids[1] = '?';
+    
     var aberInsertQuery = abers.insert(
 	abers.gene.value(data.gene),
-	abers.transcript.value(data.transcript),
-	abers.mut_class.value(data.mut_class),
-	abers.mut_type.value(data.mut_type),
-	abers.protein_seq_change.value(data.protein_seq_change),
-	abers.aber_user_id.value(data.user_id)).returning(abers.u_id);
+	abers.mutation_class.value(data.mut_class),
+	abers.mutation_type.value(data.mut_type),
+	abers.locus.value(locus),
+	abers.original_amino_acid.value(acids[0]),
+	abers.new_amino_acid.value(acids[1]),
+	abers.last_edited.value(now),
+	abers.created_on.value(now)).returning(abers.id);
 
-    Database.execute(aberInsertQuery, function(err, subresult) {
-	handleErr(err, subresult, aberInsertQuery);
-	var aber_u_id = subresult.rows[0].u_id;
-	data.aber_id = aber_u_id;
-	console.log(data);
-	exports.upsertSourceAnno(data, callback);
-    });
+	DjangoDatabase.execute(aberInsertQuery, function(err, subresult) {
+	    handleErr(err, subresult, aberInsertQuery);
+	    var aber_u_id = subresult.rows[0].id;
+	    data.aber_id = aber_u_id;
+	    exports.upsertSourceAnno(data, callback);
+	});
 }
 
-// note: requires an aber_id field to identify which aberration this source attaches to
-exports.upsertSourceAnno = function(data, callback) {
-    var sources = Schemas.aber_sources;
+// callback supplies user data
+function getUserInfo(user, callback) {
 
-    // only column in the definition of the source should survive
-    var keys = Object.keys(data);
-    var columns = Schemas.getColumnNames(sources);
-    keys.forEach(function(key) {if (!columns.some(function (c) {return key == c;})) delete data[key];});
-    // check if a record exists
-    var updateQuery = sources.update(data).
-	where(sources.aber_id.equals(data.aber_id),
-	      sources.user_id.equals(data.user_id)).
-	returning(sources.asa_u_id);
-    Database.execute(updateQuery, function(err, result) {
+    DjangoDatabase.execute(
+	Schemas.users.where({'email': user.email}),
+	function (err, user_subresult) {
+	    if(err) 
+		callback(err, null);
+	    else if (user_subresult.rows.length == 1) 
+		callback(null, user_subresult.rows[0]);
+	    else if (user_subresult.rows.length == 0) {
+		first_last_names = user.name.split(" ");
+		if (first_last_names.length == 1) 
+		    first_last_names[1] = '';
+
+		// todo: pass up error with error requesting login 
+		DjangoDatabase.execute(
+		    Schemas.users.insert({'first_name': first_last_names[0],
+				  'last_name': first_last_names[1],
+				  'email': user.email,
+				  'username': user.email.split('@')[0],
+				  'is_staff': false,
+				  'is_superuser': false,
+				  'is_active': false,
+				  'date_joined': getTime("day"),
+				  'password': 'deadbeef'}).returning('*'),
+		    function(err, result) {
+			if(err) 
+			    callback(err, null);
+			else {
+			    callback(null, result.rows[0]);
+			}
+		    });
+		} else // multiple users?
+		    callback(new error("error: Multiple users with same email " + user.email), 
+			     null);
+	});
+}
+
+// callback supplies user data
+function getCancerInfo(cancer_data, callback) {
+    DjangoDatabase.execute(
+	Schemas.cancers.where(cancer_data),
+	function (err, user_subresult) {
+	    if(err) 
+		callback(err, null);
+	    else if (user_subresult.rows.length == 1) 
+		callback(null, user_subresult.rows[0]);
+	    else if (user_subresult.rows.length == 0) {
+		callback(new error("error: No cancers with same data " + cancer_data), null);
+	    } else // multiple users?
+		callback(new error("error: Multiple cancers with same data " + cancer_data), 
+			 null);
+	});
+}
+
+function getTime(format) {
+    if (format == "day") {
+	return new Date().toString().substring(0,15);	
+    } else if (format == "full") {
+	return new Date().toString().substring(0,-7);;
+    } else {
+	return new Date().toString();
+    }
+}
+	
+// note: data requires an aber_id field to identify which aberration this source attaches to
+exports.upsertSourceAnno = function(data, callback) {
+    var annotatiohs = Schemas.annotations,
+    references = Schemas.references,
+    users = Schemas.users;;
+
+    // check if a reference exists with that exact annotation
+    var checkForExistenceQuery = references.
+	where(references.identifier.equals(data.reference),
+	      references.db.equals(data.domain),
+	      references.mutation_id.equals(data.aber_id));
+
+    DjangoDatabase.execute(checkForExistenceQuery, function(err, result) {
 	if (err) {
-            console.log("Error upserting source annotation: " + err);
-	    console.log("Debug: full query:", updateQuery.toQuery().text);
+            console.log("Error upserting source annotation: " + err.error);
+	    console.log("Debug: full query:", checkForExistenceQuery.toQuery().text);
 	    callback(err, null);
 	}
+	var now = getTime("day");
+	var reference_id,
+	writeAnnotation = function(reference_id, data) {
+	    getUserInfo(data.user, function(err, user_data) {
+		if (err) {
+		    console.log("error calling getUserInfo", err);
+		    callback(err, null);
+		} else {
+		    getCancerInfo(data.cancer, function(err, cancer_data) {
+			if (err) {
+			    console.log("error calling getCancerInfo", err);
+			    callback(err, null);
+			} else {
+			    var writeAnnoQuery = annotations.insert(
+				annotations.comment.value(data.comment),
+				annotations.cancer_id.value(cancer_data.id), // dummy for now, get cancer table later
+				annotations.heritable.value(''), 
+				annotations.characterization.value(''),
+				annotations.measurement_type.value(''),
+				annotations.reference_id.value(reference_id),
+				annotations.last_edited.value(now),
+				annotations.created_on.value(now),
+				annotations.user_id.value(user_data.id)).returning('*'); 
+			    DjangoDatabase.execute(writeAnnoQuery, function (err, result) {
+				if (err) {
+				    console.log("Error upserting source annotation: " + err);
+				    console.log("Debug: full query:", writeAnnoQuery.toQuery().text);
+				    callback(err, null);
+				}
+				callback(null, result.rows[0]); // return	    
+			    });
+			}
+		    });
+		}
+	    });
+	};
+				  
+				  
 	if (result && result.rows.length > 0) {
-	    callback(null, result.rows[0]); // return
+	    reference_id = result.rows.id;
+	    writeAnnotation(reference_id, data);
 	} else {
-	    var sourceInsertQuery = sources.insert(data).returning(sources.asa_u_id);
-	    Database.execute(sourceInsertQuery, function (err, result) {
+	    var referenceInsertQuery = references.insert(
+		references.identifier.value(data.reference),
+		references.db.value(data.domain),
+		references.source.value(data.source),
+		references.mutation_id.value(data.aber_id),
+		references.last_edited.value(now),
+		references.created_on.value(now))
+		.returning(references.id);
+	    DjangoDatabase.execute(referenceInsertQuery, function (err, result) {
 		if (err == null && (!result || result.rows.length == 0)) {
 		    err = Error("Did not return annotation ID")
 		}
 		if (err) {
 		    console.log("Error upserting source annotation: " + err);
-		    console.log("Debug: full query:", sourceInsertQuery.toQuery().text);
+		    console.log("Debug: full query:", referenceInsertQuery.toQuery().text);
 		    callback(err, null)
 		}
-		callback(null, result.rows[0]); // return
+		writeAnnotation(result.rows[0].id, data);
+
 	    });
 	}
     });

@@ -12,7 +12,7 @@ pg.settings = {
 var conString = 'postgres://' + pg.settings.user + ':' + pg.settings.pw + '@' + pg.settings.host + ':' +
     pg.settings.port + '/' + pg.settings.dbname;
 
-console.log('Connecting to postgres at address', conString);
+console.log('Connecting to django postgres at address', conString);
 
 exports.execute = execute
 exports.executeAppend = executeAppend
