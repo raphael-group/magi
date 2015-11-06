@@ -10,15 +10,18 @@ Annotations = require('./annotations'),
 // and the ids of users who have submitted upvotes/downvotes on each
 exports.ppiFind = function(query, dir, callback) {
     var ppis = Schemas.interactions,
-        votes = Schemas.votes;
+    annos = Schemas.interaction_annotations;
 
     // Selects the desired ppi annotations according to the given filter
-    selAnnosQuery = ppis.where(query);
+    var selPpisQuery = 
+	ppis.from(ppis.join(annos).on(annos.u_id.equals(ppis.anno_id)))
+	.where(query);
 
-    Database.execute(selAnnosQuery, function(err, result) {
+    var selQueryText = Annotations.joinVoteListsToQuery(ppis, selPpisQuery);
+    Database.sql_query(selQueryText, selPpisQuery.toQuery().values, function(err, result) {
       if (err) {
         console.log("Error selecting ppi annotations: " + err);
-        console.log("Debug: full query:", selAnnosQuery.string)
+        console.log("Debug: full query:", selPpisQuery.string)
         callback(err, null)
       }
       callback(null, result.rows.map(Annotations.normalize))
@@ -49,7 +52,6 @@ exports.upsertPPI = function(data, callback) {
     }
   }
 
-//    console.log("Submitting upsert query: ", annoInsertQuery.toQuery().text)
 
     // todo: test update case
     // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
