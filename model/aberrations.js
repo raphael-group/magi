@@ -71,9 +71,9 @@ exports.upsertAber = function(data, callback){
 	    err = Error("Did not return annotation ID")
 	}
 	if (err) {
-            console.log("Error upserting gene annotation: " + err);
-	    console.log("Debug: full query:", query.toString());
-	    callback(err, null)
+            console.log("Error upserting gene aberration: " + err);
+	    callback(err, null);
+	    return
 	}
     }
 
