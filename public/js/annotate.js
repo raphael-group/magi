@@ -256,8 +256,8 @@ function initializeAnnotations(){
 
 			success: function(response) {
 				if(response.error) {
-					annotationStatus('Oops, something bad happened.', warningClasses);
-					return;
+				    annotationStatus('Oops: ' + response.error, warningClasses);
+				    return;
 				}
 
 				// Log the status

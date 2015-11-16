@@ -47,7 +47,6 @@ exports.updateMutation = function updateMutation(req, res) {
     console.log('update /annotation/mutation, id =', req.params.u_id)
     var anno_id = req.params.u_id;
     if (req.user && req.body) {
-	console.log("adding: ", req.body);
 	Aberrations.update(req.body, function(err, result) {
 	    // Throw error (if necessary)
 	    if (err) {
@@ -97,12 +96,13 @@ exports.saveMutation = function saveMutation(req, res) {
 
 	// TODO: test behavior on attempting to upsert identical annotation?
 	Aberrations.upsertAber(query, function(err, annotation){
+//	    console.log("returning:", err, annotation);
 	    if (err) {
 		res.send({ error: "Annotation could not be parsed. " + err });
 		// todo: handle error: interpret or pass up if critical (no database, no table)
-		throw new Error(err);
-	    }
-	    res.send({ status: "Annotation saved successfully!", annotation: { _id: annotation.id } });
+//		throw new Error(err);
+	    } else 
+		res.send({ status: "Annotation saved successfully!", annotation: { _id: annotation.id } });
 	});
     }
     else{
@@ -115,7 +115,6 @@ exports.saveMutation = function saveMutation(req, res) {
 exports.removeSourceAnno = function removeSourceAnno(req, res) {
     console.log("/annotation/mutation/" + req.params.aber_id + "/source/" + req.params.source_id)
     if (req.user) { // ensure that a user is logged in
-	console.log("user logged in");
 	Aberrations.deleteSourceAnno({'aber_id': req.params.aber_id,
 				      'asa_u_id': req.params.source_id})
 	    .then(function() {
@@ -169,8 +168,8 @@ exports.mutationVote = function mutationVote(req, res){
     if (req.isAuthenticated()){
 	if (!req.body){
 	    res.send({error: 'Empty vote body.'})
-	    return;
-	}
+	    return
+	} 
 
 	var data = req.body;
 	data.user_id = String(req.user._id);

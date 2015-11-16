@@ -80,12 +80,17 @@ exports.upsertAber = function(data, callback){
     // TODO: we may insert duplicate mutations, fix this if we want something more interesting with genes
 
     var now = new Date().toString().substring(0,15);
+    var acids=['?','?'], locus;
     // parse the protein sequence change
-    var acids = data.protein_seq_change.split(/\d+/), locus = 0; 
-    if (acids[0].length < data.protein_seq_change.length)
-	locus = parseInt(data.protein_seq_change.substr(acids[0].length));
-    if (acids.length == 1)
-	acids[1] = '?';
+    if (data.protein_seq_change) {
+	acids = data.protein_seq_change.split(/\d+/);
+	locus = 0; 	
+	if (acids[0].length < data.protein_seq_change.length)
+	    locus = parseInt(data.protein_seq_change.substr(acids[0].length));
+	if (acids.length == 1)
+	    acids[1] = '?';
+    }
+
     
     var aberInsertQuery = abers.insert(
 	abers.gene.value(data.gene),
@@ -99,9 +104,11 @@ exports.upsertAber = function(data, callback){
 
 	DjangoDatabase.execute(aberInsertQuery, function(err, subresult) {
 	    handleErr(err, subresult, aberInsertQuery);
-	    var aber_u_id = subresult.rows[0].id;
-	    data.aber_id = aber_u_id;
-	    exports.upsertSourceAnno(data, callback);
+	    if (!err) {
+		var aber_u_id = subresult.rows[0].id;
+		data.aber_id = aber_u_id;
+		exports.upsertSourceAnno(data, callback);
+	    }
 	});
 }
 
@@ -139,24 +146,27 @@ function getUserInfo(user, callback) {
 			}
 		    });
 		} else // multiple users?
-		    callback(new error("error: Multiple users with same email " + user.email), 
+		    callback(Error("Multiple users with same email " + user.email), 
 			     null);
 	});
 }
 
 // callback supplies user data
 function getCancerInfo(cancer_data, callback) {
+    
     DjangoDatabase.execute(
 	Schemas.cancers.where(cancer_data),
 	function (err, user_subresult) {
+	    
 	    if(err) 
 		callback(err, null);
 	    else if (user_subresult.rows.length == 1) 
 		callback(null, user_subresult.rows[0]);
 	    else if (user_subresult.rows.length == 0) {
-		callback(new error("error: No cancers with same data " + cancer_data), null);
+		var data_key = Object.keys(cancer_data)[0];
+		callback(Error("No cancer found with key, value (" + data_key + ", " + cancer_data[data_key] + ")"), null);
 	    } else // multiple users?
-		callback(new error("error: Multiple cancers with same data " + cancer_data), 
+		callback(Error("Multiple cancers identified with data given"), 
 			 null);
 	});
 }
@@ -172,7 +182,7 @@ function getTime(format) {
 }
 	
 // note: data requires an aber_id field to identify which aberration this source attaches to
-exports.upsertSourceAnno = function(data, callback) {
+exports.upsertSourceAnno = function upsertSourceAnno(data, callback) {
     var annotatiohs = Schemas.annotations,
     references = Schemas.references,
     users = Schemas.users;;
@@ -217,8 +227,11 @@ exports.upsertSourceAnno = function(data, callback) {
 				    console.log("Error upserting source annotation: " + err);
 				    console.log("Debug: full query:", writeAnnoQuery.toQuery().text);
 				    callback(err, null);
+				} else {
+				    var anno = result.rows[0];
+				    anno.id = anno.pk;
+				    callback(null, anno); // return
 				}
-				callback(null, result.rows[0]); // return	    
 			    });
 			}
 		    });
@@ -373,7 +386,7 @@ exports.loadFromFile = function(filename, source, callback){
 		user_id: Annotations.ADMIN_USER
 	    };
 	    exports.upsertAber(query, function(err, annotation){
-		if (err) throw new Error(err);
+		if (err) throw Error(err);
 		d.resolve();
 	    })
 	    return d.promise;

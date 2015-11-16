@@ -298,8 +298,15 @@ function view(){
 							// only show the cancer name in the first row
 						    if (refsUsed.indexOf(ref.pmid) == -1) {
 							refsUsed.push(ref.pmid);
+							var cancerDisplayName = "";
+							if (i == 0) {
+							    cancerDisplayName = cancerToName(cancer);
+							    if (cancerDisplayName == "NULL") {
+								cancerDisplayName = "Unknown"
+							    }
+							}
 							refTable.push([
-								{ type: 'text', text: i ? "" : cancerToName(cancer) },
+							    { type: 'text', text: cancerDisplayName },
 								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
 							        { type: 'link', body: 'Edit', href: "/annotation/mutation/" + ref._id}
 							].map(gd3.tooltip.datum));
@@ -310,7 +317,8 @@ function view(){
 					// The table is hidden on default, so we show a string describing the
 					// table before showing it.
 					var knownAberrations = cancerNames.map(cancerToName).join(", ");
-					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + ' in ' + knownAberrations});
+				    var inKnownCancers = knownAberrations != 'NULL' ? (' in ' + knownAberrations) :'';
+					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + inKnownCancers});
 					tooltipData.push({type: 'table', table: refTable, defaultHidden: true});
 				}
 			}
