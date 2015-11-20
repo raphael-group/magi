@@ -24,6 +24,7 @@ var app = module.exports = express();
 // Use moment for keeping track of times
 app.locals.moment = require('moment');
 app.locals.annotationsURL = process.env.DJANGO_ANNOTATIONS_URL || 'http://cbio-test.cs.brown.edu/'
+app.locals.annotationsHost = app.locals.annotationsURL.replace('http://','')
 app.locals.production = app.get('env') === 'production';
 app.set('port', process.env.PORT || 8000);
 
@@ -182,6 +183,7 @@ app.get('/manifests', routes.datasets.manifests);
 app.get('/annotations/gene/:gene', routes.annotations.gene);
 //app.get('/annotations/cancer/:cancer', routes.annotations. cancer);
 
+app.get('/annotation/mutation/create', routes.annotations.createMutationRef);
 app.get('/annotation/mutation/:u_id', routes.annotations.mutation);
 app.put('/annotation/mutation/:u_id', routes.annotations.updateMutation);
 app.post('/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation);

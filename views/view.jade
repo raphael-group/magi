@@ -105,57 +105,31 @@ block body
                   a(href="/annotations/gene/#{data.genes[i]}")
                     span(class="badge", style="font-size:80%") #{data.geneToAnnotationCount[data.genes[i]]}
 
-      div(id="annotation" class="panel panel-default", style="padding:0px;")
+      div(id="annotateMutation" class="panel panel-default", style="padding:0px;")
         div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotateLink")
-            | Annotate
+          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotateMutationLink")
+            | Annotate mutations
             span(style="float:right") [+]
 
-        div(id="collapseAnnotation", class="panel-collapse collapse in")
+        div(id="collapseMutationAnnotation", class="panel-collapse collapse in")
+          div(class="panel-body", style="padding:5px;font-size:90%")
+            | Add references and annotations on mutations 
+            a(href="/annotation/mutation/create", target="_blank") here
+            |  or by clicking mutations within the transcript view.
+
+      div(id="annotateInteraction" class="panel panel-default", style="padding:0px;")
+        div(class="panel-heading", style="padding:5px")
+          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotateInteractionLink")
+            | Annotate interactions
+            span(style="float:right") [+]
+
+        div(id="collapseInteractionAnnotation", class="panel-collapse collapse in")
           div(class="panel-body", style="padding:5px;font-size:90%")
             - if (user)
-              | Enter your own annotations.
-              br
-              a(href="#", onclick="toggleForm('mutation')" id="show-mutation-form", style="font-weight:bold;text-decoration:underline") Mutations
-              | &nbsp;|&nbsp;
-              a(href="#", onclick="toggleForm('interaction')" id="show-interaction-form") Interactions
+              | Enter your own interactions and annotations.
               br
               form(method="post", role="form", id="annotations")
-                //- Inputs for the mutation annotation form
-                div(id="mutations")
-                  select(class="form-control", id="gene")
-                  br
-                  select(class="form-control", id="aberration")
-                    option(value="") -- choose aberration type --
-                    option(value="amp") is amplified in
-                    option(value="del") is deleted in
-                    option(value="snv") is mutated in
-                    option(value="expression") is expressed (over/under) in
-                    option(value="methylation") is methylated (hypo/hyper) in
-                  br
-                  label Cancer
-                  input(class="typeahead form-control", id="cancer-typeahead", type="text", placeholder="Cancer")
-                  label PMID
-                  input(class="form-control", id="mutation-pmid", placeholder="PMID", maxlength="8")
-                  //- Optional cancer fields
-                  label(class="toggle")
-                    | Mutation type
-                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#mut_ty').hide()")
-                  input(class="form-control toggle", id="mut_ty", placeholder="Mutation type")
-                  label(class="toggle")
-                    | Protein Sequence Change
-                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#locus').hide()")
-                  input(class="form-control toggle", id="locus", placeholder="Mutation (e.g. V600E).")
-                  label(class="toggle")
-                    | Domain
-                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('input#domain').hide()")
-                  input(class="form-control toggle", id="domain", placeholder="Domain name")
-                  label(class="toggle")
-                    | Comments
-                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('textarea#mutation-comment').hide()")
-                  textarea(class="form-control toggle", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
-                //- Interaction annotation form
-                div(id="interactions", style="display:none")
+                div(id="interactions")
                   select(class="form-control", id="protein1")
                   b(class="toggle") interacts with
                   select(class="toggle form-control", id="protein2")
@@ -169,14 +143,13 @@ block body
                 input(type="hidden", value="mutation", id="antype")
                 button(type="submit", id="submit", class="btn btn-default") Submit
                 br
-                br
-                div(id="annotationStatus")
+              div(id="annotationStatus")
               br
               a(href="#", id="reset-annotation", onclick="resetAnnotations();return false;")
                 span(class="glyphicon glyphicon-trash", style="cursor:pointer")
                 | &nbsp;Reset.
             - else
-              | You must <a href="/auth/google/returnTo">Login</a> to be able to add annotations.
+              | You must <a href="/auth/google/returnTo">Login</a> to be able to add interaction annotations.
 
       div(id="share")
         //- Button trigger modal
@@ -343,7 +316,8 @@ block belowTheFold
         var linksWithToggles = [{link: "instructions", target: "One"},
                                 {link: "save", target: "Save"},
                                 {link: "voteComment", target: "VoteComment"},
-                                {link: "annotate", target: "Annotation"},
+                                {link: "annotateMutation", target: "MutationAnnotation"},
+                                {link: "annotateInteraction", target: "InteractionAnnotation"},
                                 {link: "annotatedVariants", target: "AnnotatedVariants"},
                                 {link: "options", target: "Options"}];
         function bootstrapToggle(d){

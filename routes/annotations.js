@@ -7,7 +7,8 @@ PPIs  = require( "../model/ppis" ),
 Database = require('../model/db'),
 User = require('../model/user'),
 Utils = require('../model/util'),
-Q = require('q');
+Q = require('q'),
+url = require('url');
 
 // Create the tables if they don't exist already
 Base_annotations.init()
@@ -61,6 +62,18 @@ exports.updateMutation = function updateMutation(req, res) {
     }
 
 };
+
+exports.createMutationRef = function(req, res) {
+    // append query parameters to redirection
+    var redirectURL = url.format(
+	{'protocol': 'http',
+	 'host': req.app.locals.annotationsHost,
+	 'pathname': '/annotations/create/mutation/',
+	 'query': req.query
+	});
+    console.log('/annotation/mutation/create, redirecting to django app at ', redirectURL);
+    res.redirect(redirectURL);
+}
 
 exports.saveMutation = function saveMutation(req, res) {
     console.log('POST /annotation/mutation')

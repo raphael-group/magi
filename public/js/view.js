@@ -482,6 +482,13 @@ function view(){
 		var aminoAcidCodes = { A: "Ala", B: "Asx", C: "Cys", D: "Asp", E: "Glu", F: "Phe", G: "Gly", H: "His", I: "Ile", K: "Lys", L: "Leu", M: "Met", N: "Asn", P: "Pro", Q: "Gln", R: "Arg", S: "Ser", T: "Thr", V: "Val", W: "Trp", X: "X", Y: "Tyr",Z: "Glx", "*": "*"};
 		function aminoAcidCode(aa){ return aa in aminoAcidCodes ? aminoAcidCodes[aa] : aa; }
 
+
+  	    // add some codes to interface with Django HTML api
+////	    mutationTypeChoices  = (('MS', 'Missense'), ('NS', 'Nonsense'), ('FSI', 'Frame-Shift Insertion'), ('IFD', 'In-Frame Deletion'), ('FSD', 'Frame-Shift Deletion'), ('IFI', 'In-Frame \
+//Insertion'))
+//	    referenceSourceChoices = (('C', 'Community'), ('DoCM', 'Database of Curated Mutations'), ('PMC Search', 'PubMed Central Search'))
+//	    dbChoices = (('PMID', 'PubMed'), ('PMC', 'PubMed Central'))
+	    var mutationTypeRevMap = {'Missense_Mutation':'MS', 'In_Frame_Del': 'IFD'};
 		var mutations = transcriptPlot.selectAll("path.symbols"),
 			transcriptTooltips = [];
 		mutations.classed("gd3-tipobj", true);
@@ -496,7 +503,16 @@ function view(){
 				clause1	 = geneName + changeOneCode
 				clause2 = geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")",
 				changeQuery = clause1 + " OR (" + clause2 + ")",
-				changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
+	    changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
+	    
+		    createMutationHref = '/annotation/mutation/create/?gene=' + geneName + 
+			'&mutation_class=SNV' +
+			'&mutation_type=' + mutationTypeRevMap[d.ty] +
+			'&original_amino_acid=' + d.aao + 
+			'&locus=' + d.locus +  
+			'&new_amino_acid=' + d.aan + 
+			'&cancer=' + d.dataset.toLowerCase(); // FIXME: database != cancer for some datasets
+	    
 
 			transcriptTooltips.push([
 				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
@@ -505,7 +521,9 @@ function view(){
 				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
 				{ type: 'link', href: locusHref, body: 'Search locus on Pubmed.' },
 				{ type: 'text', text: ''},
-				{ type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' }
+			    { type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' },
+				{ type: 'text', text: ''},
+				{ type: 'link', href: createMutationHref, body: 'Add and/or annotate a reference to this mutation.' }
 			].map(gd3.tooltip.datum));
 		});
 
