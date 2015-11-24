@@ -501,7 +501,7 @@ function view(){
 				changeQuery = clause1 + " OR (" + clause2 + ")",
 	    changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
 	    
-		    createMutationHref = '/annotation/mutation/create/?gene=' + geneName + 
+		    createMutationHref = annotationsURL + '/annotations/save/mutation/?gene=' + geneName + 
 			'&mutation_class=SNV' +
 			'&mutation_type=' + mutationTypeRevMap[d.ty] +
 			'&original_amino_acid=' + d.aao + 
@@ -519,7 +519,8 @@ function view(){
 				{ type: 'text', text: ''},
 			    { type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' },
 				{ type: 'text', text: ''},
-				{ type: 'link', href: createMutationHref, body: 'Add and/or annotate a reference to this mutation.' }
+			    { type: 'link', href: createMutationHref, body: 'Add and/or annotate a reference to this mutation.' },
+			    { type: 'text', text: ''},
 			].map(gd3.tooltip.datum));
 		});
 

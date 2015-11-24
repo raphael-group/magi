@@ -300,6 +300,7 @@ block belowTheFold
       script(src='/js/log.js').
       //- Define behavior for the scroll panel to stick to the top of the window
       script(type="text/javascript").
+        annotationsURL = !{JSON.stringify(annotationsURL)};
         $(document).ready(function(){
           var jControlPanel = $('#control-panel');
           $(window).bind('scroll', function() {
