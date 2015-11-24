@@ -484,10 +484,6 @@ function view(){
 
 
   	    // add some codes to interface with Django HTML api
-////	    mutationTypeChoices  = (('MS', 'Missense'), ('NS', 'Nonsense'), ('FSI', 'Frame-Shift Insertion'), ('IFD', 'In-Frame Deletion'), ('FSD', 'Frame-Shift Deletion'), ('IFI', 'In-Frame \
-//Insertion'))
-//	    referenceSourceChoices = (('C', 'Community'), ('DoCM', 'Database of Curated Mutations'), ('PMC Search', 'PubMed Central Search'))
-//	    dbChoices = (('PMID', 'PubMed'), ('PMC', 'PubMed Central'))
 	    var mutationTypeRevMap = {'Missense_Mutation':'MS', 'In_Frame_Del': 'IFD'};
 		var mutations = transcriptPlot.selectAll("path.symbols"),
 			transcriptTooltips = [];

@@ -23,7 +23,7 @@ exports.geneFind = function(query, dir, callback) {
 	     selAnnosQuery = ref.from(
 				ref.join(abers).on(ref.mutation_id.equals(abers.id))
 				   .join(annotations).on(ref.id.equals(annotations.reference_id))
-				   .leftJoin(cancers).on(cancers.id.equals(annotations.cancer_id))).where(query);
+				   .leftJoin(cancers).on(cancers.abbr.equals(annotations.cancer_id))).where(query);
     }
 
     // TODO: use annos.table.columns to automatically separate

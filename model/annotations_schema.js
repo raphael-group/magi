@@ -46,7 +46,6 @@ exports.aberrations = aberrations = sql.define({
 exports.cancers = cancers = sql.define({
 	name: 'annotations_cancer',
 	columns: [
-	    {name: 'id', dataType: 'integer', notNull: true},
 	    {name: 'name', dataType: 'varchar(100)', notNull: true},
 	    {name: 'color', dataType: 'varchar(7)', notNull: true},
 	    {name: 'abbr', dataType: 'varchar(10)', notNull: true},
