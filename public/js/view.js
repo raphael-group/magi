@@ -95,6 +95,7 @@ function view(){
 	// for cancer types and mutations
 	function cancerToName(c){
 		if (cancerToAbbr[c]) return cancerToAbbr[c].toUpperCase();
+	    else if (c=='null' || !c) return "Unknown";
 		else return c.toUpperCase();
 	}
 
@@ -301,9 +302,9 @@ function view(){
 							var cancerDisplayName = "";
 							if (i == 0) {
 							    cancerDisplayName = cancerToName(cancer);
-							    if (cancerDisplayName == "NULL") {
-								cancerDisplayName = "Unknown"
-							    }
+//							    if (cancerDisplayName == "NULL") {
+//								cancerDisplayName = "Unknown"
+//							    }
 							}
 							refTable.push([
 							    { type: 'text', text: cancerDisplayName },
@@ -316,8 +317,8 @@ function view(){
 
 					// The table is hidden on default, so we show a string describing the
 					// table before showing it.
-					var knownAberrations = cancerNames.map(cancerToName).join(", ");
-				    var inKnownCancers = knownAberrations != 'NULL' ? (' in ' + knownAberrations) :'';
+				    var knownAberrations = cancerNames.map(cancerToName).filter(function(s) {return s != 'Unknown';}).join(", ");
+				    var inKnownCancers = knownAberrations == '' ? '' : (' in ' + knownAberrations);
 					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + inKnownCancers});
 					tooltipData.push({type: 'table', table: refTable, defaultHidden: true});
 				}
