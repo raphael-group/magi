@@ -113,9 +113,9 @@ block body
 
         div(id="collapseMutationAnnotation", class="panel-collapse collapse in")
           div(class="panel-body", style="padding:5px;font-size:90%")
-            | Add references and annotations on mutations 
+            | Annotate references to mutations  
             a(href="/annotation/mutation/create", target="_blank") here
-            |  or by clicking mutations within the transcript view.
+            |  or by clicking on the link on the mutations popup within the transcript view.
 
       div(id="annotateInteraction" class="panel panel-default", style="padding:0px;")
         div(class="panel-heading", style="padding:5px")
@@ -125,31 +125,9 @@ block body
 
         div(id="collapseInteractionAnnotation", class="panel-collapse collapse in")
           div(class="panel-body", style="padding:5px;font-size:90%")
-            - if (user)
-              | Enter your own interactions and annotations.
-              br
-              form(method="post", role="form", id="annotations")
-                div(id="interactions")
-                  select(class="form-control", id="protein1")
-                  b(class="toggle") interacts with
-                  select(class="toggle form-control", id="protein2")
-                  label(class="toggle") PMID
-                  input(class="toggle form-control", id="ppi-pmid", placeholder="PMID", maxlength="8")
-                  //- Optional protein interaction fields
-                  label(class="toggle") Comments
-                    span(class="glyphicon glyphicon-remove", onclick="$(this).parent().hide();$('textarea#interaction-comment').hide()")
-                  textarea(class="toggle form-control", id="interaction-comment", placeholder="Enter any comments.", type="textarea")
-                br
-                input(type="hidden", value="mutation", id="antype")
-                button(type="submit", id="submit", class="btn btn-default") Submit
-                br
-              div(id="annotationStatus")
-              br
-              a(href="#", id="reset-annotation", onclick="resetAnnotations();return false;")
-                span(class="glyphicon glyphicon-trash", style="cursor:pointer")
-                | &nbsp;Reset.
-            - else
-              | You must <a href="/auth/google/returnTo">Login</a> to be able to add interaction annotations.
+            | Annotate references to interactions 
+            a(href= annotationsURL + "/annotations/interactions/add") here
+            |  or by clicking on the link on the interactions popup within the network view.
 
       div(id="share")
         //- Button trigger modal

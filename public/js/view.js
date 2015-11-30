@@ -428,11 +428,15 @@ function view(){
 			}
 		});
 
+	    createInteractionHref = annotationsURL + '/annotations/interaction/add/?source=' + d.source.name + 
+			'&target=' + d.target.name; 
+
 		// Add the tooltip
 		networkTooltips.push([
 			{ type: 'text', text: 'Source: ' + d.source.name },
 			{ type: 'text', text: 'Target: ' + d.target.name },
-			{ type: 'table', table: refTable }
+		    { type: 'table', table: refTable },
+		    { type: 'link', href: createInteractionHref, body: 'Add and/or annotate a reference to this interaction.'}
 		].map(gd3.tooltip.datum) );
 	});
 
