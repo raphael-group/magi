@@ -336,19 +336,19 @@ function formatPPIs(ppis, user_id, callback){
 	for (var i = 0; i < ppis.length; i++){
 		// Parse interaction and create unique ID
 		var ppi   = ppis[i],
-			ppiName = [ppi.source, ppi.target].sort().join("*");
+			ppiName = [ppi.source_id, ppi.target_id].sort().join("*");
 	    refInfo = {
-		pmid: ppi.reference,
+		pmid: ppi.identifier,
 		upvotes: ppi.upvotes,
 		downvotes: ppi.downvotes,
-		_id: ppi.u_id
+		_id: ppi.id
 	    }
 		// Append the current network for the given edge
 		if (ppiName in edgeNames){
-			edgeNames[ppiName].push( {name: ppi.ref_source, refs: refInfo } );
+			edgeNames[ppiName].push( {name: ppi.input_source, refs: refInfo } );
 		}
 		else{
-		    edgeNames[ppiName] = [ {id: ppi.anno_id, name: ppi.ref_source, refs: refInfo } ];
+		    edgeNames[ppiName] = [ {id: ppi.id, name: ppi.input_source, refs: refInfo } ];
 		}
 	}
 

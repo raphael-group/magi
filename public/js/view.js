@@ -355,72 +355,17 @@ function view(){
 		var refTable = [[
 				{type: 'text', text: 'Network'},
 				{type: 'text', text: 'PMID'},
-				{type: 'text', text: 'Votes'}
 			].map(gd3.tooltip.datum)
 		];
 
 	    d.categories.forEach(function(n){
 		if (d.references[n].length > 0){
 				d.references[n].forEach(function(ref, i){
-					ref.score = ref.upvotes.length - ref.downvotes.length;
-					if (ref.upvotes.indexOf(user_id) > -1){
-						ref.vote = 'up';
-					} else if (ref.downvotes.indexOf(user_id) > -1){
-						ref.vote = 'down';
-					} else {
-						ref.vote = null;
-					}
 					// only show the network name in the first row
 					refTable.push([
 						{type: 'text', text: i ? "" : n},
 						{type: 'link', href: pubmedLink(ref.pmid), body: ref.pmid},
-						{type: 'vote',
-						 voteDirectionFn: function(){ return ref.vote; },
-						 voteCountFn: function(){ return ref.score; },
-						 upvoteFn: function(){
-						     var voteDirection = 'up';
-						  	if (ref.vote == 'down'){
-						  		ref.score += 2;
-						  		ref.vote = 'up';
-						  	} else if (ref.vote == 'up'){
-							    voteDirection = 'remove';
-						  		ref.score -= 1;
-						  		ref.vote = null;
-						  	} else {
-						  		ref.vote = 'up';
-						  		ref.score += 1;
-						  	}
-						 	vote({
-							    _id: ref._id,
-						 		source: d.source.name,
-						 		target: d.target.name,
-						 		network: n,
-						 		pmid: ref.pmid,
-						 		vote: voteDirection
-						 	}, '/vote/ppi');
-						 },
-						 downvoteFn: function(){
-						     var voteDirection = 'down';
-						  	if (ref.vote == 'down'){
-							    voteDirection = 'remove';
-						  		ref.score += 1;
-						  		ref.vote = null;
-						  	} else if (ref.vote == 'up'){
-						  		ref.score -= 2;
-						  		ref.vote = 'down'
-						  	} else {
-						  		ref.vote = 'down';
-						  		ref.score -= 1;
-						  	}
-						 	vote({
-							    _id: ref._id,
-						 		source: d.source.name,
-						 		target: d.target.name,
-						 		network: n,
-						 		pmid: ref.pmid,
-						 		vote: voteDirection
-						 	}, '/vote/ppi')
-						 }}
+			
 					].map(gd3.tooltip.datum));
 				})
 			} else {
@@ -428,7 +373,8 @@ function view(){
 			}
 		});
 
-	    createInteractionHref = annotationsURL + '/annotations/interaction/add/?source=' + d.source.name + 
+// todo: remove vote buttons
+	    createInteractionHref = annotationsURL + '/annotations/interactions/add/?source=' + d.source.name + 
 			'&target=' + d.target.name; 
 
 		// Add the tooltip

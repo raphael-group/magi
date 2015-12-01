@@ -66,40 +66,34 @@ exports.references = references = sql.define({
 	{name: 'created_on', dataType: 'date'}]
 });
 
+
+// *********** interaction databases ***************
+
 exports.interaction_annotations = interaction_annotations = sql.define({
-    name: 'annos',
+    name: 'annotations_interactionreference',
     columns: [
       {name: 'user_id',       dataType: 'varchar(40)', notNull: true},
-      {name: 'u_id', dataType: 'serial', primaryKey: true},
-      {name: 'ref_source', 	dataType: 'varchar(20)', notNull: true},
-      {name: 'reference',	dataType: 'varchar(45)', notNull: true},
-      {name: 'comment',       dataType: 'varchar(3000)'},
-      {name: 'type', dataType: annoTypeName, notNull: true}],
+      {name: 'interaction_id', dataType: 'integer'},
+      {name: 'identifier',	dataType: 'varchar(45)', notNull: true},
+      {name: 'id',       dataType: 'integer'}],
 })
 
 exports.interactions = interactions = sql.define({
-    name: 'ppi_annos',
+    name: 'annotations_interaction',
     columns: [
-	{name: 'source',	dataType: 'varchar(15)', notNull: true},
-	{name: 'target',	dataType: 'varchar(15)', notNull: true},
-	{name: 'database',	dataType: 'varchar(30)'},
-	{name: 'type',	 dataType: 'varchar(15)'},
-	{name: 'weight', dataType: 'float'},
-	{name: 'directed',	dataType: 'boolean'},
-	{name: 'tissue',	dataType: 'varchar(30)'},
-	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'ppi'", notNull:true},
-	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}}]
+	{name: 'source_id',	dataType: 'varchar(15)', notNull: true},
+	{name: 'target_id',	dataType: 'varchar(15)', notNull: true},
+	{name: 'input_source',	dataType: 'varchar(30)'},
+	{name: 'id', dataType: 'integer', primaryKey: true}]
 })
 
 exports.votes = votes = sql.define({
-    name: 'votes',
+    name: 'annotations_interactionvote',
     columns: [
-	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}},
-	{name: 'anno_type',	dataType: annoTypeName, notNull:true, primaryKey: true},
-	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
-	// integrity check: only one vote at a time
-	{name: 'direction', dataType: 'smallint', notNull: true},
-	{name: 'comment', dataType: 'varchar(3000)'}]
+	{name: 'id', dataType: 'integer', primaryKey: true},
+	{name: 'reference_id',	dataType: 'integer', notNull:true},
+	{name: 'user_id', dataType: 'varchar(40)', notNull: true},
+	{name: 'is_positive', dataType: 'smallint', notNull: true}]
 })
 
 exports.users = users = sql.define({
@@ -156,25 +150,11 @@ function initDatabase() {
 		    console.log("Annotations: postgres init'ed", aberrations.getName());
 
 		    // create subannotation and votes table
-		    subannos = [interaction_annotations, interactions, votes]
 
-		    // key value constraint
-		    addTypeValueConstraintFn = function (table) {
-			return "CHECK (anno_type = '" +
-			    typeConstraint[table.getName()] + "')"
-		    }
+		    subannos = [interaction_annotations, interactions, votes];
 
 		    subannos.forEach( function (thisTable) {
 			createQuery = thisTable.create().ifNotExists()
-
-			constraint = ""
-			if (thisTable.getName() in typeConstraint) {
-			    constraint = addTypeValueConstraintFn(thisTable)
-			}
-			Database.executeAppend(createQuery, constraint, function(err, result) {
-			    handle_err(thisTable, err)
-			    console.log("Annotations: postgres init'ed", thisTable.getName(), "table");
-			});
 		    });
 		});
 	    });

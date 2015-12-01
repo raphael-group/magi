@@ -14,17 +14,23 @@ exports.ppiFind = function(query, dir, callback) {
 
     // Selects the desired ppi annotations according to the given filter
     var selPpisQuery = 
-	ppis.from(ppis.join(annos).on(annos.u_id.equals(ppis.anno_id)))
+	ppis.from(ppis.join(annos).on(annos.interaction_id.equals(ppis.id)))
 	.where(query);
 
-    var selQueryText = Annotations.joinVoteListsToQuery(ppis, selPpisQuery);
-    Database.sql_query(selQueryText, selPpisQuery.toQuery().values, function(err, result) {
+    DjangoDatabase.execute(selPpisQuery, function(err, result) {
       if (err) {
         console.log("Error selecting ppi annotations: " + err);
         console.log("Debug: full query:", selPpisQuery.string)
         callback(err, null)
+      } else {	  
+	  callback(null, result.rows.map(function(record) {
+	      record.downvotes = [];
+	      record.downcomments = [];
+	      record.upvotes = [];
+	      record.upcomments = [];
+	      return record;
+	  }))
       }
-      callback(null, result.rows.map(Annotations.normalize))
     });
 }
 
@@ -141,8 +147,8 @@ exports.loadFromFile = function(filename, source, callback){
 // A function for listing all the interactions for a particular gene
 exports.ppilist = function (genes, callback){
     inGenes = [
-	exports.inPPIClause('source', genes),
-	exports.inPPIClause('target', genes)];
+	exports.inPPIClause('source_id', genes),
+	exports.inPPIClause('target_id', genes)];
     exports.ppiFind(inGenes, 'right', function (err, ppis) {
 	if(err) console.log(err);
 	else callback("", ppis);
@@ -155,9 +161,9 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
         votes = Schemas.votes;
 
     // get all u_ids of the ppis
-    uids = ppis.map(function(p) {return p.u_id;});
+    uids = ppis.map(function(p) {return p.id;});
 
-    query = votes.select('*').where([ votes.anno_id.in(uids), votes.voter_id.equals(user_id) ])
+    query = votes.select('*').where([ votes.reference_id.in(uids), votes.user_id.equals(user_id) ])
 
     Database.execute(query, function(err, result) {
       if (err) {
