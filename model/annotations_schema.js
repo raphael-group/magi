@@ -31,7 +31,7 @@ exports.annotations = annotations = sql.define({
 exports.aberrations = aberrations = sql.define({
     name: 'annotations_mutation',
     columns: [
-      {name: 'gene', 		dataType: 'varchar(30)', notNull: true},
+      {name: 'gene_id', 		dataType: 'varchar(30)', notNull: true},
 	{name: 'id', 		dataType: 'serial', notNull: true},
 	{name: 'mutation_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
       {name: 'mutation_type',	dataType: 'varchar(35)'},

@@ -93,7 +93,7 @@ exports.upsertAber = function(data, callback){
 
     
     var aberInsertQuery = abers.insert(
-	abers.gene.value(data.gene),
+	abers.gene_id.value(data.gene),
 	abers.mutation_class.value(data.mut_class),
 	abers.mutation_type.value(data.mut_type),
 	abers.locus.value(locus),
@@ -373,7 +373,7 @@ exports.loadFromFile = function(filename, source, callback){
 
 	    cancer = A.cancer ? A.cancer.toUpperCase() : "Cancer"
 	    var query = {
-		gene: A.gene,
+		gene_id: A.gene,
 		cancer: cancer,
 		change: A.change,
 		transcript: A.transcript,

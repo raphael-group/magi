@@ -209,7 +209,7 @@ exports.view  = function view(req, res){
 
 						// Load the annotations for each gene
 
-					    Aberrations.geneFind(Aberrations.inGeneClause('gene', genes),'right', function(err, support) {
+					    Aberrations.geneFind(Aberrations.inGeneClause('gene_id', genes),'right', function(err, support) {
 						// Throw error if necessary
 						if (err) throw new Error(err);
 
@@ -229,16 +229,16 @@ exports.view  = function view(req, res){
 								pmid: A.identifier,
 								_id: A.reference_id
 							};
-							geneToAnnotationList[A.gene][A.identifier] = true;
+							geneToAnnotationList[A.gene_id][A.identifier] = true;
 
-							if (!annotations[A.gene][A.mutation_class]) {
-								annotations[A.gene][A.mutation_class] = {};
+							if (!annotations[A.gene_id][A.mutation_class]) {
+								annotations[A.gene_id][A.mutation_class] = {};
 							}
-							if (!annotations[A.gene][A.mutation_class][A.cancer_name]) {
-								annotations[A.gene][A.mutation_class][A.cancer_name] = [];
+							if (!annotations[A.gene_id][A.mutation_class][A.cancer_name]) {
+								annotations[A.gene_id][A.mutation_class][A.cancer_name] = [];
 							}
-							annotations[A.gene][A.mutation_class][A.cancer_name].push(ref); 
-							geneToAnnotationCount[A.gene] += 1; 
+							annotations[A.gene_id][A.mutation_class][A.cancer_name].push(ref); 
+							geneToAnnotationCount[A.gene_id] += 1; 
 						});
 
 						// Assemble data into single Object

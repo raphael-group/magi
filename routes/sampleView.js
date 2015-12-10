@@ -63,7 +63,7 @@ exports.sampleView = function sampleView(req, res){
 			    geneMutations = [];
 
 			    // call for additional mutations
-			    Aberrations.geneFind(Aberrations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
+			    Aberrations.geneFind(Aberrations.inGeneClause('gene_id', mutGenes),'right', function(err, userAnnos) {
 				if (err) {
 				    console.error(err);
 				    fail = true;
@@ -155,8 +155,8 @@ function geneTable(genes, support){
                 	    entry = { pmid: A.identifier, cancer: A.cancer };
 		if (mClass == "snv" && (mType == "missense" || mType == "nonsense")){ mClass = mType; }
 		// Add the class if it hasn't been seen before
-		if (typeof(annotations[A.gene][mClass]) == 'undefined'){
-			annotations[A.gene][mClass] = {"" : [] };
+		if (typeof(annotations[A.gene_id][mClass]) == 'undefined'){
+			annotations[A.gene_id][mClass] = {"" : [] };
 		}
 
 		// If we know the mutaton class, we might also want to add
@@ -164,16 +164,16 @@ function geneTable(genes, support){
 		if (mClass == "snv" || mClass == "missense" || mClass == "nonsense"){
 			if (change){
 				A.protein_seq_change = change.replace("p.", "");
-				if (typeof(annotations[A.gene][mClass][A.protein_seq_change]) == 'undefined'){
-					annotations[A.gene][mClass][A.protein_seq_change] = [];
+				if (typeof(annotations[A.gene_id][mClass][A.protein_seq_change]) == 'undefined'){
+					annotations[A.gene_id][mClass][A.protein_seq_change] = [];
 				}
 
-			    annotations[A.gene][mClass][A.protein_seq_change].push(entry);
+			    annotations[A.gene_id][mClass][A.protein_seq_change].push(entry);
 
 			}
 		}
-	    annotations[A.gene][mClass][""].push(entry);
-	    annotations[A.gene][""].push(entry);
+	    annotations[A.gene_id][mClass][""].push(entry);
+	    annotations[A.gene_id][""].push(entry);
 	});
 
 	// Combine references at the PMID level so that for each
