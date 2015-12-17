@@ -287,36 +287,6 @@ function view(){
 				    // references for each row
 				    var cancerToRefs = data.annotations[geneName][annotatedMutationNames[mutationIndex]],
 				    cancerNames  = Object.keys(cancerToRefs).sort();
-				    /*
-						refTable = [[
-								{type: 'text', text: 'Cancer'},
-								{type: 'text', text: 'PMID'},
-								{type: 'text', text: 'Edit'}
-							].map(gd3.tooltip.datum)
-						];
-
-					cancerNames.forEach(function(cancer){
-					    var refsUsed = [];
-						cancerToRefs[cancer].forEach(function(ref, i){
-							// only show the cancer name in the first row
-						    if (refsUsed.indexOf(ref.pmid) == -1) {
-							refsUsed.push(ref.pmid);
-							var cancerDisplayName = "";
-							if (i == 0) {
-							    cancerDisplayName = cancerToName(cancer);
-//							    if (cancerDisplayName == "NULL") {
-//								cancerDisplayName = "Unknown"
-//							    }
-							}
-							refTable.push([
-							    { type: 'text', text: cancerDisplayName },
-								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
-							        { type: 'link', body: 'Edit', href: "/annotation/mutation/" + ref._id}
-							].map(gd3.tooltip.datum));
-						    }
-						});
-					});
-*/
 
 					// The table is hidden on default, so we show a string describing the
 					// table before showing it.
@@ -334,10 +304,12 @@ function view(){
 							   href: annotationsURL + '/annotations/' + geneName}); // todo: limit to references to a mutation
 					tooltipData.push({type: 'text', text:''})
 				    }
-				    tooltipData.push({ type: 'link', 
-						       body: 'Add a new reference for this gene',
-						       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName}); // todo: preload more arguments to link
 				}
+			    tooltipData.push({ type: 'link', 
+					       body: 'Add a new reference for this gene',
+					       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName}); // todo: preload more arguments to link
+			    tooltipData.push({type: 'text', text: ''});
+
 			}
 
 			// Add the tooltip
@@ -397,8 +369,14 @@ function view(){
 		networkTooltips.push([
 			{ type: 'text', text: 'Source: ' + d.source.name },
 			{ type: 'text', text: 'Target: ' + d.target.name },
-		    { type: 'table', table: refTable },
-		    { type: 'link', href: createInteractionHref, body: 'Add and/or annotate a reference to this interaction.'}
+		    { type: 'link', 
+		      href: annotationsURL + '/annotations/interactions/' + d.source.name + ',' + d.target.name, 
+		      body: 'View references to this interaction.'},
+		    { type: 'text', text: ''},
+		    { type: 'link', 
+		      href: createInteractionHref, 
+		      body: 'Add and/or annotate a reference to this interaction.'}, 
+		    { type: 'table', table: refTable }
 		].map(gd3.tooltip.datum) );
 	});
 
