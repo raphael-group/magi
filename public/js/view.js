@@ -282,10 +282,12 @@ function view(){
 				// Determine if there are references for the current gene
 				// AND its current mutation type
 				if (mutationIndex !== -1){
-					// Find all the cancers for which this gene is known to be mutated. Then add
-					// references for each row
-					var cancerToRefs = data.annotations[geneName][annotatedMutationNames[mutationIndex]],
-						cancerNames  = Object.keys(cancerToRefs).sort(),
+
+				    // Find all the cancers for which this gene is known to be mutated. Then add
+				    // references for each row
+				    var cancerToRefs = data.annotations[geneName][annotatedMutationNames[mutationIndex]],
+				    cancerNames  = Object.keys(cancerToRefs).sort();
+				    /*
 						refTable = [[
 								{type: 'text', text: 'Cancer'},
 								{type: 'text', text: 'PMID'},
@@ -314,13 +316,27 @@ function view(){
 						    }
 						});
 					});
+*/
 
 					// The table is hidden on default, so we show a string describing the
 					// table before showing it.
 				    var knownAberrations = cancerNames.map(cancerToName).filter(function(s) {return s != 'Unknown';}).join(", ");
 				    var inKnownCancers = knownAberrations == '' ? '' : (' in ' + knownAberrations);
-					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + inKnownCancers});
-					tooltipData.push({type: 'table', table: refTable, defaultHidden: true});
+				    tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + inKnownCancers});
+				    // count the number of references
+				    if (cancerNames) {
+					var numRefs = 0;
+					cancerNames.forEach(function(name) {
+					    numRefs += cancerToRefs[name].length;
+					});
+					tooltipData.push({ type: 'link', 
+							   body: 'View references (' + numRefs +') for this gene',
+							   href: annotationsURL + '/annotations/' + geneName}); // todo: limit to references to a mutation
+					tooltipData.push({type: 'text', text:''})
+				    }
+				    tooltipData.push({ type: 'link', 
+						       body: 'Add a new reference for this gene',
+						       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName}); // todo: preload more arguments to link
 				}
 			}
 
@@ -458,8 +474,7 @@ function view(){
 			'&original_amino_acid=' + d.aao + 
 			'&locus=' + d.locus +  
 			'&new_amino_acid=' + d.aan + 
-			'&cancer=' + d.dataset.toLowerCase(); // FIXME: database != cancer for some datasets
-	    
+			'&cancer=' + d.dataset.toLowerCase(); // FIXME: database != cancer for some datasets	    
 
 			transcriptTooltips.push([
 				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
@@ -469,6 +484,8 @@ function view(){
 				{ type: 'link', href: locusHref, body: 'Search locus on Pubmed.' },
 				{ type: 'text', text: ''},
 			    { type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' },
+				{ type: 'text', text: ''},
+			    { type: 'link', href: annotationsURL + '/annotations/' + geneName, body: 'View all references to this mutation'}, 
 				{ type: 'text', text: ''},
 			    { type: 'link', href: createMutationHref, body: 'Add and/or annotate a reference to this mutation.' },
 			    { type: 'text', text: ''},

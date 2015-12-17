@@ -165,7 +165,7 @@ exports.ppicomments = function ppicomments(ppis, user_id, callback){
 
     query = votes.select('*').where([ votes.reference_id.in(uids), votes.user_id.equals(user_id) ])
 
-    Database.execute(query, function(err, result) {
+    DjangoDatabase.execute(query, function(err, result) {
       if (err) {
         console.log("Error getting ppi comments: " + err);
         console.log("Debug: full query:", query)
