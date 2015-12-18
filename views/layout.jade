@@ -48,7 +48,12 @@ html
                       a(href="/support") Support
                     li
                       a(href="#" id="give-feedback") Feedback
-
+            ul(class="nav navbar-nav navbar-center")
+              li
+                div(style="padding-top:14px;margin-right:5px")
+                  | &nbsp;|&nbsp;
+                  a(href=annotationsURL target="_blank") 
+                    button(type="button" class="btn btn-danger btn-xs") MAGI Annotations
             ul(class="nav navbar-nav navbar-right", style="color:grey")
               li
                 //- Ask the user to login or show his/her name
@@ -57,10 +62,11 @@ html
                     | Welcome,&nbsp;
                     a(href="/account") #{user.name}
                     | &nbsp;|&nbsp;
-                    a(href="/logout") Logout
+                    a(href="/logout") Logout 
                 - else
                   a(href="/auth/google/returnTo")
                     button(type="button" class="btn btn-default btn-xs") Login via Google
+
       -if (!skip_requery)
         - var requery_display = show_requery ? 'block' : 'none';
         div(id="navbar-query-connector", class="navbar-query", style='display:#{requery_display}')
