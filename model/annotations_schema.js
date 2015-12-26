@@ -19,7 +19,7 @@ exports.annotations = annotations = sql.define({
   	{name: 'heritable', dataType: 'varchar(8)'},
 	{name: 'measurement_type', dataType: 'varchar(30)', notNull: true},
 	{name: 'characterization', dataType: 'varchar(20)', notNull: true},
-	{name: 'reference_id',	dataType: 'integer', notNull: true},
+	{name: 'reference_id',	dataType: 'serial', notNull: true},
 	{name: 'cancer_id', dataType: 'integer', notNull: true},
 	{name: 'user_id', dataType: 'integer', notNull: true},
 	{name: 'last_edited', dataType: 'date'},
@@ -34,9 +34,9 @@ exports.aberrations = aberrations = sql.define({
       {name: 'gene_id', 		dataType: 'varchar(30)', notNull: true},
 	{name: 'id', 		dataType: 'serial', notNull: true},
 	{name: 'mutation_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
-      {name: 'mutation_type',	dataType: 'varchar(35)'},
-      {name: 'locus', dataType: 'integer'},
-      {name: 'new_amino_acid', dataType: 'varchar(30)'},
+	{name: 'mutation_type',	dataType: 'varchar(35)'},
+	{name: 'locus', dataType: 'integer'},
+	{name: 'new_amino_acid', dataType: 'varchar(30)'},
 	{name: 'original_amino_acid', dataType: 'varchar(30)'},
 	{name: 'last_edited', dataType: 'date'},
 	{name: 'created_on', dataType: 'date'}
@@ -109,7 +109,7 @@ exports.users = users = sql.define({
 	{name: 'is_staff', dataType: 'boolean', notNull: true},
 	{name: 'is_superuser', dataType: 'boolean', notNull: true},
 	{name: 'is_active', dataType: 'boolean', notNull: true},
-	{name: 'date_joined', dataType: 'timesamp', notNull: true}
+	{name: 'date_joined', dataType: 'timestamp', notNull: true}
     ]	
 })
 

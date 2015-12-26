@@ -78,18 +78,6 @@ block body
 
             div(id="saveErrMsgContainer")
 
-      div(id="voteCommentBox", class="panel panel-default", style="padding:0px")
-        div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="voteCommentLink")
-            | Comment on votes
-            span(style="float:right") [+]
-            
-        div(id="collapseVoteComment", class="panel-collapse collapse")
-          div(class="panel-body", style="padding:5px")
-            p(style="margin:0px;") Add an optional comment to each vote.
-            br
-            textarea(class="form-control", id="vote-comment", placeholder="Enter comments on a vote.", type="textarea")
-            
       div(id="annotatedVariants" class="panel panel-default", style="padding:0px;")
         div(class="panel-heading", style="padding:5px")
           h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotatedVariantsLink")
@@ -274,7 +262,6 @@ block belowTheFold
       script(src='/components/jssha/src/sha1.js'). // req for log.js
       script(src='/js/save.js').
       script(src='/js/view.js').
-      script(src='/js/annotate.js').
       script(src='/js/log.js').
       //- Define behavior for the scroll panel to stick to the top of the window
       script(type="text/javascript").

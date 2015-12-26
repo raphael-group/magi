@@ -61,56 +61,6 @@ exports.geneFind = function(query, dir, callback) {
     })
 }
 
-// upsert an aberration annotation into SQL
-exports.upsertAber = function(data, callback){
-    // TODO: rewrite me and upsertSourceAnno
-    var abers = Schemas.aberrations;
-
-    handleErr = function(err, subresult, query) {
-	if (err == null && subresult.rows.length == 0) {
-	    err = Error("Did not return annotation ID")
-	}
-	if (err) {
-            console.log("Error upserting gene aberration: " + err);
-	    callback(err, null);
-	    return
-	}
-    }
-
-    // TODO: we may insert duplicate mutations, fix this if we want something more interesting with genes
-
-    var now = new Date().toString().substring(0,15);
-    var acids=['?','?'], locus;
-    // parse the protein sequence change
-    if (data.protein_seq_change) {
-	acids = data.protein_seq_change.split(/\d+/);
-	locus = 0; 	
-	if (acids[0].length < data.protein_seq_change.length)
-	    locus = parseInt(data.protein_seq_change.substr(acids[0].length));
-	if (acids.length == 1)
-	    acids[1] = '?';
-    }
-
-    
-    var aberInsertQuery = abers.insert(
-	abers.gene_id.value(data.gene),
-	abers.mutation_class.value(data.mut_class),
-	abers.mutation_type.value(data.mut_type),
-	abers.locus.value(locus),
-	abers.original_amino_acid.value(acids[0]),
-	abers.new_amino_acid.value(acids[1]),
-	abers.last_edited.value(now),
-	abers.created_on.value(now)).returning(abers.id);
-
-	DjangoDatabase.execute(aberInsertQuery, function(err, subresult) {
-	    handleErr(err, subresult, aberInsertQuery);
-	    if (!err) {
-		var aber_u_id = subresult.rows[0].id;
-		data.aber_id = aber_u_id;
-		exports.upsertSourceAnno(data, callback);
-	    }
-	});
-}
 
 // callback supplies user data
 function getUserInfo(user, callback) {
@@ -136,7 +86,7 @@ function getUserInfo(user, callback) {
 				  'is_staff': false,
 				  'is_superuser': false,
 				  'is_active': false,
-				  'date_joined': getTime("day"),
+				  'date_joined': getDjangoTimeString("day"),
 				  'password': 'deadbeef'}).returning('*'),
 		    function(err, result) {
 			if(err) 
@@ -171,7 +121,7 @@ function getCancerInfo(cancer_data, callback) {
 	});
 }
 
-function getTime(format) {
+function getDjangoTimeString(format) {
     if (format == "day") {
 	return new Date().toString().substring(0,15);	
     } else if (format == "full") {
@@ -183,7 +133,7 @@ function getTime(format) {
 	
 // note: data requires an aber_id field to identify which aberration this source attaches to
 exports.upsertSourceAnno = function upsertSourceAnno(data, callback) {
-    var annotatiohs = Schemas.annotations,
+    var annotations = Schemas.annotations,
     references = Schemas.references,
     users = Schemas.users;;
 
@@ -199,7 +149,7 @@ exports.upsertSourceAnno = function upsertSourceAnno(data, callback) {
 	    console.log("Debug: full query:", checkForExistenceQuery.toQuery().text);
 	    callback(err, null);
 	}
-	var now = getTime("day");
+	var now = getDjangoTimeString("day");
 	var reference_id,
 	writeAnnotation = function(reference_id, data) {
 	    getUserInfo(data.user, function(err, user_data) {
