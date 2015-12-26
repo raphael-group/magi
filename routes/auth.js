@@ -21,8 +21,23 @@ Cancer.find({}, function(err, cancers){
 
 // Renders account information, including the user's uploaded datasets
 exports.account = function(req, res){
-    var redirectURL = req.app.locals.annotationsURL + '/account/';
-    res.redirect(redirectURL);
+    User.findByGoogleId(req.session.passport.user)
+	.fail(function(err) {console.log(err);})
+	.then(function(user) {
+	    Dataset.datasetGroups({user_id: user._id}, function(err, groups){
+		// Throw error (if necessary)
+		if (err) throw new Error(err);
+		var user_id = String(user._id);
+		var pkg = { user: user,
+			    groups: groups,
+			    abbrToCancer: abbrToCancer,
+			    cancerToAbbr: cancerToAbbr,
+			    skip_requery: true};
+		res.render('account', pkg);
+	    });
+	});
+//    var redirectURL = req.app.locals.annotationsURL + '/account/';
+//    res.redirect(redirectURL);
 }
 
 // Update user
