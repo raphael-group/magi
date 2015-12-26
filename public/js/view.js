@@ -444,15 +444,17 @@ function view(){
 				clause1	 = geneName + changeOneCode
 				clause2 = geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")",
 				changeQuery = clause1 + " OR (" + clause2 + ")",
-	    changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
+		    changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
 	    
-		    createMutationHref = annotationsURL + '/annotations/save/mutation/?gene=' + geneName + 
-			'&mutation_class=SNV' +
-			'&mutation_type=' + mutationTypeRevMap[d.ty] +
-			'&original_amino_acid=' + d.aao + 
-			'&locus=' + d.locus +  
-			'&new_amino_acid=' + d.aan + 
-			'&cancer=' + d.dataset.toLowerCase(); // FIXME: database != cancer for some datasets	    
+		    createParams = {'gene': geneName,
+				    'mutation_class': 'SNV',
+				    'mutation_type': mutationTypeRevMap[d.ty],
+				    'original_amino_acid': d.aao,
+				    'locus': d.locus,
+				    'new_amino_acid': d.aan,
+				    'cancer': d.dataset.toLowerCase()};		    // FIXME: database != cancer for some datasets
+
+		    createMutationHref = annotationsURL + '/annotations/save/mutation/?' + $.param(createParams);  
 
 			transcriptTooltips.push([
 				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
