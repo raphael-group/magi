@@ -303,12 +303,12 @@ function view(){
 					tooltipData.push({ type: 'link', 
 							   body: 'View references (' + numRefs +') for this gene',
 							   href: annotationsURL + '/annotations/' + geneName}); // todo: limit to references to a mutation
-					tooltipData.push(tooltipNewline)
+					tooltipData.push(tooltipNewline); // workaround: add newline after a link
 				    }
 				}
 			    tooltipData.push({ type: 'link', 
 					       body: 'Add a new reference for this gene',
-					       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName}); // todo: preload more arguments to link
+					       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName}); 
 			    tooltipData.push(tooltipNewline);
 
 			}

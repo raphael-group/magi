@@ -209,7 +209,7 @@ exports.view  = function view(req, res){
 
 						// Load the annotations for each gene
 
-					    Aberrations.geneFind(Aberrations.inGeneClause('gene_id', genes),'right', function(err, support) {
+					    Aberrations.geneFindFromList(genes, function(err, support) {
 						// Throw error if necessary
 						if (err) throw new Error(err);
 

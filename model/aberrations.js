@@ -372,6 +372,10 @@ exports.remove = function(anno_id, user_id) {
 // inherit some functions from annotations
 exports.inGeneClause = Annotations.inClause(Schemas.aberrations)
 
+exports.geneFindFromList = function(geneList, callback) {
+    return exports.geneFind(exports.inGeneClause('gene_id', geneList), 'right', // subquery side
+			    callback);
+}
 exports.vote = function (fields, user_id) {
     return Annotations.vote(fields, user_id, "aber");
 }

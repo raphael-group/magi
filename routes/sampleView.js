@@ -63,7 +63,7 @@ exports.sampleView = function sampleView(req, res){
 			    geneMutations = [];
 
 			    // call for additional mutations
-			    Aberrations.geneFind(Aberrations.inGeneClause('gene_id', mutGenes),'right', function(err, userAnnos) {
+			    Aberrations.geneFindFromList(mutGenes, function(err, userAnnos) {
 				if (err) {
 				    console.error(err);
 				    fail = true;
