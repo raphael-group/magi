@@ -151,6 +151,7 @@ function view(){
 				  transcript: defaultStyle(), cnas: defaultStyle(),
 				  heatmap: defaultStyle() };
 
+        var tooltipNewline = {type: 'text', text:''};
 	elements.forEach(function(e){
 		style[e.name].width = $(e.el).width();
 		if (data.datasetColors){
@@ -302,13 +303,13 @@ function view(){
 					tooltipData.push({ type: 'link', 
 							   body: 'View references (' + numRefs +') for this gene',
 							   href: annotationsURL + '/annotations/' + geneName}); // todo: limit to references to a mutation
-					tooltipData.push({type: 'text', text:''})
+					tooltipData.push(tooltipNewline)
 				    }
 				}
 			    tooltipData.push({ type: 'link', 
 					       body: 'Add a new reference for this gene',
 					       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName}); // todo: preload more arguments to link
-			    tooltipData.push({type: 'text', text: ''});
+			    tooltipData.push(tooltipNewline);
 
 			}
 
@@ -367,12 +368,12 @@ function view(){
 
 		// Add the tooltip
 		networkTooltips.push([
-			{ type: 'text', text: 'Source: ' + d.source.name },
-			{ type: 'text', text: 'Target: ' + d.target.name },
+		    { type: 'text', text: 'Source: ' + d.source.name },
+		    { type: 'text', text: 'Target: ' + d.target.name },
 		    { type: 'link', 
 		      href: annotationsURL + '/annotations/interactions/' + d.source.name + ',' + d.target.name, 
 		      body: 'View references to this interaction.'},
-		    { type: 'text', text: ''},
+		    tooltipNewline,
 		    { type: 'link', 
 		      href: createInteractionHref, 
 		      body: 'Add and/or annotate a reference to this interaction.'}, 
@@ -457,18 +458,17 @@ function view(){
 		    createMutationHref = annotationsURL + '/annotations/save/mutation/?' + $.param(createParams);  
 
 			transcriptTooltips.push([
-				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
-				{ type: 'text', text: 'Dataset: ' + d.dataset },
-				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
-				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
-				{ type: 'link', href: locusHref, body: 'Search locus on Pubmed.' },
-				{ type: 'text', text: ''},
+			    { type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
+			    { type: 'text', text: 'Dataset: ' + d.dataset },
+			    { type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
+			    { type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
+			    { type: 'link', href: locusHref, body: 'Search locus on Pubmed.' },
+			    tooltipNewline,
 			    { type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' },
-				{ type: 'text', text: ''},
+			    tooltipNewline,
 			    { type: 'link', href: annotationsURL + '/annotations/' + geneName, body: 'View all references to this mutation'}, 
-				{ type: 'text', text: ''},
+			    tooltipNewline,
 			    { type: 'link', href: createMutationHref, body: 'Add and/or annotate a reference to this mutation.' },
-			    { type: 'text', text: ''},
 			].map(gd3.tooltip.datum));
 		});
 
