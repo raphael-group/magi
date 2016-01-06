@@ -20,6 +20,10 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
 * [Postgres](https://wiki.postgresql.org/wiki/Detailed_installation_guides)
 MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Safari.
 
+* [librsvg](https://wiki.gnome.org/action/show/Projects/LibRsvg?action=show&redirect=LibRsvg). MAGI requires librsvg for converting figures to PNG/PDF format. You can install librsvg on Mac OS X with [Homebrew](http://brew.sh/):
+
+        brew install librsvg
+
 ### Setup ###
 
 1. Clone the repository:
