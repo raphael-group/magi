@@ -49,7 +49,8 @@ function view(){
 		transcriptSelectElement = "select#transcript-select",
 		cnasElement = "div#cnas",
 		cnasSelectElement = "select#cnas-select",
-		controlsElement = "div#control-panel div#controls",
+    // controlsElement = "div#control-panel div#controls",
+    controlsElement = "div#controls",
 		annotateInputElement = "div#annotation div#inputs",
 		annotatedGeneElement = "div#annotation select#gene",
 		interactionElement = "div#annotation select#interaction",
@@ -300,15 +301,15 @@ function view(){
 					cancerNames.forEach(function(name) {
 					    numRefs += cancerToRefs[name].length;
 					});
-					tooltipData.push({ type: 'link', 
+					tooltipData.push({ type: 'link',
 							   body: 'View references (' + numRefs +') for this gene',
 							   href: annotationsURL + '/annotations/' + geneName}); // todo: limit to references to a mutation
 					tooltipData.push(tooltipNewline); // workaround: add newline after a link
 				    }
 				}
-			    tooltipData.push({ type: 'link', 
+			    tooltipData.push({ type: 'link',
 					       body: 'Add a new reference for this gene',
-					       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName}); 
+					       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName});
 			    tooltipData.push(tooltipNewline);
 
 			}
@@ -354,7 +355,7 @@ function view(){
 					refTable.push([
 						{type: 'text', text: i ? "" : n},
 						{type: 'link', href: pubmedLink(ref.pmid), body: ref.pmid},
-			
+
 					].map(gd3.tooltip.datum));
 				})
 			} else {
@@ -363,20 +364,20 @@ function view(){
 		});
 
 // todo: remove vote buttons
-	    createInteractionHref = annotationsURL + '/annotations/interactions/add/?source=' + d.source.name + 
-			'&target=' + d.target.name; 
+	    createInteractionHref = annotationsURL + '/annotations/interactions/add/?source=' + d.source.name +
+			'&target=' + d.target.name;
 
 		// Add the tooltip
 		networkTooltips.push([
 		    { type: 'text', text: 'Source: ' + d.source.name },
 		    { type: 'text', text: 'Target: ' + d.target.name },
-		    { type: 'link', 
-		      href: annotationsURL + '/annotations/interactions/' + d.source.name + ',' + d.target.name, 
+		    { type: 'link',
+		      href: annotationsURL + '/annotations/interactions/' + d.source.name + ',' + d.target.name,
 		      body: 'View references to this interaction.'},
 		    tooltipNewline,
-		    { type: 'link', 
-		      href: createInteractionHref, 
-		      body: 'Add and/or annotate a reference to this interaction.'}, 
+		    { type: 'link',
+		      href: createInteractionHref,
+		      body: 'Add and/or annotate a reference to this interaction.'},
 		    { type: 'table', table: refTable }
 		].map(gd3.tooltip.datum) );
 	});
@@ -446,7 +447,7 @@ function view(){
 				clause2 = geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")",
 				changeQuery = clause1 + " OR (" + clause2 + ")",
 		    changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
-	    
+
 		    createParams = {'gene': geneName,
 				    'mutation_class': 'SNV',
 				    'mutation_type': mutationTypeRevMap[d.ty],
@@ -455,7 +456,7 @@ function view(){
 				    'new_amino_acid': d.aan,
 				    'cancer': d.dataset.toLowerCase()};		    // FIXME: database != cancer for some datasets
 
-		    createMutationHref = annotationsURL + '/annotations/save/mutation/?' + $.param(createParams);  
+		    createMutationHref = annotationsURL + '/annotations/save/mutation/?' + $.param(createParams);
 
 			transcriptTooltips.push([
 			    { type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
@@ -466,7 +467,7 @@ function view(){
 			    tooltipNewline,
 			    { type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' },
 			    tooltipNewline,
-			    { type: 'link', href: annotationsURL + '/annotations/' + geneName, body: 'View all references to this mutation'}, 
+			    { type: 'link', href: annotationsURL + '/annotations/' + geneName, body: 'View all references to this mutation'},
 			    tooltipNewline,
 			    { type: 'link', href: createMutationHref, body: 'Add and/or annotate a reference to this mutation.' },
 			].map(gd3.tooltip.datum));
@@ -579,44 +580,12 @@ function view(){
 			return { name: d, color: datasetToColor[d], numSamples: datasetToSamples[d].length };
 		}).sort(function(a, b){ return d3.ascending(a.name, b.name); });
 
-	// Add a container and a heading
-	var controls = d3.select("#control-panel div#controls"),
-		datasetsPanel = controls.append("div")
-			.attr("class", "panel panel-default")
-			.style("padding", "0px")
-
-	var datasetHeading = datasetsPanel.append("div")
-		.attr("class", "panel-heading")
-		.style("padding", "5px")
-		.append("h5")
-		.attr("class", "panel-title")
-		.attr("id", "datasetLink")
-		.style("cursor", "pointer")
-		.style("font-size", "14px")
-		.style("width", "100%")
-		.text("Datasets");
-	bootstrapToggle({link: "dataset", target: "Dataset"});
-
-	datasetHeading.append("span")
-		.style("float", "right")
-		.text("[+]");
-
-	// Add each dataset
-	var datasetsBody = datasetsPanel.append("div")
-		.attr("id", "collapseDataset")
-		.attr("class", "panel-collapse collapse in")
-		.append("div")
-		.attr("class", "panel-body")
-		.style("padding", "5px");
-
-	var datasetEls = datasetsBody.append("ul")
-		.attr("id", "datasets")
-		.selectAll(".dataset")
-		.data(datasetData).enter()
-		.append("li")
-		.style("cursor", "pointer")
-		.on("click", function(d){
-			// Add/Remove the dataset from the list of filtered datasets
+  var datasetsTbl = d3.select("table#datasets tbody");
+	var datasetRows = datasetsTbl.selectAll('.tr')
+    .data(datasetData).enter()
+    .append("tr")
+    .on("click", function(d){
+      // Add/Remove the dataset from the list of filtered datasets
 			var index = filteredDatasets.indexOf(d.name),
 				visible = index == -1;
 
@@ -631,10 +600,11 @@ function view(){
 
 			// Fade in/out this dataset
 			d3.select(this).style("opacity", visible ? 0.5 : 1);
-		});
+    });
 
-	datasetEls.append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
-	datasetEls.append("div").text(function(d){ return d.name + " (" + d.numSamples + ")"; });
+	datasetRows.append("td").append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
+  datasetRows.append("td").text(function(d){ return d.name; });
+  datasetRows.append("td").text(function(d){ return d.numSamples; });
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add controls

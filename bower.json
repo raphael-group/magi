@@ -14,6 +14,7 @@
     "tether": "latest",
     "jquery-mousewheel": "~3.1.12",
     "d3-tip": "latest",
-    "jssha": "~1.6.0"
+    "jssha": "~1.6.0",
+    "fontawesome": "latest"
   }
 }
