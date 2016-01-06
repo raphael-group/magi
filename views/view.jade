@@ -138,11 +138,13 @@ block body
                         a(class="fa fa-download dropdown-toggle", id="aberrationsDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
                         ul(class="dropdown-menu", aria-labelledby="aberrationsDownload")
                           li
-                            a(title="Download aberrations view as SVG") SVG
+                            a(class="save-figure-link", data-format="pdf", data-selector="aberrations", title="Download aberrations view as PDF") PDF
                           li
-                            a(title="Download aberrations view as PNG") PNG
+                            a(class="save-figure-link", data-format="png", data-selector="aberrations", title="Download aberrations view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="aberrations", title="Download aberrations view as SVG") SVG
                     li
-                      a(class="fa fa-print", title="Print aberrations view", id="printAberrs")
+                      a(class="print-figure-link fa fa-print", data-selector="aberrations", title="Print aberrations view", id="printAberrs")
                     li
                       a(class="fa fa-caret-square-o-down collapse", title="Toggle aberrations view", data-toggle="collapse", data-target="#collapseAberrations", id="aberrationsLink")
 
@@ -166,11 +168,13 @@ block body
                         a(class="fa fa-download dropdown-toggle", id="heatmapDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
                         ul(class="dropdown-menu", aria-labelledby="heatmapDownload")
                           li
-                            a(title="Download heatmap view as SVG") SVG
+                            a(class="save-figure-link", data-format="pdf", data-selector="heatmap", title="Download heatmap view as PDF") PDF
                           li
-                            a(title="Download heatmap view as PNG") PNG
+                            a(class="save-figure-link", data-format="png", data-selector="heatmap", title="Download heatmap view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="heatmap", title="Download heatmap view as SVG") SVG
                     li
-                      a(class="fa fa-print", title="Print heatmap", id="printHmpViz")
+                      a(class="print-figure-link fa fa-print", data-selector="heatmap", title="Print heatmap", id="printHmpViz")
                     li
                       a(class="fa fa-caret-square-o-down collapse", title="Toggle heatmap", data-toggle="collapse", data-target="#collapseHeatmap", id="heatmapLink")
                             
@@ -195,11 +199,13 @@ block body
                         a(class="fa fa-download dropdown-toggle", id="networkDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
                         ul(class="dropdown-menu", aria-labelledby="networkDownload")
                           li
-                            a(title="Download network view as SVG") SVG
+                            a(class="save-figure-link", data-format="pdf", data-selector="network", title="Download network view as PDF") PDF
                           li
-                            a(title="Download network view as PNG") PNG
+                            a(class="save-figure-link", data-format="png", data-selector="network", title="Download network view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="network", title="Download network view as SVG") SVG
                     li
-                      a(class="fa fa-print", title="Print network view", id="printSubNet")
+                      a(class="print-figure-link fa fa-print", data-selector="network", title="Print network view", id="printSubNet")
                     li
                       a(class="fa fa-caret-square-o-down collapse", title="Toggle network view", data-toggle="collapse", data-target="#collapseNetwork", id="networkLink")
 
@@ -222,11 +228,13 @@ block body
                         a(class="fa fa-download dropdown-toggle", id="transcriptDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
                         ul(class="dropdown-menu", aria-labelledby="transcriptDownload")
                           li
-                            a(title="Download transcript view as SVG") SVG
+                            a(class="save-figure-link", data-format="pdf", data-selector="transcript", title="Download transcript view as PDF") PDF
                           li
-                            a(title="Download transcript view as PNG") PNG
+                            a(class="save-figure-link", data-format="png", data-selector="transcript", title="Download transcript view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="transcript", title="Download transcript view as SVG") SVG
                     li
-                      a(class="fa fa-print", title="Print transcript view", id="printTrnAnt")
+                      a(class="print-figure-link fa fa-print", data-selector="transcript", title="Print transcript view")
                     li
                       a(class="fa fa-caret-square-o-down collapse", title="Toggle transcript view", data-toggle="collapse", data-target="#collapseTranscript", id="transcriptLink")
 
@@ -252,11 +260,13 @@ block body
                         a(class="fa fa-download dropdown-toggle", id="cnaDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
                         ul(class="dropdown-menu", aria-labelledby="cnaDownload")
                           li
-                            a(title="Download CNA view as SVG") SVG
+                            a(class="save-figure-link", data-format="pdf", data-selector="cnas", title="Download CNAs view as PDF") PDF
                           li
-                            a(title="Download CNA view as PNG") PNG
+                            a(class="save-figure-link", data-format="png", data-selector="cnas", title="Download CNAs view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="cnas", title="Download CNAs view as SVG") SVG
                     li
-                      a(class="fa fa-print", title="Print CNA view", id="printCnaViz")
+                      a(class="print-figure-link fa fa-print", data-selector="cnas", title="Print CNA view")
                     li
                       a(class="fa fa-caret-square-o-down collapse", data-toggle="collapse", data-target="#collapseCNAs", id="cnasLink")
 
@@ -277,6 +287,10 @@ block body
   - else
     script(type="text/javascript").
       var user = undefined;
+
+  form(id='save-figure', action='/save-figure', method='POST')
+    input(type='hidden', name='format', id='format')
+    input(type='hidden', name='svg', id='svg')
 
   //- Keep modal outside of the rest so it can't be in the background
   div(class="modal fade", id="myModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")

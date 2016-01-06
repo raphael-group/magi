@@ -10,7 +10,8 @@ var about = require( './about' ),
 	annotations = require('./annotations'),
   log = require('./log'),
   share = require('./share'),
-  requery = require('./requery');
+  requery = require('./requery'),
+	save = require('./save');
 
 //*  Export the routes in each subrouter *//
 
@@ -62,6 +63,9 @@ exports.datasets = {};
 exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view;
 exports.datasets.manifests = datasets.manifests;
+
+// Save
+exports.savefigure = save.figure;
 
 // Share link
 exports.saveShareURL = share.saveShareURL;
