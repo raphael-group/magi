@@ -338,4 +338,28 @@ block belowTheFold
               resize = function() { $affix.width($parent.width()); };
           $(window).resize(resize); 
           resize();
+          
+          //////////////////////////////////////////////////////////////////////
+          // Hack from https://github.com/twbs/bootstrap/issues/12126#issuecomment-48995427
+          // to make Affix work in Safari
+          //////////////////////////////////////////////////////////////////////
+          // Check if we are in safari
+          if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+              var explicitlySetAffixPosition = function() {
+                  $affix.css('left',$affix.offset().left+'px');
+              };
+              /* Before the element becomes affixed, add left CSS that is equal to the distance of the element from the left of the screen */
+              $affix.on('affix.bs.affix',function(){
+                  explicitlySetAffixPosition();
+              });
+
+              // On resize of window, un-affix affixed widget to measure where it should be located, set the left CSS accordingly, re-affix it
+              $(window).resize(function(){
+                  if($affix.hasClass('affix')) {
+                      $affix.removeClass('affix');
+                      explicitlySetAffixPosition();
+                      $affix.addClass('affix');
+                  }
+              });
+          }
         });
