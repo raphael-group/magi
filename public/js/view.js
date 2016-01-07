@@ -580,17 +580,15 @@ function view(){
 			return { name: d, color: datasetToColor[d], numSamples: datasetToSamples[d].length };
 		}).sort(function(a, b){ return d3.ascending(a.name, b.name); });
 
-  var datasetsTbl = d3.select("table#datasets tbody");
-	var datasetRows = datasetsTbl.selectAll('.tr')
-    .data(datasetData).enter()
-    .append("tr")
+	var datasetRows = d3.selectAll("table#datasets tbody tr")
     .on("click", function(d){
       // Add/Remove the dataset from the list of filtered datasets
-			var index = filteredDatasets.indexOf(d.name),
+      var name = $(this).data('name');
+			var index = filteredDatasets.indexOf(name),
 				visible = index == -1;
 
 			if (visible){
-				filteredDatasets.push( d.name );
+				filteredDatasets.push( name );
 			} else{
 				filteredDatasets.splice(index, 1);
 			}
@@ -602,9 +600,9 @@ function view(){
 			d3.select(this).style("opacity", visible ? 0.5 : 1);
     });
 
-	datasetRows.append("td").append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
-  datasetRows.append("td").text(function(d){ return d.name; });
-  datasetRows.append("td").text(function(d){ return d.numSamples; });
+	// datasetRows.append("td").append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
+  // datasetRows.append("td").text(function(d){ console.log(d); return d.name; });
+  // datasetRows.append("td").text(function(d){ return d.numSamples; });
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add controls

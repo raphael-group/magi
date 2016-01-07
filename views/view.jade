@@ -24,10 +24,22 @@ block body
                     table(class="table table-hover", id="datasets")
                       thead
                         tr
-                          th Color
+                          th
                           th Dataset
                           th Samples
+                          th View
                       tbody
+                        - for (var i = 0; i < data.datasets.length; i++)
+                          tr(data-name="#{data.datasets[i].title}")
+                            td
+                              div(class="dataset-color", style="background:#{data.datasets[i].color}")
+                            td
+                              span(style="border-bottom: 1px dotted #777;cursor:help", data-trigger="hover", data-placement="bottom", data-toggle="popover", data-content="#{data.datasetToCancer[data.datasets[i].title]}")
+                                | #{data.datasets[i].title}
+                            td #{data.datasets[i].samples.length}
+                            td
+                              a(href="/datasets/view/#{data.datasets[i]._id}")
+                                i(class="fa fa-external-link")
                       
                 div(class="panel panel-default")
                   div(class="panel-heading", role="tab")
