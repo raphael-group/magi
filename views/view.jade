@@ -10,12 +10,12 @@ block body
       div(class="row")
         //- CONTROL PANEL
         div(class="col-lg-3 col-md-push-9 col-md-3 col-sm-12 col-xs-12")
-          div(data-spy="affix", data-offset-top="0", id="controls", class="panel panel-default")
+          div(data-spy="affix", data-offset-top="0", id="controls", class="panel panel-primary", style="max-width:400px")
             div(class="panel-heading")
               h4(class="panel-title") Control Panel
             div(class="panel-body")
               div(class="panel-group" id="accordion" role="tablist" aria-multiselectable="true")
-                div(class="panel panel-primary")
+                div(class="panel panel-default")
                   div(class="panel-heading" role="tab" id="datasetsHeading")
                     h5(class="panel-title")
                       a(role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseDatasets" aria-expanded="true" aria-controls="collapseDatasets")
@@ -29,13 +29,13 @@ block body
                           th Samples
                       tbody
                       
-                div(class="panel panel-primary")
+                div(class="panel panel-default")
                   div(class="panel-heading", role="tab")
                     h4(class="panel-title")
                       a(id="enrichmentStatsLink", class="clearfix")
                         span(class="pull-left") Enrichment statistics&nbsp;
                         i(class="pull-right fa fa-external-link")
-                div(class="panel panel-primary")
+                div(class="panel panel-default")
                   div(class="panel-heading" role="tab" id="variantAnnotationsHeading")
                     h4(class="panel-title")
                       a(class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseVariantAnnotations" aria-expanded="false" aria-controls="collapseVariantAnnotations")
@@ -52,7 +52,7 @@ block body
                             td #{data.genes[i]}
                             td 
                               span(class="badge") #{data.geneToAnnotationCount[data.genes[i]]}
-                div(id="annotateMutation" class="panel panel-primary")
+                div(id="annotateMutation" class="panel panel-default")
                   div(class="panel-heading", role="tab", id="annotateMutationsHeading")
                     h4(class="panel-title", id="annotateMutationsLink")
                       a(class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseMutationAnnotation" aria-expanded="false" aria-controls="collapseMutationAnnotation")
@@ -64,7 +64,7 @@ block body
                       a(href="/annotation/mutation/create", target="_blank") here
                       |  or by clicking on the link on the mutations popup within the transcript view.
 
-                div(id="annotateInteraction" class="panel panel-primary")
+                div(id="annotateInteraction" class="panel panel-default")
                   div(class="panel-heading", role="tab", id="annotateInteractionsHeading")
                     h4(class="panel-title", id="annotateInteractionsLink")
                       a(class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseInteractionAnnotation" aria-expanded="false" aria-controls="collapseInteractionAnnotation")
@@ -75,9 +75,9 @@ block body
                       | Annotate references to interactions 
                       a(href= annotationsURL + "/annotations/interactions/add" target="_blank") here
                       |  or by clicking on the link on the interactions popup within the network view.
-                div(id="share", class="panel panel-primary")
+                div(id="share", class="panel panel-default")
                   div(class="panel-heading", role="tab", id="shareHeading")
-                    a(id="shareBtn", data-toggle="modal", data-target="#myModal", style="color:#fff;cursor:pointer")
+                    a(id="shareBtn", data-toggle="modal", data-target="#myModal", style="color:rgb(51,51,51);cursor:pointer")
                       h4(class="panel-title clearfix")
                         span(class="pull-left") Share
                         i(class="fa fa-share pull-right")
