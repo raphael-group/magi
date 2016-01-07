@@ -17,9 +17,10 @@ $(document).ready(
 );
 
 // Share link button event handler
-$('button#shareBtn').on('click', function(e) {
+$('a#shareBtn').on('click', function(e) {
   $.post('/share', {url: window.location.search})
     .done(function(r) {
+      console.log(r)
       $('div#shareLinkBox input').val(window.location.origin + '/view/' + r);
     });
   });
@@ -244,10 +245,35 @@ function view(){
 		if (typeof(data.sampleAnnotations) == "object" && Object.keys(data.sampleAnnotations).length > 0)
 			data.aberrations.annotations = data.sampleAnnotations;
 
-		aberrations.datum(data.aberrations)
-			.call(gd3.mutationMatrix({
-				style: style.aberrations
-			}).showColumnCategories(false).showColumnLabels(false).linkRowLabelsToNCBI(true));
+    var m2Fn = gd3.mutationMatrix({ style: style.aberrations })
+            .showHoverLegend(true)
+            .showLegend(false)
+            .showColumnCategories(false)
+            .showColumnLabels(false)
+            .linkRowLabelsToNCBI(true)
+            .showSortingMenu(false);
+		aberrations.datum(data.aberrations).call(m2Fn)
+
+    // Handle sorting
+    $('ul#sort-options').sortable({
+      stop: function(){
+        // Compute the new order of the options
+        var sortingOptions = [];
+        d3.selectAll('li.sort-option').each(function(){
+          sortingOptions.push($(this).data('sort-option'));
+        });
+        console.log(sortingOptions)
+
+        // Get the new column label ordering from the mutation matrix
+        var columnLabels = m2Fn.getOrderedColumnLabels(sortingOptions);
+
+        // Finally, issue a dispatch to update the heatmap
+        gd3.dispatch.sort({
+          columnLabels: columnLabels,
+          sortingOptionsData: sortingOptions
+        })
+      }
+    });
 
 		// Add tooltips
 		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
@@ -600,10 +626,6 @@ function view(){
 			d3.select(this).style("opacity", visible ? 0.5 : 1);
     });
 
-	// datasetRows.append("td").append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
-  // datasetRows.append("td").text(function(d){ console.log(d); return d.name; });
-  // datasetRows.append("td").text(function(d){ return d.numSamples; });
-
 	///////////////////////////////////////////////////////////////////////////
 	// Add controls
 	var hideViewCheckboxes = [ { checkbox: $('#AberrationsHideCheckbox'), _id: "aberrationsRow" },
@@ -619,7 +641,6 @@ function view(){
 			}
 		});
 	})
-
 
 	// Resolve the promise and return
 	deferred.resolve();

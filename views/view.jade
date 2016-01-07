@@ -106,6 +106,27 @@ block body
                     | Aberrations
                   ul(class="list-inline pull-right")
                     li
+                      div(class="dropdown")
+                        a(class="fa fa-sort", title="Sort columns of aberrations matrix", id="aberrationsSort", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        ul(class="dropdown-menu", aria-labelledby="aberrationsSort", id="sort-options")
+                          li(class="sort-option", data-sort-option="First active row")
+                            a
+                              i(class="fa fa-sort")
+                              span(class="sort-name") First active row
+                          li(class="sort-option", data-sort-option="Column category")
+                            a
+                              i(class="fa fa-sort")
+                              span(class="sort-name") Sample type
+                          li(class="sort-option", data-sort-option="Exclusivity")
+                              a
+                                i(class="fa fa-sort")
+                                span(class="sort-name") Exclusivity
+                          li(class="sort-option", data-sort-option="Name")
+                              a
+                                i(class="fa fa-sort")
+                                span(class="sort-name") Sample name
+                          
+                    li
                       a(class="fa fa-info", title="Aberrations view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the mutations of genes (rows) across samples (columns). Samples are colored by cancer type. Full ticks represent SNVs, downticks represent deletions, upticks represent amplifications, and triangles represent fusions, rearragements or splice variants. Only samples with a mutation in the given subnetwork are shown. You can <b>zoom in on and drag the mutation matrix</b> by scrolling and/or clicking the figure with your mouse.")
                     li
                       a(class="fa fa-question", title="Aberrations view tour")
@@ -290,6 +311,8 @@ block belowTheFold
       script(src='/js/save.js').
       script(src='/js/view.js').
       script(src='/js/log.js').
+      script(src='/js/log.js').
+      script(src='/components/jquery-ui/jquery-ui.min.js'). //- required for drag/drop list sorting
       //- Define behavior for the scroll panel to stick to the top of the window
       script(type="text/javascript").
         $(document).ready(function(){

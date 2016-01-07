@@ -13,6 +13,7 @@
     "tether-shepherd": "latest",
     "tether": "latest",
     "jquery-mousewheel": "~3.1.12",
+    "jquery-ui": "latest",
     "d3-tip": "latest",
     "jssha": "~1.6.0",
     "fontawesome": "latest"
