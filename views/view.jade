@@ -62,8 +62,9 @@ block body
                         - for (var i = 0; i < data.genes.length; i++)
                           tr(class="variant-annotations-row", data-href=annotationsURL + "/annotations/#{data.genes[i]}")
                             td #{data.genes[i]}
-                            td 
-                              span(class="badge") #{data.geneToAnnotationCount[data.genes[i]]}
+                            td
+                              span(class="pull-left badge") #{data.geneToAnnotationCount[data.genes[i]]}
+                              i(class="pull-right fa fa-external-link")
                 div(id="annotateMutation" class="panel panel-default")
                   div(class="panel-heading", role="tab", id="annotateMutationsHeading")
                     h4(class="panel-title", id="annotateMutationsLink")
