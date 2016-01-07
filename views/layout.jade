@@ -5,6 +5,7 @@ html
     link(rel="icon", type="image/png", href="/img/favicon.png")
     title MAGI
     link(rel='stylesheet', href='/components/bootstrap/dist/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/components/fontawesome/css/font-awesome.min.css')
     link(rel='stylesheet', href='/css/app.css')
     link(rel='stylesheet', href='/css/elusive-webfont.css')
 
@@ -48,12 +49,10 @@ html
                       a(href="/support") Support
                     li
                       a(href="#" id="give-feedback") Feedback
-            ul(class="nav navbar-nav navbar-center")
-              li
-                div(style="padding-top:14px;margin-right:5px")
-                  | &nbsp;|&nbsp;
-                  a(href=annotationsURL target="_blank") 
-                    button(type="button" class="btn btn-danger btn-xs") MAGI Annotations
+                    li
+                      a(class="btn btn-danger", href=annotationsURL, target="_new", style="color:#fff")
+                        | MAGI annotations&nbsp;
+                        i(class="fa fa-external-link")
             ul(class="nav navbar-nav navbar-right", style="color:grey")
               li
                 //- Ask the user to login or show his/her name

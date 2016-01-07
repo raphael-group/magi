@@ -5,233 +5,277 @@ block body
     h3 Loading...
     img(src="/img/spinner.gif")
   div(id="view-page")
-    div(id="control-panel")
-      h4 Control Panel <span id="hideControlPanel">[-]</span>
-      div(class="panel panel-default", style="margin-top:5px")
-        div(class="panel-heading", style="padding:5px")
-          a(href="#", id="enrichmentStatsLink", style="color:#000000")
-            h5(class="panel-title", style="cursor:pointer;font-size:14px;")
-              | Enrichment statistics
-              span(style="float:right") [+]
-      div(id="controls")
-
-      div(id="viz-options", class="panel panel-default")
-        div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="optionsLink")
-            | Show/hide views
-            span(style="float:right") [+]
-        div(id="collapseOptions", class="panel-collapse collapse", style="padding:5px")
-          b Hide views
-          ul(style="padding:0px;list-style:none")
-            li(class="checkbox")
-              label
-                input(type="checkbox", id="AberrationsHideCheckbox")
-                | Aberrations
-            li(class="checkbox")
-              label(style="font-weight:400")
-                input(type="checkbox", id="DataMatrixHideCheckbox")
-                | Heatmap
-            li(class="checkbox")
-              label
-                input(type="checkbox", id="NetworkTranscriptHideCheckbox")
-                | Network and transcript
-            li(class="checkbox")
-              label
-                input(type="checkbox", id="CNAsHideCheckbox")
-                | CNAs
-
-      div(id="saveBox", class="panel panel-default", style="padding:0px")
-        div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="saveLink")
-            | Download views
-            span(style="float:right") [+]
-
-        div(id="collapseSave", class="panel-collapse collapse")
-          div(class="panel-body", style="padding:5px")
-            p(style="margin:0px;") Select <a href="" id="saveSelectAll"> all</a> or <a href="" id="saveSelectNone">none</a>
-            ul(id="saveOptList", style="padding:0px;list-style:none;")
-              li
-                label(style="font-weight:400")
-                  input(type="checkbox", id="aberrations-download", style="margin-right:5px;")
-                  | Aberrations
-              li
-                label(style="font-weight:400")
-                  input(type="checkbox", id="heatmap-download", style="margin-right:5px;")
-                  | Heatmap
-              li
-                label(style="font-weight:400")
-                  input(type="checkbox", id="network-download", style="margin-right:5px;")
-                  | Network
-              li
-                label(style="font-weight:400")
-                  input(type="checkbox", id="transcript-download", style="margin-right:5px;")
-                  | Transcript
-              li
-                label(style="font-weight:400")
-                  input(type="checkbox", id="cna-download", style="margin-right:5px;")
-                  | CNAs
-            a(id="downloadLink", style="cursor:pointer")
-              | &raquo; Download as SVG
-            br
-            a(id="downloadLinkPNG", style="cursor:pointer")
-              | &raquo; Download as PNG
-
-            div(id="saveErrMsgContainer")
-
-      div(id="annotatedVariants" class="panel panel-default", style="padding:0px;")
-        div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotatedVariantsLink")
-            | Variant annotations
-            span(style="float:right") [+]
-
-        div(id="collapseAnnotatedVariants", class="panel-collapse collapse")
-          div(class="panel-body", style="padding:5px;font-size:90%")
-            ul
-              - for (var i = 0; i < data.genes.length; i++)
-                li
-                  | #{data.genes[i]}
-                  a(href= annotationsURL + "/annotations/#{data.genes[i]}" target="_new")
-                    span(class="badge", style="font-size:80%") #{data.geneToAnnotationCount[data.genes[i]]}
-
-      div(id="annotateMutation" class="panel panel-default", style="padding:0px;")
-        div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotateMutationLink")
-            | Annotate mutations
-            span(style="float:right") [+]
-
-        div(id="collapseMutationAnnotation", class="panel-collapse collapse in")
-          div(class="panel-body", style="padding:5px;font-size:90%")
-            | Annotate references to mutations  
-            a(href="/annotation/mutation/create", target="_blank") here
-            |  or by clicking on the link on the mutations popup within the transcript view.
-
-      div(id="annotateInteraction" class="panel panel-default", style="padding:0px;")
-        div(class="panel-heading", style="padding:5px")
-          h5(class="panel-title", style="cursor:pointer;font-size:14px;", id="annotateInteractionLink")
-            | Annotate interactions
-            span(style="float:right") [+]
-
-        div(id="collapseInteractionAnnotation", class="panel-collapse collapse in")
-          div(class="panel-body", style="padding:5px;font-size:90%")
-            | Annotate references to interactions 
-            a(href= annotationsURL + "/annotations/interactions/add" target="_blank") here
-            |  or by clicking on the link on the interactions popup within the network view.
-
-      div(id="share")
-        //- Button trigger modal
-        button(id="shareBtn", class="btn btn-primary btn-md", data-toggle="modal", data-target="#myModal") Share
-
-    div(id="instructions")
-      div(class="panel panel-default")
-        div(class="panel-heading")
-          h4(class="panel-title", data-toggle="collapse", data-target="#collapseOne", style="cursor:pointer", id="instructionsLink")
-            | INSTRUCTIONS
-            span(style="float:right") [+]
-
-        div(id="collapseOne", class="panel-collapse collapse")
-          div(class="panel-body")
-            ul
-              li
-                i
-                  b Network view.&nbsp;
-                | Shows the interactions among genes on the HINT, HPRD, or iRefIndex interaction networks.
-                | You can <b>toggle the interaction networks</b> shown by clicking on them in the legend,
-                | and you can <b>reposition the nodes </b>in the subnetwork for a better view by <b>dragging/dropping</b> them.
-              li
-                i
-                  b Aberrations view.&nbsp;
-                | Shows the mutations of genes (rows) across samples (columns). Samples are colored by cancer type.
-                | Full ticks represent SNVs, downticks represent deletions, upticks represent amplifications,
-                | and triangles represent fusions, rearragements or splice variants.
-                | Only samples with a mutation in the given subnetwork are shown.
-                | You can <b>zoom in on and drag the mutation matrix</b> by scrolling and/or clicking the figure with your mouse.
-              li
-                i
-                  b Heatmap view.&nbsp;
-                | Shows continuous-valued data in a query set of genes (rows) in a cohort of samples (columns) as heatmap.
-                | By default, displays expression data in only the samples in which the genes are mutated.
-              li
-                i
-                  b Transcript view.&nbsp;
-                | Shows the mutations in each REFSEQ transcript of each gene in the subnetwork.
-                | Mutations are colored by cancer type. Each symbol represents a distinct mutation type.
-                | Putatively inactivating mutations are shown below the transcript, and the remaining mutations are shown above the transcript.
-                | Select one of the three protein domain databases, including Pfam, SMART, and NCBI Conserve Domain, to show annotated protein domains for each transcript -- scroll over a domain to reveal its name.
-                | You can <b>zoom in on and drag the transcript annotation</b> by scrolling and/or clicking the figure with your mouse.
-              li
-                i
-                  b CNA view.&nbsp;
-                | Shows the copy number aberrations surrounding the selected gene (highlighted as red) on the chromosome.
-                | The topest panel shows genes (shown as blocks) distributed in the region.
-                | You can click and drag a window in this panel to zoom in and see the details in the middle and bottom panels.
-                | The middle and bottom panels show genes and copy number aberration inside the zoom in window you just dragged, respectively.
-                | Copy number aberrations are colored by cancer type.
-                | Each row represents one sample.
-                | You can mouseover copy number aberration to get more detail information.
-
     div(id="spinner")
-    div(id="view")
+    div(class="container", style="width:100%")
+      div(class="row")
+        //- CONTROL PANEL
+        div(class="col-lg-3 col-md-push-9 col-md-3 col-sm-12 col-xs-12")
+          div(data-spy="affix", data-offset-top="0", id="controls", class="panel panel-primary", style="max-width:400px")
+            div(class="panel-heading")
+              h4(class="panel-title") Control Panel
+            div(class="panel-body")
+              div(class="panel-group" id="accordion" role="tablist" aria-multiselectable="true")
+                div(class="panel panel-default")
+                  div(class="panel-heading" role="tab" id="datasetsHeading")
+                    h5(class="panel-title")
+                      a(role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseDatasets" aria-expanded="true" aria-controls="collapseDatasets")
+                        | Datasets
+                  div(id="collapseDatasets" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="datasetsHeading")
+                    table(class="table table-hover", id="datasets")
+                      thead
+                        tr
+                          th
+                          th Dataset
+                          th Samples
+                          th View
+                      tbody
+                        - for (var i = 0; i < data.datasets.length; i++)
+                          tr(data-name="#{data.datasets[i].title}")
+                            td
+                              div(class="dataset-color", style="background:#{data.datasets[i].color}")
+                            td
+                              span(style="border-bottom: 1px dotted #777;cursor:help", data-trigger="hover", data-placement="bottom", data-toggle="popover", data-content="#{data.datasetToCancer[data.datasets[i].title]}")
+                                | #{data.datasets[i].title}
+                            td #{data.datasets[i].samples.length}
+                            td
+                              a(href="/datasets/view/#{data.datasets[i]._id}")
+                                i(class="fa fa-external-link")
+                      
+                div(class="panel panel-default")
+                  div(class="panel-heading", role="tab")
+                    h4(class="panel-title")
+                      a(id="enrichmentStatsLink", class="clearfix")
+                        span(class="pull-left") Enrichment statistics&nbsp;
+                        i(class="pull-right fa fa-external-link")
+                div(class="panel panel-default")
+                  div(class="panel-heading" role="tab" id="variantAnnotationsHeading")
+                    h4(class="panel-title")
+                      a(class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseVariantAnnotations" aria-expanded="false" aria-controls="collapseVariantAnnotations")
+                        | Variant annotations
+                  div(id="collapseVariantAnnotations" class="panel-collapse collapse" role="tabpanel" aria-labelledby="variantAnnotationsHeading")
+                    table(class="table table-hover")
+                      thead
+                        tr(style="background:rgb(51,51,51);color:#ffffff")
+                          th Gene
+                          th Annotations
+                      tbody
+                        - for (var i = 0; i < data.genes.length; i++)
+                          tr(class="variant-annotations-row", data-href=annotationsURL + "/annotations/#{data.genes[i]}")
+                            td #{data.genes[i]}
+                            td
+                              span(class="pull-left badge") #{data.geneToAnnotationCount[data.genes[i]]}
+                              i(class="pull-right fa fa-external-link")
+                div(id="annotateMutation" class="panel panel-default")
+                  div(class="panel-heading", role="tab", id="annotateMutationsHeading")
+                    h4(class="panel-title", id="annotateMutationsLink")
+                      a(class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseMutationAnnotation" aria-expanded="false" aria-controls="collapseMutationAnnotation")
+                        | Annotate mutations
 
-      div
-        div(id="aberrationsRow")
-          h3
-            | Aberrations
-            small
-              | &nbsp;&nbsp;
-              a(id="printAberrs", title="Print aberrations view.")
-                  span(class="glyphicon glyphicon-print")
-          div(id="aberrations")
-          br
-        //- Heatmap view
-        div(id="dataMatrixRow")
-          h3(id="heatmap-title")
-              span(class="name") Heatmap
-              small(style="font-size:12px")
-                | &nbsp;&nbsp;
-                a(id="printHmpViz", title="Print heatmap.")
-                    span(class="glyphicon glyphicon-print")
-          div(id="heatmap")
+                  div(id="collapseMutationAnnotation", class="panel-collapse collapse" role="tabpanel" aria-labelledby="annotateMutationsHeading")
+                    div(class="panel-body")
+                      | Annotate references to mutations  
+                      a(href="/annotation/mutation/create", target="_blank") here
+                      |  or by clicking on the link on the mutations popup within the transcript view.
 
+                div(id="annotateInteraction" class="panel panel-default")
+                  div(class="panel-heading", role="tab", id="annotateInteractionsHeading")
+                    h4(class="panel-title", id="annotateInteractionsLink")
+                      a(class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseInteractionAnnotation" aria-expanded="false" aria-controls="collapseInteractionAnnotation")
+                        | Annotate interactions
 
-      hr(style="margin:0px;")
+                  div(id="collapseInteractionAnnotation", class="panel-collapse collapse", role="tabpanel", aria-labelledby="annotateInteractionsHeading")
+                    div(class="panel-body")
+                      | Annotate references to interactions 
+                      a(href= annotationsURL + "/annotations/interactions/add" target="_blank") here
+                      |  or by clicking on the link on the interactions popup within the network view.
+                div(id="share", class="panel panel-default")
+                  div(class="panel-heading", role="tab", id="shareHeading")
+                    a(id="shareBtn", data-toggle="modal", data-target="#myModal", style="color:rgb(51,51,51);cursor:pointer")
+                      h4(class="panel-title clearfix")
+                        span(class="pull-left") Share
+                        i(class="fa fa-share pull-right")
 
-      div(id="networkTranscriptRow")
-        div(class="half-page-view leftside")
-            h3
-              | Network
-              small(style="font-size:12px")
-                | &nbsp;&nbsp;
-                a(id="printSubNet", title="Print network.")
-                    span(class="glyphicon glyphicon-print")
-            div(id="network")
+        //- MAIN VIEWS
+        div(class="col-lg-9 col-md-pull-3 col-md-9 col-sm-12 col-xs-12")
+          //- Aberrations row
+          div(class="row")
+            div(class="col-lg-12")
+              div(id="aberrationsRow", class="panel panel-default")
+                div(class="panel-heading clearfix")
+                  h4(class="panel-title pull-left")
+                    | Aberrations
+                  ul(class="list-inline pull-right")
+                    li
+                      div(class="dropdown")
+                        a(class="fa fa-sort", title="Sort columns of aberrations matrix", id="aberrationsSort", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        ul(class="dropdown-menu", aria-labelledby="aberrationsSort", id="sort-options")
+                          li(class="sort-option", data-sort-option="First active row")
+                            a
+                              i(class="fa fa-sort")
+                              span(class="sort-name") First active row
+                          li(class="sort-option", data-sort-option="Column category")
+                            a
+                              i(class="fa fa-sort")
+                              span(class="sort-name") Sample type
+                          li(class="sort-option", data-sort-option="Exclusivity")
+                              a
+                                i(class="fa fa-sort")
+                                span(class="sort-name") Exclusivity
+                          li(class="sort-option", data-sort-option="Name")
+                              a
+                                i(class="fa fa-sort")
+                                span(class="sort-name") Sample name
+                          
+                    li
+                      a(class="fa fa-info", title="Aberrations view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the mutations of genes (rows) across samples (columns). Samples are colored by cancer type. Full ticks represent SNVs, downticks represent deletions, upticks represent amplifications, and triangles represent fusions, rearragements or splice variants. Only samples with a mutation in the given subnetwork are shown. You can <b>zoom in on and drag the mutation matrix</b> by scrolling and/or clicking the figure with your mouse.")
+                    li
+                      a(class="fa fa-question", title="Aberrations view tour")
+                    li
+                      div(class="dropdown")
+                        a(class="fa fa-download dropdown-toggle", id="aberrationsDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        ul(class="dropdown-menu", aria-labelledby="aberrationsDownload")
+                          li
+                            a(class="save-figure-link", data-format="pdf", data-selector="aberrations", title="Download aberrations view as PDF") PDF
+                          li
+                            a(class="save-figure-link", data-format="png", data-selector="aberrations", title="Download aberrations view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="aberrations", title="Download aberrations view as SVG") SVG
+                    li
+                      a(class="print-figure-link fa fa-print", data-selector="aberrations", title="Print aberrations view", id="printAberrs")
+                    li
+                      a(class="fa fa-caret-square-o-down collapse", title="Toggle aberrations view", data-toggle="collapse", data-target="#collapseAberrations", id="aberrationsLink")
 
-        div(class="half-page-view rightside")
-            h3
-              | Transcript
-              small
-                | &nbsp;&nbsp;
-                a(id="printTrnAnt", title="Print transcript view.")
-                    span(class="glyphicon glyphicon-print")
-            select(class="form-control", id="transcript-select")
-            div(id="transcript")
+                div(id="collapseAberrations", class="panel-collapse collapse in")
+                  div(id="aberrations", class="panel-body")
 
-      hr(style="clear:both;margin:0px;")
+          //- Heatmap row
+          div(class="row")
+            div(class="col-lg-12")
+              div(id="dataMatrixRow", class="panel panel-default")
+                div(class="panel-heading clearfix")
+                  h4(class="panel-title pull-left")
+                    | Heatmap
+                  ul(class="list-inline pull-right")
+                    li
+                      a(class="fa fa-info", title="Heatmap description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows continuous-valued data in a query set of genes (rows) in a cohort of samples (columns) as heatmap. By default, displays expression data in only the samples in which the genes are mutated.")
+                    li
+                      a(class="fa fa-question", title="Heatmap tour")
+                    li
+                      div(class="dropdown")
+                        a(class="fa fa-download dropdown-toggle", id="heatmapDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        ul(class="dropdown-menu", aria-labelledby="heatmapDownload")
+                          li
+                            a(class="save-figure-link", data-format="pdf", data-selector="heatmap", title="Download heatmap view as PDF") PDF
+                          li
+                            a(class="save-figure-link", data-format="png", data-selector="heatmap", title="Download heatmap view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="heatmap", title="Download heatmap view as SVG") SVG
+                    li
+                      a(class="print-figure-link fa fa-print", data-selector="heatmap", title="Print heatmap", id="printHmpViz")
+                    li
+                      a(class="fa fa-caret-square-o-down collapse", title="Toggle heatmap", data-toggle="collapse", data-target="#collapseHeatmap", id="heatmapLink")
+                            
+                div(id="collapseHeatmap", class="panel-collapse collapse in")
+                  div(id="heatmap", class="panel-body")
 
-      //- CNA view
-      div(id="cnasRow")
-        h3
-          | Copy number aberrations
-          small
-            | &nbsp;&nbsp;
-            a(id="printCnaViz", title="Print CNA view.")
-                span(class="glyphicon glyphicon-print")
+          //- Network and transcript row
+          div(class="row", id="networkTranscriptRow")
+            //- Network view
+            div(class="col-lg-6")
+              div(class="panel panel-default")
+                div(class="panel-heading clearfix")
+                  h4(class="panel-title pull-left")
+                    | Network
+                  ul(class="list-inline pull-right")
+                    li
+                      a(class="fa fa-info", title="Network view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the interactions among genes on the HINT, HPRD, or iRefIndex interaction networks. You can <b>toggle the interaction networks</b> shown by clicking on them in the legend, and you can <b>reposition the nodes </b>in the subnetwork for a better view by <b>dragging/dropping</b> them.")
+                    li
+                      a(class="fa fa-question", title="Network view tour")
+                    li
+                      div(class="dropdown")
+                        a(class="fa fa-download dropdown-toggle", id="networkDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        ul(class="dropdown-menu", aria-labelledby="networkDownload")
+                          li
+                            a(class="save-figure-link", data-format="pdf", data-selector="network", title="Download network view as PDF") PDF
+                          li
+                            a(class="save-figure-link", data-format="png", data-selector="network", title="Download network view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="network", title="Download network view as SVG") SVG
+                    li
+                      a(class="print-figure-link fa fa-print", data-selector="network", title="Print network view", id="printSubNet")
+                    li
+                      a(class="fa fa-caret-square-o-down collapse", title="Toggle network view", data-toggle="collapse", data-target="#collapseNetwork", id="networkLink")
 
-        select(class="form-control", id="cnas-select")
-        div(id="cnas")
+                div(id="collapseNetwork", class="panel-collapse collapse in")
+                  div(id="network", class="panel-body")
+            
+            //- Transcript view
+            div(class="col-lg-6")
+              div(class="panel panel-default")
+                div(class="panel-heading clearfix")
+                  h4(class="panel-title pull-left")
+                    | Transcript
+                  ul(class="list-inline pull-right")
+                    li
+                      a(class="fa fa-info", title="Transcript view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the mutations in each REFSEQ transcript of each gene in the subnetwork. Mutations are colored by cancer type. Each symbol represents a distinct mutation type. Putatively inactivating mutations are shown below the transcript, and the remaining mutations are shown above the transcript. Annotated protein domains are shown for each transcript -- scroll over a domain to reveal its name. You can <b>zoom in on and drag the transcript annotation</b> by scrolling and/or clicking the figure with your mouse.")
+                    li
+                      a(class="fa fa-question", title="Transcript view tour")
+                    li
+                      div(class="dropdown")
+                        a(class="fa fa-download dropdown-toggle", id="transcriptDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        ul(class="dropdown-menu", aria-labelledby="transcriptDownload")
+                          li
+                            a(class="save-figure-link", data-format="pdf", data-selector="transcript", title="Download transcript view as PDF") PDF
+                          li
+                            a(class="save-figure-link", data-format="png", data-selector="transcript", title="Download transcript view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="transcript", title="Download transcript view as SVG") SVG
+                    li
+                      a(class="print-figure-link fa fa-print", data-selector="transcript", title="Print transcript view")
+                    li
+                      a(class="fa fa-caret-square-o-down collapse", title="Toggle transcript view", data-toggle="collapse", data-target="#collapseTranscript", id="transcriptLink")
+
+                div(id="collapseTranscript", class="panel-collapse collapse in")
+                  div(class="panel-body")
+                    select(class="form-control", id="transcript-select")
+                    div(id="transcript")
+
+          //- CNAs row
+          div(class="row", id="cnasRow")
+            div(class="col-lg-12")
+              div(class="panel panel-default")
+                div(class="panel-heading clearfix")
+                  h4(class="panel-title pull-left")
+                    | Copy Number Aberrations
+                  ul(class="list-inline pull-right")
+                    li
+                      a(class="fa fa-info", title="CNA view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the copy number aberrations surrounding the selected gene (highlighted as red) on the chromosome. The topmost panel shows genes (shown as blocks) distributed in the region. You can click and drag a window in this panel to zoom in and see the details in the middle and bottom panels. The middle and bottom panels show genes and copy number aberration inside the zoom in window you just dragged, respectively. Copy number aberrations are colored by cancer type. Each row represents one sample. You can mouseover copy number aberration to get more detail information.")
+                    li
+                      a(class="fa fa-question", title="CNA view tour")
+                    li
+                      div(class="dropdown")
+                        a(class="fa fa-download dropdown-toggle", id="cnaDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        ul(class="dropdown-menu", aria-labelledby="cnaDownload")
+                          li
+                            a(class="save-figure-link", data-format="pdf", data-selector="cnas", title="Download CNAs view as PDF") PDF
+                          li
+                            a(class="save-figure-link", data-format="png", data-selector="cnas", title="Download CNAs view as PNG") PNG
+                          li
+                            a(class="save-figure-link", data-format="svg", data-selector="cnas", title="Download CNAs view as SVG") SVG
+                    li
+                      a(class="print-figure-link fa fa-print", data-selector="cnas", title="Print CNA view")
+                    li
+                      a(class="fa fa-caret-square-o-down collapse", data-toggle="collapse", data-target="#collapseCNAs", id="cnasLink")
+
+                div(id="collapseCNAs", class="panel-collapse collapse in")
+                  div(class="panel-body")
+                    select(class="form-control", id="cnas-select")
+                    div(id="cnas")
 
   script(type="text/javascript").
     var data = !{JSON.stringify(data)},
-        showDuplicates = !{showDuplicates};
+        showDuplicates = !{showDuplicates},
+        annotationsURL = !{JSON.stringify(annotationsURL)};
 
   //- Convert the user data to make it accessible to any javascript
   - if (user)
@@ -240,6 +284,10 @@ block body
   - else
     script(type="text/javascript").
       var user = undefined;
+
+  form(id='save-figure', action='/save-figure', method='POST')
+    input(type='hidden', name='format', id='format')
+    input(type='hidden', name='svg', id='svg')
 
   //- Keep modal outside of the rest so it can't be in the background
   div(class="modal fade", id="myModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
@@ -263,36 +311,29 @@ block belowTheFold
       script(src='/js/save.js').
       script(src='/js/view.js').
       script(src='/js/log.js').
+      script(src='/js/log.js').
+      script(src='/components/jquery-ui/jquery-ui.min.js'). //- required for drag/drop list sorting
       //- Define behavior for the scroll panel to stick to the top of the window
       script(type="text/javascript").
-        annotationsURL = !{JSON.stringify(annotationsURL)};
         $(document).ready(function(){
-          var jControlPanel = $('#control-panel');
-          $(window).bind('scroll', function() {
-            if ($(window).scrollTop() > navbarHeight) {
-              jControlPanel.addClass('fixed').css("position", "fixed").css("top", 0);
-            }
-            else {
-              jControlPanel.css("top", navbarHeight + 5 - $(window).scrollTop());
-              jControlPanel.removeClass('fixed').css("position", "fixed");
-            }
+          $('[data-toggle="popover"]').popover();
+          $('a.collapse').click(function(){
+            $( this ).toggleClass( "fa-caret-square-o-down" );
+            $( this ).toggleClass( "fa-caret-square-o-up" );
           });
+          $('.variant-annotations-row').click(function(){
+            window.open($(this).data("href"));
+          });
+          //- Append this page's query parameters to create the enrichments link
+          $("#enrichmentStatsLink").attr("href", "/enrichments?" + window.location.href.split("?")[1]);
+          $('.btn-navbar').click( function() {
+            $('div#sidebar').toggleClass('expanded');
+          });
+          //- Fix the affix causing width changes, as suggested here:
+          //- https://github.com/twbs/bootstrap/issues/10235
+          var $affix = $("div#controls"), 
+              $parent = $affix.parent(), 
+              resize = function() { $affix.width($parent.width()); };
+          $(window).resize(resize); 
+          resize();
         });
-        //- Set up bootstrap toggling
-        var linksWithToggles = [{link: "instructions", target: "One"},
-                                {link: "save", target: "Save"},
-                                {link: "voteComment", target: "VoteComment"},
-                                {link: "annotateMutation", target: "MutationAnnotation"},
-                                {link: "annotateInteraction", target: "InteractionAnnotation"},
-                                {link: "annotatedVariants", target: "AnnotatedVariants"},
-                                {link: "options", target: "Options"}];
-        function bootstrapToggle(d){
-          $("#" + d.link + "Link").click(function(e){
-              e.preventDefault();
-              e.stopPropagation();// prevent the default anchor functionality
-              $("#collapse" + d.target).collapse('toggle');
-            });
-        }
-        linksWithToggles.forEach(bootstrapToggle);
-        //- Append this page's query parameters to create the enrichments link
-        $("#enrichmentStatsLink").attr("href", "/enrichments?" + window.location.href.split("?")[1]);

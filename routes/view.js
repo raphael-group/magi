@@ -218,9 +218,9 @@ exports.view  = function view(req, res){
 								geneToAnnotationList = {},
 								geneToAnnotationCount = {};
 
-						genes.forEach(function(g){ 
+						genes.forEach(function(g){
 							annotations[g] = {};
-							geneToAnnotationCount[g] = 0; 
+							geneToAnnotationCount[g] = 0;
 							geneToAnnotationList[g] = {};
 						})
 						support.rows.forEach(function(A, i){
@@ -237,8 +237,8 @@ exports.view  = function view(req, res){
 							if (!annotations[A.gene_id][A.mutation_class][A.cancer_name]) {
 								annotations[A.gene_id][A.mutation_class][A.cancer_name] = [];
 							}
-							annotations[A.gene_id][A.mutation_class][A.cancer_name].push(ref); 
-							geneToAnnotationCount[A.gene_id] += 1; 
+							annotations[A.gene_id][A.mutation_class][A.cancer_name].push(ref);
+							geneToAnnotationCount[A.gene_id] += 1;
 						});
 
 						// Assemble data into single Object
@@ -301,6 +301,7 @@ exports.view  = function view(req, res){
 										title: "Mutations"
 									    };
 									    var pkg = {
+												datasets: datasets.sort(function(a, b){ return a.title > b.title ? 1 : -1; }),
 										abbrToCancer: abbrToCancer,
 										datasetToCancer: datasetToCancer,
 										network: network_data,
