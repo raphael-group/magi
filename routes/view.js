@@ -274,6 +274,7 @@ exports.view  = function view(req, res){
 								var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
 
 							    PPIs.ppilist(genes, function(err, ppis) {
+								 // todo: remove this
 								PPIs.ppicomments(ppis, user_id, function(err, comments){
 								    formatPPIs(ppis, user_id, function(err, edges, refs){
 									var Cancer = Database.magi.model( 'Cancer' );

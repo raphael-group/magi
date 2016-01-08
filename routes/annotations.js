@@ -11,7 +11,7 @@ Q = require('q'),
 url = require('url');
 
 // Create the tables if they don't exist already
-Base_annotations.init()
+//Base_annotations.init()
 
 // on init: create map between cancers and abbrs
 var abbrToCancer = {}, cancerToAbbr = {};
