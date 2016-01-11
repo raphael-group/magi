@@ -69,15 +69,17 @@ function cnaTour(){
       { text: 'Next', action: tour.next }
     ]
   });
-  tour.addStep('query-step', {
-    text: 'Each of the segments represents an amplified/deleted region in a given sample, colored by sample type. Segments above the "genome" represent amplifications, while those below represent deletions.',
-    attachTo: 'g.intervals top',
-    scrollTo: true,
-    classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
-    buttons: [
-      { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel }
-    ]
-  });
+  if ($('g.intervals').length){
+    tour.addStep('query-step', {
+      text: 'Each of the segments represents an amplified/deleted region in a given sample, colored by sample type. Segments above the "genome" represent amplifications, while those below represent deletions.',
+      attachTo: 'g.intervals top',
+      scrollTo: true,
+      classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel }
+      ]
+    });
+  }
   tour.start();
   return tour;
 }
@@ -173,15 +175,17 @@ function transcriptTour(){
       { text: 'Next', action: tour.next }
     ]
   });
-  tour.addStep('query-step', {
-    text: 'The mutations are shown along the protein sequence of the given transcript...',
-    attachTo: '.gd3TranscriptGenome',
-    classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
-    buttons: [
-      { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
-      { text: 'Next', action: tour.next }
-    ]
-  });
+  if ($('.gd3TranscriptGenome').length){
+    tour.addStep('query-step', {
+      text: 'The mutations are shown along the protein sequence of the given transcript...',
+      attachTo: '.gd3TranscriptGenome',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+  }
   if ($('.domains').length > 0 ){
     tour.addStep('query-step', {
       text: 'The protein sequence is annotated with domains, which are labeled when you mouseover them.',
@@ -192,16 +196,18 @@ function transcriptTour(){
         { text: 'Next', action: tour.next }
       ]
     });
-}
-tour.addStep('query-step', {
-    text: 'Each mutation is represented by a colored symbol. The color represents the type of the sample with the mutation.',
-    attachTo: '.gd3MutationSymbol',
-    classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
-    buttons: [
-      { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
-      { text: 'Next', action: tour.next }
-    ]
-  });
+  }
+  if ($('.gd3MutationSymbol').length){
+    tour.addStep('query-step', {
+        text: 'Each mutation is represented by a colored symbol. The color represents the type of the sample with the mutation.',
+        attachTo: '.gd3MutationSymbol',
+        classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+        buttons: [
+          { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+          { text: 'Next', action: tour.next }
+        ]
+      });
+  }
   tour.addStep('query-step', {
     text: 'The symbols represent different classes of single nucleotide variants.',
     attachTo: '.gd3-transcript-legend-svg',
@@ -248,23 +254,25 @@ function networkTour(){
       { text: 'Next', action: tour.next }
     ]
   });
-  tour.addStep('query-step', {
-    text: 'Genes are connected by one or multiple edges...',
-    attachTo: '.gd3Link',
-    classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
-    buttons: [
-      { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
-      { text: 'Next', action: tour.next }
-    ]
-  });
-  tour.addStep('query-step', {
-    text: '...colored by the network in which the genes interact. Click a network in the legend to toggle the visibility of its interactions.',
-    attachTo: '.gd3GraphNetworkLegend',
-    classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
-    buttons: [
-      { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel }
-    ]
-  });
+  if ($('.gd3Link').length){
+    tour.addStep('query-step', {
+      text: 'Genes are connected by one or multiple edges...',
+      attachTo: '.gd3Link',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+    tour.addStep('query-step', {
+      text: '...colored by the network in which the genes interact. Click a network in the legend to toggle the visibility of its interactions.',
+      attachTo: '.gd3GraphNetworkLegend',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel }
+      ]
+    });
+  }
   tour.start();
   return tour;
 }
@@ -298,24 +306,28 @@ function aberrationsTour(svg){
       { text: 'Next', action: tour.next }
     ]
   });
-  tour.addStep('query-step', {
-    text: '... and the columns are the tumor samples with at least one aberration in the query set of genes. The sample labels are shown below in the heatmap view.',
-    attachTo: '.mutmtxColumn.label' + columnIndex,
-    classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
-    buttons: [
-      { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
-      { text: 'Next', action: tour.next }
-    ]
-  });
-  tour.addStep('query-step', {
-    text: 'Aberrations are represented by rectangles, colored by sample. For details, see the legend below and the "Datasets" list in the Control Panel.',
-    attachTo: '.mutmtx-sampleMutationCells.label' + columnIndex,
-    classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
-    buttons: [
-      { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
-      { text: 'Next', action: tour.next }
-    ]
-  });
+  if ($('.mutmtxColumn').length){
+    tour.addStep('query-step', {
+      text: '... and the columns are the tumor samples with at least one aberration in the query set of genes. The sample labels are shown below in the heatmap view.',
+      attachTo: '.mutmtxColumn.label' + columnIndex,
+      classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+  }
+  if ($('.mutmtx-sampleMutationCells').length){
+    tour.addStep('query-step', {
+      text: 'Aberrations are represented by rectangles, colored by sample. For details, see the legend below and the "Datasets" list in the Control Panel.',
+      attachTo: '.mutmtx-sampleMutationCells.label' + columnIndex,
+      classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+  }
   tour.addStep('query-step', {
     text: 'You can change the order of the columns by reordering this drag-and-drop list.',
     attachTo: '#aberrationsSort',
@@ -336,14 +348,16 @@ function aberrationsTour(svg){
       ]
     });
   }
-  tour.addStep('query-step', {
-    text: 'The aberrations view also lists the coverage, which is the number of samples with at least one mutation in the query set of genes.',
-    attachTo: '#coverage-string',
-    classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
-    buttons: [
-      { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel }
-    ]
-  });
+  if ($('#coverage-string').length){
+    tour.addStep('query-step', {
+      text: 'The aberrations view also lists the coverage, which is the number of samples with at least one mutation in the query set of genes.',
+      attachTo: '#coverage-string',
+      classes: 'shepherd shepherd-open shepherd-theme-arrows shepherd-transparent-text',
+      buttons: [
+        { text: 'Exit', classes: 'shepherd-button-secondary', action: tour.cancel }
+      ]
+    });
+  }
   tour.start();
   return tour;
 }
