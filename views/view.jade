@@ -131,7 +131,7 @@ block body
                     li
                       a(class="fa fa-info", title="Aberrations view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the mutations of genes (rows) across samples (columns). Samples are colored by cancer type. Full ticks represent SNVs, downticks represent deletions, upticks represent amplifications, and triangles represent fusions, rearragements or splice variants. Only samples with a mutation in the given subnetwork are shown. You can <b>zoom in on and drag the mutation matrix</b> by scrolling and/or clicking the figure with your mouse.")
                     li
-                      a(class="fa fa-question", title="Aberrations view tour")
+                      a(class="fa fa-question", id="aberrations-tour", title="Aberrations view tour")
                     li
                       div(class="dropdown")
                         a(class="fa fa-download dropdown-toggle", id="aberrationsDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
@@ -161,7 +161,7 @@ block body
                     li
                       a(class="fa fa-info", title="Heatmap description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows continuous-valued data in a query set of genes (rows) in a cohort of samples (columns) as heatmap. By default, displays expression data in only the samples in which the genes are mutated.")
                     li
-                      a(class="fa fa-question", title="Heatmap tour")
+                      a(class="fa fa-question", id="heatmap-tour", title="Heatmap tour")
                     li
                       div(class="dropdown")
                         a(class="fa fa-download dropdown-toggle", id="heatmapDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
@@ -192,7 +192,7 @@ block body
                     li
                       a(class="fa fa-info", title="Network view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the interactions among genes on the HINT, HPRD, or iRefIndex interaction networks. You can <b>toggle the interaction networks</b> shown by clicking on them in the legend, and you can <b>reposition the nodes </b>in the subnetwork for a better view by <b>dragging/dropping</b> them.")
                     li
-                      a(class="fa fa-question", title="Network view tour")
+                      a(class="fa fa-question", id="network-tour" title="Network view tour")
                     li
                       div(class="dropdown")
                         a(class="fa fa-download dropdown-toggle", id="networkDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
@@ -221,7 +221,7 @@ block body
                     li
                       a(class="fa fa-info", title="Transcript view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the mutations in each REFSEQ transcript of each gene in the subnetwork. Mutations are colored by cancer type. Each symbol represents a distinct mutation type. Putatively inactivating mutations are shown below the transcript, and the remaining mutations are shown above the transcript. Annotated protein domains are shown for each transcript -- scroll over a domain to reveal its name. You can <b>zoom in on and drag the transcript annotation</b> by scrolling and/or clicking the figure with your mouse.")
                     li
-                      a(class="fa fa-question", title="Transcript view tour")
+                      a(class="fa fa-question", id="transcript-tour", title="Transcript view tour")
                     li
                       div(class="dropdown")
                         a(class="fa fa-download dropdown-toggle", id="transcriptDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
@@ -253,7 +253,7 @@ block body
                     li
                       a(class="fa fa-info", title="CNA view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the copy number aberrations surrounding the selected gene (highlighted as red) on the chromosome. The topmost panel shows genes (shown as blocks) distributed in the region. You can click and drag a window in this panel to zoom in and see the details in the middle and bottom panels. The middle and bottom panels show genes and copy number aberration inside the zoom in window you just dragged, respectively. Copy number aberrations are colored by cancer type. Each row represents one sample. You can mouseover copy number aberration to get more detail information.")
                     li
-                      a(class="fa fa-question", title="CNA view tour")
+                      a(class="fa fa-question", title="CNA view tour", id="cnas-tour")
                     li
                       div(class="dropdown")
                         a(class="fa fa-download dropdown-toggle", id="cnaDownload", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
@@ -310,11 +310,16 @@ block belowTheFold
       script(src="/components/gd3/gd3.js")
       script(src='/components/jquery-mousewheel/jquery.mousewheel.min.js'). // req for log.js
       script(src='/components/jssha/src/sha1.js'). // req for log.js
+      link(rel="stylesheet", href="/components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css", type="text/css")
+      link(rel="stylesheet", href="/components/tether-shepherd/dist/css/shepherd-theme-arrows.css", type="text/css")
+      script(src='components/tether/dist/js/tether.min.js').
+      script(src='components/tether-shepherd/dist/js/shepherd.min.js').
       script(src='/js/save.js').
       script(src='/js/view.js').
       script(src='/js/log.js').
       script(src='/js/log.js').
       script(src='/components/jquery-ui/jquery-ui.min.js'). //- required for drag/drop list sorting
+      script(src='/js/gene-view-tour.js').
       //- Define behavior for the scroll panel to stick to the top of the window
       script(type="text/javascript").
         $(document).ready(function(){
