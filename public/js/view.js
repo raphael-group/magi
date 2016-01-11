@@ -20,7 +20,6 @@ $(document).ready(
 $('a#shareBtn').on('click', function(e) {
   $.post('/share', {url: window.location.search})
     .done(function(r) {
-      console.log(r)
       $('div#shareLinkBox input').val(window.location.origin + '/view/' + r);
     });
   });
@@ -262,7 +261,6 @@ function view(){
         d3.selectAll('li.sort-option').each(function(){
           sortingOptions.push($(this).data('sort-option'));
         });
-        console.log(sortingOptions)
 
         // Get the new column label ordering from the mutation matrix
         var columnLabels = m2Fn.getOrderedColumnLabels(sortingOptions);
@@ -559,7 +557,11 @@ function view(){
 
 	// Watch the CNA browser selector to update the current CNA browser on change
 	cnasSelect.on("change", updateCNAChart);
-	if (cnaGenes) updateCNAChart();
+	if (cnaGenes.length > 0){ updateCNAChart(); }
+  else{
+    cnasSelect.remove();
+    cnas.html('<b>No copy number aberrations.</b>')
+  }
 
 	///////////////////////////////////////////////////////////////////////////
 	// Controls for the control panel
