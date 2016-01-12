@@ -414,7 +414,7 @@ div#controls tr.variant-annotations-row{cursor:pointer;}
 div#controls tr.variant-annotations-row .fa-external-link{display:none}
 div#controls tr.variant-annotations-row:hover .fa-external-link{display:inline}
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
     .affix {
         position: relative;
     }

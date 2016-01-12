@@ -336,35 +336,39 @@ block belowTheFold
           $('.btn-navbar').click( function() {
             $('div#sidebar').toggleClass('expanded');
           });
-          //- Fix the affix causing width changes, as suggested here:
-          //- https://github.com/twbs/bootstrap/issues/10235
-          var $affix = $("div#controls"), 
-              $parent = $affix.parent(), 
-              resize = function() { $affix.width($parent.width()); };
-          $(window).resize(resize); 
-          resize();
-          
           //////////////////////////////////////////////////////////////////////
           // Hack from https://github.com/twbs/bootstrap/issues/12126#issuecomment-48995427
+          // and https://github.com/twbs/bootstrap/issues/10235
           // to make Affix work in Safari
           //////////////////////////////////////////////////////////////////////
-          // Check if we are in safari
-          if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
-              var explicitlySetAffixPosition = function() {
-                  $affix.css('left',$affix.offset().left+'px');
-              };
-              /* Before the element becomes affixed, add left CSS that is equal to the distance of the element from the left of the screen */
-              $affix.on('affix.bs.affix',function(){
-                  explicitlySetAffixPosition();
-              });
-
-              // On resize of window, un-affix affixed widget to measure where it should be located, set the left CSS accordingly, re-affix it
-              $(window).resize(function(){
-                  if($affix.hasClass('affix')) {
-                      $affix.removeClass('affix');
-                      explicitlySetAffixPosition();
-                      $affix.addClass('affix');
-                  }
-              });
+          // Perform the selections and check if we are in safari
+          var $affix = $("div#controls"), 
+              $parent = $affix.parent(),
+              inSafari = navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1;
+          var explicitlySetAffixPosition = function() {
+              $affix.css('left',$affix.offset().left+'px');
+          };
+          /* Before the element becomes affixed, add left CSS that is equal to the distance of the element from the left of the screen */
+          if (inSafari) {
+            $affix.on('affix.bs.affix',function(){
+              // only set the position if the screen is large enough
+              // that the control panel is floating to the right
+              if ($(window).width() > 992){ 
+                explicitlySetAffixPosition();
+              }
+            });
           }
+          // On resize of window, un-affix affixed widget to measure where it should be located, set the left CSS accordingly, re-affix it
+          function resize(){
+            $affix.width($parent.width());
+            if (inSafari) {
+              if($affix.hasClass('affix')) {
+                  $affix.removeClass('affix');
+                  explicitlySetAffixPosition();
+                  $affix.addClass('affix');
+              }
+            }
+          }
+          $(window).resize(resize);
+          resize();
         });
