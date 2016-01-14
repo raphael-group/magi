@@ -41,7 +41,7 @@ cancers = Object.keys(cancerToAbbr);
 function view(){
 	// Set up promise
 	var deferred = $.Deferred();
-
+	
 	// Hard-code the names of each element
 	var aberrationsElement = "div#aberrations",
 		networkElement = "div#network",
