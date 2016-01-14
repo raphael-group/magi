@@ -98,18 +98,22 @@ exports.view  = function view(req, res){
 					// all the domain DBs included for these gene sets
 					var domainDBs = {},
 						transcriptToDomains = {},
-						transcriptToSequence = {};
+						transcriptToSequence = {},
+						transcriptToSequenceAnnos = {};
+
 					transcripts.forEach(function(t){
 						transcriptToDomains[t.name] = t.domains;
 						transcriptToSequence[t.name] = t.sequence;
+						transcriptToSequenceAnnos[t.name] = t.annotations;
 						Object.keys(t.domains).forEach(function(n){
 							domainDBs[n] = true;
 						});
 					});
+					console.log(domainDBs)
 
 					// Create empty Objects to store transcript/mutation matrix data
 					var M = {},
-						transcript_data = {}
+						transcript_data = {proteinDomainDB: 'PFAM'}
 						sampleToTypes = {},
 						// CNA samples don't need IDs like the mutation matrix
 						cnaSampleToTypes = {},
@@ -179,6 +183,7 @@ exports.view  = function view(req, res){
 								transcript_data[G.gene][t].length = G.snvs[t].length;
 								transcript_data[G.gene][t].domains = transcriptToDomains[t] || {};
 								transcript_data[G.gene][t].protein_sequence = transcriptToSequence[t];
+								transcript_data[G.gene][t].sequence_annotations = transcriptToSequenceAnnos[t];
 							}
 							var trsData = transcript_data[G.gene][t]; // transcript data
 

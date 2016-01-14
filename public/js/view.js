@@ -441,13 +441,21 @@ function view(){
 		transcript.selectAll("*").remove();
 
 		// Then add the new plot
+		var transcriptFn = gd3.transcript({ showLegend: true, style: style.transcript })
 		transcript.append("h5").text(geneName);
 		var transcriptPlot = transcript.append("div")
 			.datum(data.transcripts[geneName][transcriptName])
-			.call(gd3.transcript({
-				showLegend: true,
-				style: style.transcript
-			}));
+			.call(transcriptFn);
+
+		// Add listeners to update the domain DB, and set the domain DB
+		// to whichever domain DB is currently checked
+		function setDomainDB(){
+		    if ($(this).is(':checked')){
+		    	transcriptFn.setDomainDB($(this).val());
+		    }
+		}
+		$('ul#transcript-domain-radios input').each(setDomainDB);
+		$('ul#transcript-domain-radios input').click(setDomainDB);
 
 		// And add tooltips
 		var aminoAcidCodes = { A: "Ala", B: "Asx", C: "Cys", D: "Asp", E: "Glu", F: "Phe", G: "Gly", H: "His", I: "Ile", K: "Lys", L: "Leu", M: "Met", N: "Asn", P: "Pro", Q: "Gln", R: "Arg", S: "Ser", T: "Thr", V: "Val", W: "Trp", X: "X", Y: "Tyr",Z: "Glx", "*": "*"};

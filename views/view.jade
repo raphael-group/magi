@@ -219,6 +219,24 @@ block body
                     | Transcript
                   ul(class="list-inline pull-right")
                     li
+                      div(class="dropdown")
+                        a(class="fa fa-cog", title="Choose which domain database to use", id="transcriptDomainDB", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        ul(class="dropdown-menu", aria-labelledby="transcriptDomainDB", id="transcript-domain-radios")
+                          li(class="dropdown-header")
+                            b CHOOSE YOUR DOMAIN DATABASE
+                          li
+                            a
+                              input(type="radio", name="domainDB", value="CD")
+                              | &nbsp;CD 
+                          li
+                            a
+                              input(type="radio", name="domainDB", value="PFAM", checked="checked")
+                              | &nbsp;PFAM
+                          li
+                            a
+                              input(type="radio", name="domainDB", value="SMART")
+                              | &nbsp;SMART
+                    li
                       a(class="fa fa-info", title="Transcript view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the mutations in each REFSEQ transcript of each gene in the subnetwork. Mutations are colored by cancer type. Each symbol represents a distinct mutation type. Putatively inactivating mutations are shown below the transcript, and the remaining mutations are shown above the transcript. Annotated protein domains are shown for each transcript -- scroll over a domain to reveal its name. You can <b>zoom in on and drag the transcript annotation</b> by scrolling and/or clicking the figure with your mouse.")
                     li
                       a(class="fa fa-question", id="transcript-tour", title="Transcript view tour")
