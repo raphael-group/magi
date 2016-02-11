@@ -2,7 +2,7 @@
 // Load models
 var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
-	Domains  = require( "../model/domains" ),
+	Transcripts  = require( "../model/transcripts" ),
         Aberrations = require("../model/aberrations"),
         PPIs = require("../model/ppis"),
 	QueryHash = require('../model/queryHash'),
@@ -93,21 +93,27 @@ exports.view  = function view(req, res){
 				});
 
 				// Load all the transcripts' domains
-				Domains.domainlist(transcripts, function(err, domains){
+				Transcripts.find(transcripts, function(err, transcripts){
 					// Create a map of transcripts to domains, and record
 					// all the domain DBs included for these gene sets
-					var transcript2domains = {},
-						domainDBs = {};
-					domains.forEach(function(d){
-						transcript2domains[d.transcript] = d.domains;
-						Object.keys(d.domains).forEach(function(n){
+					var domainDBs = {},
+						transcriptToDomains = {},
+						transcriptToSequence = {},
+						transcriptToSequenceAnnos = {};
+
+					transcripts.forEach(function(t){
+						transcriptToDomains[t.name] = t.domains;
+						transcriptToSequence[t.name] = t.sequence;
+						transcriptToSequenceAnnos[t.name] = t.annotations;
+						Object.keys(t.domains).forEach(function(n){
 							domainDBs[n] = true;
-						})
+						});
 					});
+					console.log(domainDBs)
 
 					// Create empty Objects to store transcript/mutation matrix data
 					var M = {},
-						transcript_data = {}
+						transcript_data = {proteinDomainDB: 'PFAM'}
 						sampleToTypes = {},
 						// CNA samples don't need IDs like the mutation matrix
 						cnaSampleToTypes = {},
@@ -175,7 +181,9 @@ exports.view  = function view(req, res){
 							if (!(t in transcript_data[G.gene])){
 								transcript_data[G.gene][t] = { mutations: [], gene: G.gene };
 								transcript_data[G.gene][t].length = G.snvs[t].length;
-								transcript_data[G.gene][t].domains = transcript2domains[t] || {};
+								transcript_data[G.gene][t].domains = transcriptToDomains[t] || {};
+								transcript_data[G.gene][t].protein_sequence = transcriptToSequence[t];
+								transcript_data[G.gene][t].sequence_annotations = transcriptToSequenceAnnos[t];
 							}
 							var trsData = transcript_data[G.gene][t]; // transcript data
 

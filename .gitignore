@@ -1,12 +1,15 @@
+# MAGI variables
+env.sh
+ENVIRONMENT
+seo/
+LOGS.md
+
+# MAC OS X
 .DS_Store
 tmp/
 public/components/
 node_modules/
 backups/
-
-# MAGI environment variables
-env.sh
-seo/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

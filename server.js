@@ -38,7 +38,6 @@ if (typeof(process.env.WEBENGAGE_ID) == 'undefined'){
 // Load models to register their schemas
 var user = require( './model/user' ),
     database = require( './model/datasets' ),
-    domains = require( './model/domains' ),
     log = require('./model/log'),
     logPermission = require('./model/logPermission'),
     queryHash = require('./model/queryHash');
