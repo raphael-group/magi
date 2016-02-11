@@ -41,7 +41,7 @@ cancers = Object.keys(cancerToAbbr);
 function view(){
 	// Set up promise
 	var deferred = $.Deferred();
-	
+
 	// Hard-code the names of each element
 	var aberrationsElement = "div#aberrations",
 		networkElement = "div#network",
@@ -616,7 +616,7 @@ function view(){
 			return { name: d, color: datasetToColor[d], numSamples: datasetToSamples[d].length };
 		}).sort(function(a, b){ return d3.ascending(a.name, b.name); });
 
-	var datasetRows = d3.selectAll("table#datasets tbody tr")
+	var datasetRows = d3.selectAll("table#datasets tbody tr td.dataset-color")
     .on("click", function(d){
       // Add/Remove the dataset from the list of filtered datasets
       var name = $(this).data('name');
@@ -633,7 +633,7 @@ function view(){
 			gd3.dispatch.filterCategory( { categories: filteredDatasets });
 
 			// Fade in/out this dataset
-			d3.select(this).style("opacity", visible ? 0.5 : 1);
+			d3.select(this.parentNode).style("opacity", visible ? 0.5 : 1);
     });
 
 	///////////////////////////////////////////////////////////////////////////

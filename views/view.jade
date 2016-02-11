@@ -20,26 +20,25 @@ block body
                     h5(class="panel-title")
                       a(role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseDatasets" aria-expanded="true" aria-controls="collapseDatasets")
                         | Datasets
-                  div(id="collapseDatasets" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="datasetsHeading")
+                  div(id="collapseDatasets" class="panel-collapse collapse in table-responsive" role="tabpanel" aria-labelledby="datasetsHeading")
                     table(class="table table-hover", id="datasets")
                       thead
                         tr
                           th
                           th Dataset
                           th Samples
-                          th View
                       tbody
                         - for (var i = 0; i < data.datasets.length; i++)
-                          tr(data-name="#{data.datasets[i].title}")
-                            td
-                              div(class="dataset-color", style="background:#{data.datasets[i].color}")
+                          tr
+                            td(data-name="#{data.datasets[i].title}", class="dataset-color")
+                              div(style="background:#{data.datasets[i].color}")
                             td
                               span(style="border-bottom: 1px dotted #777;cursor:help", data-trigger="hover", data-placement="bottom", data-toggle="popover", data-content="#{data.datasetToCancer[data.datasets[i].title]}")
                                 | #{data.datasets[i].title}
-                            td #{data.datasets[i].samples.length}
-                            td
-                              a(href="/datasets/view/#{data.datasets[i]._id}")
-                                i(class="fa fa-external-link")
+                            td(class="dataset-samples-cell")
+                                | #{data.datasets[i].samples.length}
+                                a(class="pull-right", href="/datasets/view/#{data.datasets[i]._id}")
+                                    i(class="fa fa-external-link")
                       
                 div(class="panel panel-default")
                   div(class="panel-heading", role="tab")
@@ -96,7 +95,7 @@ block body
                         i(class="fa fa-share pull-right")
 
         //- MAIN VIEWS
-        div(class="col-lg-9 col-md-pull-3 col-md-9 col-sm-12 col-xs-12")
+        div(id="main-views", class="col-lg-9 col-md-pull-3 col-md-9 col-sm-12 col-xs-12")
           //- Aberrations row
           div(class="row")
             div(class="col-lg-12")

@@ -409,10 +409,12 @@ div#spinner{height: 300px; margin-right:230px; background-image:url('../img/spin
 
 div#controls table#datasets thead tr{background:rgb(51,51,51);color:#ffffff;}
 div#controls table#datasets tbody tr{cursor:pointer}
-div#controls table#datasets div.dataset-color{text-align:center;height:20px;width:20px;border-radius:3px;padding:2px;border:1px solid #eee;}
+div#controls table#datasets td.dataset-color div{text-align:center;height:20px;width:20px;border-radius:3px;padding:2px;border:1px solid #eee;}
 div#controls tr.variant-annotations-row{cursor:pointer;}
 div#controls tr.variant-annotations-row .fa-external-link{display:none}
 div#controls tr.variant-annotations-row:hover .fa-external-link{display:inline}
+div#controls td.dataset-samples-cell .fa-external-link{display:none}
+div#controls td.dataset-samples-cell:hover .fa-external-link{display:inline}
 
 @media (max-width: 992px) {
     .affix {
@@ -426,6 +428,8 @@ div#view-page ul.list-inline a:hover{ text-decoration:none; color:#000000;}
 
 div#view-page ul#sort-options li div{display:block;padding:3px 20px 3px 20px;color:#999999;}
 div#view-page ul#sort-options li a span.sort-name{margin-left:5px;margin-right:5px;}
+
+div#main-views div.panel{ overflow-x:scroll;}
 
 /* Dataset summary page */
 div#dataset-summary div#left{ width:35%;display:table-cell;}
