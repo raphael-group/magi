@@ -109,7 +109,6 @@ exports.view  = function view(req, res){
 							domainDBs[n] = true;
 						});
 					});
-					console.log(domainDBs)
 
 					// Create empty Objects to store transcript/mutation matrix data
 					var M = {},
