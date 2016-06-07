@@ -1,5 +1,5 @@
 // Import required modules
-var Database = require('./db_sql'),
+var DjangoDatabase = require('./db_sql'),
 Schemas = require('./annotations_schema'),
 Annotations = require('./annotations'),
  sql = require("sql");

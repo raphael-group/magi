@@ -50,7 +50,10 @@ function sql_query(text, values, cb){
 //    console.log("plaintext values are: [", values, "]")
     pg.connect(conString, function(err, client, done) {
         if(err) {
-            return console.error("error fetching client from pool:", err);
+            // console.error("error fetching client from pool:", err);
+            console.log("SOMETHING")
+            done();
+            cb(err, {});
         }
         query = client.query(text, values, function(err, result) {
             done(); // releases the client back to the pool

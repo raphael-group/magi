@@ -16,6 +16,7 @@
     "jquery-ui": "latest",
     "d3-tip": "latest",
     "jssha": "~1.6.0",
-    "fontawesome": "latest"
+    "fontawesome": "latest",
+    "gd3": "https://github.com/raphael-group/gd3.git#master"
   }
 }
