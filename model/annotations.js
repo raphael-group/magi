@@ -80,8 +80,7 @@ exports.joinVoteListsToQuery = function(tableCandidates, query) {
 	downvotesQuery + " ON D.anno_id = " + joiningSource +".anno_id WHERE " +
     selQuerySplit[1];
 
-//    	console.log("whole query:", wholeQueryText);
-	return wholeQueryText;
+    return wholeQueryText;
 }
 
 // delete a single annotation of any kind

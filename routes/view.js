@@ -2,7 +2,7 @@
 // Load models
 var mongoose = require( 'mongoose' ),
 	Dataset  = require( "../model/datasets" ),
-	Domains  = require( "../model/domains" ),
+	Transcripts  = require( "../model/transcripts" ),
         Aberrations = require("../model/aberrations"),
         PPIs = require("../model/ppis"),
 	QueryHash = require('../model/queryHash'),
@@ -93,21 +93,26 @@ exports.view  = function view(req, res){
 				});
 
 				// Load all the transcripts' domains
-				Domains.domainlist(transcripts, function(err, domains){
+				Transcripts.find(transcripts, function(err, transcripts){
 					// Create a map of transcripts to domains, and record
 					// all the domain DBs included for these gene sets
-					var transcript2domains = {},
-						domainDBs = {};
-					domains.forEach(function(d){
-						transcript2domains[d.transcript] = d.domains;
-						Object.keys(d.domains).forEach(function(n){
+					var domainDBs = {},
+						transcriptToDomains = {},
+						transcriptToSequence = {},
+						transcriptToSequenceAnnos = {};
+
+					transcripts.forEach(function(t){
+						transcriptToDomains[t.name] = t.domains;
+						transcriptToSequence[t.name] = t.sequence;
+						transcriptToSequenceAnnos[t.name] = t.annotations;
+						Object.keys(t.domains).forEach(function(n){
 							domainDBs[n] = true;
-						})
+						});
 					});
 
 					// Create empty Objects to store transcript/mutation matrix data
 					var M = {},
-						transcript_data = {}
+						transcript_data = {proteinDomainDB: 'PFAM'}
 						sampleToTypes = {},
 						// CNA samples don't need IDs like the mutation matrix
 						cnaSampleToTypes = {},
@@ -175,7 +180,9 @@ exports.view  = function view(req, res){
 							if (!(t in transcript_data[G.gene])){
 								transcript_data[G.gene][t] = { mutations: [], gene: G.gene };
 								transcript_data[G.gene][t].length = G.snvs[t].length;
-								transcript_data[G.gene][t].domains = transcript2domains[t] || {};
+								transcript_data[G.gene][t].domains = transcriptToDomains[t] || {};
+								transcript_data[G.gene][t].protein_sequence = transcriptToSequence[t];
+								transcript_data[G.gene][t].sequence_annotations = transcriptToSequenceAnnos[t];
 							}
 							var trsData = transcript_data[G.gene][t]; // transcript data
 
@@ -209,38 +216,36 @@ exports.view  = function view(req, res){
 
 						// Load the annotations for each gene
 
-					    Aberrations.geneFind(Aberrations.inGeneClause('gene', genes),'right', function(err, support) {
+					    Aberrations.geneFindFromList(genes, function(err, support) {
 						// Throw error if necessary
 						if (err) throw new Error(err);
 
 						// Assemble the annotations
 						var annotations = {},
-						geneToAnnotationList = {};
-						genes.forEach(function(g){ geneToAnnotationList[g] = {}; annotations[g] = {}; })
-						support.forEach(function(A, i){
-						    A.mut_class = A.mut_class.toUpperCase();
-						    if (!annotations[A.gene][A.mut_class]){
-							annotations[A.gene][A.mut_class] = {};
-						    }
-						    var ref = {
-							pmid: A.reference,
-							_id: A.u_id
-						    };
+								geneToAnnotationList = {},
+								geneToAnnotationCount = {};
 
-						    geneToAnnotationList[A.gene][A.reference] = true;
-						    var cancer = Utils.getMode(A.sourceAnnos.map(function (s) {return s.cancer}));
-						    if (cancer.mode in annotations[A.gene][A.mut_class]) {
-							annotations[A.gene][A.mut_class][cancer.mode].push(ref);
-						    } else {
-							annotations[A.gene][A.mut_class][cancer.mode] = [ref];
-						    }
-						});
-
-						// Count the number of PMIDs per gene
-
-						var geneToAnnotationCount = {};
 						genes.forEach(function(g){
-						    geneToAnnotationCount[g] = Object.keys(geneToAnnotationList[g]).length;
+							annotations[g] = {};
+							geneToAnnotationCount[g] = 0;
+							geneToAnnotationList[g] = {};
+						})
+						support.rows.forEach(function(A, i){
+
+							var ref = {
+								pmid: A.identifier,
+								_id: A.reference_id
+							};
+							geneToAnnotationList[A.gene_id][A.identifier] = true;
+
+							if (!annotations[A.gene_id][A.mutation_class]) {
+								annotations[A.gene_id][A.mutation_class] = {};
+							}
+							if (!annotations[A.gene_id][A.mutation_class][A.cancer_name]) {
+								annotations[A.gene_id][A.mutation_class][A.cancer_name] = [];
+							}
+							annotations[A.gene_id][A.mutation_class][A.cancer_name].push(ref);
+							geneToAnnotationCount[A.gene_id] += 1;
 						});
 
 						// Assemble data into single Object
@@ -276,6 +281,7 @@ exports.view  = function view(req, res){
 								var sampleAnnotations = Dataset.createSampleAnnotationObject(datasets, mutation_matrix.samples);
 
 							    PPIs.ppilist(genes, function(err, ppis) {
+								 // todo: remove this
 								PPIs.ppicomments(ppis, user_id, function(err, comments){
 								    formatPPIs(ppis, user_id, function(err, edges, refs){
 									var Cancer = Database.magi.model( 'Cancer' );
@@ -303,6 +309,7 @@ exports.view  = function view(req, res){
 										title: "Mutations"
 									    };
 									    var pkg = {
+												datasets: datasets.sort(function(a, b){ return a.title > b.title ? 1 : -1; }),
 										abbrToCancer: abbrToCancer,
 										datasetToCancer: datasetToCancer,
 										network: network_data,
@@ -338,19 +345,19 @@ function formatPPIs(ppis, user_id, callback){
 	for (var i = 0; i < ppis.length; i++){
 		// Parse interaction and create unique ID
 		var ppi   = ppis[i],
-			ppiName = [ppi.source, ppi.target].sort().join("*");
+			ppiName = [ppi.source_id, ppi.target_id].sort().join("*");
 	    refInfo = {
-		pmid: ppi.reference,
+		pmid: ppi.identifier,
 		upvotes: ppi.upvotes,
 		downvotes: ppi.downvotes,
-		_id: ppi.u_id
+		_id: ppi.id
 	    }
 		// Append the current network for the given edge
 		if (ppiName in edgeNames){
-			edgeNames[ppiName].push( {name: ppi.ref_source, refs: refInfo } );
+			edgeNames[ppiName].push( {name: ppi.input_source, refs: refInfo } );
 		}
 		else{
-		    edgeNames[ppiName] = [ {id: ppi.anno_id, name: ppi.ref_source, refs: refInfo } ];
+		    edgeNames[ppiName] = [ {id: ppi.id, name: ppi.input_source, refs: refInfo } ];
 		}
 	}
 

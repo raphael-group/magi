@@ -1,5 +1,6 @@
 // Import required modules
 Database = require('./db_sql');
+DjangoDatabase = require('./db_django');
 Schemas = require('./annotations_schema');
 Annotations = require('./annotations');
 Utils = require('./util');
@@ -9,7 +10,9 @@ var sql = require("sql");
 // and the user provided sources for each
 exports.geneFind = function(query, dir, callback) {
     var abers = Schemas.aberrations,
-    sources = Schemas.aber_sources;
+	annos = Schemas.annotations,
+	cancers = Schemas.cancers,
+    ref = Schemas.references;
 
     var selAnnosQuery;
     // todo: use mode aggregate function?
@@ -17,14 +20,17 @@ exports.geneFind = function(query, dir, callback) {
     if (dir == 'left'){ // the query is for the annotations (e.g. user_id)
         selAnnosQuery = sources.from(abers.joinTo(sources)).where(query);
     } else if (dir == 'right'){ // the query is for the aberrations (e.g. gene)
-	selAnnosQuery = abers.from(sources.joinTo(abers)).where(query);
+	     selAnnosQuery = ref.from(
+				ref.join(abers).on(ref.mutation_id.equals(abers.id))
+				   .join(annotations).on(ref.id.equals(annotations.reference_id))
+				   .leftJoin(cancers).on(cancers.abbr.equals(annotations.cancer_id))).where(query);
     }
 
     // TODO: use annos.table.columns to automatically separate
-    Database.execute(selAnnosQuery, function(err, result) {
-	if (err) {
+    DjangoDatabase.execute(selAnnosQuery, function(err, result) {
+      if (err) {
             console.log("Error selecting gene annotations: " + err);
-	    console.log("Debug: full query:", selAnnosQuery)
+	    //console.log("Debug: full query:", selAnnosQuery)
 	    callback(err, null)
 	}
 
@@ -37,10 +43,10 @@ exports.geneFind = function(query, dir, callback) {
 	aber_anno_columns.push('reference');
 	aber_anno_columns.push('source');
 	result.rows.forEach(function (sourceData) {
+		sourceData.cancer_name = sourceData.name; // explicity tag
 	    var aberAnno={};
 	    aber_anno_columns.forEach(function(column) {
 		aberAnno[column] = sourceData[column];
-		delete sourceData[column];
 	    });
 
 	    if(aberAnno.u_id in refIdx) {
@@ -51,79 +57,162 @@ exports.geneFind = function(query, dir, callback) {
 		collatedResult.push(aberAnno);
 	    }
 	})
-	callback(null, collatedResult);
+	callback(null, {rows: result.rows, collatedResult: collatedResult});
     })
 }
 
-// upsert an aberration annotation into SQL
-exports.upsertAber = function(data, callback){
-    var abers = Schemas.aberrations;
 
-    handleErr = function(err, subresult, query) {
-	if (err == null && subresult.rows.length == 0) {
-	    err = Error("Did not return annotation ID")
-	}
-	if (err) {
-            console.log("Error upserting gene annotation: " + err);
-	    console.log("Debug: full query:", query.string)
-	    callback(err, null)
-	}
-    }
+// callback supplies user data
+function getUserInfo(user, callback) {
 
-    // todo: test update case
-    // todo: transaction-ize w/ rollback (not necessary, just good to clean the annos table)
-    // TODO: may insert duplicates, fix this if we want something more interesting with genes
+    DjangoDatabase.execute(
+	Schemas.users.where({'email': user.email}),
+	function (err, user_subresult) {
+	    if(err) 
+		callback(err, null);
+	    else if (user_subresult.rows.length == 1) 
+		callback(null, user_subresult.rows[0]);
+	    else if (user_subresult.rows.length == 0) {
+		first_last_names = user.name.split(" ");
+		if (first_last_names.length == 1) 
+		    first_last_names[1] = '';
 
-    var aberInsertQuery = abers.insert(
-	abers.gene.value(data.gene),
-	abers.transcript.value(data.transcript),
-	abers.mut_class.value(data.mut_class),
-	abers.mut_type.value(data.mut_type),
-	abers.protein_seq_change.value(data.protein_seq_change),
-	abers.aber_user_id.value(data.user_id)).returning(abers.u_id);
-
-    Database.execute(aberInsertQuery, function(err, subresult) {
-	handleErr(err, subresult, aberInsertQuery);
-	var aber_u_id = subresult.rows[0].u_id;
-	data.aber_id = aber_u_id;
-	console.log(data);
-	exports.upsertSourceAnno(data, callback);
-    });
+		// todo: pass up error with error requesting login 
+		DjangoDatabase.execute(
+		    Schemas.users.insert({'first_name': first_last_names[0],
+				  'last_name': first_last_names[1],
+				  'email': user.email,
+				  'username': user.email.split('@')[0],
+				  'is_staff': false,
+				  'is_superuser': false,
+				  'is_active': false,
+				  'date_joined': getDjangoTimeString("day"),
+				  'password': 'deadbeef'}).returning('*'),
+		    function(err, result) {
+			if(err) 
+			    callback(err, null);
+			else {
+			    callback(null, result.rows[0]);
+			}
+		    });
+		} else // multiple users?
+		    callback(Error("Multiple users with same email " + user.email), 
+			     null);
+	});
 }
 
-// note: requires an aber_id field to identify which aberration this source attaches to
-exports.upsertSourceAnno = function(data, callback) {
-    var sources = Schemas.aber_sources;
+// callback supplies user data
+function getCancerInfo(cancer_data, callback) {
+    
+    DjangoDatabase.execute(
+	Schemas.cancers.where(cancer_data),
+	function (err, user_subresult) {
+	    
+	    if(err) 
+		callback(err, null);
+	    else if (user_subresult.rows.length == 1) 
+		callback(null, user_subresult.rows[0]);
+	    else if (user_subresult.rows.length == 0) {
+		var data_key = Object.keys(cancer_data)[0];
+		callback(Error("No cancer found with key, value (" + data_key + ", " + cancer_data[data_key] + ")"), null);
+	    } else // multiple users?
+		callback(Error("Multiple cancers identified with data given"), 
+			 null);
+	});
+}
 
-    // only column in the definition of the source should survive
-    var keys = Object.keys(data);
-    var columns = Schemas.getColumnNames(sources);
-    keys.forEach(function(key) {if (!columns.some(function (c) {return key == c;})) delete data[key];});
-    // check if a record exists
-    var updateQuery = sources.update(data).
-	where(sources.aber_id.equals(data.aber_id),
-	      sources.user_id.equals(data.user_id)).
-	returning(sources.asa_u_id);
-    Database.execute(updateQuery, function(err, result) {
+function getDjangoTimeString(format) {
+    if (format == "day") {
+	return new Date().toString().substring(0,15);	
+    } else if (format == "full") {
+	return new Date().toString().substring(0,-7);;
+    } else {
+	return new Date().toString();
+    }
+}
+	
+// note: data requires an aber_id field to identify which aberration this source attaches to
+exports.upsertSourceAnno = function upsertSourceAnno(data, callback) {
+    var annotations = Schemas.annotations,
+    references = Schemas.references,
+    users = Schemas.users;;
+
+    // check if a reference exists with that exact annotation
+    var checkForExistenceQuery = references.
+	where(references.identifier.equals(data.reference),
+	      references.db.equals(data.domain),
+	      references.mutation_id.equals(data.aber_id));
+
+    DjangoDatabase.execute(checkForExistenceQuery, function(err, result) {
 	if (err) {
-            console.log("Error upserting source annotation: " + err);
-	    console.log("Debug: full query:", updateQuery.toQuery().text);
+            console.log("Error upserting source annotation: " + err.error);
+	    console.log("Debug: full query:", checkForExistenceQuery.toQuery().text);
 	    callback(err, null);
 	}
+	var now = getDjangoTimeString("day");
+	var reference_id,
+	writeAnnotation = function(reference_id, data) {
+	    getUserInfo(data.user, function(err, user_data) {
+		if (err) {
+		    console.log("error calling getUserInfo", err);
+		    callback(err, null);
+		} else {
+		    getCancerInfo(data.cancer, function(err, cancer_data) {
+			if (err) {
+			    console.log("error calling getCancerInfo", err);
+			    callback(err, null);
+			} else {
+			    var writeAnnoQuery = annotations.insert(
+				annotations.comment.value(data.comment),
+				annotations.cancer_id.value(cancer_data.id), // dummy for now, get cancer table later
+				annotations.heritable.value(''), 
+				annotations.characterization.value(''),
+				annotations.measurement_type.value(''),
+				annotations.reference_id.value(reference_id),
+				annotations.last_edited.value(now),
+				annotations.created_on.value(now),
+				annotations.user_id.value(user_data.id)).returning('*'); 
+			    DjangoDatabase.execute(writeAnnoQuery, function (err, result) {
+				if (err) {
+				    console.log("Error upserting source annotation: " + err);
+				    console.log("Debug: full query:", writeAnnoQuery.toQuery().text);
+				    callback(err, null);
+				} else {
+				    var anno = result.rows[0];
+				    anno.id = anno.pk;
+				    callback(null, anno); // return
+				}
+			    });
+			}
+		    });
+		}
+	    });
+	};
+				  
+				  
 	if (result && result.rows.length > 0) {
-	    callback(null, result.rows[0]); // return
+	    reference_id = result.rows.id;
+	    writeAnnotation(reference_id, data);
 	} else {
-	    var sourceInsertQuery = sources.insert(data).returning(sources.asa_u_id);
-	    Database.execute(sourceInsertQuery, function (err, result) {
+	    var referenceInsertQuery = references.insert(
+		references.identifier.value(data.reference),
+		references.db.value(data.domain),
+		references.source.value(data.source),
+		references.mutation_id.value(data.aber_id),
+		references.last_edited.value(now),
+		references.created_on.value(now))
+		.returning(references.id);
+	    DjangoDatabase.execute(referenceInsertQuery, function (err, result) {
 		if (err == null && (!result || result.rows.length == 0)) {
 		    err = Error("Did not return annotation ID")
 		}
 		if (err) {
 		    console.log("Error upserting source annotation: " + err);
-		    console.log("Debug: full query:", sourceInsertQuery.toQuery().text);
+		    console.log("Debug: full query:", referenceInsertQuery.toQuery().text);
 		    callback(err, null)
 		}
-		callback(null, result.rows[0]); // return
+		writeAnnotation(result.rows[0].id, data);
+
 	    });
 	}
     });
@@ -234,7 +323,7 @@ exports.loadFromFile = function(filename, source, callback){
 
 	    cancer = A.cancer ? A.cancer.toUpperCase() : "Cancer"
 	    var query = {
-		gene: A.gene,
+		gene_id: A.gene,
 		cancer: cancer,
 		change: A.change,
 		transcript: A.transcript,
@@ -247,7 +336,7 @@ exports.loadFromFile = function(filename, source, callback){
 		user_id: Annotations.ADMIN_USER
 	    };
 	    exports.upsertAber(query, function(err, annotation){
-		if (err) throw new Error(err);
+		if (err) throw Error(err);
 		d.resolve();
 	    })
 	    return d.promise;
@@ -283,6 +372,10 @@ exports.remove = function(anno_id, user_id) {
 // inherit some functions from annotations
 exports.inGeneClause = Annotations.inClause(Schemas.aberrations)
 
+exports.geneFindFromList = function(geneList, callback) {
+    return exports.geneFind(exports.inGeneClause('gene_id', geneList), 'right', // subquery side
+			    callback);
+}
 exports.vote = function (fields, user_id) {
     return Annotations.vote(fields, user_id, "aber");
 }

@@ -5,6 +5,7 @@ html
     link(rel="icon", type="image/png", href="/img/favicon.png")
     title MAGI
     link(rel='stylesheet', href='/components/bootstrap/dist/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/components/fontawesome/css/font-awesome.min.css')
     link(rel='stylesheet', href='/css/app.css')
     link(rel='stylesheet', href='/css/elusive-webfont.css')
 
@@ -48,7 +49,10 @@ html
                       a(href="/support") Support
                     li
                       a(href="#" id="give-feedback") Feedback
-
+                    li
+                      a(class="btn btn-danger", href=annotationsURL, target="_new", style="color:#fff")
+                        | MAGI annotations&nbsp;
+                        i(class="fa fa-external-link")
             ul(class="nav navbar-nav navbar-right", style="color:grey")
               li
                 //- Ask the user to login or show his/her name
@@ -57,10 +61,11 @@ html
                     | Welcome,&nbsp;
                     a(href="/account") #{user.name}
                     | &nbsp;|&nbsp;
-                    a(href="/logout") Logout
+                    a(href="/logout") Logout 
                 - else
                   a(href="/auth/google/returnTo")
                     button(type="button" class="btn btn-default btn-xs") Login via Google
+
       -if (!skip_requery)
         - var requery_display = show_requery ? 'block' : 'none';
         div(id="navbar-query-connector", class="navbar-query", style='display:#{requery_display}')
@@ -91,8 +96,8 @@ html
     block footer
       hr
       div(id="footer", class="container")
-        p(class="col-lg-4 text-left") Updated: July 20th, 2015
-        p(class="col-lg-4 text-center") Copyright 2014-2015. All rights reserved.
+        p(class="col-lg-4 text-left") Updated: January 11th, 2016
+        p(class="col-lg-4 text-center") Copyright 2014-2016. All rights reserved.
         ul(id="more-info", class="col-lg-4 text-right")
           li
             a(href="/acknowledgements") Acknowledgements

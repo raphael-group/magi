@@ -42,9 +42,11 @@ exports.sampleView = function sampleView(req, res){
 			}
 			var sampleAnnotations = [];
 
-			Object.keys(dataset.sample_annotations[sample.name]).forEach(function(k){
-				sampleAnnotations.push({ property: k, value: dataset.sample_annotations[sample.name][k]});
-			});
+			if (dataset.sample_annotations && sample.name in dataset.sample_annotations){
+				Object.keys(dataset.sample_annotations[sample.name]).forEach(function(k){
+					sampleAnnotations.push({ property: k, value: dataset.sample_annotations[sample.name][k]});
+				});
+			}
 
 			Cancer.findById(dataset.cancer_id, function(err, cancer){
 				if (err){
@@ -61,15 +63,13 @@ exports.sampleView = function sampleView(req, res){
 			    geneMutations = [];
 
 			    // call for additional mutations
-			    Aberrations.geneFind(Aberrations.inGeneClause('gene', mutGenes),'right', function(err, userAnnos) {
+			    Aberrations.geneFindFromList(mutGenes, function(err, userAnnos) {
 				if (err) {
 				    console.error(err);
 				    fail = true;
 				    return;
-				} 
-				
+				}
 				var annotations = geneTable(mutGenes, userAnnos);
-
 				// Create a list of mutations including the annotations, separating
 				// them into three groups: locus (most important), type (second most
 				// important), and gene (least important)
@@ -131,44 +131,49 @@ function endsWith(str, suffix) {
 }
 
 function geneTable(genes, support){
-	// Assemble the annotations into a dictionary index by 
+	// Assemble the annotations into a dictionary index by
 	// gene (e.g. TP53) and mutation class (e.g. missense or amp)
 	// and then protein change (only applicable for missense/nonsense)
 	// 1) Store the total number of references for the gene/class in "",
-	//    i.e. annotations['TP53'][''] gives the total for TP53 and 
+	//    i.e. annotations['TP53'][''] gives the total for TP53 and
 	//    annotations['TP53']['snv'][''] gives the total for TP53 SNVs.
 	// 2) Count the number per protein change.
 	var annotations = {};
 
 	genes.forEach(function(g){ annotations[g] = { "": [] }; });
 
-	support.forEach(function(A){
+	support.rows.forEach(function(A){
+	    A.cancer = A.abbr; // rename abbreviation to cancer
+//	    A.pmid = A.identifier; // rename identifier to pmid
 		// We split SNVs into two subclasses: nonsense or missense.
 		// We also remove the "_mutation" suffix sometimes present in the
 		// mutation types
-		var mClass = A.mut_class.toLowerCase(),
-			mType = A.mut_type ? A.mut_type.toLowerCase().replace("_mutation", "") : "";
+		var mutMap = {MS: "missense", NS: "nonsense"};
+		var mClass = A.mutation_class.toLowerCase(),
+			mType = A.mutation_type in mutMap ?  mutMap[A.mutation_type] : A.mutation_type.toLowerCase(),
+	                change = A.original_amino_acid + A.locus + A.new_amino_acid,
+                	    entry = { pmid: A.identifier, cancer: A.cancer };
 		if (mClass == "snv" && (mType == "missense" || mType == "nonsense")){ mClass = mType; }
 		// Add the class if it hasn't been seen before
-		if (typeof(annotations[A.gene][mClass]) == 'undefined'){
-			annotations[A.gene][mClass] = {"" : [] };
+		if (typeof(annotations[A.gene_id][mClass]) == 'undefined'){
+			annotations[A.gene_id][mClass] = {"" : [] };
 		}
 
 		// If we know the mutaton class, we might also want to add
 		// the protein sequence change
 		if (mClass == "snv" || mClass == "missense" || mClass == "nonsense"){
-			if (A.protein_seq_change){
-				A.protein_seq_change = A.protein_seq_change.replace("p.", "");
-				if (typeof(annotations[A.gene][mClass][A.protein_seq_change]) == 'undefined'){
-					annotations[A.gene][mClass][A.protein_seq_change] = [];
+			if (change){
+				A.protein_seq_change = change.replace("p.", "");
+				if (typeof(annotations[A.gene_id][mClass][A.protein_seq_change]) == 'undefined'){
+					annotations[A.gene_id][mClass][A.protein_seq_change] = [];
 				}
 
-			    annotations[A.gene][mClass][A.protein_seq_change].push({ pmid: A.reference, cancer: A.cancer });
+			    annotations[A.gene_id][mClass][A.protein_seq_change].push(entry);
 
 			}
 		}
-	    annotations[A.gene][mClass][""].push({ pmid: A.reference, cancer: A.cancer });
-	    annotations[A.gene][""].push({ pmid: A.reference, cancer: A.cancer });
+	    annotations[A.gene_id][mClass][""].push(entry);
+	    annotations[A.gene_id][""].push(entry);
 	});
 
 	// Combine references at the PMID level so that for each
@@ -176,6 +181,7 @@ function geneTable(genes, support){
 	// with {pmid: String, cancers: Array }. Then collapse at the cancer type(s)
 	// level so we have a list of PMIDs that all map to the same cancer type(s)
 	function combineCancers(objects){
+
 		var objToIndex = [],
 			combinedCancer = [];
 
@@ -205,10 +211,8 @@ function geneTable(genes, support){
 			groups[k].forEach(function(d){ datum.pmids.push(d.pmid); });
 			return datum;
 		});
-
 		return {refs: combined, count: combinedCancer.length};
 	}
-
 	genes.forEach(function(g){
 		Object.keys(annotations[g]).forEach(function(ty){
 			if (ty == ""){

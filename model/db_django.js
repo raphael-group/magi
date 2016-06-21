@@ -2,17 +2,17 @@ var pg = require("pg");
 
 // environment import
 pg.settings = {
-    dbname: process.env.POSTGRES_DBNAME || 'magi',
-    host: process.env.POSTGRES_HOST || '127.0.0.1',
-    port: process.env.POSTGRES_PORT || '5432',
-    user: process.env.POSTGRES_USER || 'postgres',
-    pw: process.env.POSTGRES_PASSWORD || 'magipaad'
+    dbname: process.env.POSTGRES_DJANGO_DBNAME || 'magipy',
+    host: process.env.POSTGRES_DJANGO_HOST || '127.0.0.1',
+    port: process.env.POSTGRES_DJANGO_PORT || '5432',
+    user: process.env.POSTGRES_DJANGO_USER || 'postgres',
+    pw: process.env.POSTGRES_DJANGO_PASSWORD || ''
 }
 
 var conString = 'postgres://' + pg.settings.user + ':' + pg.settings.pw + '@' + pg.settings.host + ':' +
     pg.settings.port + '/' + pg.settings.dbname;
 
-console.log('Connecting to postgres at address', conString);
+console.log('Connecting to django postgres at address', conString);
 
 exports.execute = execute
 exports.executeAppend = executeAppend
@@ -43,22 +43,22 @@ function executeAppend(query, suffix, cb){
     }
 }
 
-// a straight parametrized query that uses the client pool, given a string an an array of parameters
+// a straight parametrized query that uses the client pool
 function sql_query(text, values, cb){
     // gets a client from the client pool
     //console.log("plaintext query is: [", text, "]")
 //    console.log("plaintext values are: [", values, "]")
     pg.connect(conString, function(err, client, done) {
         if(err) {
-            // console.error("error fetching client from pool:", err);
-            console.log("SOMETHING")
+            console.error("error fetching client from pool for django database:", err);
             done();
-            cb(err, {});
+            cb(null, { rows: [] });
+        } else {
+            query = client.query(text, values, function(err, result) {
+                done(); // releases the client back to the pool
+                cb(err, result);
+            });
         }
-        query = client.query(text, values, function(err, result) {
-            done(); // releases the client back to the pool
-            cb(err, result);
-        });
     })
 }
 

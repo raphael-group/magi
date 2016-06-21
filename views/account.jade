@@ -12,7 +12,11 @@ block body
   div(class="container")
     h3
       | Your account. &nbsp;
-      small Manage your settings, uploaded datasets and annotations here.
+      small 
+        | Manage your settings and uploaded datasets here.
+        br
+        | To manage annotations, please log in to the 
+        a(href=annotationsURL + '/account/') MAGI annotations website.
     hr
     h4 Account information
     b Name: &nbsp;
@@ -57,72 +61,6 @@ block body
       a(href="/upload") Upload your first dataset.
     hr
     br
-    div(id="user-mut-annotations")
-      - if (geneAnnos.length > 0)
-        h4 Your Mutation Annotations
-        - var annotations = geneAnnos;
-        - var geneTableTitle = "gene-annotation-table";
-        include ./annotations/gene-table.jade
-      - else
-        | You have not annotated any gene mutations. &nbsp;
-
-    hr
-    br
-    div(id="user-source-annotations")
-      - if (sourceAnnos.length > 0)
-        h4 Your Source Annotations
-        - var annotations = sourceAnnos;
-        - var geneTableTitle = "source-annotation-table";
-        include ./annotations/gene-table.jade
-      - else
-        | You have not annotated any sources attached to gene mutations. &nbsp;
-
-    hr
-    br
-
-    div(id="div-ppis")
-      - if (ppiAnnos.length > 0)
-        h4 Your Interaction Annotations
-        table(class="table table-condensed", id="ppi-annotation-table")
-          thead
-            tr(style="background:#e3e3e3")
-              th Source
-              th Target
-              th Type
-              th Weight
-              th Directed
-              th Tissue
-              th PMID / PMCID
-              th Votes
-              th Remove
-          tbody
-            -for (var i = 0; i < ppiAnnos.length; i++)
-              - var d = ppiAnnos[i];
-              - var uid = d.u_id;
-              - var numVotes = d.upvotes.length - d.downvotes.length;
-              - var type = d.type ? d.type : "--"
-              - var weight = d.weight ? d.weight : "--"
-              - var directed = d.directed ? d.directed : "--"
-              - var tissue = d.tissue ? d.tissue : "--"
-              tr(class = "anno-tr")
-                td !{d.source}
-                td !{d.target}
-                td !{type}
-                td #{weight}
-                td !{directed}
-                td !{tissue}
-                td !{pubmedLink(d.reference)}
-                td
-                  span(id="vote-#{uid}-#{pmid_ref}") #{numVotes}
-                td
-                  a(data-uid="#{uid}", class="trash-ppi-icon", title="Remove ppi")
-                    span(class="glyphicon glyphicon-trash")
-      - else
-        | You have not annotated any protein-protein interactions. &nbsp;
-
-
-    hr
-    br
 
     div(id="additional-info", style="width:60%")
       h4 Tell us about yourself
@@ -160,37 +98,3 @@ block belowTheFold
   script(src='components/jquery/dist/jquery.min.js').
   script(src='js/account.js').
 
-  //- adding items to the page
-  script(type='text/javascript').
-    $(document).ready(function() {
-      var annos = !{JSON.stringify(geneAnnos)};
-        $('#gene-annotation-table').find('tr').each(function(index) {
-        var trow = $(this);
-        if (index === 0) {
-          trow.prepend('<th>Gene</th>');
-          trow.append('<th>Delete</th>');
-        } else {
-          trow.prepend('<td>' + annos[index - 1].gene + '</td>');
-          trow.append('<td><a data-uid=' + annos[index - 1].u_id + ' class="trash-mut-icon" title="Remove mutation"><span class="glyphicon glyphicon-trash"></a></td>');
-        }
-      });
-      $(".trash-mut-icon").click(deleteAnnotation);
-
-      annos = !{JSON.stringify(sourceAnnos)};
-      $('#source-annotation-table').find('tr').each(function(index) {
-        var trow = $(this);
-        if (index === 0) {
-          trow.prepend('<th>Gene</th>');
-          trow.append('<th>Delete</th>');
-        } else {
-          trow.prepend('<td>' + annos[index - 1].gene + '</td>');
-          trow.append('<td><a data-uid=' + annos[index - 1].sourceAnnos[0].asa_u_id +
-                    ' data-aber-id='+ annos[index - 1].u_id +
-                    ' class="trash-source-icon" title="Remove mutation"><span class="glyphicon glyphicon-trash"></a></td>');
-        }
-
-      });
-      $('#source-annotation-table span.source-vote-count').hide();
-      $('.agree-column').hide();
-      $(".trash-source-icon").click(deleteAnnotation);
-    });

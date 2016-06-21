@@ -23,6 +23,8 @@ var app = module.exports = express();
 
 // Use moment for keeping track of times
 app.locals.moment = require('moment');
+app.locals.annotationsURL = process.env.DJANGO_ANNOTATIONS_URL || 'http://cbio-test.cs.brown.edu/'
+app.locals.annotationsHost = app.locals.annotationsURL.replace('http://','')
 app.locals.production = app.get('env') === 'production';
 app.set('port', process.env.PORT || 8000);
 
@@ -36,7 +38,6 @@ if (typeof(process.env.WEBENGAGE_ID) == 'undefined'){
 // Load models to register their schemas
 var user = require( './model/user' ),
     database = require( './model/datasets' ),
-    domains = require( './model/domains' ),
     log = require('./model/log'),
     logPermission = require('./model/logPermission'),
     queryHash = require('./model/queryHash');
@@ -179,19 +180,7 @@ app.get('/manifests', routes.datasets.manifests);
 //app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
 
 app.get('/annotations/gene/:gene', routes.annotations.gene);
-//app.get('/annotations/cancer/:cancer', routes.annotations. cancer);
-
-app.get('/annotation/mutation/:u_id', routes.annotations.mutation);
-app.put('/annotation/mutation/:u_id', routes.annotations.updateMutation);
-app.post('/annotation/mutation/', ensureAuthenticated, routes.annotations.saveMutation);
-app.delete('/annotation/mutation/:u_id', routes.annotations.removeMutation);
-app.delete('/annotation/mutation/:aber_id/source/:source_id', routes.annotations.removeSourceAnno);
-
-app.post('/annotation/interaction/', routes.annotations.savePpi);
-app.delete('/annotation/interaction/:u_id', routes.annotations.removePpi);
-
-app.post('/vote/mutation', routes.annotations.mutationVote);
-app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
+app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
 
 // more information
 app.get('/terms', routes.terms);
@@ -206,6 +195,9 @@ app.get('/login', routes.login);
 app.get('/logout', routes.logout);
 app.get('/account', ensureAuthenticated, routes.account);
 app.post('/user/update', ensureAuthenticated, routes.user.update);
+
+// Save image response functions
+app.post('/save-figure', routes.savefigure);
 
 // Render errors
 app.get("/401", function(req, res){
@@ -282,48 +274,6 @@ function ensureAuthenticated(req, res, next) {
     req.session.returnTo = req.path;
     res.redirect('/login');
   }
-}
-
-/**
- * Save image response functions
- */
-
-// Handle save figure requests
-app.post('/saveSVG', function(req, res) {
-  if(req.body.html !== undefined) {
-    res.send(req.body.html);
-  } else if (req.body.img !== undefined) {
-    res.writeHead(200, {'Content-Type': 'image/png' });
-    res.end(req.body.img, 'binary');
-    res.send();
-  }
-});
-
-// Not needed as of the moment; delete if not needed for PDF generation
-function saveSVG(req, res) {
-  var bowerDir = 'public/components/',
-      fileName = req.body.fileName,
-      svgHTML = req.body.html;
-
-  // run the jsdom headless browser
-  var runHeadless = function (errors, window) {
-    var svg = window.d3.select('svg');
-    svg.attr('xmlns', 'http://www.w3.org/2000/svg')
-         .attr('xmlns:xlink','http://www.w3.org/1999/xlink');
-    var svgNode = svg.node();
-
-    res.setHeader('Content-Disposition', 'attachment');
-    res.setHeader('Content-type', 'application/pdf');//'image/svg+xml');
-
-    res.send('complete');
-
-    console.log('----');
-    console.log((svgNode.outerHTML).substring(0, 120));
-    console.log('Size of svgNode: ' + Buffer.byteLength(svgNode.outerHTML, 'utf8') + " bytes");
-    console.log(typeof svgNode.outerHTML);
-  };
-
-  jsdom.env(svgHTML,[bowerDir+'d3/d3.js', bowerDir+'jquery/dist/jquery.js'], runHeadless);
 }
 
 /**

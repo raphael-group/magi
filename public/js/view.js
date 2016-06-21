@@ -17,7 +17,7 @@ $(document).ready(
 );
 
 // Share link button event handler
-$('button#shareBtn').on('click', function(e) {
+$('a#shareBtn').on('click', function(e) {
   $.post('/share', {url: window.location.search})
     .done(function(r) {
       $('div#shareLinkBox input').val(window.location.origin + '/view/' + r);
@@ -49,7 +49,8 @@ function view(){
 		transcriptSelectElement = "select#transcript-select",
 		cnasElement = "div#cnas",
 		cnasSelectElement = "select#cnas-select",
-		controlsElement = "div#control-panel div#controls",
+    // controlsElement = "div#control-panel div#controls",
+    controlsElement = "div#controls",
 		annotateInputElement = "div#annotation div#inputs",
 		annotatedGeneElement = "div#annotation select#gene",
 		interactionElement = "div#annotation select#interaction",
@@ -95,6 +96,7 @@ function view(){
 	// for cancer types and mutations
 	function cancerToName(c){
 		if (cancerToAbbr[c]) return cancerToAbbr[c].toUpperCase();
+	    else if (c=='null' || !c) return "Unknown";
 		else return c.toUpperCase();
 	}
 
@@ -150,6 +152,7 @@ function view(){
 				  transcript: defaultStyle(), cnas: defaultStyle(),
 				  heatmap: defaultStyle() };
 
+        var tooltipNewline = {type: 'text', text:''};
 	elements.forEach(function(e){
 		style[e.name].width = $(e.el).width();
 		if (data.datasetColors){
@@ -241,10 +244,34 @@ function view(){
 		if (typeof(data.sampleAnnotations) == "object" && Object.keys(data.sampleAnnotations).length > 0)
 			data.aberrations.annotations = data.sampleAnnotations;
 
-		aberrations.datum(data.aberrations)
-			.call(gd3.mutationMatrix({
-				style: style.aberrations
-			}).showColumnCategories(false).showColumnLabels(false).linkRowLabelsToNCBI(true));
+    var m2Fn = gd3.mutationMatrix({ style: style.aberrations })
+            .showHoverLegend(true)
+            .showLegend(false)
+            .showColumnCategories(false)
+            .showColumnLabels(false)
+            .linkRowLabelsToNCBI(true)
+            .showSortingMenu(false);
+		aberrations.datum(data.aberrations).call(m2Fn)
+
+    // Handle sorting
+    $('ul#sort-options').sortable({
+      stop: function(){
+        // Compute the new order of the options
+        var sortingOptions = [];
+        d3.selectAll('li.sort-option').each(function(){
+          sortingOptions.push($(this).data('sort-option'));
+        });
+
+        // Get the new column label ordering from the mutation matrix
+        var columnLabels = m2Fn.getOrderedColumnLabels(sortingOptions);
+
+        // Finally, issue a dispatch to update the heatmap
+        gd3.dispatch.sort({
+          columnLabels: columnLabels,
+          sortingOptionsData: sortingOptions
+        })
+      }
+    });
 
 		// Add tooltips
 		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
@@ -281,38 +308,34 @@ function view(){
 				// Determine if there are references for the current gene
 				// AND its current mutation type
 				if (mutationIndex !== -1){
-					// Find all the cancers for which this gene is known to be mutated. Then add
-					// references for each row
-					var cancerToRefs = data.annotations[geneName][annotatedMutationNames[mutationIndex]],
-						cancerNames  = Object.keys(cancerToRefs).sort(),
-						refTable = [[
-								{type: 'text', text: 'Cancer'},
-								{type: 'text', text: 'PMID'},
-								{type: 'text', text: 'Edit'}
-							].map(gd3.tooltip.datum)
-						];
 
-					cancerNames.forEach(function(cancer){
-					    var refsUsed = [];
-						cancerToRefs[cancer].forEach(function(ref, i){
-							// only show the cancer name in the first row
-						    if (refsUsed.indexOf(ref.pmid) == -1) {
-							refsUsed.push(ref.pmid);
-							refTable.push([
-								{ type: 'text', text: i ? "" : cancerToName(cancer) },
-								{ type: 'link', body: ref.pmid, href: pubmedLink(ref.pmid)},
-							        { type: 'link', body: 'Edit', href: "/annotation/mutation/" + ref._id}
-							].map(gd3.tooltip.datum));
-						    }
-						});
-					});
+				    // Find all the cancers for which this gene is known to be mutated. Then add
+				    // references for each row
+				    var cancerToRefs = data.annotations[geneName][annotatedMutationNames[mutationIndex]],
+				    cancerNames  = Object.keys(cancerToRefs).sort();
 
 					// The table is hidden on default, so we show a string describing the
 					// table before showing it.
-					var knownAberrations = cancerNames.map(cancerToName).join(", ");
-					tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + ' in ' + knownAberrations});
-					tooltipData.push({type: 'table', table: refTable, defaultHidden: true});
+				    var knownAberrations = cancerNames.map(cancerToName).filter(function(s) {return s != 'Unknown';}).join(", ");
+				    var inKnownCancers = knownAberrations == '' ? '' : (' in ' + knownAberrations);
+				    tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + inKnownCancers});
+				    // count the number of references
+				    if (cancerNames) {
+					var numRefs = 0;
+					cancerNames.forEach(function(name) {
+					    numRefs += cancerToRefs[name].length;
+					});
+					tooltipData.push({ type: 'link',
+							   body: 'View references (' + numRefs +') for this gene',
+							   href: annotationsURL + '/annotations/' + geneName}); // todo: limit to references to a mutation
+					tooltipData.push(tooltipNewline); // workaround: add newline after a link
+				    }
 				}
+			    tooltipData.push({ type: 'link',
+					       body: 'Add a new reference for this gene',
+					       href: annotationsURL + '/annotations/create/mutation/?gene=' + geneName});
+			    tooltipData.push(tooltipNewline);
+
 			}
 
 			// Add the tooltip
@@ -346,72 +369,17 @@ function view(){
 		var refTable = [[
 				{type: 'text', text: 'Network'},
 				{type: 'text', text: 'PMID'},
-				{type: 'text', text: 'Votes'}
 			].map(gd3.tooltip.datum)
 		];
 
 	    d.categories.forEach(function(n){
 		if (d.references[n].length > 0){
 				d.references[n].forEach(function(ref, i){
-					ref.score = ref.upvotes.length - ref.downvotes.length;
-					if (ref.upvotes.indexOf(user_id) > -1){
-						ref.vote = 'up';
-					} else if (ref.downvotes.indexOf(user_id) > -1){
-						ref.vote = 'down';
-					} else {
-						ref.vote = null;
-					}
 					// only show the network name in the first row
 					refTable.push([
 						{type: 'text', text: i ? "" : n},
 						{type: 'link', href: pubmedLink(ref.pmid), body: ref.pmid},
-						{type: 'vote',
-						 voteDirectionFn: function(){ return ref.vote; },
-						 voteCountFn: function(){ return ref.score; },
-						 upvoteFn: function(){
-						     var voteDirection = 'up';
-						  	if (ref.vote == 'down'){
-						  		ref.score += 2;
-						  		ref.vote = 'up';
-						  	} else if (ref.vote == 'up'){
-							    voteDirection = 'remove';
-						  		ref.score -= 1;
-						  		ref.vote = null;
-						  	} else {
-						  		ref.vote = 'up';
-						  		ref.score += 1;
-						  	}
-						 	vote({
-							    _id: ref._id,
-						 		source: d.source.name,
-						 		target: d.target.name,
-						 		network: n,
-						 		pmid: ref.pmid,
-						 		vote: voteDirection
-						 	}, '/vote/ppi');
-						 },
-						 downvoteFn: function(){
-						     var voteDirection = 'down';
-						  	if (ref.vote == 'down'){
-							    voteDirection = 'remove';
-						  		ref.score += 1;
-						  		ref.vote = null;
-						  	} else if (ref.vote == 'up'){
-						  		ref.score -= 2;
-						  		ref.vote = 'down'
-						  	} else {
-						  		ref.vote = 'down';
-						  		ref.score -= 1;
-						  	}
-						 	vote({
-							    _id: ref._id,
-						 		source: d.source.name,
-						 		target: d.target.name,
-						 		network: n,
-						 		pmid: ref.pmid,
-						 		vote: voteDirection
-						 	}, '/vote/ppi')
-						 }}
+
 					].map(gd3.tooltip.datum));
 				})
 			} else {
@@ -419,11 +387,22 @@ function view(){
 			}
 		});
 
+// todo: remove vote buttons
+	    createInteractionHref = annotationsURL + '/annotations/interactions/add/?source=' + d.source.name +
+			'&target=' + d.target.name;
+
 		// Add the tooltip
 		networkTooltips.push([
-			{ type: 'text', text: 'Source: ' + d.source.name },
-			{ type: 'text', text: 'Target: ' + d.target.name },
-			{ type: 'table', table: refTable }
+		    { type: 'text', text: 'Source: ' + d.source.name },
+		    { type: 'text', text: 'Target: ' + d.target.name },
+		    { type: 'link',
+		      href: annotationsURL + '/annotations/interactions/' + d.source.name + ',' + d.target.name,
+		      body: 'View references to this interaction.'},
+		    tooltipNewline,
+		    { type: 'link',
+		      href: createInteractionHref,
+		      body: 'Add and/or annotate a reference to this interaction.'},
+		    { type: 'table', table: refTable }
 		].map(gd3.tooltip.datum) );
 	});
 
@@ -462,18 +441,29 @@ function view(){
 		transcript.selectAll("*").remove();
 
 		// Then add the new plot
+		var transcriptFn = gd3.transcript({ showLegend: true, style: style.transcript })
 		transcript.append("h5").text(geneName);
 		var transcriptPlot = transcript.append("div")
 			.datum(data.transcripts[geneName][transcriptName])
-			.call(gd3.transcript({
-				showLegend: true,
-				style: style.transcript
-			}));
+			.call(transcriptFn);
+
+		// Add listeners to update the domain DB, and set the domain DB
+		// to whichever domain DB is currently checked
+		function setDomainDB(){
+		    if ($(this).is(':checked')){
+		    	transcriptFn.setDomainDB($(this).val());
+		    }
+		}
+		$('ul#transcript-domain-radios input').each(setDomainDB);
+		$('ul#transcript-domain-radios input').click(setDomainDB);
 
 		// And add tooltips
 		var aminoAcidCodes = { A: "Ala", B: "Asx", C: "Cys", D: "Asp", E: "Glu", F: "Phe", G: "Gly", H: "His", I: "Ile", K: "Lys", L: "Leu", M: "Met", N: "Asn", P: "Pro", Q: "Gln", R: "Arg", S: "Ser", T: "Thr", V: "Val", W: "Trp", X: "X", Y: "Tyr",Z: "Glx", "*": "*"};
 		function aminoAcidCode(aa){ return aa in aminoAcidCodes ? aminoAcidCodes[aa] : aa; }
 
+
+  	    // add some codes to interface with Django HTML api
+	    var mutationTypeRevMap = {'Missense_Mutation':'MS', 'In_Frame_Del': 'IFD'};
 		var mutations = transcriptPlot.selectAll("path.symbols"),
 			transcriptTooltips = [];
 		mutations.classed("gd3-tipobj", true);
@@ -488,16 +478,30 @@ function view(){
 				clause1	 = geneName + changeOneCode
 				clause2 = geneName + '%5Btw%5D+AND+(' + changeOneCode + "+OR+" + changeThreeCode + ")",
 				changeQuery = clause1 + " OR (" + clause2 + ")",
-				changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
+		    changeHref = 'http://www.ncbi.nlm.nih.gov/pmc/?term=' + changeQuery;
+
+		    createParams = {'gene': geneName,
+				    'mutation_class': 'SNV',
+				    'mutation_type': mutationTypeRevMap[d.ty],
+				    'original_amino_acid': d.aao,
+				    'locus': d.locus,
+				    'new_amino_acid': d.aan,
+				    'cancer': d.dataset.toLowerCase()};		    // FIXME: database != cancer for some datasets
+
+		    createMutationHref = annotationsURL + '/annotations/save/mutation/?' + $.param(createParams);
 
 			transcriptTooltips.push([
-				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
-				{ type: 'text', text: 'Dataset: ' + d.dataset },
-				{ type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
-				{ type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
-				{ type: 'link', href: locusHref, body: 'Search locus on Pubmed.' },
-				{ type: 'text', text: ''},
-				{ type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' }
+			    { type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
+			    { type: 'text', text: 'Dataset: ' + d.dataset },
+			    { type: 'text', text: 'Mutation type: ' + d.ty.replace("_", " ") },
+			    { type: 'text', text: 'Change: ' + d.locus + ': ' + d.aao + '>' + d.aan},
+			    { type: 'link', href: locusHref, body: 'Search locus on Pubmed.' },
+			    tooltipNewline,
+			    { type: 'link', href: changeHref, body: 'Search protein sequence change on Pubmed.' },
+			    tooltipNewline,
+			    { type: 'link', href: annotationsURL + '/annotations/' + geneName, body: 'View all references to this mutation'},
+			    tooltipNewline,
+			    { type: 'link', href: createMutationHref, body: 'Add and/or annotate a reference to this mutation.' },
 			].map(gd3.tooltip.datum));
 		});
 
@@ -561,7 +565,11 @@ function view(){
 
 	// Watch the CNA browser selector to update the current CNA browser on change
 	cnasSelect.on("change", updateCNAChart);
-	if (cnaGenes) updateCNAChart();
+	if (cnaGenes.length > 0){ updateCNAChart(); }
+  else{
+    cnasSelect.remove();
+    cnas.html('<b>No copy number aberrations.</b>')
+  }
 
 	///////////////////////////////////////////////////////////////////////////
 	// Controls for the control panel
@@ -608,49 +616,15 @@ function view(){
 			return { name: d, color: datasetToColor[d], numSamples: datasetToSamples[d].length };
 		}).sort(function(a, b){ return d3.ascending(a.name, b.name); });
 
-	// Add a container and a heading
-	var controls = d3.select("#control-panel div#controls"),
-		datasetsPanel = controls.append("div")
-			.attr("class", "panel panel-default")
-			.style("padding", "0px")
-
-	var datasetHeading = datasetsPanel.append("div")
-		.attr("class", "panel-heading")
-		.style("padding", "5px")
-		.append("h5")
-		.attr("class", "panel-title")
-		.attr("id", "datasetLink")
-		.style("cursor", "pointer")
-		.style("font-size", "14px")
-		.style("width", "100%")
-		.text("Datasets");
-	bootstrapToggle({link: "dataset", target: "Dataset"});
-
-	datasetHeading.append("span")
-		.style("float", "right")
-		.text("[+]");
-
-	// Add each dataset
-	var datasetsBody = datasetsPanel.append("div")
-		.attr("id", "collapseDataset")
-		.attr("class", "panel-collapse collapse in")
-		.append("div")
-		.attr("class", "panel-body")
-		.style("padding", "5px");
-
-	var datasetEls = datasetsBody.append("ul")
-		.attr("id", "datasets")
-		.selectAll(".dataset")
-		.data(datasetData).enter()
-		.append("li")
-		.style("cursor", "pointer")
-		.on("click", function(d){
-			// Add/Remove the dataset from the list of filtered datasets
-			var index = filteredDatasets.indexOf(d.name),
+	var datasetRows = d3.selectAll("table#datasets tbody tr td.dataset-color")
+    .on("click", function(d){
+      // Add/Remove the dataset from the list of filtered datasets
+      var name = $(this).data('name');
+			var index = filteredDatasets.indexOf(name),
 				visible = index == -1;
 
 			if (visible){
-				filteredDatasets.push( d.name );
+				filteredDatasets.push( name );
 			} else{
 				filteredDatasets.splice(index, 1);
 			}
@@ -659,11 +633,8 @@ function view(){
 			gd3.dispatch.filterCategory( { categories: filteredDatasets });
 
 			// Fade in/out this dataset
-			d3.select(this).style("opacity", visible ? 0.5 : 1);
-		});
-
-	datasetEls.append("div").attr("class", "dataset-color").style("background", function(d){ return d.color; });
-	datasetEls.append("div").text(function(d){ return d.name + " (" + d.numSamples + ")"; });
+			d3.select(this.parentNode).style("opacity", visible ? 0.5 : 1);
+    });
 
 	///////////////////////////////////////////////////////////////////////////
 	// Add controls
@@ -680,7 +651,6 @@ function view(){
 			}
 		});
 	})
-
 
 	// Resolve the promise and return
 	deferred.resolve();

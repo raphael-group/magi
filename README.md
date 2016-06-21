@@ -20,6 +20,10 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
 * [Postgres](https://wiki.postgresql.org/wiki/Detailed_installation_guides)
 MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Safari.
 
+* [librsvg](https://wiki.gnome.org/action/show/Projects/LibRsvg?action=show&redirect=LibRsvg). MAGI requires librsvg for converting figures to PNG/PDF format. You can install librsvg on Mac OS X with [Homebrew](http://brew.sh/):
+
+        brew install librsvg
+
 ### Setup ###
 
 1. Clone the repository:
@@ -30,36 +34,27 @@ MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Sa
 2. Install required dependencies:
 
         npm install
+        pip install -r requirements.txt
 
-3. Clone the latest version of GD3:
-
-        cd public/components/
-        git clone https://github.com/raphael-group/gd3
-        cd ../../
-
-4. Start MongoDB and create a Postgresql database:
+3. Start MongoDB and create a Postgresql database:
 
         mongod &
         postgres createdb $POSTGRES_DBNAME
 
-5. Download the [latest tarball of data files](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (~300Mb) from the Raphael group website, and untar in the MAGI directory.
+4. Download the [latest tarball of data files](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (~300Mb) from the Raphael group website, and untar in the MAGI directory.
 
         wget http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar
         tar -xvf latest.tar
 
-6. Load the data:
+5. Load the data:
 
         cd db/
         node loadGenome.js --genome_file=../data/genome/hg19_genes_list.tsv
-        node loadDomains.js --domain_file=../data/domains/refseq_transcript_domains.tsv
-        node loadDomains.js --domain_file=../data/domains/ensembl_transcript_domains.tsv
+        python loadTranscripts.py -tf ../data/proteome/output/ensembl-protein-sequence.tsv -df ../data/domains/ensembl_transcript_domains.tsv -af ../data/proteome/output/phosphosite-human-annotated-sites.tsv -tdn Ensembl
+        python loadTranscripts.py -tf ../data/proteome/output/refseq-protein-sequence.tsv -df ../data/domains/refseq_transcript_domains.tsv -af ../data/proteome/output/phosphosite-human-annotated-sites.tsv -tdn RefSeq
         node loadCancers.js --cancers_file=../data/icgc-tcga-cancers.tsv
         node loadKnownGeneSets.js --gene_set_file=../data/pathways/kegg/kegg-pathways.tsv --dataset="KEGG"
         node loadKnownGeneSets.js --gene_set_file=../data/pathways/pindb/pindb-complexes.tsv --dataset="PINdb"
-        node loadPPIs.js --ppi_file=../data/ppis/hint-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/hprd-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/iref9-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/multinet.tsv
         sh loadPublicDatasets.sh
         cd ../
 

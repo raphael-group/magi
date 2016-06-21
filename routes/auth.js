@@ -28,34 +28,16 @@ exports.account = function(req, res){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
 		var user_id = String(user._id);
-		// here call to postgres for all annotations:
-		Aberrations.geneFind({aber_user_id: user_id}, 'right', function(err, geneAnnos) {
-		    if (err) throw new Error(err);
-		    // calculate the mode of each aberration
-		    geneAnnos = Aberrations.collateSourceAnnos(geneAnnos);
-
-		    Aberrations.geneFind({user_id: user_id}, 'left', function(err, sourceAnnos) {
-			if (err) throw new Error(err);
-			// calculate the mode of each aberration
-			sourceAnnos = Aberrations.collateSourceAnnos(sourceAnnos);
-
-			PPIs.ppiFind({user_id: user_id}, 'left', function (err, ppiAnnos) {
-			    if (err) throw new Error(err);
-			    // Render index page
-			    var pkg = { user: user,
-					 groups: groups,
-					 geneAnnos: geneAnnos,
-					 sourceAnnos: sourceAnnos,
-					 ppiAnnos: ppiAnnos,
-					 abbrToCancer: abbrToCancer,
-					 cancerToAbbr: cancerToAbbr,
-					 skip_requery: true};
-			    res.render('account', pkg);
-			});
-		    });
-		});
+		var pkg = { user: user,
+			    groups: groups,
+			    abbrToCancer: abbrToCancer,
+			    cancerToAbbr: cancerToAbbr,
+			    skip_requery: true};
+		res.render('account', pkg);
 	    });
 	});
+//    var redirectURL = req.app.locals.annotationsURL + '/account/';
+//    res.redirect(redirectURL);
 }
 
 // Update user
