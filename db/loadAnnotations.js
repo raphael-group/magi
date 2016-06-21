@@ -1,5 +1,4 @@
 // Load models
-<<<<<<< HEAD
 var abers = require('../model/aberrations'),
 	pg = require('../model/db_sql');
 
