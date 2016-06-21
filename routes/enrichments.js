@@ -20,7 +20,8 @@ exports.stats = function stats(req, res){
 	var error = null,
 		finished = false,
 		stderr = '',
-		stdout = '';
+		stdout = '',
+		stdout_list = [];
 
 	var enrichments = require('child_process').spawn(pathToScript, args)
 		.on('exit', function(code, signal){
@@ -36,10 +37,14 @@ exports.stats = function stats(req, res){
 		}).on('error', function(err) {
 			error = err;
 		});
+
 	enrichments.stdout.on('data', function(data){
 		if (Buffer.isBuffer(data)) data = data.toString();
-		stdout += data;
+		stdout_list.push(data);
 	});
+	enrichments.stdout.on('end', function () {
+        stdout = stdout_list.join();
+    });
 	enrichments.stderr.on('data', function(data){
 		if (Buffer.isBuffer(data)) data = data.toString();
 		stderr += data;
@@ -90,7 +95,7 @@ exports.index  = function enrichments(req, res){
 			mutatedGenes.forEach(function(d){
 				if (!(d.gene in geneToMutatedSamples)) geneToMutatedSamples[d.gene] = {};
 				Object.keys(d.mutated_samples).forEach(function(s){
-					geneToMutatedSamples[d.gene][s] = true;	
+					geneToMutatedSamples[d.gene][s] = true;
 				});
 			});
 
