@@ -10,7 +10,8 @@ var about = require( './about' ),
 	annotations = require('./annotations'),
   log = require('./log'),
   share = require('./share'),
-  requery = require('./requery');
+  requery = require('./requery'),
+	save = require('./save');
 
 //*  Export the routes in each subrouter *//
 
@@ -63,6 +64,9 @@ exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view;
 exports.datasets.manifests = datasets.manifests;
 
+// Save
+exports.savefigure = save.figure;
+
 // Share link
 exports.saveShareURL = share.saveShareURL;
 
@@ -82,19 +86,5 @@ exports.getSessionLatestQuery = requery.getSessionLatestQuery;
 
 // test routes for annotations
 exports.annotations = {};
-exports.annotations.saveMutation = annotations.saveMutation;
 exports.annotations.gene = annotations.gene;
-exports.annotations.mutation = annotations.mutation;
-exports.annotations.updateMutation = annotations.updateMutation;
-exports.annotations.mutationVote = annotations.mutationVote;
 exports.annotations.cancer = annotations.cancer;
-exports.annotations.savePpi = annotations.savePpi;
-exports.annotations.removeMutation = annotations.removeMutation;
-exports.annotations.removePpi = annotations.removePpi;
-exports.annotations.ppiVote = annotations.ppiVote;
-//exports.annotations.ppiComment = annotations.ppiComment;
-
-// exports.annotations.cancer = annotations.cancer;
-// exports.annotations.ppiVote = annotations.ppiVote;
-// exports.annotations.ppiComment = annotations.ppiComment;
-// mutation comment?

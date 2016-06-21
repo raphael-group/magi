@@ -1,68 +1,116 @@
-// Import required modules                                                                                                                               
-Database = require('./db_sql');
-var sql = require("sql");
+// Import required modules
+var Database = require('./db_sql');
+    DjangoDatabase = require('./db_django'),
+    sql = require("sql");
 
 sql.setDialect('postgres')
 
 exports.initDatabase = initDatabase
 
 // type to help link subtypes of annotations
-annoTypeName = "anno_sub_type"
-//annoTypes = ["aber", "ppi"]
+var annoTypeName = "anno_sub_type"
 
 // define tables here:
-annotations = sql.define({
-    name: 'annos',
+exports.annotations = annotations = sql.define({
+    name: 'annotations_annotation',
     columns: [
-	{name: 'user_id',       dataType: 'varchar(40)', notNull: true},
-	{name: 'u_id', dataType: 'serial', primaryKey: true},
-	{name: 'comment',	dataType: 'varchar(5000)',},
- 	{name: 'reference',	dataType: 'varchar(45)', notNull: true},
-	{name: 'type', dataType: annoTypeName, notNull: true}],
+	{name: 'id', dataType: 'serial', primaryKey: true},
+	{name: 'comment',	dataType: 'varchar(300)',},
+  	{name: 'heritable', dataType: 'varchar(8)'},
+	{name: 'measurement_type', dataType: 'varchar(30)', notNull: true},
+	{name: 'characterization', dataType: 'varchar(20)', notNull: true},
+	{name: 'reference_id',	dataType: 'serial', notNull: true},
+	{name: 'cancer_id', dataType: 'integer', notNull: true},
+	{name: 'user_id', dataType: 'integer', notNull: true},
+	{name: 'last_edited', dataType: 'date'},
+	{name: 'created_on', dataType: 'date'}]
 })
 
-aberrations = sql.define({
-    name: 'aber_annos',
+
+// note: our current design allows duplicate aberrations b/c each aberration represents a source as well...
+exports.aberrations = aberrations = sql.define({
+    name: 'annotations_mutation',
     columns: [
-	{name: 'gene', 		dataType: 'varchar(15)', notNull: true},
-	{name: 'cancer',        dataType: 'varchar(40)'},
-	{name: 'transcript',	dataType: 'varchar(20)'},
-	{name: 'mut_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
-	{name: 'mut_type',	dataType: 'varchar(35)'},
-        {name: 'protein_seq_change', dataType: 'varchar(30)'},
-        {name: 'source', 	dataType: 'varchar(20)', notNull: true},
-	{name: 'is_germline',	dataType: 'boolean'}, // not used
-  	{name: 'measurement_type', 	dataType: 'varchar(10)'}, // not used
-	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'aber'", notNull:true},
-	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}}]
+      {name: 'gene_id', 		dataType: 'varchar(30)', notNull: true},
+	{name: 'id', 		dataType: 'serial', notNull: true},
+	{name: 'mutation_class', 	dataType: 'varchar(25)', notNull: true}, // todo: mutation table and foreign key?
+	{name: 'mutation_type',	dataType: 'varchar(35)'},
+	{name: 'locus', dataType: 'integer'},
+	{name: 'new_amino_acid', dataType: 'varchar(30)'},
+	{name: 'original_amino_acid', dataType: 'varchar(30)'},
+	{name: 'last_edited', dataType: 'date'},
+	{name: 'created_on', dataType: 'date'}
+    ]
+});
+
+exports.cancers = cancers = sql.define({
+	name: 'annotations_cancer',
+	columns: [
+	    {name: 'name', dataType: 'varchar(100)', notNull: true},
+	    {name: 'color', dataType: 'varchar(7)', notNull: true},
+	    {name: 'abbr', dataType: 'varchar(10)', notNull: true},
+	    {name: 'last_edited', dataType: 'date'},
+	    {name: 'created_on', dataType: 'date'}
+	]
+});
+
+exports.references = references = sql.define({
+    name: 'annotations_reference',
+    columns: [
+      {name: 'id', dataType: 'integer', notNull: true},
+      {name: 'identifier', dataType: 'varchar(30)', notNull: true},
+      {name: 'db', dataType: 'varchar(30)', notNull: true},
+      {name: 'source', dataType: 'varchar(30)', notNull: true},
+	{name: 'mutation_id', dataType: 'integer', notNull: true},
+	{name: 'last_edited', dataType: 'date'},
+	{name: 'created_on', dataType: 'date'}]
+});
+
+
+// *********** interaction databases ***************
+
+exports.interaction_annotations = interaction_annotations = sql.define({
+    name: 'annotations_interactionreference',
+    columns: [
+      {name: 'user_id',       dataType: 'varchar(40)', notNull: true},
+      {name: 'interaction_id', dataType: 'integer'},
+      {name: 'identifier',	dataType: 'varchar(45)', notNull: true},
+      {name: 'id',       dataType: 'integer'}],
 })
 
-// todo: maintain unique key constraint with the source?
-//aberrations.unique = ["gene", "cancer", "mut_class", "mut_type",
-
-interactions = sql.define({
-    name: 'ppi_annos',
+exports.interactions = interactions = sql.define({
+    name: 'annotations_interaction',
     columns: [
-	{name: 'source',	dataType: 'varchar(15)', notNull: true},
-	{name: 'target',	dataType: 'varchar(15)', notNull: true},
-	{name: 'database',	dataType: 'varchar(30)'},
-	{name: 'type',	 dataType: 'varchar(15)'},
-	{name: 'weight', dataType: 'float'},
-	{name: 'directed',	dataType: 'boolean'},
-	{name: 'tissue',	dataType: 'varchar(30)'},
-	{name: 'anno_type',	dataType: annoTypeName + " DEFAULT 'ppi'", notNull:true},
-	{name: 'anno_id', dataType: 'integer', primaryKey: true, references: {table: 'annos', column: 'u_id', onDelete: 'cascade'}}]
+	{name: 'source_id',	dataType: 'varchar(15)', notNull: true},
+	{name: 'target_id',	dataType: 'varchar(15)', notNull: true},
+	{name: 'input_source',	dataType: 'varchar(30)'},
+	{name: 'id', dataType: 'integer', primaryKey: true}]
 })
 
-votes = sql.define({
-    name: 'votes',
+exports.votes = votes = sql.define({
+    name: 'annotations_interactionvote',
     columns: [
-	{name: 'anno_id', dataType: 'integer', primaryKey: true},
-	{name: 'anno_type',	dataType: annoTypeName, notNull:true, primaryKey: true},
-	{name: 'voter_id', dataType: 'varchar(40)', notNull: true, primaryKey: true},
-	// integrity check: only one vote at a time
-	{name: 'direction', dataType: 'smallint', notNull: true},
-	{name: 'comment', dataType: 'varchar(3000)'}]
+	{name: 'id', dataType: 'integer', primaryKey: true},
+	{name: 'reference_id',	dataType: 'integer', notNull:true},
+	{name: 'user_id', dataType: 'varchar(40)', notNull: true},
+	{name: 'is_positive', dataType: 'smallint', notNull: true}]
+})
+
+exports.users = users = sql.define({
+    name: 'auth_user',
+    columns: [
+	{name: 'id', dataType: 'serial', primaryKey: true},
+	{name: 'password',	dataType: 'varchar(128)', notNull: true},
+	{name: 'last_login', dataType: 'timestamp'},
+	{name: 'username', dataType: 'varchar(30)', notNull: true},
+	{name: 'first_name', dataType: 'varchar(30)', notNull: true},
+	{name: 'last_name', dataType: 'varchar(30)', notNull: true},
+	{name: 'email', dataType: 'varchar(254)', notNull: true},
+	{name: 'is_staff', dataType: 'boolean', notNull: true},
+	{name: 'is_superuser', dataType: 'boolean', notNull: true},
+	{name: 'is_active', dataType: 'boolean', notNull: true},
+	{name: 'date_joined', dataType: 'timestamp', notNull: true}
+    ]
 })
 
 function initDatabase() {
@@ -74,7 +122,6 @@ function initDatabase() {
     }
 
     typeConstraint = {};
-    typeConstraint[aberrations.getName()] = "aber";
     typeConstraint[interactions.getName()] = "ppi";
 
     // create type first - no support for NOT EXISTS/CREATE OR REPLACE
@@ -83,53 +130,41 @@ function initDatabase() {
 	"IF NOT EXISTS (select 1 FROM pg_type " +
 	"WHERE typname='" + annoTypeName + "') " +
 	"THEN CREATE TYPE " + annoTypeName +
-	" AS ENUM('aber', 'ppi');" +
+	" AS ENUM('aber', 'ppi', 'source');" +
 	" END IF; END; $$;"
 
     Database.sql_query(wholeTypeStr, [], function(err, result) {
-	if (err) {
-	    console.log("Error creating annotation type:", err)
-	    throw new Error(err)
-	} else {
-	    // create annotation table, then everything else
-	    annoCreateQuery = annotations.create().ifNotExists()
+    	if (err) {
+    	    console.log("Error creating annotation type:", err)
+    	    throw new Error(err)
+    	} else {
+    	    // create annotation table, then aberrations table, then everything else
+    	    annoCreateQuery = annotations.create().ifNotExists()
 
-	    Database.execute(annoCreateQuery, function(err, result) {
-		handle_err(annotations, err)
-		console.log("Annotations: postgres init'ed", annotations.getName(), "table");
+    	    Database.execute(annoCreateQuery, function(err, result) {
+        		handle_err(annotations, err)
+        		console.log("Annotations: postgres init'ed", annotations.getName());
+        		Database.execute(aberrations.create().ifNotExists(), function(err, result) {
+        		    handle_err(aberrations, err)
+        		    console.log("Annotations: postgres init'ed", aberrations.getName());
 
-		// create subannotation and votes table
-		subannos = [aberrations, interactions, votes]
+        		    // create subannotation and votes table
 
-		// key value constraint
-		addTypeValueConstraintFn = function (table) {
-		    return "CHECK (anno_type = '" +
-			typeConstraint[table.getName()] + "')"
-		}
+        		    subannos = [interaction_annotations, interactions, votes];
 
-		subannos.forEach( function (thisTable) {
-		    createQuery = thisTable.create().ifNotExists()
-
-		    constraint = ""
-		    if (thisTable.getName() in typeConstraint) {
-			constraint = addTypeValueConstraintFn(thisTable)
-		    }
-		    Database.executeAppend(createQuery, constraint, function(err, result) {
-			handle_err(thisTable, err)
-			console.log("Annotations: postgres init'ed", thisTable.getName(), "table");
-		    });
-		})
-	    });
-	}
+        		    subannos.forEach( function (thisTable) {
+        			createQuery = thisTable.create().ifNotExists()
+        		    });
+        		});
+    	    });
+    	}
     });
 }
 
 // export table schemas
-exports.annotations = annotations
-exports.aberrations = aberrations
-exports.interactions = interactions
-exports.votes = votes
 
+// a "view" on aberration sources
+//exports.aber_sources_view = references.joinTo(annotations).on(references.id.equals(annotations.reference_id));
 
 exports.normalizeAnnotation = function(anno) {
     // convert null votes to []
@@ -144,13 +179,17 @@ exports.normalizeAnnotation = function(anno) {
 
 exports.parsePMID = function(pmid_field) {
     // parse PMIDs if necessary:
-    if (pmid_field === undefined) 
+    if (pmid_field === undefined)
 	return ["none"]
 
-    if (pmid_field.indexOf(",") == -1) 
+    if (pmid_field.indexOf(",") == -1)
 	return [pmid_field];
 
     return pmid_field.split(",");
+}
+
+exports.getColumnNames = function(tableDef) {
+    return tableDef.columns.map(function(c) {return c.name;});
 }
 
 // join a query with the list of all user_ids who have voted on a particular annotation
