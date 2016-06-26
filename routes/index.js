@@ -41,7 +41,8 @@ exports.index = function index(req, res){
 						datasetToCheckboxes[groupName].push( db.checkboxValue );
 						if (groupName == "tcga pan-cancer" && db.title == "GBM"){
 							datasetToCheckboxes.gbm = [ db.checkboxValue ];
-						} else if (!groupName.toLowerCase().includes('firebrowse')){
+						}
+						if (groupName.toLowerCase().indexOf('firebrowse') === -1){
 							datasetDeselect.push( db.checkboxValue );
 						}
 					}
@@ -53,7 +54,7 @@ exports.index = function index(req, res){
 				})
 			});
 		}
-
+		console.log(datasetDeselect)
 		initGroup( standardGroups, 'public' )
 
 
