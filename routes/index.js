@@ -41,7 +41,7 @@ exports.index = function index(req, res){
 						datasetToCheckboxes[groupName].push( db.checkboxValue );
 						if (groupName == "tcga pan-cancer" && db.title == "GBM"){
 							datasetToCheckboxes.gbm = [ db.checkboxValue ];
-						} else if (groupName == "tcga publications"){
+						} else if (!groupName.toLowerCase().includes('firebrowse')){
 							datasetDeselect.push( db.checkboxValue );
 						}
 					}
