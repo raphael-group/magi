@@ -54,7 +54,7 @@ exports.index = function index(req, res){
 				})
 			});
 		}
-		console.log(datasetDeselect)
+
 		initGroup( standardGroups, 'public' )
 
 
