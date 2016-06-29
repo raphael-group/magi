@@ -9,6 +9,7 @@ var mongoose = require( 'mongoose' ),
 	Database = require('../model/db'),
 	Cancers  = require( "../model/cancers" ),
 	Utils = require('../model/util'),
+	saveQuery = require('./index').saveQuery,
 	fs = require('fs');
 
 exports.view  = function view(req, res){
@@ -39,8 +40,16 @@ exports.view  = function view(req, res){
 	  });
 	} else {
 		var genes = req.query.genes.split(","),
-				dataset_ids = req.query.datasets.split(",");
-		completeViewData(genes, dataset_ids);
+			dataset_ids = req.query.datasets.split(",");
+
+		if (req.user){
+			saveQuery(req.user, dataset_ids.map(function(d){ return 'db-' + d; }), genes, function(err){
+				if (err) console.err(err)
+				completeViewData(genes, dataset_ids);
+			});
+		} else{
+			completeViewData(genes, dataset_ids);
+		}
 	}
 
 	function completeViewData(genes, dataset_ids) {
@@ -54,7 +63,7 @@ exports.view  = function view(req, res){
 			// Validate that the user can view ALL the datasets in the query
 			var permissions = datasets.map(function(d){
 				return d.is_public || (logged_in && (d.user_id + "" == req.user._id));
-			})
+			});
 
 			if (!permissions.every(function(b){ return b; })){
 				req.session.msg401 = "You do not have access to all the datasets in your query.";
@@ -143,10 +152,12 @@ exports.view  = function view(req, res){
 									segments: []
 								};
 							}
+							console.log(G.cnas)
 							cna_browser_data[G.gene].segments = cna_browser_data[G.gene].segments.concat( G.cnas.segments );
 
 							// Update the segment extent and neighbors to include any neighbors outside of the
 							// previous boundaries
+							console.log(G.gene, G.cnas.region)
 							var minSegX = G.cnas.region.minSegX,
 								maxSegX = G.cnas.region.maxSegX;
 							if (maxSegX > cna_browser_data[G.gene].region.maxSegX){
@@ -215,7 +226,6 @@ exports.view  = function view(req, res){
 						});
 
 						// Load the annotations for each gene
-
 					    Aberrations.geneFindFromList(genes, function(err, support) {
 						// Throw error if necessary
 						if (err) throw new Error(err);
