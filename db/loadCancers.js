@@ -11,14 +11,17 @@ if (!( argv.cancers_file)){
 }
 
 // Normalize the path to the cancers file
-var path   = require( 'path' ),
+var path   = require( 'path' );
+if (path.isAbsolute(argv.cancers_file)){
+	filepath = argv.cancers_file;
+} else {
 	filepath = path.normalize(__dirname + '/' + argv.cancers_file);
+}
 
 var mongoose = require( 'mongoose' );
 cancers.loadCancersFromFile( filepath, true, function(err){
 	if (err) throw new Error(err);
-	
-	// Finish up
-	mongoose.disconnect();	
-});
 
+	// Finish up
+	mongoose.disconnect();
+});

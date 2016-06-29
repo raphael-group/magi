@@ -11,14 +11,17 @@ if (!( argv.genome_file )){
 }
 
 // Insert the network into the database
-var path = require( 'path' ),
+var path = require( 'path' );
+if (path.isAbsolute(argv.genome_file)){
+	filepath = argv.genome_file;
+} else {
 	filepath = path.normalize(__dirname + '/' + argv.genome_file);
+}
 
 var mongoose = require( 'mongoose' );
 genome.loadGenomeFromFile( filepath, function(err){
 	if (err) throw new Error(err);
-	
-	// Finish up
-	mongoose.disconnect();	
-});
 
+	// Finish up
+	mongoose.disconnect();
+});
