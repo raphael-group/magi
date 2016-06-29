@@ -31,8 +31,8 @@ block body
         -for(var j = 0; j < groups.length; j++)
           -var group = groups[j];
           -var rowClass = j % 2 == 0 ? 'even' : 'odd';
-          -for (var k in group.dbs)
-            -var db = group.dbs[k];
+          -for (var k in group.datasets)
+            -var db = group.datasets[k];
             tr(class="#{ rowClass }")
               td
                 - if (k == 0)

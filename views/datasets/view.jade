@@ -3,9 +3,9 @@ block body
 	div(class="container", id="dataset-summary")
 		div(class="row")
 			h1
-				-if (db.group)
-					| 	#{db.group} // 
 				| #{db.title}
+				-if (group)
+					small &nbsp; #{group.name}
 		hr
 		div(class="row")
 			div(class="col-lg-5 col-md-12")
