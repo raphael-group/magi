@@ -22,6 +22,7 @@ exports.index = function index(req, res){
 		if (err) throw new Error(err);
 
 		// Store the checkbox IDs of all and the public datasets by group
+		groups.forEach(function(g){ g.datasets.sort(function(a, b){ return a.title > b.title ? 1 : -1; })});
 		var userGroups = req.user ? groups.filter(function(g){ return (g.user_id + "") == (req.user._id + ""); }) : [],
 			publicGroups = groups.filter(function(g){ return g.is_public; }),
 			publicGroupToDatasets = {},
