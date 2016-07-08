@@ -77,6 +77,7 @@ MAGI can retrieve protein-protein interactions and mutation annotations from a M
 
 #### Data ####
 
+We provide a tarball of [data used in MAGI](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (currently ~45Mb) on the Raphael group website. This includes general datasets -- HG19 gene locations, cancer acronyms and descriptions, known gene sets from KEGG and PINdb -- and also mutation datasets.
 
 ### Support ###
 
