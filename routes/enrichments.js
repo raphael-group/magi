@@ -13,41 +13,21 @@ exports.stats = function stats(req, res){
 
 	// Parse the given data
 	var pathToScript = 'stats/computeEnrichments.py'
-	var args = new Array('-r', JSON.stringify(req.body));
+	var command = pathToScript + " -r '" +  JSON.stringify(req.body) + "'";
 
 	// Spawn the child process to compute the enrichments. The only output
 	// to stdout is a JSON dump of the response
-	var error = null,
-		finished = false,
-		stderr = '',
-		stdout = '',
-		stdout_list = [];
-
-	var enrichments = require('child_process').spawn(pathToScript, args)
-		.on('exit', function(code, signal){
-			// If successful, parse the stdout into a JSON object
-			if (code == 0) {
-				res.json({data: JSON.parse(stdout), status: "Success!"});
-			// Otherwise forward the error
+	require('child_process').exec(command, function(err, stdout, stderr){
+		if (err){
+			error = 'return code: ' + err.code + ', signal: ' + err.signal;
+			res.send({error: error});
+		} else{
+			if (stdout == ''){
+				res.send({error: "Non-JSON output."})
 			} else{
-				error = 'return code: ' + code + ', signal: ' + signal;
-				console.error(error);
-				res.send({error: error});
+				res.json({data: JSON.parse(stdout), status: "Success!"});
 			}
-		}).on('error', function(err) {
-			error = err;
-		});
-
-	enrichments.stdout.on('data', function(data){
-		if (Buffer.isBuffer(data)) data = data.toString();
-		stdout_list.push(data);
-	});
-	enrichments.stdout.on('end', function () {
-        stdout = stdout_list.join();
-    });
-	enrichments.stderr.on('data', function(data){
-		if (Buffer.isBuffer(data)) data = data.toString();
-		stderr += data;
+		}
 	});
 }
 

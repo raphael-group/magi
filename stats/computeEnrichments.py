@@ -14,7 +14,7 @@ def round_all(obj, N):
 		return map(lambda o: round_all(o, N), obj)
 	return obj
 
-def get_parser(): 
+def get_parser():
 	import argparse
 	parser = argparse.ArgumentParser(description='')
 	parser.add_argument('-r', '--request', type=str,
@@ -44,16 +44,17 @@ def run( args ):
 
 	# get the statistics package
 	engine = stat_packages[requestType]()
-	
+
 	# check for any known errors
 	errors = engine.validate(rawdata)
 	if errors:
+		print errors
 		sys.exit(3) # Errors
 		return
-		
+
 	# compute result
-	result = engine.tests(rawdata)		
-	result['request'] = requestType 
+	result = engine.tests(rawdata)
+	result['request'] = requestType
 	print json.dumps(result)
 
 if __name__ == "__main__": run( get_parser().parse_args(sys.argv[1:]) )

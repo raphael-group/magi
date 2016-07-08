@@ -128,7 +128,6 @@ block belowTheFold
 			var promises = discreteCategories.map(function(c, i){
 				var dfd = new jQuery.Deferred(),
 					Y = categoryValues[c];
-
 				$.ajax({
 					// Note: can't use JSON otherwise IE8 will pop open a dialog
 					// window trying to download the JSON as a file
@@ -370,7 +369,7 @@ block belowTheFold
 							// Populate the table
 							var thead = catCTable.append('thead'),
 								tbody = catCTable.append('tbody');
-							console.log(datum.table);
+
 							thead.append('tr')
 								.style('background', '#d3d3d3')
 									.selectAll('.enrichment-th')

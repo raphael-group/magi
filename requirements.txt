@@ -1,3 +1,4 @@
 pymongo
 scipy
-scikit-learn
+sklearn
+numpy
