@@ -1,0 +1,280 @@
+extends ../layout
+block body
+	//- Helper javascript functions
+	- var pubmedLink = function (_id){
+	-		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+	-			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+	-		} else{
+	-			var href = 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
+	-		}
+	-		return "<a href='" + href + "' target='_new'>" + _id + "</a>";
+	-	}
+
+	- var mutation_type = function(n){
+	-		var n = n.toLowerCase();
+	-		if (n == 'missense') return 'Missense';
+	-		else if (n == 'nonsense') return 'Nonsense';
+	-		else if (n == 'in_frame_del') return 'In-Frame Deletion';
+	-		else if (n == 'in_frame_ins') return 'In-Frame Insertion';
+	-		else if (n == 'frame_shift_ins') return 'Frame-Shift Insertion';
+	-		else if (n == 'frame_shift_del') return 'Frame-Shift Deletion';
+	-		else if (n == 'splice_site') return 'Splite-Site';
+	-		else return n.charAt(0).toUpperCase() + n.slice(1);
+	-	}
+
+	- var mutation_class = function(n){
+	-		var n = n.toLowerCase();
+	-		if (n == 'snv') return 'Single Nucleotide Variant';
+	-		else if (n == 'cna') return 'Copy Number Aberration';
+	-		else if (n == 'amp') return 'Copy Number Aberration';
+	-		else if (n == 'del') return 'Copy Number Aberration';
+	-		else return n.charAt(0).toUpperCase() + n.slice(1);
+	-	}
+
+	- var cancerAbbr = function(cancer){
+	-		if (cancer){
+	-			var c = cancer.toLowerCase();
+	-			if (typeof(abbrToCancer[c]) != 'undefined'){
+	-				return "<abbr title='" + abbrToCancer[c] + "'>" + c.toUpperCase() + "</abbr>"
+	-			} else if (typeof(cancerToAbbr[c]) != 'undefined') {
+	-				var abbr = cancerToAbbr[c];
+	-				return "<abbr title='" + abbrToCancer[abbr] + "'>" + abbr.toUpperCase() + "</abbr>"
+	-			} else {
+	-				return cancer;
+	-			}
+	-		} else {
+	-			return "Cancer";
+	-		}
+	-	}
+	br
+	div(class="container")
+		-if (error)
+			h3 Annotation not found: ##{annotation_id}
+		-else
+			h3 
+				a(href="/annotations/gene/#{annotation.gene}") #{annotation.gene}
+				|  mutation annotation ##{annotation.u_id}
+			br
+			div(class="col-lg-4 col-md-4")
+				-var measurement_type = annotation.measurement_type ? annotation.measurement_type : "--";
+				h4 Annotation Data
+					mixin tr_prop(property, value)
+						tr 
+							td #{property}
+							td 
+								block
+					table(class="table table-striped", id="annotation-table", annotation-id="#{annotation.u_id}")
+						thead
+							tr(style="background:#d3d3d3")
+								th Property
+								th Value
+						tbody
+							+tr_prop("Cancer") !{cancerAbbr(annotation.cancer)}
+							+tr_prop("Mutation class") !{mutation_class(annotation.mut_class)}
+							+tr_prop("Mutation type") !{mutation_type(annotation.mut_type)}
+							+tr_prop("Protein sequence change") !{annotation.protein_seq_change}
+							+tr_prop("Germline?")
+								div(id='view-germline-div')
+									div(id='view-germline-label' style='float:left' class='entry')
+										| !{annotation.is_germline}
+									span(id="edit-germline", 
+										class="glyphicon glyphicon-pencil",
+										style="float:right;cursor:pointer",
+										onclick="$(this).parent().next().show();$(this).parent().hide();")
+								div(id='edit-germline-div', style='display:none')
+									select(id="is_germline_field", class="form-control", selected="#{annotation.is_germline}")
+										option false
+										option true
+									span(id="confirm_germline", class="glyphicon glyphicon-ok-circle" style="float:right;cursor:pointer")
+							+tr_prop("Measurement type")
+								div(id='view-measurement-div')
+									div(id='view-measurement-label' style='float:left' class='entry')
+										| !{measurement_type}
+									span(id="edit-measurement", 
+										class="glyphicon glyphicon-pencil",
+										style="float:right;cursor:pointer",
+										onclick="$(this).parent().next().show();$(this).parent().hide();")
+								div(id='edit-measurement-div', style='display:none')
+									input(class="form-control", 
+										type="text", 
+										id="measurement_type_field",
+										placeholder=measurement_type)
+									span(id="confirm_measurement_type", class="glyphicon glyphicon-ok-circle" style="float:right;cursor:pointer")
+							+tr_prop("PMID") !{pubmedLink(annotation.reference)}
+							+tr_prop("Source") !{annotation.source}
+			div(id = "right")
+				div(class="col-lg-8 col-md-8")
+					h4 Votes
+					-if (!annotation.comments || annotation.comments.length == 0)
+						| No votes are recorded for this annotation.
+					-else
+						table(class="table", id="comment-table")
+							thead
+								tr(style="background:#d3d3d3")
+									th(width="20%") Commenter
+									th(width="5%") Vote
+									th Text
+							
+							tbody
+								-for (var i = 0; i < annotation.comments.length; i++)
+									-var comment = annotation.comments[i];
+										tr(class="comment-row")
+											td(class="comment-name") #{comment.name}
+											td(class="comment-dir") 
+												-if (comment.direction === "up")
+													span(class="glyphicon glyphicon-thumbs-up", style="color:green")
+												-else
+													span(class="glyphicon glyphicon-thumbs-down", style="color:red")
+											td(class="comment-body") #{comment.comment}
+									
+				hr(style="clear:both")
+				div(id="commentVote", class="container", style="width%100;")
+					h4 Vote and comment:
+					textarea(class="form-control", id="mutation-comment", placeholder="Enter any comments.", type="textarea")
+					| Vote: 
+					a(href="#", class="upvote" style="color:#000") &#x25B2;&nbsp;
+					a(href="#", class="downvote" style="color:#000") &#x25BC;
+					button(type="submit", id="submit", class="btn btn-default") Submit
+					p Note: comments are optional, and submitting without a vote deletes any existing vote and comment.
+				div(id="annotationStatus", class="text-center", style="width:100%;display:off")
+
+block belowTheFold
+	script(src='/components/DataTables/media/js/jquery.dataTables.min.js').
+	script(src='/js/dataTableWrapper.js').
+	script(type='text/javascript').
+		//- Convert the tables into DataTables
+		addDataTable({ tableID: "#variant-table", aaSorting: [[0, "asc"]] });
+		function annotationStatus(msg, classes) {
+			$('#annotationStatus').attr('class', classes);
+			$('#annotationStatus').html(msg);
+			$('#annotationStatus').show().delay(5000).slideUp();
+		}
+		var infoClasses	 = 'alert alert-info',
+			warningClasses = 'alert alert-warning',
+			successClasses = 'alert alert-success';
+
+		$(document).ready(function() {		
+			var uid = $('#annotation-table').attr('annotation-id');
+			var my_comment = $('.comment-name').filter(function () { 
+				return $.text([this]) != 'Anonymous';
+			});
+
+			if (my_comment.length > 0) {
+				$('textarea#mutation-comment').val(my_comment.siblings('.comment-body').text());
+				var voteDir = my_comment.siblings('.comment-dir').text();
+				if (voteDir === 'up') {
+					$('a.upvote').addClass('upvote-on');
+				} else if (voteDir === 'down') {
+					$('a.upvote').addClass('downvote-on');
+				}
+			}
+			
+			$('a.upvote').on('click', function(){
+				var sibling = $(this).siblings('a');
+				$(this).toggleClass('upvote-on');
+				if(sibling.hasClass('downvote-on')) {
+					sibling.removeClass('downvote-on');
+				}
+			});;			
+			$('a.downvote').on('click', function(){
+				var sibling = $(this).siblings('a');
+				$(this).toggleClass('downvote-on');
+				if(sibling.hasClass('upvote-on')) {
+					sibling.removeClass('upvote-on');
+				}
+			});
+			
+			$('button#submit').on('click', function() {
+				var vote = 'remove';
+				if ($('a.upvote').hasClass('upvote-on')) {
+					vote = 'up';
+				} else if ($('a.downvote').hasClass('downvote-on')) {
+					vote = 'down';
+				}
+
+				var formData = new FormData();
+				var comment_body = $('textarea#mutation-comment').val() ? $('textarea#mutation-comment').val() : "<empty>";
+
+				formData.append( "_id", uid );
+				formData.append( "vote", vote );
+				formData.append( "comment", comment_body);
+				$.ajax({
+					url: '/vote/mutation',
+					data: formData,
+					cache: false,
+					contentType: false,
+					processData: false,
+					type: 'POST',
+					error: function(error) {
+						annotationStatus('Database error: ' + error.status, warningClasses);
+					}, 
+					success: function(response) {
+						if(response.error) {
+							annotationStatus(response.error, warningClasses);
+						} else {
+
+						annotationStatus(response.status + ': <a href="./' + uid + '">Reload</a> to see updates.', successClasses);
+						}
+						clearVoteAndComment();
+					}
+                                        
+				});
+			});
+			
+			function clearVoteAndComment() {
+				$('textarea#mutation-comment').val('');	
+				$('a.upvote').removeClass('upvote-on');
+				$('a.downvote').removeClass('downvote-on');
+			}
+			
+			$('span.glyphicon-ok-circle').on('click', function() {
+				var dataField = $(this).prev();
+				var dataName = dataField.attr('id').replace('_field','');
+
+				var dataValue = dataField.val();				
+				if (dataName === 'is_germline') {
+					dataValue = (dataValue.toLowerCase() === 'true');
+				}
+
+				var formData = new FormData();
+				formData.append('anno_id', uid);
+				formData.append(dataName, dataValue);
+
+				var thisControl = $(this);
+				restoreViewMode($(this));
+				$.ajax({
+					url: './' + uid,
+					data: formData,
+					cache: false,
+					contentType: false,
+					processData: false,
+					type: 'PUT',
+					error: function(error) {
+						annotationStatus('Database error: ' + error.status, warningClasses);
+					}, 
+					success: function(response) {
+						if(response.error) {
+							annotationStatus(response.error, warningClasses);
+						} else {
+							annotationStatus(response.status, successClasses);
+							updateValue(thisControl, dataValue);
+						}
+					}					 
+				});
+			});
+			
+			function updateValue(element, newval) {
+				console.log('update', newval);
+				console.log('elem', element);
+				console.log('elem', element.parent());
+				console.log('elem', element.parent().prev());
+				console.log('elem', element.parent().prev().children('div.entry'));
+				console.log('text', element.parent().prev().children('div.entry').text());
+				element.parent().prev().children('div.entry').text(newval);
+			}
+			
+			function restoreViewMode(element) {
+				element.parent().prev().show();
+				element.parent().hide();
+			}
+		});

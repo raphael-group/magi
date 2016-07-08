@@ -28,7 +28,7 @@ Please follow the instructions on setting up [MAGI annotations](https://github.c
 Setup consists of five basic steps:
 
 1. Install Node, Python, and MongoDB  (as described above).
-2. Create an `ENVIRONMENT` file with your settings. We provide more information below.
+2. Create an `ENVIRONMENT` file with your settings, with one `export VARIABLE_NAME="..."` per line. Make sure to load the environment variables into whatever shell you are running. We provide more information below.
 3. Run (possibly a subset of the ) commands in `setup.sh` to install dependencies, download data, and initialize the database. We provide more information below.
 4. Start the server with `node server`, which serves to `http://localhost:8000` by default.
 
@@ -38,46 +38,47 @@ Set the following environment variables to customize MAGI.
 
 ##### General #####
 
-| **Name**        | **Default** | **Description**                                           | 
+| **Name**        | **Default** | **Description**                                           |
 | --------------- | ----------- | --------------------------------------------------------- |
 | `NODE_ENV`      | development | Environment: production for publicly available on the web, or development for local/testing. |
-| `PORT`          | 8080        | Port from which you are serving MAGI |
-| `SITE_URL`      | localhost   | Domain name from which you are serving MAGI |
-| `MONGO_DB_NAME` | magi        | Name of database in MongoDB you want to use for MAGI  |
-
+| `PORT`          | 8080        | Port from which you are serving MAGI                      |
+| `SITE_URL`      | localhost   | Domain name from which you are serving MAGI               |
+| `MONGO_DB_NAME` | magi        | Name of database in MongoDB you want to use for MAGI      |
 
 ##### Third-party services #####
 
-To use authentication with MAGI, you will need to obtain [Google OAuth2](https://developers.google.com/identity/protocols/OAuth2) credentials and set the appropriate environment variables. Similarly, to use the MAGI feedback tool you will need to obtain a [WebEngage](https://webengage.com/) ID. 
+To use authentication with MAGI, you will need to obtain [Google OAuth2](https://developers.google.com/identity/protocols/OAuth2) credentials and set the appropriate environment variables. Similarly, to use the MAGI feedback tool you will need to obtain a [WebEngage](https://webengage.com/) ID.
 
-| **Name**                | **Default** | **Description**                                           | 
+| **Name**                | **Default** | **Description**                                           |
 | ----------------------- | ------------| --------------------------------------------------------- |
-| `GOOGLE_CLIENT_ID`      | None        |  Google OAuth2 client ID |
-| `GOOGLE_CLIENT_SECRET`  | None        |  Google OAuth2 client secret |
-| `WEBENGAGE_ID`          | None        |  WebEngage ID for Javascript SDK integration |
+| `GOOGLE_CLIENT_ID`      | None        |  Google OAuth2 client ID                                  |
+| `GOOGLE_CLIENT_SECRET`  | None        |  Google OAuth2 client secret                              |
+| `WEBENGAGE_ID`          | None        |  WebEngage ID for Javascript SDK integration              |
 
 If you want to be a webmaster for your version of MAGI on Google and Bing, you will need MAGI to serve XML files. Google and Bing will provide the XML files and specific paths/names, which you can set with the following variables.
 
-| **Name**                | **Default** | **Description**   | 
+| **Name**                | **Default** | **Description**                    |
+| --------------------    | ------------| ---------------------------------- |
 | `GOOGLE_SEO_ROUTE`      | None        |  Local path to Google SEO XML file |
-| `GOOGLE_SEO_ROUTE_NAME` | None        |  Name of Google XML file route |
+| `GOOGLE_SEO_ROUTE_NAME` | None        |  Name of Google XML file route     |
 | `BING_SEO_ROUTE`        | None        |  Local path to Google SEO XML file |
 
 ##### MAGI annotations #####
 
 MAGI can retrieve protein-protein interactions and mutation annotations from a MAGI annotations Postgres database. To do so, set the following environment variables.
 
-| **Name**                   | **Default** | **Description**            | 
-| -------------------------- | ----------- | ---------------------------|
-| `POSTGRES_DJANGO_DBNAME`   | magipy      | Name of Postgres database  |
-| `POSTGRES_DJANGO_HOST`     | 127.0.0.1   | Name of Postgres host      |
-| `POSTGRES_DJANGO_PORT`     | 5432        | Name of Postgres port      |
-| `POSTGRES_DJANGO_USER`     | postgres    | Name of Postgres user      |
-| `POSTGRES_DJANGO_PASSWORD` | None        | Password for Postgres user |
+| **Name**                   | **Default**                     | **Description**                 |
+| -------------------------- | ------------------------------- | ------------------------------- |
+| `POSTGRES_DJANGO_DBNAME`   | magipy                          | Name of Postgres database       |
+| `POSTGRES_DJANGO_HOST`     | 127.0.0.1                       | Name of Postgres host           |
+| `POSTGRES_DJANGO_PORT`     | 5432                            | Name of Postgres port           |
+| `POSTGRES_DJANGO_USER`     | postgres                        | Name of Postgres user           |
+| `POSTGRES_DJANGO_PASSWORD` | None                            | Password for Postgres user      |
+| `DJANGO_ANNOTATIONS_URL`   | http://annotations.cs.brown.edu | URL for MAGI annotations server |
 
 #### Data ####
 
-We provide a tarball of [data used in MAGI](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (currently ~45Mb) on the Raphael group website. This includes general datasets -- HG19 gene locations, cancer acronyms and descriptions, known gene sets from KEGG and PINdb -- and also mutation datasets.
+We provide a tarball of [data used in MAGI](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar.gz) (currently ~100Mb) on the Raphael group website. This includes general datasets -- HG19 gene locations, cancer acronyms and descriptions, known gene sets from KEGG and PINdb -- and also mutation datasets.
 
 ### Support ###
 

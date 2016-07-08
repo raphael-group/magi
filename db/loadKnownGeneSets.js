@@ -11,14 +11,17 @@ if (!( argv.gene_set_file && argv.dataset )){
 }
 
 // Insert the gene sets into the database
-var path   = require( 'path' ),
+var path   = require( 'path' );
+if (path.isAbsolute(argv.gene_set_file)){
+	filepath = argv.gene_set_file;
+} else {
 	filepath = path.normalize(__dirname + '/' + argv.gene_set_file);
+}
 
 var mongoose = require( 'mongoose' );
 genesets.loadGeneSetsFromFile( filepath, argv.dataset, function(err){
 	if (err) throw new Error(err);
-	
-	// Finish up
-	mongoose.disconnect();	
-});
 
+	// Finish up
+	mongoose.disconnect();
+});

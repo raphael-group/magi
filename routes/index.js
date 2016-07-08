@@ -9,84 +9,57 @@ var mongoose = require('mongoose'),
 // Renders home page
 exports.index = function index(req, res){
 	console.log('/index')
-	Dataset.datasetGroups({is_public: true}, function(err, standardGroups){
+
+	// Load all public datasets plus the user's datasets
+	if (req.user){
+		var query = {$or: [{is_public: true}, {user_id: req.user._id }]}
+	} else{
+		var query = {is_public: true};
+	}
+
+	Dataset.datasetGroups(query, function(err, groups, samples){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
 
-		///////////////////////////////////////////////////////////////////////
-		// Process the groups of datasets and assign each dataset a unique
-		// checkbox ID
-
 		// Store the checkbox IDs of all and the public datasets by group
-		var datasetToCheckboxes = { all: [] },
-			datasetDeselect = [],
-			samples = [];
+		groups.forEach(function(g){ g.datasets.sort(function(a, b){ return a.title > b.title ? 1 : -1; })});
+		var userGroups = req.user ? groups.filter(function(g){ return (g.user_id + "") == (req.user._id + ""); }) : [],
+			publicGroups = groups.filter(function(g){ return g.is_public; }),
+			publicGroupToDatasets = {},
+			checkboxes = [];
 
-		function toCheckboxValue(_id, scope, title, gName){ return ["db", scope, gName, title, _id].join(" "); }
-		function initGroup(groups, scope){
-			// Assign each group a scope (public/private), and sort the dbs
-			groups.forEach(function(g){ g.groupClass = scope; })
-			groups.forEach(function(g){
-				g.dbs = g.dbs.sort(function(a, b){ return a.title > b.title ? 1 : -1; });
+		publicGroups.forEach(function(g){
+			publicGroupToDatasets[g.name.toLowerCase()] = {};
+			checkboxes = checkboxes.concat( g.datasets.map(function(d){ return d._id; }))
+			g.datasets.forEach(function(d){
+				publicGroupToDatasets[g.name.toLowerCase()][d.title.toLowerCase()] = d._id;
 			});
+		});
 
-			// Assign each dataset a checkbox ID
-			groups.forEach(function(g){
-				var groupName = g.name === null || g.name === "" ? "other" : g.name.toLowerCase();
+		userGroups.forEach(function(g){
+			checkboxes = checkboxes.concat( g.datasets.map(function(d){ return d._id; }))
+		});
 
-				if (scope == "public") datasetToCheckboxes[groupName] = [];
-				g.dbs.forEach(function(db){
-					datasetToCheckboxes.all.push( db.checkboxValue = toCheckboxValue(db._id, scope, db.title, groupName) );
-					if (scope == "public"){
-						datasetToCheckboxes[groupName].push( db.checkboxValue );
-						if (groupName == "tcga pan-cancer" && db.title == "GBM"){
-							datasetToCheckboxes.gbm = [ db.checkboxValue ];
-						} else if (groupName == "tcga publications"){
-							datasetDeselect.push( db.checkboxValue );
-						}
-					}
-
-					// Record each of the samples (required for sample search)
-					db.samples.forEach(function(s){
-						samples.push( {sample: s, cancer: db.title, groupName: g.name === null || g.name === "" ? "Other" : g.name })
-					});
-				})
-			});
-		}
-
-		initGroup( standardGroups, 'public' )
-
-
+		// Package the data together and render the page
 		var viewData = {
 			user: req.user,
-			groups: standardGroups,
-			datasetToCheckboxes: datasetToCheckboxes,
+			checkboxes: checkboxes,
+			groups: groups,
+			publicGroupToDatasets: publicGroupToDatasets,
 			recentQueries: [],
-			datasetDeselect: datasetDeselect,
 			samples: samples,
 			skip_requery: true
 		};
-		// Load the user's datasets (if necessary)
+
 		if (req.user){
-			Dataset.datasetGroups({user_id: req.user._id}, function(err, userGroups){
-				// Throw error (if necessary)
+			// Load the user's recent queries
+			var User = Database.magi.model( 'User' );
+			User.findById(req.user._id, function(err, user){
 				if (err) throw new Error(err);
-
-				// Append the groupClass standard to each group
-				initGroup( userGroups, 'private' );
-				viewData.groups = viewData.groups.concat(userGroups);
-
-				// Load the user's recent queries
-				var User = Database.magi.model( 'User' );
-				User.findById(req.user._id, function(err, user){
-					if (err) throw new Error(err);
-					viewData.recentQueries = user.queries ? user.queries : [];
-					res.render('index', viewData);
-				});
-
+				viewData.recentQueries = user.queries ? user.queries : [];
+				res.render('index', viewData);
 			});
-		}
-		else{
+		} else{
 			res.render('index', viewData);
 		}
 	});
@@ -113,7 +86,7 @@ exports.queryhandler = function queryhandler(req, res){
 
 	// Extract the true dataset title from the names
 	var datasets = checkedDatasets.map(function(n){
-		var arr = n.split(" ");
+		var arr = n.split("-");
 		return arr[arr.length - 1];
 	});
 
@@ -126,27 +99,22 @@ exports.queryhandler = function queryhandler(req, res){
 			query = querystring.stringify( {genes: genes, datasets: datasets.join(","), showDuplicates: showDuplicates == "on" } );
 
 	// If there is a user, save the query to the most recent queries for the user
-	if (req.user){
-		var User = Database.magi.model( 'User' );
-		User.findById(req.user._id, function(err, user){
-			if (err) throw new Error(err);
+	res.redirect('/view?' + query);
+}
 
-			// Add the newest query, and then make sure the length is at most ten
-			user.queries.splice(0, 0, { datasets: checkedDatasets, genes: genes.split(",") })
-			user.queries = user.queries.slice(0, Math.min(10, user.queries.length));
+exports.saveQuery = function saveQuery(user, datasets, genes, callback){
+	var User = Database.magi.model( 'User' );
+	User.findById(user._id, function(err, user){
+		if (err) throw new Error(err);
 
-			// Update the user
-			user.markModified('queries');
-			user.save(function(err){
-				if (err) throw new Error(err);
-				res.redirect('/view?' + query);
-			});
-		});
-	}
-	else{
-		res.redirect('/view?' + query);
-	}
+		// Add the newest query, and then make sure the length is at most ten
+		user.queries.splice(0, 0, { datasets: datasets, genes: genes })
+		user.queries = user.queries.slice(0, Math.min(10, user.queries.length));
 
+		// Update the user
+		user.markModified('queries');
+		user.save(callback);
+	});
 }
 
 // Performs client-side file upload so users can upload a list of genes

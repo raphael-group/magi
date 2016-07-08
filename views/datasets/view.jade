@@ -1,84 +1,86 @@
 extends ../layout
 block body
 	div(class="container", id="dataset-summary")
-		h1
-			-if (db.group)
-				| 	#{db.group} // 
-			| #{db.title}
+		div(class="row")
+			h1
+				| #{db.title}
+				-if (group)
+					small &nbsp; #{group.name}
 		hr
-		div(id="left")
-			div(id="mutations-summary")
-				h4 Dataset at a glance
-				table(class="table table-striped")
-					tr
-						th No. Samples
-						td #{db.summary.num_samples}
-					tr
-						th No. mutated genes
-						td #{db.summary.num_mutated_genes}
-					tr
-						th No. SNVs
-						td #{db.summary.num_snvs}
-					tr
-						th No. CNAs
-						td #{db.summary.num_cnas}
+		div(class="row")
+			div(class="col-lg-5 col-md-12")
+				div(class="row", id="mutations-summary")
+					h4 Dataset at a glance
+					table(class="table table-striped")
+						tr
+							th No. Samples
+							td #{db.summary.num_samples}
+						tr
+							th No. mutated genes
+							td #{db.summary.num_mutated_genes}
+						tr
+							th No. SNVs
+							td #{db.summary.num_snvs}
+						tr
+							th No. CNAs
+							td #{db.summary.num_cnas}
 
-
-			hr
-			div(id="most-mutated-genes")
-				h4 Most Mutated Genes
-				table(class="table table-condensed table-hover text-center", style="font-size:80%", id="mutated-gene-table")
+				hr
+				div(class="row", id="most-mutated-genes")
+					h4 Most Mutated Genes
+					table(class="table table-condensed table-hover text-center", style="font-size:80%", id="mutated-gene-table")
+						thead
+							tr(style="background:#e3e3e3")
+								th <br/>Gene
+								th Mutated <br/> Samples 
+								th <br/>SNVs
+								th Inactivating <br/>SNVs
+								th <br/>CNAs
+								th View Mutations
+								th View Annotations
+						tbody
+							-for (var i = 0; i < db.summary.most_mutated_genes.length; i++)
+								-var g = db.summary.most_mutated_genes[i];
+								tr
+									td #{g.name}
+									td #{g.mutated_samples}
+									td #{g.snvs}
+									td #{g.inactivating}
+									td #{g.cnas}
+									td
+										a(href="/view?genes=#{g.name}&datasets=#{db._id}") >>
+									td
+										a(href="/annotations/gene/#{g.name}") >>
+			div(class="col-lg-7 col-md-12", id="mutations-plot")
+				h4 Mutations plot
+		hr
+		div(class="row")
+			div(class="col-lg-12", id="most-mutated-pathways")
+				h4 Most Mutated Pathways
+				table(class="table table-condensed table-hover text-center", id="mutated-pathway-table", style="font-size:90%")
 					thead
 						tr(style="background:#e3e3e3")
-							th <br/>Gene
-							th Mutated <br/> Samples 
-							th <br/>SNVs
-							th Inactivating <br/>SNVs
-							th <br/>CNAs
-							th View Mutations
-							th View Annotations
+							th(style="width:50%") Gene Set
+							th No. Genes
+							th Database
+							th Mutated Samples 
+							th SNVs
+							th Inactivating SNVs
+							th CNAs
+							th Top 5 Genes
 					tbody
-						-for (var i = 0; i < db.summary.most_mutated_genes.length; i++)
-							-var g = db.summary.most_mutated_genes[i];
+						-for (var i = 0; i < db.summary.most_mutated_gene_sets.length; i++)
+							-var S = db.summary.most_mutated_gene_sets[i];
 							tr
-								td #{g.name}
-								td #{g.mutated_samples}
-								td #{g.snvs}
-								td #{g.inactivating}
-								td #{g.cnas}
+								td(style="text-align:left") #{S.name}
+								td #{S.num_genes}
+								td #{S.database}
+								td #{S.mutated_samples}
+								td #{S.snvs}
+								td #{S.inactivating}
+								td #{S.cnas}
 								td
-									a(href="/view?genes=#{g.name}&datasets=#{db._id}") >>
-								td
-									a(href="/annotations/gene/#{g.name}") >>
-		div(id="mutations-plot")
-			h4 Mutations plot
-		hr(style="clear:both")
-		div(id="most-mutated-pathways")
-			h4 Most Mutated Pathways
-			table(class="table table-condensed table-hover text-center", id="mutated-pathway-table", style="font-size:90%")
-				thead
-					tr(style="background:#e3e3e3")
-						th(style="width:50%") Gene Set
-						th No. Genes
-						th Database
-						th Mutated Samples 
-						th SNVs
-						th Inactivating SNVs
-						th CNAs
-						th Top 5 Genes
-				tbody
-					-for (var i = 0; i < db.summary.most_mutated_gene_sets.length; i++)
-						-var S = db.summary.most_mutated_gene_sets[i];
-						tr
-							td(style="text-align:left") #{S.name}
-							td #{S.num_genes}
-							td #{S.database}
-							td #{S.mutated_samples}
-							td #{S.snvs}
-							td #{S.inactivating}
-							td #{S.cnas}
-							td
-								a(href="/view?genes=#{S.top_genes}&datasets=#{db._id}") View
+									a(href="/view?genes=#{S.top_genes}&datasets=#{db._id}") View
 
 		//- Run the script to create the mutations plot
 		script(src='/components/d3/d3.min.js').
@@ -97,7 +99,8 @@ block body
 			var plot = d3.select("div#mutations-plot")
 				.append("div")
 				.datum(data);
-			var mutationPlot = mutation_plot();
+			console.log($('div#mutations-plot').width())
+			var mutationPlot = mutation_plot({style: {width: $('div#mutations-plot').width()-20 }});
 			mutationPlot( plot );
 			mutationPlot.addAxesSelectors();
 			//- Convert the tables into DataTables

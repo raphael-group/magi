@@ -1,23 +1,41 @@
 // Load required modules
 var mongoose = require('mongoose'),
-	Dataset = require( "../model/datasets" ),
-	Database = require('../model/db');
+    Dataset = require( "../model/datasets" ),
+    Database = require('../model/db'),
+    Aberrations = require("../model/aberrations"),
+    PPIs = require("../model/ppis"),
+    Jade = require('jade'),
+    User = require("../model/user"),
+    Cancer = Database.magi.model( 'Cancer' ),
+    abbrToCancer = {},
+    cancerToAbbr = {};
+
+Cancer.find({}, function(err, cancers){
+    if (err) throw new Error(err);
+
+    // Make a map of cancers to abbreviations and vice versa
+    cancers.forEach(function(c){
+	abbrToCancer[c.abbr] = c.cancer;
+	cancerToAbbr[c.cancer.toLowerCase()] = c.abbr;
+    })
+})
 
 // Renders account information, including the user's uploaded datasets
 exports.account = function(req, res){
-	var User = Database.magi.model( 'User' );
-	User.findOne({ googleId: req.session.passport.user}, function(err, user) {
-		if(err) console.log(err);
-		else {
-			Dataset.datasetGroups({user_id: user._id}, function(err, groups){
-				// Throw error (if necessary)
-				if (err) throw new Error(err);
-
-				// Render index page
-				res.render('account', { user: user, groups: groups, skip_requery: true });
-
-			});
-		};
+    User.findByGoogleId(req.session.passport.user)
+	.fail(function(err) {console.log(err);})
+	.then(function(user) {
+	    Dataset.datasetGroups({user_id: user._id}, function(err, groups){
+		// Throw error (if necessary)
+		if (err) throw new Error(err);
+		var user_id = String(user._id);
+		var pkg = { user: user,
+			    groups: groups,
+			    abbrToCancer: abbrToCancer,
+			    cancerToAbbr: cancerToAbbr,
+			    skip_requery: true};
+		res.render('account', pkg);
+	    });
 	});
 }
 

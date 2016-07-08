@@ -10,7 +10,8 @@ var about = require( './about' ),
 	annotations = require('./annotations'),
   log = require('./log'),
   share = require('./share'),
-  requery = require('./requery');
+  requery = require('./requery'),
+	save = require('./save');
 
 //*  Export the routes in each subrouter *//
 
@@ -63,15 +64,8 @@ exports.datasets.index = datasets.index;
 exports.datasets.view = datasets.view;
 exports.datasets.manifests = datasets.manifests;
 
-// Annotations
-exports.annotations = { save: {} };
-exports.annotations.gene = annotations.gene;
-exports.annotations.cancer = annotations.cancer;
-exports.annotations.save.mutation = annotations.saveMutation;
-exports.annotations.save.ppi = annotations.savePPI;
-exports.annotations.ppiVote = annotations.ppiVote;
-exports.annotations.ppiComment = annotations.ppiComment;
-exports.annotations.mutationVote = annotations.mutationVote;
+// Save
+exports.savefigure = save.figure;
 
 // Share link
 exports.saveShareURL = share.saveShareURL;
@@ -84,7 +78,13 @@ exports.isLoggingEnabled = log.isLoggingEnabled;
 exports.logConsent = log.logConsent;
 exports.userGaveConsent = log.userGaveConsent;
 
+
 // Requery parameters
 exports.queryGetDatasetsAndGenes = requery.queryGetDatasetsAndGenes;
 // Get session variables for queries
 exports.getSessionLatestQuery = requery.getSessionLatestQuery;
+
+// test routes for annotations
+exports.annotations = {};
+exports.annotations.gene = annotations.gene;
+exports.annotations.cancer = annotations.cancer;

@@ -23,6 +23,8 @@ var app = module.exports = express();
 
 // Use moment for keeping track of times
 app.locals.moment = require('moment');
+app.locals.annotationsURL = process.env.DJANGO_ANNOTATIONS_URL || 'http://annotations.cs.brown.edu/'
+app.locals.annotationsHost = app.locals.annotationsURL.replace('http://','')
 app.locals.production = app.get('env') === 'production';
 app.set('port', process.env.PORT || 8000);
 
@@ -36,8 +38,6 @@ if (typeof(process.env.WEBENGAGE_ID) == 'undefined'){
 // Load models to register their schemas
 var user = require( './model/user' ),
     database = require( './model/datasets' ),
-    domains = require( './model/domains' ),
-    ppis = require( './model/ppis' ),
     log = require('./model/log'),
     logPermission = require('./model/logPermission'),
     queryHash = require('./model/queryHash');
@@ -158,7 +158,6 @@ app.post('/enrichments/stats', routes.enrichmentStats);
 app.post('/upload/geneset', routes.uploadGeneset);
 app.get('/upload', ensureAuthenticated, routes.upload);
 app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset);
-app.get('/delete/dataset', ensureAuthenticated, routes.deleteDataset);
 app.post('/upload/manifest', ensureAuthenticated, routes.uploadManifest);
 app.post('/upload/cancer', routes.uploadCancer);
 app.get('/upload/formats/snvs', routes.formatSNVs);
@@ -171,16 +170,13 @@ app.get('/upload/formats/annotation-colors', routes.formatAnnotationColors);
 // Dataset views
 app.get('/datasets', routes.datasets.index);
 app.get('/datasets/view/:datasetID', routes.datasets.view);
+app.get('/delete/datasets', ensureAuthenticated, routes.deleteDataset);
 app.get('/manifests', routes.datasets.manifests);
 
 // Annotation views
+
 app.get('/annotations/gene/:gene', routes.annotations.gene);
 app.get('/annotations/cancer/:cancer', routes.annotations.cancer);
-app.post('/save/annotation/mutation', ensureAuthenticated, routes.annotations.save.mutation);
-app.post('/save/annotation/ppi', ensureAuthenticated, routes.annotations.save.ppi);
-app.post('/vote/ppi', ensureAuthenticated, routes.annotations.ppiVote);
-app.post('/comment/ppi', ensureAuthenticated, routes.annotations.ppiComment);
-app.post('/vote/mutation', routes.annotations.mutationVote);
 
 // more information
 app.get('/terms', routes.terms);
@@ -195,6 +191,9 @@ app.get('/login', routes.login);
 app.get('/logout', routes.logout);
 app.get('/account', ensureAuthenticated, routes.account);
 app.post('/user/update', ensureAuthenticated, routes.user.update);
+
+// Save image response functions
+app.post('/save-figure', routes.savefigure);
 
 // Render errors
 app.get("/401", function(req, res){
@@ -271,48 +270,6 @@ function ensureAuthenticated(req, res, next) {
     req.session.returnTo = req.path;
     res.redirect('/login');
   }
-}
-
-/**
- * Save image response functions
- */
-
-// Handle save figure requests
-app.post('/saveSVG', function(req, res) {
-  if(req.body.html !== undefined) {
-    res.send(req.body.html);
-  } else if (req.body.img !== undefined) {
-    res.writeHead(200, {'Content-Type': 'image/png' });
-    res.end(req.body.img, 'binary');
-    res.send();
-  }
-});
-
-// Not needed as of the moment; delete if not needed for PDF generation
-function saveSVG(req, res) {
-  var bowerDir = 'public/components/',
-      fileName = req.body.fileName,
-      svgHTML = req.body.html;
-
-  // run the jsdom headless browser
-  var runHeadless = function (errors, window) {
-    var svg = window.d3.select('svg');
-    svg.attr('xmlns', 'http://www.w3.org/2000/svg')
-         .attr('xmlns:xlink','http://www.w3.org/1999/xlink');
-    var svgNode = svg.node();
-
-    res.setHeader('Content-Disposition', 'attachment');
-    res.setHeader('Content-type', 'application/pdf');//'image/svg+xml');
-
-    res.send('complete');
-
-    console.log('----');
-    console.log((svgNode.outerHTML).substring(0, 120));
-    console.log('Size of svgNode: ' + Buffer.byteLength(svgNode.outerHTML, 'utf8') + " bytes");
-    console.log(typeof svgNode.outerHTML);
-  };
-
-  jsdom.env(svgHTML,[bowerDir+'d3/d3.js', bowerDir+'jquery/dist/jquery.js'], runHeadless);
 }
 
 /**

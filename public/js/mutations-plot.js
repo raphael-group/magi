@@ -36,7 +36,7 @@ function mutation_plot(params){
     									"other": "No. Other"
     								  };
     function mutTyToName(ty){ return tyToName[ty] ? tyToName[ty] : ty; }
-	
+
 	// Update the width/height using the margins
 	var width = width - margin.left - margin.right,
 		height = width - margin.top - margin.bottom;
@@ -91,20 +91,20 @@ function mutation_plot(params){
 			//Define scales
 			var x = d3.scale.linear()
 				.range([0, width]);
-				
+
 			var y = d3.scale.linear()
 				.range([height, 0]);
-				
+
 			var colorScale = d3.scale.pow().exponent(1.2)
 				.range(["rgb(167, 206, 230)", "rgb(213, 220, 97)", "rgb(202, 66, 64)", "rgb(202, 66, 64)"]);
-			
+
 			//Define X axis
 			var xAxis = d3.svg.axis()
 				.scale(x)
 				.orient("bottom")
 				.tickSize(-height)
 				.tickFormat(d3.format("s"));
-			
+
 			//Define Y axis
 			var yAxis = d3.svg.axis()
 				.scale(y)
@@ -112,7 +112,7 @@ function mutation_plot(params){
 				.ticks(5)
 				.tickSize(-width)
 				.tickFormat(d3.format("s"));
-			
+
 			// Set up zoom behavior
 			var zoom = d3.behavior.zoom()
 				.x(x).y(y)
@@ -123,7 +123,7 @@ function mutation_plot(params){
 			var svg = selection.append("svg")
 				.attr("width", width + margin.left + margin.right)
 				.attr("height", height + margin.top + margin.bottom);
-			
+
 			var fig = svg.append("g")
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 				.call(zoom);
@@ -144,7 +144,7 @@ function mutation_plot(params){
 				.attr("x", (width + margin.left + margin.right)/2)
 				.attr("y", height + margin.top + margin.bottom - 10)
 				.style("font-size", 14);
-			
+
 			var yAxisEl = fig.append("g")
 				.attr("class", "y axis")
 				.style("cursor", "move");
@@ -196,7 +196,7 @@ function mutation_plot(params){
 					xMax = data[ty1][ty2].xMax,
 					yMin = data[ty1][ty2].yMin,
 					yMax = data[ty1][ty2].yMax;
-				
+
 				x.domain([xMin, xMax]);
 				y.domain([yMin, yMax]);
 
@@ -240,7 +240,7 @@ function mutation_plot(params){
 			}
 
 			updatePlot();
-			
+
 			function zoomed() {
 				// Limit the panning behavior of the plot
 				var t = zoom.translate(),
@@ -268,7 +268,7 @@ function mutation_plot(params){
 					return "translate(" + x(d.x) + "," + y(d.y) + ")";
 				});
 
-				// Update the tooltips and the visible points 
+				// Update the tooltips and the visible points
 				updatePoints();
 			}
 

@@ -21,7 +21,7 @@ var DatasetSchema = new mongoose.Schema({
 	samples: { type: [String], required: true },
 	sample_annotations : { type : {}, required: true },
 	annotation_colors : { type : {}, required: true },
-	group: { type: String, required: false},
+	group_id: { type: mongoose.Schema.Types.ObjectId, required: false },
 	cancer_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 	summary: { type: {}, required: true },
 	data_matrix_name: {type: String, required: false, default: "" },
@@ -31,6 +31,13 @@ var DatasetSchema = new mongoose.Schema({
 	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
 	is_public: { type: Boolean, default: false, required: true },
 	color: { type: String, required: true }
+});
+
+var DatasetGroupSchema = new mongoose.Schema({
+	name: { type: String, required: true },
+	user_id: { type: mongoose.Schema.Types.ObjectId, default: null},
+	is_public: { type: Boolean, default: false, required: true },
+	is_default: { type: Boolean, default: false, required: true }
 });
 
 // Create schemas to hold a data matrix
@@ -43,33 +50,43 @@ var DataMatrixRowSchema = new mongoose.Schema({
 
 
 Database.magi.model( 'Dataset', DatasetSchema );
+Database.magi.model( 'DatasetGroup', DatasetGroupSchema );
 Database.magi.model( 'MutGene', MutGeneSchema );
 Database.magi.model( 'DataMatrixRow', DataMatrixRowSchema );
 
 // List the datasets by group
 exports.datasetGroups = function datasetgroups(query, callback){
-	var Dataset = Database.magi.model( 'Dataset' );
+	var Dataset = Database.magi.model( 'Dataset' ),
+		DatasetGroup = Database.magi.model( 'DatasetGroup' );
+	DatasetGroup.find(query, function(err, groups){
+		if (err){ console.err(err) }
+		else{
+			var groups    = groups.map(function(g){
+					return { _id: g._id + "", user_id: g.user_id, name: g.name, is_public: g.is_public, is_default: g.is_default, datasets: [] };
+				}).sort(function(a, b){
+					return a.name > b.name ? 1 : -1;
+				});
+			var group_ids = groups.map(function(d){ return d._id; });
 
-	Dataset.aggregate(
-		{ $match: query },
-		{$group: {_id: '$group', dbs: { $push: {title: '$title', color: '$color', _id: '$_id', samples: '$samples', updated_at: '$updated_at'} } }},
-		{$sort: {_id: -1}}, // sort descending by group name
-		function(err, res){
-			// Handle error (if necessary)
-			if (err) throw new Error(err);
+			Dataset.find({group_id: {$in: group_ids }}, function(err, datasets){
+				if (err){ console.err(err) }
+				else{
+					var samples = [];
+					datasets.forEach(function(d){
+						// Add to the given group
+						var group =  groups.filter(function(g){ return d.group_id + "" == g._id; })[0];
+						group.datasets.push({title: d.title, color: d.color, _id: d._id, num_samples: d.samples.length, user_id: d.user_id });
 
-			// Parse result into groups
-			var groups = [];
-			for (var i = 0; i < res.length; i++){
-				var dbs = res[i].dbs.sort(function(db1, db2){ return db1.title > db2.title; });
-				dbs.forEach(function(db){ db.num_samples = db.samples.length; })
-				groups.push( {name: res[i]._id, dbs: dbs } );
-			}
-
-			// Execute callback
-			callback(err, groups);
+						// Record each of the samples (required for sample search)
+						d.samples.forEach(function(s){
+							samples.push( {sample: s, cancer: d.title, groupName: group.name });
+						});
+					});
+					callback("", groups, samples);
+				}
+			});
 		}
-	)
+	});
 }
 
 exports.datasetlist = function datasetlist(dataset_ids, callback){
@@ -89,11 +106,11 @@ exports.removeDataset = function removeDataset(query, callback){
 		// Throw an error if it occurred
 		if (err) throw new Error(err);
 
-		// Otherwise, remove all mutgenes with 
+		// Otherwise, remove all mutgenes with
 		MutGene.remove({dataset_id: query.dataset_id}, function(err){
 			// Throw an error if it occurred
 			if (err) throw new Error(err);
-			
+
 			DataMatrixRow.remove({dataset_id: query.dataset_id}, function(err){
 				// Throw an error if it occurred
 				if (err) throw new Error(err);
@@ -435,7 +452,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 				var arr = s.split("\t");
 				if (arr.length > 1){
 					// Sample is always stored in column 1, dataset is always stored in column 2
-					sampleToDataset[arr[0]] = arr[1]; 
+					sampleToDataset[arr[0]] = arr[1];
 					if (!(arr[1] in datasetToSamples)) datasetToSamples[arr[1]] = [];
 					datasetToSamples[arr[1]].push( arr[0] );
 
@@ -615,7 +632,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 
 			});
 
-			// Load locations of each gene and find their neighbors 
+			// Load locations of each gene and find their neighbors
 			var Gene = Database.magi.model( 'Gene' );
 			// console.log(Object.keys(cnas["AKR1C2"].segments))
 			// Object.keys(cnas["AKR1C2"].segments).forEach(function(s){
@@ -766,7 +783,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 			// Create the data for the mutation plot
 			mutation_plot_data = {};
 			genes.forEach(function(d){
-				mutation_plot_data[d.name] = 	{ 
+				mutation_plot_data[d.name] = 	{
 													cnas: d.cnas,
 													snvs: d.snvs,
 													mutated_samples: d.mutated_samples,
@@ -1090,7 +1107,7 @@ exports.addDatasetFromFile = function(dataset, group_name, samples_file, snvs_fi
 						return funcs.slice(1, funcs.length).reduce(Q.when, Q(funcs[0]()))
 					});
 				});
-			});	
+			});
 		});
 		return d.promise;
 	}

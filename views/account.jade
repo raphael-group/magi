@@ -1,10 +1,22 @@
 extends layout
 block body
+  - var pubmedLink = function (_id){
+  - 		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+  - 			var href = 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
+  -		} else {
+  -			var href = 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
+  -		}
+  -		return "<a href='" + href + "' target='_new'>" + _id + "</a>";
+  -	}
   br
   div(class="container")
     h3
       | Your account. &nbsp;
-      small Manage your settings and uploaded datasets here.
+      small 
+        | Manage your settings and uploaded datasets here.
+        br
+        | To manage annotations, please log in to the 
+        a(href=annotationsURL + '/account/') MAGI annotations website.
     hr
     h4 Account information
     b Name: &nbsp;
@@ -49,6 +61,7 @@ block body
       a(href="/upload") Upload your first dataset.
     hr
     br
+
     div(id="additional-info", style="width:60%")
       h4 Tell us about yourself
       br
@@ -80,5 +93,6 @@ block body
         textarea(class="form-control", name="other", id="other", placeholder="Any additional info you'd like to share.")
         br
         button(type="submit", id="submit", class="btn btn-default") Submit
+
+block belowTheFold
   script(src='components/jquery/dist/jquery.min.js').
-  script(src='js/account.js')

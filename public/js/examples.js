@@ -11,38 +11,48 @@ $(document).ready(function(){
 	var exampleQueries = [
 		{	selector: "a#swi-snf-pan-can",
 			genes: ["ARID1A", "ARID1B", "ARID2", "PBRM1", "SMARCA4", "SMARCB1", "SMARCC1", "SMARCC2"],
-			dataset: "tcga pan-cancer"
+			group: "tcga pan-cancer",
+			datasets: []
 		},
 		{	selector: "a#cohesin-pan-can",
 			genes: ["STAG2", "STAG1", "SMC1A", "RAD21", "SMC3"],
-			dataset: "tcga pan-cancer"
+			group: "tcga pan-cancer",
+			datasets: []
 		},
 		{	selector: "a#pi3k-gbm",
 			genes: ["PIK3CA", "PTEN", "BRAF", "AKT1", "PIK3R1"],
-			dataset: "gbm"
+			group: "tcga pan-cancer",
+			datasets: ["gbm"]
 		}
 	];
 
 	// Change the query to use the current datasets and genes
-	function setQuery(genes, datasetIDs){
+	function setQuery(genes, group, datasets){
 		// Update the text area
 		genesList.val(genes.join("\n"));
 
-		// Uncheck all checkboxes in the multiselect, 
+		// Uncheck all checkboxes in the multiselect,
 		// then check the datasets with the given IDs
-		datasetMultiselect.multiselect('deselect', datasetToCheckboxes.all );
-		datasetMultiselect.multiselect('select', datasetIDs);
+		if (datasets.length == 0){
+			datasets = Object.keys(publicGroupToDatasets[group]);
+		}
+
+		var dataset_ids = datasets.map(function(d){ return publicGroupToDatasets[group][d]; })
+		datasetMultiselect.multiselect('deselect', checkboxes );
+		datasetMultiselect.multiselect('select', dataset_ids.map(function(_id){ return 'db-' + _id; }));
 	}
 
 	// Add an event handler to each link to change the gene list
 	// and multi-select on click
 	exampleQueries.forEach(function(query){
 		var link = $(query.selector);
-		link.on("click", function(){ setQuery( query.genes, datasetToCheckboxes[query.dataset]) });
+		link.on("click", function(){
+			setQuery( query.genes, query.group, query.datasets);
+		});
 	});
 
 	// Add the users most recent queries
-	if (recentQueries && recentQueries.length > 0){		
+	if (recentQueries && recentQueries.length > 0){
 		var wrapper = d3.select("small#recent-queries"),
 			links = wrapper.selectAll(".query-link")
 			.data(recentQueries).enter()
@@ -54,8 +64,7 @@ $(document).ready(function(){
 				}
 				else{
 					title += d.datasets.map(function(db){
-						var arr = db.split(" ");
-						return arr[arr.length - 2];
+						return db.split("-")[1];
 					}).join(", ") + ".";
 				}
 				return title;
@@ -63,7 +72,11 @@ $(document).ready(function(){
 			.style("margin", "0px 5px 0px 5px")
 			.style("cursor", "pointer")
 			.text(function(d, i){ return i + 1; })
-			.on("click", function(d){ setQuery(d.genes, d.datasets); });
+			.on("click", function(d){
+				genesList.val(d.genes.join("\n"));
+				datasetMultiselect.multiselect('deselect', checkboxes );
+				datasetMultiselect.multiselect('select', d.datasets); // these already have db- included
+			});
 	}
 
 });
