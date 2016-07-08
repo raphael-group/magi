@@ -23,7 +23,7 @@ pip install -r requirements.txt
 # DOWNLOAD DATA
 ################################################################################
 
-wget http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar
+wget http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar.gz
 tar -xvzf latest.tar.gz
 rm latest.tar.gz
 
@@ -60,7 +60,6 @@ node loadKnownGeneSets.js --gene_set_file=$DATA_DIR/pathways/pindb/pindb-complex
 echo "Loading public datasets..."
 for db in blca brca coadread gbm hnsc kirc laml luad lusc ov ucec;
 do
-    continue
 	# Create a capitalized version as well
 	CANCER_TYPE=`echo $db | tr '[:lower:]' '[:upper:]'`
 	echo "- $CANCER_TYPE"

@@ -23,7 +23,7 @@ var app = module.exports = express();
 
 // Use moment for keeping track of times
 app.locals.moment = require('moment');
-app.locals.annotationsURL = process.env.DJANGO_ANNOTATIONS_URL || 'http://cbio-test.cs.brown.edu/'
+app.locals.annotationsURL = process.env.DJANGO_ANNOTATIONS_URL || 'http://annotations.cs.brown.edu/'
 app.locals.annotationsHost = app.locals.annotationsURL.replace('http://','')
 app.locals.production = app.get('env') === 'production';
 app.set('port', process.env.PORT || 8000);

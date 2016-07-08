@@ -28,7 +28,7 @@ Please follow the instructions on setting up [MAGI annotations](https://github.c
 Setup consists of five basic steps:
 
 1. Install Node, Python, and MongoDB  (as described above).
-2. Create an `ENVIRONMENT` file with your settings. We provide more information below.
+2. Create an `ENVIRONMENT` file with your settings, with one `export VARIABLE_NAME="..."` per line. Make sure to load the environment variables into whatever shell you are running. We provide more information below.
 3. Run (possibly a subset of the ) commands in `setup.sh` to install dependencies, download data, and initialize the database. We provide more information below.
 4. Start the server with `node server`, which serves to `http://localhost:8000` by default.
 
@@ -67,17 +67,18 @@ If you want to be a webmaster for your version of MAGI on Google and Bing, you w
 
 MAGI can retrieve protein-protein interactions and mutation annotations from a MAGI annotations Postgres database. To do so, set the following environment variables.
 
-| **Name**                   | **Default** | **Description**            |
-| -------------------------- | ----------- | ---------------------------|
-| `POSTGRES_DJANGO_DBNAME`   | magipy      | Name of Postgres database  |
-| `POSTGRES_DJANGO_HOST`     | 127.0.0.1   | Name of Postgres host      |
-| `POSTGRES_DJANGO_PORT`     | 5432        | Name of Postgres port      |
-| `POSTGRES_DJANGO_USER`     | postgres    | Name of Postgres user      |
-| `POSTGRES_DJANGO_PASSWORD` | None        | Password for Postgres user |
+| **Name**                   | **Default**                     | **Description**                 |
+| -------------------------- | ------------------------------- | ------------------------------- |
+| `POSTGRES_DJANGO_DBNAME`   | magipy                          | Name of Postgres database       |
+| `POSTGRES_DJANGO_HOST`     | 127.0.0.1                       | Name of Postgres host           |
+| `POSTGRES_DJANGO_PORT`     | 5432                            | Name of Postgres port           |
+| `POSTGRES_DJANGO_USER`     | postgres                        | Name of Postgres user           |
+| `POSTGRES_DJANGO_PASSWORD` | None                            | Password for Postgres user      |
+| `DJANGO_ANNOTATIONS_URL`   | http://annotations.cs.brown.edu | URL for MAGI annotations server |
 
 #### Data ####
 
-We provide a tarball of [data used in MAGI](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (currently ~45Mb) on the Raphael group website. This includes general datasets -- HG19 gene locations, cancer acronyms and descriptions, known gene sets from KEGG and PINdb -- and also mutation datasets.
+We provide a tarball of [data used in MAGI](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar.gz) (currently ~100Mb) on the Raphael group website. This includes general datasets -- HG19 gene locations, cancer acronyms and descriptions, known gene sets from KEGG and PINdb -- and also mutation datasets.
 
 ### Support ###
 
