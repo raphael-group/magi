@@ -41,9 +41,9 @@ Set the following environment variables to customize MAGI.
 | **Name**        | **Default** | **Description**                                           |
 | --------------- | ----------- | --------------------------------------------------------- |
 | `NODE_ENV`      | development | Environment: production for publicly available on the web, or development for local/testing. |
-| `PORT`          | 8080        | Port from which you are serving MAGI |
-| `SITE_URL`      | localhost   | Domain name from which you are serving MAGI |
-| `MONGO_DB_NAME` | magi        | Name of database in MongoDB you want to use for MAGI  |
+| `PORT`          | 8080        | Port from which you are serving MAGI                      |
+| `SITE_URL`      | localhost   | Domain name from which you are serving MAGI               |
+| `MONGO_DB_NAME` | magi        | Name of database in MongoDB you want to use for MAGI      |
 
 ##### Third-party services #####
 
@@ -51,15 +51,16 @@ To use authentication with MAGI, you will need to obtain [Google OAuth2](https:/
 
 | **Name**                | **Default** | **Description**                                           |
 | ----------------------- | ------------| --------------------------------------------------------- |
-| `GOOGLE_CLIENT_ID`      | None        |  Google OAuth2 client ID |
-| `GOOGLE_CLIENT_SECRET`  | None        |  Google OAuth2 client secret |
-| `WEBENGAGE_ID`          | None        |  WebEngage ID for Javascript SDK integration |
+| `GOOGLE_CLIENT_ID`      | None        |  Google OAuth2 client ID                                  |
+| `GOOGLE_CLIENT_SECRET`  | None        |  Google OAuth2 client secret                              |
+| `WEBENGAGE_ID`          | None        |  WebEngage ID for Javascript SDK integration              |
 
 If you want to be a webmaster for your version of MAGI on Google and Bing, you will need MAGI to serve XML files. Google and Bing will provide the XML files and specific paths/names, which you can set with the following variables.
 
-| **Name**                | **Default** | **Description**   |
+| **Name**                | **Default** | **Description**                    |
+| --------------------    | ------------| ---------------------------------- |
 | `GOOGLE_SEO_ROUTE`      | None        |  Local path to Google SEO XML file |
-| `GOOGLE_SEO_ROUTE_NAME` | None        |  Name of Google XML file route |
+| `GOOGLE_SEO_ROUTE_NAME` | None        |  Name of Google XML file route     |
 | `BING_SEO_ROUTE`        | None        |  Local path to Google SEO XML file |
 
 ##### MAGI annotations #####
