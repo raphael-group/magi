@@ -1,4 +1,4 @@
-# MAGI
+# MAGI #
 
 <a href="http://magi.cs.brown.edu"><img src="http://magi.cs.brown.edu/img/magiTitle.svg" width="200px" align="left" hspace="10" vspace="6"></a>
 
@@ -19,72 +19,65 @@ This repository contains the source code for MAGI. MAGI is written in [Node.js](
 
 MAGI has been tested on both Linux and Mac systems using Chrome, Firefox, and Safari.
 
+#### MAGI Annotations ####
+
+Please follow the instructions on setting up [MAGI annotations](https://github.com/raphael-group/magi-annotations) to include protein to include protein-protein interactions and mutation annotations in MAGI.
+
 ### Setup ###
 
-1. Clone the repository:
+Setup consists of five basic steps:
 
-        git clone https://github.com/raphael-group/magi.git
-        cd magi
+1. Install Node, Python, and MongoDB  (as described above).
+2. Create an `ENVIRONMENT` file with your settings. We provide more information below.
+3. Run (possibly a subset of the ) commands in `setup.sh` to install dependencies, download data, and initialize the database. We provide more information below.
+4. Start the server with `node server`, which serves to `http://localhost:8000` by default.
 
-2. Install required dependencies:
+#### Environment ####
 
-        npm install
+Set the following environment variables to customize MAGI.
 
-3. Clone the latest version of GD3:
+##### General #####
 
-        cd public/components/
-        git clone https://github.com/raphael-group/gd3
-        cd ../../
+| **Name**        | **Default** | **Description**                                           | 
+| --------------- | ----------- | --------------------------------------------------------- |
+| `NODE_ENV`      | development | Environment: production for publicly available on the web, or development for local/testing. |
+| `PORT`          | 8080        | Port from which you are serving MAGI |
+| `SITE_URL`      | localhost   | Domain name from which you are serving MAGI |
+| `MONGO_DB_NAME` | magi        | Name of database in MongoDB you want to use for MAGI  |
 
-4. Start MongoDB:
 
-        mongod &
+##### Third-party services #####
 
-5. Download the [latest tarball of data files](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (~300Mb) from the Raphael group website, and untar in the MAGI directory.
+To use authentication with MAGI, you will need to obtain [Google OAuth2](https://developers.google.com/identity/protocols/OAuth2) credentials and set the appropriate environment variables. Similarly, to use the MAGI feedback tool you will need to obtain a [WebEngage](https://webengage.com/) ID. 
 
-        wget http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar
-        tar -xvf latest.tar
+| **Name**                | **Default** | **Description**                                           | 
+| ----------------------- | ------------| --------------------------------------------------------- |
+| `GOOGLE_CLIENT_ID`      | None        |  Google OAuth2 client ID |
+| `GOOGLE_CLIENT_SECRET`  | None        |  Google OAuth2 client secret |
+| `WEBENGAGE_ID`          | None        |  WebEngage ID for Javascript SDK integration |
 
-6. Load the data:
+If you want to be a webmaster for your version of MAGI on Google and Bing, you will need MAGI to serve XML files. Google and Bing will provide the XML files and specific paths/names, which you can set with the following variables.
 
-        cd db/
-        node loadGenome.js --genome_file=../data/genome/hg19_genes_list.tsv
-        node loadDomains.js --domain_file=../data/domains/refseq_transcript_domains.tsv
-        node loadDomains.js --domain_file=../data/domains/ensembl_transcript_domains.tsv
-        node loadCancers.js --cancers_file=../data/icgc-tcga-cancers.tsv
-        node loadKnownGeneSets.js --gene_set_file=../data/pathways/kegg/kegg-pathways.tsv --dataset="KEGG"
-        node loadKnownGeneSets.js --gene_set_file=../data/pathways/pindb/pindb-complexes.tsv --dataset="PINdb"
-        node loadPPIs.js --ppi_file=../data/ppis/hint-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/hprd-annotated.tsv 
-        node loadPPIs.js --ppi_file=../data/ppis/iref9-annotated.tsv
-        node loadPPIs.js --ppi_file=../data/ppis/multinet.tsv
-        sh loadPublicDatasets.sh
-        cd ../
+| **Name**                | **Default** | **Description**   | 
+| `GOOGLE_SEO_ROUTE`      | None        |  Local path to Google SEO XML file |
+| `GOOGLE_SEO_ROUTE_NAME` | None        |  Name of Google XML file route |
+| `BING_SEO_ROUTE`        | None        |  Local path to Google SEO XML file |
 
-7. Start the server (default port 8000):
+##### MAGI annotations #####
 
-        node server
+MAGI can retrieve protein-protein interactions and mutation annotations from a MAGI annotations Postgres database. To do so, set the following environment variables.
 
-8. View the website at `http://localhost:8000/`.
+| **Name**                   | **Default** | **Description**            | 
+| -------------------------- | ----------- | ---------------------------|
+| `POSTGRES_DJANGO_DBNAME`   | magipy      | Name of Postgres database  |
+| `POSTGRES_DJANGO_HOST`     | 127.0.0.1   | Name of Postgres host      |
+| `POSTGRES_DJANGO_PORT`     | 5432        | Name of Postgres port      |
+| `POSTGRES_DJANGO_USER`     | postgres    | Name of Postgres user      |
+| `POSTGRES_DJANGO_PASSWORD` | None        | Password for Postgres user |
 
-### Configuration ###
+#### Data ####
 
-Users can customize MAGI and integrate it with different APIs by setting Linux environment variables. (For a quick tutorial, see [this blog post on Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-read-and-set-environmental-and-shell-variables-on-a-linux-vps).)
-
-1. **Mode**. You can run MAGI in either development or production mode, by setting the `NODE_ENV` environment variable. For example,
-
-        export NODE_ENV="development"
-   Development mode has more verbose error reports, while production mode requires a site URL (see below).
-
-2. **Authentication**. MAGI uses the Google OpenID Connect protocol for authentication. To set up authentication on your own personal version of MAGI, visit the [Google OAuth2 documentation](https://developers.google.com/accounts/docs/OAuth2) and obtain credentials. Then set the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` environment variables. If you do not set up authentication, you will not be able to use the `/upload` feature, and attempting to "Login via Google" will result in server errors. You will, however, be able to view public datasets and upload additional datasets to MongoDB from the command line.
-3. **Site URL**. In development mode, MAGI automatically uses `"localhost"` as the site URL. In production mode, you will need to set a site URL. For example, if you hosting MAGI on `http://magi.cs.brown.edu`, you would do the following:
-
-        export SITE_URL="http://magi.cs.brown.edu"
-
-4. **Port**. By default, MAGI serves on port 8000, but you can choose your own port by setting the `PORT` environment variable.
-5. **MongoDB**. By default, MAGI assumes that MongoDB is running on the `"localhost"` server using a database named `"magi"`. You can configure to look for data on a different server or in a different database using the `MONGO_HOST` and/or `MONGO_DB_NAME` environment variables.  If you use a non-standard port for Mongo, you can set the `MONGO_PORT` environment variable accordingly. 
-6. **Feedback**. MAGI uses [WebEngage](https://webengage.com/) for collecting feedback from users. If you want to use WebEngage for your own version of MAGI, you first need to set up an account on the WebEngage website. Then, you can configure MAGI to use your account by setting the `WEBENGAGE_ID` environment variable to use your site's WebEngage ID.
-7. **Webmaster tools**. In order to use Google and Bing's webmaster tools, you need to serve a file from your web server. MAGI can be configured to do this automatically by setting the `GOOGLE_SEO_ROUTE`, `GOOGLE_SEO_ROUTE_NAME`, and/or `BING_SEO_ROUTE` environment variables. First, place the files in the MAGI directory, and then point to them using the environment variables.
+We provide a tarball of [data used in MAGI](http://compbio-research.cs.brown.edu/software/magi/data/archives/latest.tar) (currently ~45Mb) on the Raphael group website. This includes general datasets -- HG19 gene locations, cancer acronyms and descriptions, known gene sets from KEGG and PINdb -- and also mutation datasets.
 
 ### Support ###
 
