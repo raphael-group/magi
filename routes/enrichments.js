@@ -13,11 +13,11 @@ exports.stats = function stats(req, res){
 
 	// Parse the given data
 	var pathToScript = 'stats/computeEnrichments.py'
-	var command = pathToScript + " -r '" +  JSON.stringify(req.body) + "'";
-
+	var command = pathToScript; //+ " -r '" +  JSON.stringify(req.body) + "'";
+	var args = ["-r", JSON.stringify(req.body)];
 	// Spawn the child process to compute the enrichments. The only output
 	// to stdout is a JSON dump of the response
-	require('child_process').exec(command, function(err, stdout, stderr){
+	require('child_process').execFile(command, args, function(err, stdout, stderr){
 		if (err){
 			error = 'return code: ' + err.code + ', signal: ' + err.signal;
 			res.send({error: error});
