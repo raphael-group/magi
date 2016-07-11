@@ -12,8 +12,7 @@ exports.stats = function stats(req, res){
 	console.log('/enrichments/stats');
 
 	// Parse the given data
-	var pathToScript = 'stats/computeEnrichments.py'
-	var command = pathToScript;// + " -r '" +  JSON.stringify(req.body) + "'";
+	var command = 'stats/computeEnrichments.py'
 
 	// Spawn the child process to compute the enrichments. The only output
 	// to stdout is a JSON dump of the response
