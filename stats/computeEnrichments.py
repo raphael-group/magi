@@ -18,12 +18,15 @@ def get_parser():
 	import argparse
 	parser = argparse.ArgumentParser(description='')
 	parser.add_argument('-r', '--request', type=str,
-		required=True, help='Request (JSON).')
+		required=False, help='Request (JSON).')
 	return parser
 
 def run( args ):
 	# load raw data
-	rawdata = json.loads( args.request )
+	if args.request:
+		rawdata = json.loads( args.request )
+	else:
+		rawdata = json.loads( sys.stdin.read() )
 
 	# Sometimes JSON loading once isn't enough, in which case load it again
 	# TODO: figure out why you need this, doesn't make any sense
