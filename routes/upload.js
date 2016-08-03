@@ -217,19 +217,27 @@ exports.deleteDataset = function deleteDataset(req, res){
 
 // Parse the user's dataset upload
 exports.uploadCancer = function uploadCancer(req, res){
-	console.log('upload/cancer')
+	console.log('/upload/cancer')
 	var Cancer = Database.magi.model( 'Cancer' );
 
 	// Load the posted form
-	var name  = req.body.name,
-		abbr  = req.body.abbr,
-		color = req.body.color;
+	if (req.user && req.user._id){
+		var query = {
+			cancer:    req.body.name,
+			abbr:      req.body.abbr,
+			color:     req.body.color,
+			user_id:   req.user._id,
+			is_public: false
+		};
 
-	// Create the cancer
-	Cancer.create({name: name, abbr: abbr, color: color, is_public: false}, function(err, cancer){
-		if (err) throw new Error(err);
+		// Create the cancer
+		Cancer.create(query, function(err, cancer){
+			if (err) throw new Error(err);
+			res.redirect("/cancers");
+		});
+	} else{
 		res.redirect("/cancers");
-	});
+	}
 }
 
 // Render pages describing file formats

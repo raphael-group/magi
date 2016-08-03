@@ -159,7 +159,7 @@ app.post('/upload/geneset', routes.uploadGeneset);
 app.get('/upload', ensureAuthenticated, routes.upload);
 app.post('/upload/dataset', ensureAuthenticated, routes.uploadDataset);
 app.post('/upload/manifest', ensureAuthenticated, routes.uploadManifest);
-app.post('/upload/cancer', routes.uploadCancer);
+app.post('/upload/cancer', ensureAuthenticated, routes.uploadCancer);
 app.get('/upload/formats/snvs', routes.formatSNVs);
 app.get('/upload/formats/cnas', routes.formatCNAs);
 app.get('/upload/formats/aberrations', routes.formatAberrations);
