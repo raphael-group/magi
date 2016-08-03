@@ -42,8 +42,8 @@ block body
         -for(var i = 0; i < groups.length; i++)
           -var group = groups[i];
           -var rowClass = i % 2 == 0 ? 'even' : 'odd';
-          -for (var j in group.dbs)
-            -var db = group.dbs[j];
+          -for (var j in group.datasets)
+            -var db = group.datasets[j];
             tr(class="#{ rowClass }")
               td
                 - if (j == 0)
@@ -54,7 +54,7 @@ block body
               td #{ moment(db.created_at).format("MM/DD/YYYY") }
               td #{ moment(db.updated_at).fromNow() }
               td
-                a(href="/delete/dataset?did=#{db._id}", title="Remove dataset")
+                a(href="/delete/dataset/#{db._id}", title="Remove dataset")
                   span(class="glyphicon glyphicon-trash")
     - else
       | You have not uploaded any datasets. &nbsp;

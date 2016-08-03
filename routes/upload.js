@@ -102,7 +102,6 @@ exports.uploadDataset = function uploadDataset(req, res){
 	} else{
 		snvFile = fields.SNVsLocation;
 	}
-
 	if (fields.CNAsSource == 'upload'){
 		if (files.CNAsLocation){
 			cnaFile = files.CNAsLocation.path;
@@ -207,20 +206,13 @@ exports.deleteDataset = function deleteDataset(req, res){
 	console.log('/delete/dataset')
 
 	// Parse params
-	console.log(req.query)
-	var dataset_id = req.query.did || "";
-
-	// Construct the query
-	var query = {user_id: req.user._id, _id: dataset_id };
+	var dataset_id = req.params.datasetID,
+		query = {user_id: req.user._id, _id: dataset_id };
 
 	Dataset.removeDataset(query, function(err){
-		if (err){
-			throw new Error(err);
-		}
+		if (err){ throw new Error(err); }
 		res.redirect('/account')
-	})
-
-
+	});
 }
 
 // Parse the user's dataset upload

@@ -511,9 +511,6 @@ def run( args ):
     except (urllib2.HTTPError, urllib2.URLError):
         sys.stderr.write("urllib2 error when parsing SNV file.\n")
         os._exit(14) # SNV URL file error
-    except IOError as e:
-        sys.stderr.write("IOError when parsing SNV file.\n")
-        os._exit(15) # SNV local file error
 
     # Load CNAs
     try:

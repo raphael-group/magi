@@ -25,7 +25,7 @@ exports.account = function(req, res){
     User.findByGoogleId(req.session.passport.user)
 	.fail(function(err) {console.log(err);})
 	.then(function(user) {
-	    Dataset.datasetGroups({user_id: user._id}, function(err, groups){
+	    Dataset.datasetGroups({user_id: user._id}, function(err, groups, samples){
 		// Throw error (if necessary)
 		if (err) throw new Error(err);
 		var user_id = String(user._id);

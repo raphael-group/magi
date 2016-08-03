@@ -170,7 +170,7 @@ app.get('/upload/formats/annotation-colors', routes.formatAnnotationColors);
 // Dataset views
 app.get('/datasets', routes.datasets.index);
 app.get('/datasets/view/:datasetID', routes.datasets.view);
-app.get('/delete/datasets', ensureAuthenticated, routes.deleteDataset);
+app.get('/delete/dataset/:datasetID', ensureAuthenticated, routes.deleteDataset);
 app.get('/manifests', routes.datasets.manifests);
 
 // Annotation views
