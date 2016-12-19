@@ -413,6 +413,24 @@ div#controls tr.variant-annotations-row:hover .fa-external-link{display:inline}
 div#controls td.dataset-samples-cell .fa-external-link{display:none}
 div#controls td.dataset-samples-cell:hover .fa-external-link{display:inline}
 
+.colorPickerPanelContent { padding: 5px; }
+.dataset-colorPickerSwatch {
+  border: 1px solid white;
+  border-radius: 3px;
+  cursor: pointer;
+  display: inline-block;
+  height: 25px;
+  margin: 1px;
+  padding: 2px 0;
+  width: 42px;
+}
+.dataset-colorPickerSwatchIcon {
+  color: rgba(255,255,255,0.75);
+  display: inline-block;
+  text-align: center;
+  width: 20px;
+}
+
 @media (max-width: 992px) {
     .affix {
         position: relative;

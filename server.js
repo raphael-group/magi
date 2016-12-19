@@ -143,6 +143,9 @@ app.post('/', routes.queryhandler);
 app.get('/view', routes.view);
 app.get('/view/:id', routes.view);
 
+// Color palette customization
+app.post('/makePalette', routes.makePalette);
+
 // Requery commands via MAGI view
 app.get('/queryGetDatasetsAndGenes', routes.queryGetDatasetsAndGenes);
 app.get('/getSessionLatestQuery', routes.getSessionLatestQuery);

@@ -1,6 +1,7 @@
 // Load the individual routes
 var about = require( './about' ),
 	auth = require( './auth' ),
+	colorPicking = require('./colorPicking'),
 	index = require( './index' ),
 	upload = require( './upload' ),
 	view = require( './view' ),
@@ -28,6 +29,9 @@ exports.account = auth.account;
 exports.login  = auth.login;
 exports.logout  = auth.logout;
 exports.user = {update: auth.update};
+
+// Colorgorical color picking routes
+exports.makePalette = colorPicking.makePalette;
 
 // Index routes
 exports.index = index.index;

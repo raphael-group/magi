@@ -602,6 +602,71 @@ function view(){
 		}
 	});
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Add support for color customization in the control panel
+  function generatePalette() {
+    var swatches = d3.selectAll(".dataset-colorPickerSwatch");
+
+    var startPalette = [],
+        lockedIndecies = [];
+    swatches.each(function(d,i) {
+      if(d3.select(this).attr("data-locked") === "locked") {
+        startPalette.push(d3.select(this).style('background-color'));
+        lockedIndecies.push(i);
+      }
+    });
+
+    var query = JSON.stringify({
+          paletteSize: swatches.size(),
+          startPalette: startPalette
+        });
+
+    var callback = function(err, res) {
+      var response = JSON.parse(res.response),
+          palette = response.palette;
+      swatches.each(function(d,i) {
+        if(lockedIndecies.indexOf(i) > -1) return;
+        var c = palette.pop();
+        d3.select(this).style('background-color', d3.lab(c.l, c.a, c.b));
+      });
+
+      var colorMapping = {};
+      swatches.each(function() {
+        var thisEl = d3.select(this);
+        colorMapping[thisEl.attr("data-name")] = thisEl.style("background-color");
+      });
+
+      d3.selectAll("#datasets tbody tr").each(function() {
+        var cell = d3.select(this).select("td"),
+            name = cell.attr("data-name");
+        cell.select("div").style("background-color", colorMapping[name]);
+      })
+    };
+    d3.xhr('/makePalette').header('Content-Type', 'application/json')
+        .post(query, callback);
+  }
+
+  d3.selectAll(".dataset-colorPickerSwatchLocker").on("click", function() {
+    var thisEl = d3.select(this),
+        parent = d3.select(this.parentNode),
+        unlocked = parent.attr("data-locked") === "unlocked";
+
+    thisEl.classed("fa-unlock", !unlocked)
+        .classed("fa-lock", unlocked);
+    parent.attr("data-locked", unlocked ? "locked" : "unlocked");
+    parent.style("border-color", unlocked ? "black" : "white");
+  });
+
+  d3.selectAll(".dataset-colorPickerSwatchEyeDropper").on("click", function() {
+    var value = d3.select("#customColorInput").property("value");
+    if(!value || value === "") return;
+    d3.select(this.parentNode).style("background", d3.rgb(value));
+    d3.select("#customColorInput").property("value", "");
+  });
+  d3.select("#makePaletteBtn").on("click", generatePalette);
+
+
+
 	///////////////////////////////////////////////////////////////////////////
 	// Add a dataset menu to the control panel
 

@@ -39,7 +39,24 @@ block body
                                 | #{data.datasets[i].samples.length}
                                 a(class="pull-right", href="/datasets/view/#{data.datasets[i]._id}")
                                     i(class="fa fa-external-link")
-                      
+
+                div(class="panel panel-default")
+                  div(class="panel-heading" role="tab" id="colorHeading")
+                    h5(class="panel-title")
+                      a(role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseColor" aria-expanded="true" aria-controls="collapseColor")
+                        | Customize dataset colors
+                  div(id="collapseDatasets" class="panel-collapse collapse in table-responsive" role="tabpanel" aria-labelledby="datasetsHeading")
+                    div(class="colorPickerPanelContent")
+                      div
+                        - for (var i = 0; i < data.datasets.length; i++)
+                          span(data-name="#{data.datasets[i].title}", data-locked="unlocked", data-datasetIndex="#{i}", class="dataset-colorPickerSwatch", style="background:#{data.datasets[i].color};")
+                            span(class="fa fa-unlock dataset-colorPickerSwatchLocker dataset-colorPickerSwatchIcon", aria-hidden="true")
+                            span(class="fa fa-eyedropper dataset-colorPickerSwatchEyeDropper dataset-colorPickerSwatchIcon", aria-hidden="true")
+
+                      input(class="form-control", id="customColorInput", placeholder="Enter color for eyedropper", type="text")
+                      button(class="btn btn-primary btn-xs" id="makePaletteBtn")
+                        | Generate new colors
+
                 div(class="panel panel-default")
                   div(class="panel-heading", role="tab")
                     h4(class="panel-title")
