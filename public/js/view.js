@@ -36,210 +36,113 @@ var abbrToCancer = data.abbrToCancer,
   linkViews = true;
 
 Object.keys(abbrToCancer).forEach(function(k){ cancerToAbbr[abbrToCancer[k]] = k; });
-cancers = Object.keys(cancerToAbbr);
+var cancers = Object.keys(cancerToAbbr);
 
-function view(){
-	// Set up promise
-	var deferred = $.Deferred();
+var tooltipNewline = {type: 'text', text:''};
+var genes = data.genes,
+    datasets = Object.keys(data.datasetColors);
 
-	// Hard-code the names of each element
-	var aberrationsElement = "div#aberrations",
-		networkElement = "div#network",
-		transcriptElement = "div#transcript",
-		transcriptSelectElement = "select#transcript-select",
-		cnasElement = "div#cnas",
-		cnasSelectElement = "select#cnas-select",
-        controlsElement = "div#controls",
-		annotateInputElement = "div#annotation div#inputs",
-		annotatedGeneElement = "div#annotation select#gene",
-		interactionElement = "div#annotation select#interaction",
-		interactorElement = "div#annotation select#interactor",
-		cancerInputElement = "div#annotation div#cancers",
-		cancerTypeaheadElement = "div#annotation div#cancers input#cancer-typeahead"
-		annotationsElement = "div#annotation div#annotations",
-		transcriptMutationElement = "div#annotation div#transcript-mutation",
-		transcriptDomainElement = "div#annotation div#transcript-domain",
-		transcriptPositionElement = "div#annotation div#transcript-position",
-		commentElement = "div#annotation textarea#comment",
-		submitElement = "div#annotation button#submit",
-		heatmapElement = 'div#heatmap';
+var VIEW_COMPONENT_NAMES = {
+  aberrationsElement : "div#aberrations",
+  networkElement : "div#network",
+  transcriptElement : "div#transcript",
+  transcriptSelectElement : "select#transcript-select",
+  cnasElement : "div#cnas",
+  cnasSelectElement : "select#cnas-select",
+  controlsElement : "div#controls",
+  annotateInputElement : "div#annotation div#inputs",
+  annotatedGeneElement : "div#annotation select#gene",
+  interactionElement : "div#annotation select#interaction",
+  interactorElement : "div#annotation select#interactor",
+  cancerInputElement : "div#annotation div#cancers",
+  cancerTypeaheadElement : "div#annotation div#cancers input#cancer-typeahead",
+  annotationsElement : "div#annotation div#annotations",
+  transcriptMutationElement : "div#annotation div#transcript-mutation",
+  transcriptDomainElement : "div#annotation div#transcript-domain",
+  transcriptPositionElement : "div#annotation div#transcript-position",
+  commentElement : "div#annotation textarea#comment",
+  submitElement : "div#annotation button#submit",
+  heatmapElement : 'div#heatmap'
+};
 
-	// Select each element for easy access later
-	var aberrations = d3.select(aberrationsElement),
-		heatmap = d3.select(heatmapElement),
-		network = d3.select(networkElement),
-		transcript = d3.select(transcriptElement),
-		transcriptSelect = d3.select(transcriptSelectElement),
-		cnas = d3.select(cnasElement),
-		cnasSelect = d3.select(cnasSelectElement),
-		controls = d3.select(controlsElement),
-		annotateInput = d3.select(annotateInputElement),
-		annotatedGene = d3.select(annotatedGeneElement),
-		interaction = d3.select(interactionElement),
-		interactor = d3.select(interactorElement),
-		cancerInput = d3.select(cancerInputElement),
-		transcriptMutation = d3.select(transcriptMutationElement),
-		transcirptDomain = d3.select(transcriptDomainElement),
-		transcirptPosition = d3.select(transcriptDomainElement),
-		annotation = d3.select(annotationsElement),
-		submit = d3.select(submitElement);
+var VISUALIZATION_ELEMENTS = [
+  {name: "aberrations", el: VIEW_COMPONENT_NAMES.aberrationsElement},
+  {name: "network", el: VIEW_COMPONENT_NAMES.networkElement},
+  {name: "transcript", el: VIEW_COMPONENT_NAMES.transcriptElement},
+  {name: "cnas", el: VIEW_COMPONENT_NAMES.cnasElement},
+  {name: "heatmap", el: VIEW_COMPONENT_NAMES.heatmapElement}
+];
 
-	var elements = [ {name: "aberrations", el: aberrationsElement},
-					 {name: "network", el: networkElement},
-					 {name: "transcript", el: transcriptElement},
-					 {name: "cnas", el: cnasElement},
-					 {name: "heatmap", el: heatmapElement} ];
+var VIEW_COMPONENT_SELECTIONS;
+function selectViewComponents() {
+  VIEW_COMPONENT_SELECTIONS = {};
+  Object.keys(VIEW_COMPONENT_NAMES).forEach(function(key) {
+    var elKey = key.replace('Element', '');
+    VIEW_COMPONENT_SELECTIONS[elKey] = d3.select(VIEW_COMPONENT_NAMES[key]);
+  });
+}
+selectViewComponents();
 
-
-	// Functions for giving names from our abbreviations
-	// for cancer types and mutations
-	function cancerToName(c){
-		if (cancerToAbbr[c]) return cancerToAbbr[c].toUpperCase();
+var VIEW_UTIL = {
+  cancerToName: function(c) {
+    if (cancerToAbbr[c]) return cancerToAbbr[c].toUpperCase();
 	    else if (c=='null' || !c) return "Unknown";
 		else return c.toUpperCase();
-	}
-
-	function mutationToName(m){
-		m = m.toLowerCase();
+  },
+  mutationToName: function(m) {
+    m = m.toLowerCase();
 		if (m == "snv") return "SNV";
 		else if (m == "inactive_snv") return "Inactivating SNV";
 		else if (m == "amp") return "Amplification";
 		else if (m == "del") return "Deletion";
 		else return m;
-	}
-
-	function mutationToClass(m){
-		m = m.toLowerCase();
+  },
+  mutationToClass: function(m) {
+    m = m.toLowerCase();
 		if (m == "snv" || m == "inactive_snv") return "SNV";
 		else if (m == "amp") return "Amplification";
 		else if (m == "del") return "Deletion";
 		else if (m == "expression") return "Expression";
 		else if (m == "methylation") return "Methylation";
 		else return "Other";
-	}
-
-	function pubmedLink(_id){
-		if (_id.toLowerCase().slice(0, 3) == 'pmc'){
+  },
+  pubmedLink: function(_id) {
+    if (_id.toLowerCase().slice(0, 3) == 'pmc'){
 			return 'http://www.ncbi.nlm.nih.gov/pmc/articles/' + _id;
 		} else{
 			return 'http://www.ncbi.nlm.nih.gov/pubmed/' + _id;
 		}
-	}
+  }
+};
 
-	// Set up the styles for the four views
-	var genes = data.genes,
-		datasets = Object.keys(data.datasetColors);
+var VISUALIZATION_STYLE_DEFAULTS = {
+  colorSchemes: {
+    network: {
+      Community: "rgb(230, 189, 123)",
+      HPRD: "rgb(13, 59, 56)",
+      "HINT+HI2012": "rgb(127, 92, 159)",
+      HINT: "rgb(127, 92, 159)",
+      iRefIndex: "rgb(140, 91, 56)",
+      Multinet: "rgb(92, 128, 178)",
+      nodeColor: ['rgb(102, 178, 255)', 'rgb(255, 51, 51)'] // cold to hot gradient for network
+    },
+    sampleType: {}
+  }
+}
 
+var style = {
+  aberrations: VISUALIZATION_STYLE_DEFAULTS,
+  cnas: VISUALIZATION_STYLE_DEFAULTS,
+  heatmap: VISUALIZATION_STYLE_DEFAULTS,
+  network: VISUALIZATION_STYLE_DEFAULTS,
+  transcript: VISUALIZATION_STYLE_DEFAULTS
+};
 
-	// Determine if we're showing duplicates
-	if (showDuplicates == null) {
-		showDuplicates = true; // TODO fix this hack
-	}
+function drawAberrationMatrix() {
+  var aberrations = VIEW_COMPONENT_SELECTIONS.aberrations;
+  aberrations.selectAll('*').remove();
 
-	var defaultStyle = function(){
-		var sty = { colorSchemes: { network: {} , sampleType: {} } };
-		sty.colorSchemes.network["HPRD"] = "rgb(13, 59, 56)"
-		sty.colorSchemes.network["HINT+HI2012"] = "rgb(127, 92, 159)";
-		sty.colorSchemes.network["HINT"] = "rgb(127, 92, 159)";
-		sty.colorSchemes.network["iRefIndex"] = "rgb(140, 91, 56)";
-		sty.colorSchemes.network["Multinet"] = "rgb(92, 128, 178)";
-		sty.colorSchemes.network["Community"] = "rgb(230, 189, 123)";
-		return sty;
-	}
-
-	var style = { network: defaultStyle(), aberrations: defaultStyle(),
-				  transcript: defaultStyle(), cnas: defaultStyle(),
-				  heatmap: defaultStyle() };
-
-    var tooltipNewline = {type: 'text', text:''};
-	elements.forEach(function(e){
-		style[e.name].width = $(e.el).width();
-		if (data.datasetColors){
-			Object.keys(data.datasetColors).forEach(function(name){
-			  style[e.name].colorSchemes.sampleType[name] = data.datasetColors[name];
-			});
-		}
-	});
-
-	// Cold to hot gradient for the network
-	style.network.nodeColor = ['rgb(102, 178, 255)', 'rgb(255, 51, 51)'];
-
-	// Set up the GD3 color palette
-	if (data.datasetColors){
-		var colors = datasets.map(function(d){ return data.datasetColors[d]; });
-		gd3.color.categories(datasets, colors);
-		gd3.color.annotations('Cancer type', datasets, 'discrete', colors);
-	}
-	if (data.sampleAnnotations && data.sampleAnnotations.categories){
-		data.sampleAnnotations.categories.forEach(function(c){
-			var values = Object.keys(data.sampleAnnotations.annotationToColor[c]);
-			if (values.length > 0){
-				var colors = values.map(function(v){return data.sampleAnnotations.annotationToColor[c][v]; });
-				gd3.color.annotations(c, values, 'discrete', colors);
-			}
-		});
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-	// Draw the five views
-
-	// Heatmap: has to come first so that it gets sorted
-	// in the same order as the aberration matrix
-	if (data.heatmap.cells){
-		// Add the cancer type as an annotation for the heatmap
-		if (data.aberrations && data.aberrations.samples){
-			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
-			heatmapAnnotations.categories.push("Cancer type");
-			heatmapAnnotations.annotationToColor["Cancer type"] = {};
-			Object.keys(data.datasetColors).forEach(function(d){
-				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
-			});
-			data.aberrations.samples.forEach(function(s){
-				heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]]
-			});
-			data.heatmap.annotations = heatmapAnnotations;
-		}
-
-		// Draw the heatmap
-		heatmap.datum(data.heatmap)
-			.call(gd3.heatmap({
-				style: style.heatmap
-			}).linkRowLabelsToNCBI(true).linkOutXLabels(true));
-
-
-		// Add tooltips
-		var cells = heatmap.selectAll('.gd3heatmapCells rect');
-		cells.classed('gd3-tipobj', true);
-		var heatmapTooltips = [];
-		cells.each(function(d) {
-			// Create the tooltip data for the data that will always be present
-			var tooltipData = [
-					{ type: 'link', href: '/sampleView?sample=' + d.x, body: 'Sample: ' + d.x },
-					{ type: 'text', text: 'Value: ' + d.value}
-				];
-
-			// Add the annotations
-			if (data.heatmap.annotations){
-				data.heatmap.annotations.categories.forEach(function(c, i){
-					var value = data.heatmap.annotations.sampleToAnnotations[d.x][i];
-					if (!value) value = "No data";
-					tooltipData.push({type: 'text', text: c + ': ' + value});
-				});
-			}
-
-			// Add the tooltip
-			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
-		});
-
-		heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
-
-	} else {
-		d3.select(heatmapElement).remove();
-		d3.select("h3#heatmap-title").remove();
-	}
-
-	// Aberrations
-	if (data.aberrations.samples && data.aberrations.samples.length > 0){
+  if (data.aberrations.samples && data.aberrations.samples.length > 0){
 		if (typeof(data.sampleAnnotations) == "object" && Object.keys(data.sampleAnnotations).length > 0)
 			data.aberrations.annotations = data.sampleAnnotations;
 
@@ -279,8 +182,8 @@ function view(){
 		cells.each(function(d) {
 			// Create the tooltip data for the data that will always be present
 			var geneName     = d.rowLabel,
-				mutationType = mutationToName(d.cell.type),
-				mutationClass = mutationToClass(d.cell.type),
+				mutationType = VIEW_UTIL.mutationToName(d.cell.type),
+				mutationClass = VIEW_UTIL.mutationToClass(d.cell.type),
 				tooltipData  = [
 					{ type: 'link', href: '/sampleView?sample=' + d.colLabel, body: 'Sample: ' + d.colLabel },
 					{ type: 'text', text: 'Type: ' + d.cell.dataset},
@@ -301,7 +204,7 @@ function view(){
 			// Add the references (if necessary)
 			if (data.annotations && data.annotations[geneName]){
 				var annotatedMutationNames = Object.keys(data.annotations[geneName])
-					annotatedMutations = annotatedMutationNames.map(mutationToClass),
+					annotatedMutations = annotatedMutationNames.map(VIEW_UTIL.mutationToClass),
 					mutationIndex = annotatedMutations.indexOf(mutationClass);
 
 				// Determine if there are references for the current gene
@@ -347,11 +250,123 @@ function view(){
 	} else {
 		aberrations.html("<b>No aberrations</b>.")
 	}
+}
 
-	// Network
+function drawCNA() {
+  var cnas = VIEW_COMPONENT_SELECTIONS.cnas,
+      cnasSelect = VIEW_COMPONENT_SELECTIONS.cnasSelect;
+  // Populate the dropdown with the names of the genes with CNAs
+	var cnaGenes = genes.filter(function(g){
+			return data.cnas && g in data.cnas;
+		}).map(function(g){
+			return { name: g, numCNAs: data.cnas[g].segments.length };
+		});
 
-	// Draw network
-	network.datum(data.network)
+	cnasSelect.selectAll(".cna-option")
+		.data(cnaGenes).enter()
+		.append("option")
+		.attr("id", function(d){ return "cna-option-" + d.name; })
+		.attr("value", function(d){ return d.name; })
+		.attr()
+		.text(function(d){ return d.name + " (" + d.numCNAs + " aberrations)"; })
+
+	// Create the CNA genes data
+	function updateCNAChart(){
+		// Retrieve the current gene
+		var geneName = cnasSelect.node().value;
+
+		// Empty out the CNA browser container
+		cnas.selectAll("*").remove();
+
+		// Update the CNA browser
+		cnas.datum(data.cnas[geneName])
+			.call(gd3.cna({ style: style.cnas }).showScrollers(false))
+
+		// And add tooltips
+		var intervals = cnas.selectAll("g.intervals"),
+			cnaTooltips = [];
+		intervals.classed("gd3-tipobj", true);
+		intervals.each(function(d) {
+			cnaTooltips.push([
+				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
+				{ type: 'text', text: 'Dataset: ' + d.dataset },
+				{ type: 'text', text: 'Type: ' + mutationToName(d.ty) },
+				{ type: 'text', text: 'Start: ' + d.start },
+				{ type: 'text', text: 'End: ' + d.end }
+			].map(gd3.tooltip.datum));
+		});
+
+		cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
+	}
+
+
+	// Watch the CNA browser selector to update the current CNA browser on change
+	cnasSelect.on("change", updateCNAChart);
+	if (cnaGenes.length > 0){ updateCNAChart(); }
+    else{
+        cnasSelect.remove();
+        cnas.html('<b>No copy number aberrations.</b>')
+  }
+}
+
+function drawHeatmap() {
+  if (data.heatmap.cells){
+		// Add the cancer type as an annotation for the heatmap
+		if (data.aberrations && data.aberrations.samples){
+			var heatmapAnnotations = {categories: [], annotationToColor: {}, sampleToAnnotations: {}};
+			heatmapAnnotations.categories.push("Cancer type");
+			heatmapAnnotations.annotationToColor["Cancer type"] = {};
+			Object.keys(data.datasetColors).forEach(function(d){
+				heatmapAnnotations.annotationToColor["Cancer type"][d] = data.datasetColors[d];
+			});
+			data.aberrations.samples.forEach(function(s){
+				heatmapAnnotations.sampleToAnnotations[s.name] = [data.aberrations.sampleToTypes[s._id]]
+			});
+			data.heatmap.annotations = heatmapAnnotations;
+		}
+
+		// Draw the heatmap
+		VIEW_COMPONENT_SELECTIONS.heatmap.datum(data.heatmap)
+			.call(gd3.heatmap({
+				style: style.heatmap
+			}).linkRowLabelsToNCBI(true).linkOutXLabels(true));
+
+
+		// Add tooltips
+		var cells = VIEW_COMPONENT_SELECTIONS.heatmap.selectAll('.gd3heatmapCells rect');
+		cells.classed('gd3-tipobj', true);
+		var heatmapTooltips = [];
+		cells.each(function(d) {
+			// Create the tooltip data for the data that will always be present
+			var tooltipData = [
+					{ type: 'link', href: '/sampleView?sample=' + d.x, body: 'Sample: ' + d.x },
+					{ type: 'text', text: 'Value: ' + d.value}
+				];
+
+			// Add the annotations
+			if (data.heatmap.annotations){
+				data.heatmap.annotations.categories.forEach(function(c, i){
+					var value = data.heatmap.annotations.sampleToAnnotations[d.x][i];
+					if (!value) value = "No data";
+					tooltipData.push({type: 'text', text: c + ': ' + value});
+				});
+			}
+
+			// Add the tooltip
+			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
+		});
+
+		VIEW_COMPONENT_SELECTIONS.heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
+
+	} else {
+		d3.select(heatmapElement).remove();
+		d3.select("h3#heatmap-title").remove();
+	}
+}
+
+function drawNetwork() {
+  var network = VIEW_COMPONENT_SELECTIONS.network;
+  network.datum(data.network)
 		.call(gd3.graph({
 			style: style.network
 		}));
@@ -385,9 +400,9 @@ function view(){
 			}
 		});
 
-// todo: remove vote buttons
-	    createInteractionHref = annotationsURL + '/annotations/interactions/add/?source=' + d.source.name +
-			'&target=' + d.target.name;
+    // todo: remove vote buttons
+    createInteractionHref = annotationsURL + '/annotations/interactions/add/?source=' + d.source.name +
+		'&target=' + d.target.name;
 
 		// Add the tooltip
 		networkTooltips.push([
@@ -405,9 +420,13 @@ function view(){
 	});
 
 	network.select('svg').call(gd3.tooltip.make().useData(networkTooltips));
-	// Transcript(s)
+}
 
-	// First populate the dropdown with the transcripts for each gene
+function drawTranscript() {
+  var transcriptSelect = VIEW_COMPONENT_SELECTIONS.transcriptSelect,
+      transcript = VIEW_COMPONENT_SELECTIONS.transcript;
+
+  // First populate the dropdown with the transcripts for each gene
 	var numTranscriptsAdded = 0;
 	genes.forEach(function(g, i){
 		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length == 0) return;
@@ -512,61 +531,52 @@ function view(){
 		transcriptSelect.remove();
 		transcript.html("<b>No transcript data</b>.")
 	}
+}
 
-	// Copy number aberrations
+function view(){
+	// Set up promise
+	var deferred = $.Deferred();
 
-	// Populate the dropdown with the names of the genes with CNAs
-	var cnaGenes = genes.filter(function(g){
-			return data.cnas && g in data.cnas;
-		}).map(function(g){
-			return { name: g, numCNAs: data.cnas[g].segments.length };
-		});
-
-	cnasSelect.selectAll(".cna-option")
-		.data(cnaGenes).enter()
-		.append("option")
-		.attr("id", function(d){ return "cna-option-" + d.name; })
-		.attr("value", function(d){ return d.name; })
-		.attr()
-		.text(function(d){ return d.name + " (" + d.numCNAs + " aberrations)"; })
-
-	// Create the CNA genes data
-	function updateCNAChart(){
-		// Retrieve the current gene
-		var geneName = cnasSelect.node().value;
-
-		// Empty out the CNA browser container
-		cnas.selectAll("*").remove();
-
-		// Update the CNA browser
-		cnas.datum(data.cnas[geneName])
-			.call(gd3.cna({ style: style.cnas }).showScrollers(false))
-
-		// And add tooltips
-		var intervals = cnas.selectAll("g.intervals"),
-			cnaTooltips = [];
-		intervals.classed("gd3-tipobj", true);
-		intervals.each(function(d) {
-			cnaTooltips.push([
-				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
-				{ type: 'text', text: 'Dataset: ' + d.dataset },
-				{ type: 'text', text: 'Type: ' + mutationToName(d.ty) },
-				{ type: 'text', text: 'Start: ' + d.start },
-				{ type: 'text', text: 'End: ' + d.end }
-			].map(gd3.tooltip.datum));
-		});
-
-		cnas.select('svg').call(gd3.tooltip.make().useData(cnaTooltips));
+	// Determine if we're showing duplicates
+	if (showDuplicates == null) {
+		showDuplicates = true; // TODO fix this hack
 	}
 
+	VISUALIZATION_ELEMENTS.forEach(function(e){
+		style[e.name].width = $(e.el).width();
+		if (data.datasetColors){
+			Object.keys(data.datasetColors).forEach(function(name){
+			  style[e.name].colorSchemes.sampleType[name] = data.datasetColors[name];
+			});
+		}
+	});
 
-	// Watch the CNA browser selector to update the current CNA browser on change
-	cnasSelect.on("change", updateCNAChart);
-	if (cnaGenes.length > 0){ updateCNAChart(); }
-    else{
-        cnasSelect.remove();
-        cnas.html('<b>No copy number aberrations.</b>')
-  }
+	// Set up the GD3 color palette
+	if (data.datasetColors){
+		var colors = datasets.map(function(d){ return data.datasetColors[d]; });
+		gd3.color.categories(datasets, colors);
+		gd3.color.annotations('Cancer type', datasets, 'discrete', colors);
+	}
+	if (data.sampleAnnotations && data.sampleAnnotations.categories){
+		data.sampleAnnotations.categories.forEach(function(c){
+			var values = Object.keys(data.sampleAnnotations.annotationToColor[c]);
+			if (values.length > 0){
+				var colors = values.map(function(v){return data.sampleAnnotations.annotationToColor[c][v]; });
+				gd3.color.annotations(c, values, 'discrete', colors);
+			}
+		});
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// Draw the five views
+
+	// Heatmap: has to come first so that it gets sorted
+	// in the same order as the aberration matrix
+  drawHeatmap();
+	drawAberrationMatrix();
+  drawNetwork();
+  drawTranscript();
+  drawCNA();
 
 	///////////////////////////////////////////////////////////////////////////
 	// Controls for the control panel
