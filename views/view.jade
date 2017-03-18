@@ -96,10 +96,10 @@ block body
     //- MAIN VIEWS
     div(id="main-views")
           //- Aberrations row
-          div(class="panel panel-default panelResizable fullWidthPanel" data-vis="aberration")
+          div(class="panel panel-default panelResizable fullWidthPanel ui-state-default" data-vis="aberration")
             div(class="panel-heading clearfix")
               h4(class="panel-title pull-left")
-                | Aberrations
+                | <i class="fa fa-arrows sortableHandle" aria-hidden="true"></i> Aberrations
               ul(class="list-inline pull-right")
                 li
                   div(class="dropdown")
@@ -147,10 +147,10 @@ block body
               div(id="aberrations", class="panel-body")
 
           //- Heatmap row
-          div(class="panel panel-default panelResizable fullWidthPanel" data-vis="heatmap")
+          div(class="panel panel-default panelResizable fullWidthPanel ui-state-default" data-vis="heatmap")
                 div(class="panel-heading clearfix")
                   h4(class="panel-title pull-left")
-                    | Heatmap
+                    | <i class="fa fa-arrows sortableHandle" aria-hidden="true"></i> Heatmap
                   ul(class="list-inline pull-right")
                     li
                       a(class="fa fa-info", title="Heatmap description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows continuous-valued data in a query set of genes (rows) in a cohort of samples (columns) as heatmap. By default, displays expression data in only the samples in which the genes are mutated.")
@@ -175,10 +175,10 @@ block body
                   div(id="heatmap", class="panel-body")
 
           //- Network
-          div(class="panel panel-default panelResizable halfWidthPanel" data-vis="network")
+          div(class="panel panel-default panelResizable halfWidthPanel ui-state-default" data-vis="network")
                 div(class="panel-heading clearfix")
                   h4(class="panel-title pull-left")
-                    | Network
+                    | <i class="fa fa-arrows sortableHandle" aria-hidden="true"></i> Network
                   ul(class="list-inline pull-right")
                     li
                       a(class="fa fa-info", title="Network view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the interactions among genes on the HINT, HPRD, or iRefIndex interaction networks. You can <b>toggle the interaction networks</b> shown by clicking on them in the legend, and you can <b>reposition the nodes </b>in the subnetwork for a better view by <b>dragging/dropping</b> them.")
@@ -203,10 +203,10 @@ block body
                   div(id="network", class="panel-body")
             
           //- Transcript view
-          div(class="panel panel-default panelResizable halfWidthPanel" data-vis="transcript")
+          div(class="panel panel-default panelResizable halfWidthPanel ui-state-default" data-vis="transcript")
             div(class="panel-heading clearfix")
               h4(class="panel-title pull-left")
-                | Transcript
+                | <i class="fa fa-arrows sortableHandle" aria-hidden="true"></i> Transcript
               ul(class="list-inline pull-right")
                 li
                   div(class="dropdown")
@@ -251,10 +251,10 @@ block body
                 div(id="transcript")
 
           //- CNAs row
-          div(class="panel panel-default panelResizable fullWidthPanel" data-vis="cna")
+          div(class="panel panel-default panelResizable fullWidthPanel ui-state-default" data-vis="cna")
                 div(class="panel-heading clearfix")
                   h4(class="panel-title pull-left")
-                    | Copy Number Aberrations
+                    | <i class="fa fa-arrows sortableHandle" aria-hidden="true"></i> Copy Number Aberrations
                   ul(class="list-inline pull-right")
                     li
                       a(class="fa fa-info", title="CNA view description", tabindex="0", data-toggle="popover", data-trigger="hover", data-html="true", data-placement="bottom", data-content="Shows the copy number aberrations surrounding the selected gene (highlighted as red) on the chromosome. The topmost panel shows genes (shown as blocks) distributed in the region. You can click and drag a window in this panel to zoom in and see the details in the middle and bottom panels. The middle and bottom panels show genes and copy number aberration inside the zoom in window you just dragged, respectively. Copy number aberrations are colored by cancer type. Each row represents one sample. You can mouseover copy number aberration to get more detail information.")

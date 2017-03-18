@@ -19,4 +19,7 @@ function initResizableLayout() {
     clearTimeout(refreshThrottle);
     refreshThrottle = setTimeout(resizeEvent, 100);
   };
+
+  $( "#main-views" ).sortable({ handle: '.sortableHandle' });
+  $( "#main-views" ).disableSelection();
 }

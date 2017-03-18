@@ -602,8 +602,10 @@ body:not(.shepherd-active) .container-index > * {
   #main-views { width: 100%; }
 }
 .fullWidthPanel, .halfWidthPanel {
+  background: white;
   border-right: 3px double #ccc;
-  min-width: 335px; /* arbitrary width to prevent header wrapping */
+  min-width: 350px; /* arbitrary width to prevent header wrapping */
 }
 .fullWidthPanel { width: 100%; }
 .halfWidthPanel { width: 50%; }
+.sortableHandle { cursor: move; }
