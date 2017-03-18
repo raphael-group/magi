@@ -138,6 +138,7 @@ var style = {
   transcript: VISUALIZATION_STYLE_DEFAULTS
 };
 
+
 function drawAberrationMatrix() {
   var aberrations = VIEW_COMPONENT_SELECTIONS.aberrations;
   aberrations.selectAll('*').remove();
@@ -146,6 +147,7 @@ function drawAberrationMatrix() {
 		if (typeof(data.sampleAnnotations) == "object" && Object.keys(data.sampleAnnotations).length > 0)
 			data.aberrations.annotations = data.sampleAnnotations;
 
+    style.aberrations.width = +VIEW_COMPONENT_SELECTIONS.aberrations.style('width').replace('px','')-30;
     var m2Fn = gd3.mutationMatrix({ style: style.aberrations })
             .showHoverLegend(true)
             .showLegend(false)
@@ -155,25 +157,28 @@ function drawAberrationMatrix() {
             .showSortingMenu(false);
 		aberrations.datum(data.aberrations).call(m2Fn)
 
+    function sortAberrationMatrix() {
+      // Compute the new order of the options
+      var sortingOptions = [];
+      d3.selectAll('li.sort-option').each(function(){
+        sortingOptions.push($(this).data('sort-option'));
+      });
+
+      // Get the new column label ordering from the mutation matrix
+      var columnLabels = m2Fn.getOrderedColumnLabels(sortingOptions);
+
+      // Finally, issue a dispatch to update the heatmap
+      gd3.dispatch.sort({
+        columnLabels: columnLabels,
+        sortingOptionsData: sortingOptions
+      });
+    }
+
     // Handle sorting
     $('ul#sort-options').sortable({
-      stop: function(){
-        // Compute the new order of the options
-        var sortingOptions = [];
-        d3.selectAll('li.sort-option').each(function(){
-          sortingOptions.push($(this).data('sort-option'));
-        });
-
-        // Get the new column label ordering from the mutation matrix
-        var columnLabels = m2Fn.getOrderedColumnLabels(sortingOptions);
-
-        // Finally, issue a dispatch to update the heatmap
-        gd3.dispatch.sort({
-          columnLabels: columnLabels,
-          sortingOptionsData: sortingOptions
-        })
-      }
+      stop: sortAberrationMatrix
     });
+    sortAberrationMatrix();
 
 		// Add tooltips
 		var cells = aberrations.selectAll('.mutmtx-sampleMutationCells g');
@@ -255,6 +260,8 @@ function drawAberrationMatrix() {
 function drawCNA() {
   var cnas = VIEW_COMPONENT_SELECTIONS.cnas,
       cnasSelect = VIEW_COMPONENT_SELECTIONS.cnasSelect;
+  cnas.selectAll('*').remove();
+
   // Populate the dropdown with the names of the genes with CNAs
 	var cnaGenes = genes.filter(function(g){
 			return data.cnas && g in data.cnas;
@@ -262,13 +269,16 @@ function drawCNA() {
 			return { name: g, numCNAs: data.cnas[g].segments.length };
 		});
 
-	cnasSelect.selectAll(".cna-option")
-		.data(cnaGenes).enter()
-		.append("option")
-		.attr("id", function(d){ return "cna-option-" + d.name; })
-		.attr("value", function(d){ return d.name; })
-		.attr()
-		.text(function(d){ return d.name + " (" + d.numCNAs + " aberrations)"; })
+  if(cnasSelect.select('optgroup').empty()) {
+    cnasSelect.selectAll(".cna-option")
+  		.data(cnaGenes).enter()
+  		.append("option")
+  		.attr("id", function(d){ return "cna-option-" + d.name; })
+  		.attr("value", function(d){ return d.name; })
+  		.attr()
+  		.text(function(d){ return d.name + " (" + d.numCNAs + " aberrations)"; });
+  }
+
 
 	// Create the CNA genes data
 	function updateCNAChart(){
@@ -279,6 +289,7 @@ function drawCNA() {
 		cnas.selectAll("*").remove();
 
 		// Update the CNA browser
+    style.cnas.width = +cnas.style('width').replace('px','');
 		cnas.datum(data.cnas[geneName])
 			.call(gd3.cna({ style: style.cnas }).showScrollers(false))
 
@@ -310,6 +321,8 @@ function drawCNA() {
 }
 
 function drawHeatmap() {
+  var heatmap = VIEW_COMPONENT_SELECTIONS.heatmap;
+  heatmap.selectAll('*').remove();
   if (data.heatmap.cells){
 		// Add the cancer type as an annotation for the heatmap
 		if (data.aberrations && data.aberrations.samples){
@@ -326,14 +339,15 @@ function drawHeatmap() {
 		}
 
 		// Draw the heatmap
-		VIEW_COMPONENT_SELECTIONS.heatmap.datum(data.heatmap)
+    style.heatmap.width = +heatmap.style('width').replace('px','')-30;
+		heatmap.datum(data.heatmap)
 			.call(gd3.heatmap({
 				style: style.heatmap
 			}).linkRowLabelsToNCBI(true).linkOutXLabels(true));
 
 
 		// Add tooltips
-		var cells = VIEW_COMPONENT_SELECTIONS.heatmap.selectAll('.gd3heatmapCells rect');
+		var cells = heatmap.selectAll('.gd3heatmapCells rect');
 		cells.classed('gd3-tipobj', true);
 		var heatmapTooltips = [];
 		cells.each(function(d) {
@@ -356,7 +370,7 @@ function drawHeatmap() {
 			heatmapTooltips.push(tooltipData.map(gd3.tooltip.datum) );
 		});
 
-		VIEW_COMPONENT_SELECTIONS.heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
+		heatmap.select('svg').call(gd3.tooltip.make().useData(heatmapTooltips));
 
 	} else {
 		d3.select(heatmapElement).remove();
@@ -366,6 +380,8 @@ function drawHeatmap() {
 
 function drawNetwork() {
   var network = VIEW_COMPONENT_SELECTIONS.network;
+  network.selectAll('*').remove();
+  style.network.width = +network.style('width').replace('px','');
   network.datum(data.network)
 		.call(gd3.graph({
 			style: style.network
@@ -425,9 +441,14 @@ function drawNetwork() {
 function drawTranscript() {
   var transcriptSelect = VIEW_COMPONENT_SELECTIONS.transcriptSelect,
       transcript = VIEW_COMPONENT_SELECTIONS.transcript;
+  transcript.selectAll('*').remove();
+  // transcriptSelect.selectAll('*').remove();
+
+  style.transcript.width = +transcript.style('width').replace('px','');
 
   // First populate the dropdown with the transcripts for each gene
-	var numTranscriptsAdded = 0;
+	var numTranscriptsAdded = 0,
+      selectIsInitialized = transcriptSelect.select('optgroup').empty();
 	genes.forEach(function(g, i){
 		if (!data.transcripts[g] || Object.keys(data.transcripts[g]).length == 0) return;
 		else numTranscriptsAdded += 1;
@@ -437,14 +458,17 @@ function drawTranscript() {
 		});
 		transcripts.sort(function(a, b){ return a.numMutations < b.numMutations ? 1 : -1 });
 
-		var optGroup = transcriptSelect.append("optgroup")
-			.attr("label", g);
+    // Don't add more options if the select object has already be initialized
+    if(selectIsInitialized) {
+      var optGroup = transcriptSelect.append("optgroup")
+  			.attr("label", g);
 
-		optGroup.selectAll(".options")
-			.data(transcripts).enter()
-			.append("option")
-			.attr("value", function(d){ return g + "," + d.name; })
-			.text(function(d){ return d.name + " (" + d.numMutations + " mutations)"; });
+  		optGroup.selectAll(".options")
+  			.data(transcripts).enter()
+  			.append("option")
+  			.attr("value", function(d){ return g + "," + d.name; })
+  			.text(function(d){ return d.name + " (" + d.numMutations + " mutations)"; });
+    }
 	});
 
 	// Watch the transcript selector to update the current transcript plot on change
@@ -533,7 +557,17 @@ function drawTranscript() {
 	}
 }
 
-function view(){
+
+// Define object that hashes the vis container vis ID data field to render fn
+var VIEW_VIS_RENDER = {
+  aberration: drawAberrationMatrix,
+  cna: drawCNA,
+  heatmap: drawHeatmap,
+  network: drawNetwork,
+  transcript: drawTranscript
+}
+
+function view() {
 	// Set up promise
 	var deferred = $.Deferred();
 

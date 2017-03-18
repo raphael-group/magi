@@ -96,7 +96,7 @@ block body
     //- MAIN VIEWS
     div(id="main-views")
           //- Aberrations row
-          div(class="panel panel-default panelResizable fullWidthPanel")
+          div(class="panel panel-default panelResizable fullWidthPanel" data-vis="aberration")
             div(class="panel-heading clearfix")
               h4(class="panel-title pull-left")
                 | Aberrations
@@ -147,7 +147,7 @@ block body
               div(id="aberrations", class="panel-body")
 
           //- Heatmap row
-          div(class="panel panel-default panelResizable fullWidthPanel")
+          div(class="panel panel-default panelResizable fullWidthPanel" data-vis="heatmap")
                 div(class="panel-heading clearfix")
                   h4(class="panel-title pull-left")
                     | Heatmap
@@ -174,8 +174,8 @@ block body
                 div(id="collapseHeatmap", class="panel-collapse collapse in")
                   div(id="heatmap", class="panel-body")
 
-          //- Network and transcript row
-          div(class="panel panel-default panelResizable halfWidthPanel")
+          //- Network
+          div(class="panel panel-default panelResizable halfWidthPanel" data-vis="network")
                 div(class="panel-heading clearfix")
                   h4(class="panel-title pull-left")
                     | Network
@@ -203,7 +203,7 @@ block body
                   div(id="network", class="panel-body")
             
           //- Transcript view
-          div(class="panel panel-default panelResizable halfWidthPanel")
+          div(class="panel panel-default panelResizable halfWidthPanel" data-vis="transcript")
             div(class="panel-heading clearfix")
               h4(class="panel-title pull-left")
                 | Transcript
@@ -251,7 +251,7 @@ block body
                 div(id="transcript")
 
           //- CNAs row
-          div(class="panel panel-default panelResizable fullWidthPanel")
+          div(class="panel panel-default panelResizable fullWidthPanel" data-vis="cna")
                 div(class="panel-heading clearfix")
                   h4(class="panel-title pull-left")
                     | Copy Number Aberrations
