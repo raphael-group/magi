@@ -596,6 +596,7 @@ body:not(.shepherd-active) .container-index > * {
   width: calc(100% - 340px);
 }
 #controlPanel { float: right; width: 300px; }
+#controlPanel div { z-index: 999; }
 @media(max-width: 900px) {
   #controlPanel { width: 100%; }
   #main-views { width: 100%; }

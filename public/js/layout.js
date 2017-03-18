@@ -10,5 +10,13 @@ function initResizableLayout() {
     }
   });
 
-  console.log('hi');
+  function resizeEvent(){
+    Object.keys(VIEW_VIS_RENDER).forEach(function(k) { VIEW_VIS_RENDER[k](); });
+  }
+
+  var refreshThrottle;
+  window.onresize = function(){
+    clearTimeout(refreshThrottle);
+    refreshThrottle = setTimeout(resizeEvent, 100);
+  };
 }
