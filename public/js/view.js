@@ -301,7 +301,7 @@ function drawCNA() {
 			cnaTooltips.push([
 				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
-				{ type: 'text', text: 'Type: ' + VIEW_util.mutationToName(d.ty) },
+				{ type: 'text', text: 'Type: ' + VIEW_UTIL.mutationToName(d.ty) },
 				{ type: 'text', text: 'Start: ' + d.start },
 				{ type: 'text', text: 'End: ' + d.end }
 			].map(gd3.tooltip.datum));
