@@ -385,12 +385,8 @@ function drawNetwork() {
   var network = VIEW_COMPONENT_SELECTIONS.network;
   network.selectAll('*').remove();
   style.network.width = +network.style('width').replace('px','');
-  console.log(data.network);
   var valueExtent = d3.extent(data.network.nodes.map(function(d) { return d.value; }));
 
-  console.log(data.network)
-  console.log(style.network)
-  console.log(style)
   network.datum(data.network)
 		.call(gd3.graph({
 			style: style.network
