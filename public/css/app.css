@@ -426,7 +426,7 @@ div#view-page ul.list-inline a:hover{ text-decoration:none; color:#000000;}
 div#view-page ul#sort-options li div{display:block;padding:3px 20px 3px 20px;color:#999999;}
 div#view-page ul#sort-options li a span.sort-name{margin-left:5px;margin-right:5px;}
 
-div#main-views div.panel{ overflow-x:scroll;}
+div#main-views div.panel{ }
 
 /* Dataset summary page */
 div#dataset-summary div#left{ width:35%;display:table-cell;}
