@@ -128,7 +128,7 @@ var VISUALIZATION_STYLE_DEFAULTS = {
     },
     sampleType: {}
   }
-}
+};
 
 var style = {
   aberrations: VISUALIZATION_STYLE_DEFAULTS,
@@ -137,7 +137,10 @@ var style = {
   network: VISUALIZATION_STYLE_DEFAULTS,
   transcript: VISUALIZATION_STYLE_DEFAULTS
 };
-
+// TODO refactor the style referencing so that this redundancy isn't needed
+Object.keys(VISUALIZATION_STYLE_DEFAULTS.colorSchemes.network).forEach(function(k) {
+  style.network[k] = VISUALIZATION_STYLE_DEFAULTS.colorSchemes.network[k];
+});
 
 function drawAberrationMatrix() {
   var aberrations = VIEW_COMPONENT_SELECTIONS.aberrations;
@@ -382,6 +385,12 @@ function drawNetwork() {
   var network = VIEW_COMPONENT_SELECTIONS.network;
   network.selectAll('*').remove();
   style.network.width = +network.style('width').replace('px','');
+  console.log(data.network);
+  var valueExtent = d3.extent(data.network.nodes.map(function(d) { return d.value; }));
+
+  console.log(data.network)
+  console.log(style.network)
+  console.log(style)
   network.datum(data.network)
 		.call(gd3.graph({
 			style: style.network
