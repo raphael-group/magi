@@ -89,6 +89,7 @@ var VIEW_UTIL = {
 	    else if (c=='null' || !c) return "Unknown";
 		else return c.toUpperCase();
   },
+  getHeight: function(selection) { return +selection.style('height').replace('px', ''); },
   mutationToName: function(m) {
     m = m.toLowerCase();
 		if (m == "snv") return "SNV";
@@ -382,10 +383,26 @@ function drawHeatmap() {
 }
 
 function drawNetwork() {
-  var network = VIEW_COMPONENT_SELECTIONS.network;
+  var network = VIEW_COMPONENT_SELECTIONS.network,
+      networkFirstRender = network.selectAll('*').empty(); // for height calc
+
   network.selectAll('*').remove();
   style.network.width = +network.style('width').replace('px','');
   var valueExtent = d3.extent(data.network.nodes.map(function(d) { return d.value; }));
+
+  if(networkFirstRender === false) {
+    var nnode = network.node()
+        networkPanel = d3.select(nnode.parentNode.parentNode),
+        networkPanelHeading = networkPanel.select('.panel-heading'),
+        networkH = VIEW_UTIL.getHeight(networkPanel) -
+                    VIEW_UTIL.getHeight(networkPanelHeading) -
+                    (+network.style('padding').replace('px',''));
+    console.log(VIEW_UTIL.getHeight(networkPanel), networkH, VIEW_UTIL.getHeight(network));
+    style.network.height = networkH
+  } else {
+    style.network.height = 300;
+  }
+
 
   network.datum(data.network)
 		.call(gd3.graph({
@@ -450,6 +467,22 @@ function drawTranscript() {
   // transcriptSelect.selectAll('*').remove();
 
   style.transcript.width = +transcript.style('width').replace('px','');
+  var transcriptPanelBody = d3.select('#transcript').node().parentNode,
+      transcriptPanel = d3.select(transcriptPanelBody.parentNode.parentNode),
+      transcriptPanelHeading = transcriptPanel.select('.panel-heading'),
+      transcriptSelectH = VIEW_UTIL.getHeight(transcriptSelect);
+
+  var transcriptPanelH = transcriptPanelHeadingH = undefined;
+  if(transcriptPanel.empty() === false)
+    transcriptPanelH = VIEW_UTIL.getHeight(transcriptPanel);
+  if(transcriptPanelHeading.empty() === false)
+    transcriptPanelHeadingH = VIEW_UTIL.getHeight(transcriptPanelHeading);
+
+  if(transcriptPanelH !== undefined && transcriptPanelHeadingH !== undefined) {
+    var padding = +d3.select(transcriptPanelBody).style('padding').replace('px','');
+    style.transcript.height = transcriptPanelH - transcriptPanelHeadingH - transcriptSelectH - padding*2 - 120;
+  }
+
 
   // First populate the dropdown with the transcripts for each gene
 	var numTranscriptsAdded = 0,
