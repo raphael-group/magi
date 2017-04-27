@@ -223,7 +223,7 @@ function drawAberrationMatrix() {
 
 					// The table is hidden on default, so we show a string describing the
 					// table before showing it.
-				    var knownAberrations = cancerNames.map(cancerToName).filter(function(s) {return s != 'Unknown';}).join(", ");
+				    var knownAberrations = cancerNames.map(VIEW_UTIL.cancerToName).filter(function(s) {return s != 'Unknown';}).join(", ");
 				    var inKnownCancers = knownAberrations == '' ? '' : (' in ' + knownAberrations);
 				    tooltipData.push({ type: 'text', text: 'Known ' + mutationClass + inKnownCancers});
 				    // count the number of references
@@ -301,7 +301,7 @@ function drawCNA() {
 			cnaTooltips.push([
 				{ type: 'link', href: '/sampleView?sample=' + d.sample, body: 'Sample: ' + d.sample },
 				{ type: 'text', text: 'Dataset: ' + d.dataset },
-				{ type: 'text', text: 'Type: ' + mutationToName(d.ty) },
+				{ type: 'text', text: 'Type: ' + VIEW_util.mutationToName(d.ty) },
 				{ type: 'text', text: 'Start: ' + d.start },
 				{ type: 'text', text: 'End: ' + d.end }
 			].map(gd3.tooltip.datum));
@@ -408,7 +408,7 @@ function drawNetwork() {
 					// only show the network name in the first row
 					refTable.push([
 						{type: 'text', text: i ? "" : n},
-						{type: 'link', href: pubmedLink(ref.pmid), body: ref.pmid},
+						{type: 'link', href: VIEW_UTIL.pubmedLink(ref.pmid), body: ref.pmid},
                     ].map(gd3.tooltip.datum));
 				})
 			} else {
